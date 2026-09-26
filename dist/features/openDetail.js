@@ -1,1 +1,370 @@
-"use strict";var __morbis_feature=(()=>{function w(){return window}var f=w(),c=null,g=null,s=null,l=null,m=!1,d=new Set,_=0,k=1e3;function F(e){return e.__extId??(e.__extId=++_)}function O(){if(d.size>k){let e=Array.from(d).slice(0,k/2);for(let t of e)d.delete(t)}}var D="data-ext-open-detail-mode",a={urlPatterns:["/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari="],autoDate:!0,dateFormat:"id",buttonSelectors:['button[onclick*="detail" i]','a[onclick*="detail" i]','[onclick*="detail" i]','button[onclick*="id_visit" i]','a[onclick*="id_visit" i]','a[href*="detail-v2-refaktor" i]','[data-action="detail"]','[data-toggle="detail"]',"[data-detail-id]","[data-id-visit]","[data-idvisit]",".btn-detail"],debug:!1};function M(e){if(!e)return null;let t=[/detail[^(]*\(\s*['"]?(\d+)/i,/id_visit\s*=\s*['"]?(\d+)/i,/[?&](?:id_visit|visit|id)\s*=\s*['"]?(\d+)/i];for(let n of t){let i=e.match(n);if(i)return i[1]}return null}function A(e){let n=e.dataset,i=[n.idVisit,n.idvisit,n.idVisitId,n.id_visit,n.detailId,n.detailid,n.id,e.getAttribute("data-id"),e.getAttribute("data-id-visit"),e.getAttribute("data-detail-id")];for(let o of i)if(o&&/^\d+$/.test(o))return o;return null}function T(e){let t=A(e);if(t)return t;let n=e.getAttribute("value");if(n&&/^\d+$/.test(n))return n;for(let o of["onclick","href","data-onclick","data-href","data-url"]){let r=M(e.getAttribute(o));if(r)return r}let i=e.parentElement;for(let o=0;o<5&&i;o++){let r=A(i);if(r)return r;for(let x of["onclick","href","data-id-visit","data-detail-id"]){let h=M(i.getAttribute(x));if(h)return h}i=i.parentElement}return null}function S(e){let t=String(e.getDate()).padStart(2,"0"),n=String(e.getMonth()+1).padStart(2,"0"),i=e.getFullYear();return`${t}-${n}-${i}`}function I(e){let t=window.location.origin+a.urlPatterns[0];if(t=t.replace("{id}",e),a.autoDate){let i=document.getElementById("tanggalAwal")?.value,o=document.getElementById("tanggalAkhir")?.value;if(i&&o)t=t.replace("{tanggalAwal}",encodeURIComponent(i)).replace("{tanggalAkhir}",encodeURIComponent(o));else{let r=S(new Date);t=t.replace("{tanggalAwal}",r).replace("{tanggalAkhir}",r)}}let n=new URLSearchParams(window.location.search);return["norm","nama","reg","billing","status","id_poli_cari","poli_cari"].forEach(i=>{let o=n.get(i);o&&(t=t.replace(`{${i}}`,encodeURIComponent(o)))}),t=t.replace(/{\w+}/g,""),t}function b(e){return e.dataset.detailModified==="true"}function L(){return f.currentConfig?.features?.openDetailInNewTab}function y(){return L()?.mode||"same-tab"}function u(){return L()?.enabled?f.ExtensionCore.isFeatureAllowed("openDetailInNewTab"):!1}function C(e){let t=I(e),n=y();console.log(`[OpenDetail] Buka detail ID: ${e}, mode: ${n}`),n==="new-tab"?window.open(t,"_blank","noopener"):window.location.href=t}function R(e){let t=e;if(!t||typeof t.closest!="function")return null;for(let i of a.buttonSelectors)try{let o=t.closest(i);if(o)return o}catch{}let n=t.closest('button,a,[onclick],[role="button"]');return n&&/\bdetail\b/i.test(n.textContent||"")?n:null}function v(e){let t=F(e);if(d.has(t)||e instanceof MouseEvent&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||e.button!==0)||!u())return;let n=R(e.target);if(!n)return;let i=T(n);if(!i){a.debug&&console.warn("[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:",n);return}d.add(t),O(),e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),C(i)}function E(e){if(b(e))return;let t=T(e);if(!t){a.debug&&console.log("[OpenDetail] Gagal mengekstrak ID dari elemen:",e);return}let n=e.getAttribute("onclick"),i=e.getAttribute("target");e.dataset.originalOnclick=n||"",i&&(e.dataset.originalTarget=i),e.dataset.detailModified="true",e.tagName.toLowerCase()==="a"&&e.setAttribute("href",I(t)),e.addEventListener("click",function(o){o instanceof MouseEvent&&(o.ctrlKey||o.metaKey||o.shiftKey||o.altKey)||(o.preventDefault(),o.stopPropagation(),o.stopImmediatePropagation(),C(t))},!0),a.debug&&console.log(`[OpenDetail] Tombol detail ID: ${t} berhasil di-override`)}function p(){if(u())for(let e of a.buttonSelectors)try{document.querySelectorAll(e).forEach(n=>E(n))}catch{a.debug&&console.warn(`[OpenDetail] Invalid selector skipped: ${e}`)}}function B(){document.querySelectorAll('[data-detail-modified="true"]').forEach(t=>{let n=t.dataset.originalOnclick;n&&n!==""&&t.setAttribute("onclick",n);let i=t.dataset.originalTarget;i&&t.setAttribute("target",i),delete t.dataset.detailModified,delete t.dataset.originalOnclick,delete t.dataset.originalTarget;let o=t.cloneNode(!0);t.parentNode&&t.parentNode.replaceChild(o,t)})}function H(){if(!u())return;document.querySelectorAll('button:not([data-action]):not([data-toggle]):not(.btn-toolbar):not(.toolbar), a[href*="detail"]:not([href*="list"]):not([href*="index"]), [onclick*="detail" i]:not([data-action]):not([data-toggle])').forEach(n=>{if(b(n))return;let i=(n.textContent||"").trim().toLowerCase();(i==="detail"||i==="view"||i==="lihat"||i==="lihat detail"||i==="detail pasien"||i==="buka detail")&&E(n)}),document.querySelectorAll("td").forEach(n=>{if(n.tagName.toLowerCase()==="th")return;let i=(n.textContent||"").trim().toLowerCase();i.length<=30&&/\bdetail\b/i.test(i)&&n.querySelectorAll("button, a, [onclick]").forEach(r=>{b(r)||E(r)})})}function P(){m||(window.addEventListener("click",v,!0),document.addEventListener("click",v,!0),m=!0)}function N(){m&&(window.removeEventListener("click",v,!0),document.removeEventListener("click",v,!0),m=!1)}function K(){N(),c!==null&&(clearInterval(c),c=null),g!==null&&(clearTimeout(g),g=null),l!==null&&(clearTimeout(l),l=null),s&&(s.disconnect(),s=null)}function $(){let e=u();K();try{if(e){let t=y();console.log("[OpenDetail] Feature ENABLED, mode:",t),document.documentElement.setAttribute(D,t),P(),p(),g=window.setTimeout(()=>H(),500),c=window.setInterval(()=>p(),2e3)}else console.log("[OpenDetail] Feature DISABLED"),document.documentElement.removeAttribute(D),B();s=new MutationObserver(()=>{l!==null&&clearTimeout(l),l=window.setTimeout(()=>{l=null;try{u()&&p()}catch(t){console.warn("[OpenDetail] MutationObserver error:",t)}},200)}),s.observe(document.body,{childList:!0,subtree:!0})}catch(t){console.error("[OpenDetail] Error running feature:",t)}}typeof f.featureModules<"u"?f.featureModules.openDetailInNewTab={id:"openDetailInNewTab",name:"Open Detail Mode",description:"Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)",match:{prefix:"/v2/m-klaim"},run:$}:console.warn("[OpenDetail] featureModules not defined, module registration skipped");})();
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/openDetail.ts
+  var g = getMorbisGlobals();
+  var _scanIntervalId = null;
+  var _textScanTimeoutId = null;
+  var _observer = null;
+  var _observerTimer = null;
+  var _listenersInstalled = false;
+  var _handledEvents = /* @__PURE__ */ new Set();
+  var _eventIdCounter = 0;
+  var MAX_HANDLED_EVENTS = 1e3;
+  function _getEventId(e) {
+    return e.__extId ?? (e.__extId = ++_eventIdCounter);
+  }
+  function _cleanupHandledEvents() {
+    if (_handledEvents.size > MAX_HANDLED_EVENTS) {
+      const toRemove = Array.from(_handledEvents).slice(0, MAX_HANDLED_EVENTS / 2);
+      for (const id of toRemove) _handledEvents.delete(id);
+    }
+  }
+  var MODE_ATTR = "data-ext-open-detail-mode";
+  var OPEN_DETAIL_CONFIG = {
+    urlPatterns: [
+      "/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari="
+    ],
+    autoDate: true,
+    dateFormat: "id",
+    /** Selektor CASES-SENSITIVE-safe. ` i` = case-insensitive attribute match.
+     *  HANYA untuk tombol detail asli (bukan link navigasi umum).
+     *  Selector href*="id_visit" DIHAPUS — terlalu luas, nangkap link toolbar.
+     */
+    buttonSelectors: [
+      'button[onclick*="detail" i]',
+      'a[onclick*="detail" i]',
+      '[onclick*="detail" i]',
+      'button[onclick*="id_visit" i]',
+      'a[onclick*="id_visit" i]',
+      'a[href*="detail-v2-refaktor" i]',
+      '[data-action="detail"]',
+      '[data-toggle="detail"]',
+      "[data-detail-id]",
+      "[data-id-visit]",
+      "[data-idvisit]",
+      ".btn-detail"
+    ],
+    debug: false
+  };
+  function extractIdFromAttr(attrValue) {
+    if (!attrValue) return null;
+    const patterns = [
+      /detail[^(]*\(\s*['"]?(\d+)/i,
+      /id_visit\s*=\s*['"]?(\d+)/i,
+      /[?&](?:id_visit|visit|id)\s*=\s*['"]?(\d+)/i
+    ];
+    for (const pattern of patterns) {
+      const match = attrValue.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  }
+  function extractIdFromDataset(el) {
+    const el2 = el;
+    const d = el2.dataset;
+    const candidates = [
+      d.idVisit,
+      d.idvisit,
+      d.idVisitId,
+      d.id_visit,
+      d.detailId,
+      d.detailid,
+      d.id,
+      el.getAttribute("data-id"),
+      el.getAttribute("data-id-visit"),
+      el.getAttribute("data-detail-id")
+    ];
+    for (const v of candidates) {
+      if (v && /^\d+$/.test(v)) return v;
+    }
+    return null;
+  }
+  function extractIdFromElement(element) {
+    const fromDataset = extractIdFromDataset(element);
+    if (fromDataset) return fromDataset;
+    const valueAttr = element.getAttribute("value");
+    if (valueAttr && /^\d+$/.test(valueAttr)) return valueAttr;
+    for (const attr of ["onclick", "href", "data-onclick", "data-href", "data-url"]) {
+      const id = extractIdFromAttr(element.getAttribute(attr));
+      if (id) return id;
+    }
+    let parent = element.parentElement;
+    for (let i = 0; i < 5 && parent; i++) {
+      const pDataset = extractIdFromDataset(parent);
+      if (pDataset) return pDataset;
+      for (const attr of ["onclick", "href", "data-id-visit", "data-detail-id"]) {
+        const id = extractIdFromAttr(parent.getAttribute(attr));
+        if (id) return id;
+      }
+      parent = parent.parentElement;
+    }
+    return null;
+  }
+  function formatDateOpenDetail(date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  function generateUrl(id) {
+    let url = window.location.origin + OPEN_DETAIL_CONFIG.urlPatterns[0];
+    url = url.replace("{id}", id);
+    if (OPEN_DETAIL_CONFIG.autoDate) {
+      const tanggalAwal = document.getElementById("tanggalAwal")?.value;
+      const tanggalAkhir = document.getElementById("tanggalAkhir")?.value;
+      if (tanggalAwal && tanggalAkhir) {
+        url = url.replace("{tanggalAwal}", encodeURIComponent(tanggalAwal)).replace("{tanggalAkhir}", encodeURIComponent(tanggalAkhir));
+      } else {
+        const today = formatDateOpenDetail(/* @__PURE__ */ new Date());
+        url = url.replace("{tanggalAwal}", today).replace("{tanggalAkhir}", today);
+      }
+    }
+    const currentParams = new URLSearchParams(window.location.search);
+    ["norm", "nama", "reg", "billing", "status", "id_poli_cari", "poli_cari"].forEach((param) => {
+      const value = currentParams.get(param);
+      if (value) {
+        url = url.replace(`{${param}}`, encodeURIComponent(value));
+      }
+    });
+    url = url.replace(/{\w+}/g, "");
+    return url;
+  }
+  function isModifiedEvent(element) {
+    return element.dataset.detailModified === "true";
+  }
+  function getFeatureConfig() {
+    return g.currentConfig?.features?.openDetailInNewTab;
+  }
+  function getOpenDetailMode() {
+    return getFeatureConfig()?.mode || "same-tab";
+  }
+  function isFeatureActive() {
+    if (!getFeatureConfig()?.enabled) return false;
+    return g.ExtensionCore.isFeatureAllowed("openDetailInNewTab");
+  }
+  function openDetailUrl(id) {
+    const url = generateUrl(id);
+    const mode = getOpenDetailMode();
+    console.log(`[OpenDetail] Buka detail ID: ${id}, mode: ${mode}`);
+    if (mode === "new-tab") {
+      window.open(url, "_blank", "noopener");
+    } else {
+      window.location.href = url;
+    }
+  }
+  function findDetailTrigger(target) {
+    const el = target;
+    if (!el || typeof el.closest !== "function") return null;
+    for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
+      try {
+        const hit = el.closest(selector);
+        if (hit) return hit;
+      } catch {
+      }
+    }
+    const btn = el.closest('button,a,[onclick],[role="button"]');
+    if (btn && /\bdetail\b/i.test(btn.textContent || "")) {
+      return btn;
+    }
+    return null;
+  }
+  function handleDetailClick(e) {
+    const eventId = _getEventId(e);
+    if (_handledEvents.has(eventId)) return;
+    if (e instanceof MouseEvent) {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    }
+    if (!isFeatureActive()) return;
+    const trigger = findDetailTrigger(e.target);
+    if (!trigger) return;
+    const id = extractIdFromElement(trigger);
+    if (!id) {
+      if (OPEN_DETAIL_CONFIG.debug) {
+        console.warn("[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:", trigger);
+      }
+      return;
+    }
+    _handledEvents.add(eventId);
+    _cleanupHandledEvents();
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    openDetailUrl(id);
+  }
+  function overrideDetailButton(btn) {
+    if (isModifiedEvent(btn)) return;
+    const id = extractIdFromElement(btn);
+    if (!id) {
+      if (OPEN_DETAIL_CONFIG.debug) {
+        console.log("[OpenDetail] Gagal mengekstrak ID dari elemen:", btn);
+      }
+      return;
+    }
+    const originalOnclick = btn.getAttribute("onclick");
+    const originalTarget = btn.getAttribute("target");
+    btn.dataset.originalOnclick = originalOnclick || "";
+    if (originalTarget) btn.dataset.originalTarget = originalTarget;
+    btn.dataset.detailModified = "true";
+    if (btn.tagName.toLowerCase() === "a") {
+      btn.setAttribute("href", generateUrl(id));
+    }
+    btn.addEventListener(
+      "click",
+      function(e) {
+        if (e instanceof MouseEvent && (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        openDetailUrl(id);
+      },
+      true
+      // capture phase: jalan SEBELUM onclick inline
+    );
+    if (OPEN_DETAIL_CONFIG.debug) {
+      console.log(`[OpenDetail] Tombol detail ID: ${id} berhasil di-override`);
+    }
+  }
+  function overrideDetailButtons() {
+    if (!isFeatureActive()) return;
+    for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
+      try {
+        const buttons = document.querySelectorAll(selector);
+        buttons.forEach((btn) => overrideDetailButton(btn));
+      } catch {
+        if (OPEN_DETAIL_CONFIG.debug) {
+          console.warn(`[OpenDetail] Invalid selector skipped: ${selector}`);
+        }
+      }
+    }
+  }
+  function restoreDetailButtons() {
+    const modifiedButtons = document.querySelectorAll('[data-detail-modified="true"]');
+    modifiedButtons.forEach((btn) => {
+      const originalOnclick = btn.dataset.originalOnclick;
+      if (originalOnclick && originalOnclick !== "") {
+        btn.setAttribute("onclick", originalOnclick);
+      }
+      const originalTarget = btn.dataset.originalTarget;
+      if (originalTarget) {
+        btn.setAttribute("target", originalTarget);
+      }
+      delete btn.dataset.detailModified;
+      delete btn.dataset.originalOnclick;
+      delete btn.dataset.originalTarget;
+      const newBtn = btn.cloneNode(true);
+      if (btn.parentNode) {
+        btn.parentNode.replaceChild(newBtn, btn);
+      }
+    });
+  }
+  function overrideButtonsByText() {
+    if (!isFeatureActive()) return;
+    const candidateButtons = document.querySelectorAll(
+      'button:not([data-action]):not([data-toggle]):not(.btn-toolbar):not(.toolbar), a[href*="detail"]:not([href*="list"]):not([href*="index"]), [onclick*="detail" i]:not([data-action]):not([data-toggle])'
+    );
+    candidateButtons.forEach((btn) => {
+      if (isModifiedEvent(btn)) return;
+      const text = (btn.textContent || "").trim().toLowerCase();
+      if (text === "detail" || text === "view" || text === "lihat" || text === "lihat detail" || text === "detail pasien" || text === "buka detail") {
+        overrideDetailButton(btn);
+      }
+    });
+    const tableCells = document.querySelectorAll("td");
+    tableCells.forEach((cell) => {
+      if (cell.tagName.toLowerCase() === "th") return;
+      const cellText = (cell.textContent || "").trim().toLowerCase();
+      if (cellText.length <= 30 && /\bdetail\b/i.test(cellText)) {
+        const elements = cell.querySelectorAll("button, a, [onclick]");
+        elements.forEach((el) => {
+          if (!isModifiedEvent(el)) {
+            overrideDetailButton(el);
+          }
+        });
+      }
+    });
+  }
+  function installListeners() {
+    if (_listenersInstalled) return;
+    window.addEventListener("click", handleDetailClick, true);
+    document.addEventListener("click", handleDetailClick, true);
+    _listenersInstalled = true;
+  }
+  function uninstallListeners() {
+    if (!_listenersInstalled) return;
+    window.removeEventListener("click", handleDetailClick, true);
+    document.removeEventListener("click", handleDetailClick, true);
+    _listenersInstalled = false;
+  }
+  function _cleanupOpenDetail() {
+    uninstallListeners();
+    if (_scanIntervalId !== null) {
+      clearInterval(_scanIntervalId);
+      _scanIntervalId = null;
+    }
+    if (_textScanTimeoutId !== null) {
+      clearTimeout(_textScanTimeoutId);
+      _textScanTimeoutId = null;
+    }
+    if (_observerTimer !== null) {
+      clearTimeout(_observerTimer);
+      _observerTimer = null;
+    }
+    if (_observer) {
+      _observer.disconnect();
+      _observer = null;
+    }
+  }
+  function runOpenDetailInNewTabFeature() {
+    const isEnabled = isFeatureActive();
+    _cleanupOpenDetail();
+    try {
+      if (isEnabled) {
+        const mode = getOpenDetailMode();
+        console.log("[OpenDetail] Feature ENABLED, mode:", mode);
+        document.documentElement.setAttribute(MODE_ATTR, mode);
+        installListeners();
+        overrideDetailButtons();
+        _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
+        _scanIntervalId = window.setInterval(() => overrideDetailButtons(), 2e3);
+      } else {
+        console.log("[OpenDetail] Feature DISABLED");
+        document.documentElement.removeAttribute(MODE_ATTR);
+        restoreDetailButtons();
+      }
+      _observer = new MutationObserver(() => {
+        if (_observerTimer !== null) clearTimeout(_observerTimer);
+        _observerTimer = window.setTimeout(() => {
+          _observerTimer = null;
+          try {
+            if (isFeatureActive()) overrideDetailButtons();
+          } catch (e) {
+            console.warn("[OpenDetail] MutationObserver error:", e);
+          }
+        }, 200);
+      });
+      _observer.observe(document.body, { childList: true, subtree: true });
+    } catch (e) {
+      console.error("[OpenDetail] Error running feature:", e);
+    }
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.openDetailInNewTab = {
+      id: "openDetailInNewTab",
+      name: "Open Detail Mode",
+      description: "Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)",
+      // Hanya halaman m-klaim. Prefix TANPA slash akhir: normalizePath()
+      // membuang slash akhir, jadi '/v2/m-klaim/' TIDAK akan match '/v2/m-klaim'
+      // → fitur ter-skip dan mode jadi tidak berefek.
+      match: { prefix: "/v2/m-klaim" },
+      run: runOpenDetailInNewTabFeature
+    };
+  } else {
+    console.warn("[OpenDetail] featureModules not defined, module registration skipped");
+  }
+})();
+//# sourceMappingURL=openDetail.js.map

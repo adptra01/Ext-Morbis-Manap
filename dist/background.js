@@ -1,2 +1,807 @@
 // MORBIS Ext Unofficial - background.js (Built with esbuild)
-"use strict";var __morbis_bg=(()=>{var h={GET_ALL:"GET_ALL",GET_CONFIG:"GET_CONFIG",GET_URLS:"GET_URLS",SET_ROLE:"SET_ROLE",TOGGLE_EXTENSION:"TOGGLE_EXTENSION",TOGGLE_FEATURE:"TOGGLE_FEATURE",CHANGE_FEATURE_MODE:"CHANGE_FEATURE_MODE",RESET_CONFIG:"RESET_CONFIG",ADD_URL:"ADD_URL",DELETE_URL:"DELETE_URL",TOGGLE_URL:"TOGGLE_URL",OPEN_SIDE_PANEL:"OPEN_SIDE_PANEL",CONFIG_CHANGED:"CONFIG_CHANGED",PAGE_CONTEXT:"PAGE_CONTEXT",GET_PAGE_CONTEXT:"GET_PAGE_CONTEXT",TAB_ACTION:"TAB_ACTION",TAB_ACTION_RESULT:"TAB_ACTION_RESULT",BATCH_UPLOAD_ACTION:"BATCH_UPLOAD_ACTION",BATCH_DELETE_ACTION:"BATCH_DELETE_ACTION",PROXY_FETCH:"PROXY_FETCH",QUEUE_API:"QUEUE_API",TTS_LOCAL:"TTS_LOCAL"};function A(a){let n=`[MORBIS Ext] [${a}]`;return{log:(...t)=>console.log(n,...t),warn:(...t)=>console.warn(n,...t),error:(...t)=>console.error(n,...t)}}var N="http://dev.rsudkotajambi.id/rs",G="ext-farmasi-app-base";var U=["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"],x=".rsudkotajambi.id";function D(a){try{let n=new URL(a);if(n.protocol!=="http:"&&n.protocol!=="https:")return!1;let t=n.hostname.toLowerCase();return U.includes(t)?!0:t.endsWith(x)}catch{return!1}}function M(){try{let a=localStorage.getItem(G);if(a&&D(a))return a.replace(/\/+$/,"")}catch{}return N}function C(a,n="id"){return M()+"/api/tts?text="+encodeURIComponent(a)+"&lang="+encodeURIComponent(n)}function w(a){let n=String(a??"").trim();return n&&(/^antrian\s+resep\s+obat/i.test(n)&&/atas\s+nama/i.test(n)?"Antrian resep obat. Silakan ke loket farmasi.":n.replace(/[,;]?\s*atas\s+nama\s+[^.!?]*[.!?]?\s*/gi,"").replace(/,\s*,/g,",").replace(/\s{2,}/g," ").replace(/[,\s]+([.!?])/g,"$1").trim())}var E=A("Background"),S=720*60*1e3,R="ttsCache:",k=60;function P(a){return R+a}async function F(a){try{let n=P(a),r=(await chrome.storage.local.get(n))[n];return r?Date.now()-r.ts>S?(await chrome.storage.local.remove(n),null):r:null}catch{return null}}async function v(a,n,t){try{let r={mime:n,data:t,ts:Date.now()};await chrome.storage.local.set({[P(a)]:r});let e=await chrome.storage.local.get(null),s=Object.keys(e).filter(l=>l.startsWith(R));if(s.length>k){let l=s.map(o=>({k:o,ts:e[o].ts})).sort((o,i)=>o.ts-i.ts).slice(0,s.length-k);await chrome.storage.local.remove(l.map(o=>o.k))}}catch{}}async function B(){try{let a=await chrome.storage.local.get(null),n=Date.now(),t=Object.entries(a).filter(([r,e])=>r.startsWith(R)&&n-e.ts>S).map(([r])=>r);t.length>0&&await chrome.storage.local.remove(t)}catch{}}var y=new Map,u="extensionConfig",f="extensionCustomUrls",L={CASEMIX:"casemix",KASIR:"kasir",DOKTER:"dokter",APOTEK:"apotek",ADMIN:"admin",LABOR:"labor",PENDAFTARAN:"pendaftaran"},b=[{id:"default-1",url:"http://192.168.8.4",enabled:!0,isDefault:!0},{id:"default-2",url:"http://103.147.236.140",enabled:!0,isDefault:!0}],H=["192.168.8.4","103.147.236.140","103.147.236.138","localhost","127.0.0.1"],X=".rsudkotajambi.id";function O(a){try{let n=new URL(a);if(n.protocol!=="http:"&&n.protocol!=="https:")return!1;let t=n.hostname.toLowerCase();return H.includes(t)?!0:t.endsWith(X)}catch{return!1}}var m={extensionEnabled:!0,currentRole:"admin",features:{openDetailInNewTab:{enabled:!0,name:"Open Detail Mode",description:"Pilih mode buka detail: tab baru / tab sama",allowedRoles:["casemix"],mode:"same-tab",modes:{"same-tab":"Buka di Tab Sama (Default)","new-tab":"Buka di Tab Baru"}},shortcutButtons:{enabled:!0,allowedRoles:["casemix"],name:"Shortcut Buttons",description:"Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap"},filterPersistence:{enabled:!0,allowedRoles:["casemix","kasir","dokter","apotek"],name:"Filter Persistence State",description:"Simpan otomatis kolom pencarian agar tidak perlu diketik ulang"},scrollButtons:{enabled:!0,allowedRoles:["casemix"],name:"Scroll Buttons (Top/Bottom)",description:"Tombol scroll otomatis ke atas dan bawah halaman detail"},batchUpload:{enabled:!1,allowedRoles:["casemix"],name:"Upload Dokumen Ulang",description:"Upload batch dokumen via paste URL dengan metadata extraction otomatis"},batchDelete:{enabled:!1,allowedRoles:["casemix"],name:"Batch Delete Dokumen",description:"Hapus dokumen yang sudah diupload (safety measures)"},billingFilterPersistence:{enabled:!0,allowedRoles:["kasir","casemix"],name:"Billing Filter Persistence",description:"Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang"},doctorFilterPersistence:{enabled:!0,allowedRoles:["casemix","kasir","dokter","apotek"],name:"Doctor Filter Persistence",description:"Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang"},resepTools:{enabled:!0,allowedRoles:["apotek"],name:"Resep Tools",description:"Validasi aturan pakai, UI dosis kondisional, print safety lock"},fixJasaPelayanan:{enabled:!0,allowedRoles:["apotek"],name:"Fix Jasa Pelayanan Reset",description:"Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas"},consultationEnhancer:{enabled:!0,allowedRoles:["casemix"],name:"Konsultasi Enhancer",description:"Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien"},cpptSearchFilter:{enabled:!0,allowedRoles:["casemix"],name:"CPPT Search & Filter",description:"Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)"},resumeValidator:{enabled:!0,allowedRoles:["casemix","dokter"],name:"Resume Validator",description:"Validasi ketat form resume rawat inap & rawat jalan + riwayat simpan (petugas, before/after)"},resumeHistory:{enabled:!0,allowedRoles:["casemix","dokter"],name:"Riwayat Resume",description:"Catat riwayat tiap simpan resume + tombol Riwayat/Salin-ke-Form \u2014 tanpa validasi (jalan walau Validator mati)"},antrianTools:{enabled:!0,allowedRoles:["admin","pendaftaran"],name:"Antrian Tools",description:"Penomoran unik per loket (L1-001), polling layar antrian, auto cetak, fullscreen"},antrianFarmasi:{enabled:!0,allowedRoles:["apotek"],name:"Antrian Farmasi Voice",description:"Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2\xD7)"},ttsServer:{enabled:!0,allowedRoles:["apotek","admin"],name:"Suara Server Cadangan",description:"Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS."},penerimaanExport:{enabled:!0,allowedRoles:["admin","apotek"],name:"Rekap Penerimaan Resep (Reports SIMRS)",description:"Tombol export penerimaan membuka halaman Rekap Penerimaan Resep + Waktu Antrian di Reports SIMRS (filter ter-prefill, export XLSX/CSV di sana)"},ttvEditor:{enabled:!0,allowedRoles:["casemix","dokter"],name:"TTV Editor (Surat Pengantar)",description:"Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal"},resumeModal:{enabled:!0,allowedRoles:["casemix"],name:"Resume Rajal Tab",description:"Tab resume rawat jalan di halaman detail M-KLAIM"},resumeRanap:{enabled:!0,allowedRoles:["casemix","dokter"],name:"Resume Ranap Tab",description:"Popup edit resume rawat inap di halaman detail M-KLAIM"},labHistory:{enabled:!0,allowedRoles:["labor"],name:"Riwayat Permintaan Lab",description:"Tombol lihat riwayat permintaan lab di halaman input hasil"},laporanKasirTime:{enabled:!0,allowedRoles:["kasir","admin"],name:"Laporan Kasir Time Integration",description:"Flatpickr datetime, auto-fill kemarin/hari ini 12:00, tampilkan waktu di tabel"},cancelBatal:{enabled:!1,allowedRoles:["admin"],name:"Tombol Batal (Lab & Radiologi)",description:"Tambahkan tombol Batal pada tab Sudah Diinput di Lab dan Radiologi"},telaahResep:{enabled:!0,allowedRoles:["admin","apotek"],name:"UI Telaah Resep (Cetak)",description:"Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, 2 kolom, info pasien/dokter)"},billingAdjustment:{enabled:!0,allowedRoles:["admin"],name:"Billing Adjustment",description:"Edit manual total billing & pembulatan, recalculate otomatis"},preOpMarker:{enabled:!0,allowedRoles:["casemix","admin"],name:"Pre-op Marker (M-KLAIM)",description:"Tandai pasien Pre-op di kolom aksi tabel M-KLAIM (tersimpan 1 bulan)"},mKlaimVerifLog:{enabled:!0,allowedRoles:["casemix","admin"],name:"Verifikasi Klaim & Log Resume",description:"Simpan snapshot resume & catat ke riwayat log / Reports SIMRS saat klik verif berkas"},paLabPrint:{enabled:!0,allowedRoles:["labor","admin"],name:"Cetak Hasil Lab PA (Redesign)",description:"Redesign format cetak Laporan Hasil Pemeriksaan PA (kop instansi, info pasien, hasil) agar rapi saat tampil & dicetak A4"}}};function j(a){if(!a||!a.features)return structuredClone(m);let n=Object.keys(m.features),t={};for(let e of n)a.features[e]?t[e]=structuredClone(a.features[e]):t[e]=structuredClone(m.features[e]);let r=Object.values(L);for(let e of n){let s=m.features[e].allowedRoles,l=t[e].allowedRoles;!Array.isArray(l)||l.length===0?t[e].allowedRoles=[...s]:l.filter(i=>!r.includes(i)).length>0&&(t[e].allowedRoles=l.filter(i=>r.includes(i)))}for(let e of["filterPersistence","doctorFilterPersistence"])t[e]&&(t[e].allowedRoles=[...Object.values(L)]);if(t.antrianTools){let e=t.antrianTools;for(let s of["admin","pendaftaran"])e.allowedRoles.includes(s)||e.allowedRoles.push(s)}return a.currentRole||(a.currentRole="admin"),r.includes(a.currentRole)||(a.currentRole="admin"),a.features=t,a}async function d(){try{let a=await chrome.storage.sync.get(u);if(!a[u]){let t=structuredClone(m);return await chrome.storage.sync.set({[u]:t}),t}let n=j(structuredClone(a[u]));return await chrome.storage.sync.set({[u]:n}),n}catch(a){return E.error("Error loading config:",a),structuredClone(m)}}async function T(){try{let a=await chrome.storage.sync.get(f);if(!a[f]){let r=structuredClone(b);return await chrome.storage.sync.set({[f]:r}),r}let n=a[f],t=structuredClone(b);return n.forEach(r=>{r.isDefault||t.push(r)}),t.forEach(r=>{let e=n.find(s=>s.id===r.id);e&&r.isDefault&&(r.enabled=e.enabled)}),t}catch(a){return E.error("Error loading URLs:",a),structuredClone(b)}}async function p(){let[a,n]=await Promise.all([chrome.tabs.query({}),T()]),t=n.filter(r=>r.enabled).map(r=>r.url);if(t.length!==0)for(let r of a)r.id&&r.url&&t.some(e=>r.url.startsWith(e))&&chrome.tabs.sendMessage(r.id,{type:"CONFIG_CHANGED"}).catch(()=>{})}chrome.runtime.onMessage.addListener((a,n,t)=>{let r=Y(a);if(!r)return t({error:"Invalid message"}),!1;switch(W(r.type),r.type){case"GET_ALL":return(async()=>{let[e,s]=await Promise.all([d(),T()]);t({config:e,urls:s,defaultConfig:m})})(),!0;case"GET_CONFIG":return d().then(e=>t({config:e})),!0;case"GET_URLS":return T().then(e=>t({urls:e})),!0;case"SET_ROLE":return(async()=>{let e=await d();e.currentRole=r.role,await chrome.storage.sync.set({[u]:e}),p(),t({success:!0})})(),!0;case"TOGGLE_EXTENSION":return(async()=>{let e=await d();e.extensionEnabled=r.enabled,await chrome.storage.sync.set({[u]:e}),p(),t({success:!0})})(),!0;case"TOGGLE_FEATURE":return(async()=>{let e=await d();e.features[r.key]&&(e.features[r.key].enabled=r.enabled,await chrome.storage.sync.set({[u]:e}),p()),t({success:!0})})(),!0;case"CHANGE_FEATURE_MODE":return(async()=>{let e=await d();e.features[r.key]&&(e.features[r.key].mode=r.mode,await chrome.storage.sync.set({[u]:e})),t({success:!0})})(),!0;case"RESET_CONFIG":return(async()=>(await chrome.storage.sync.set({[u]:structuredClone(m)}),p(),t({success:!0})))(),!0;case"ADD_URL":return(async()=>{let e=await T();e.push({id:"url-"+Date.now()+"-"+Math.random().toString(36).substr(2,9),url:r.url,enabled:!0,isDefault:!1}),await chrome.storage.sync.set({[f]:e}),p(),t({success:!0})})(),!0;case"DELETE_URL":return(async()=>{let e=await T();e=e.filter(s=>s.id!==r.id||s.isDefault),await chrome.storage.sync.set({[f]:e}),p(),t({success:!0})})(),!0;case"TOGGLE_URL":return(async()=>{let e=await T();for(let s of e)s.id===r.id&&(s.enabled=r.enabled);await chrome.storage.sync.set({[f]:e}),p(),t({success:!0})})(),!0;case"OPEN_SIDE_PANEL":return(async()=>{let e=n.tab;e?.id&&await chrome.sidePanel.open({tabId:e.id}),t({success:!0})})(),!0;case"PAGE_CONTEXT":{let e=n.tab?.id;if(e&&r.feature){let s=r;y.set(e,{feature:r.feature,data:s.data}),E.log("Page context stored for tab",e,":",r.feature)}return t({success:!0}),!0}case"GET_PAGE_CONTEXT":return(async()=>{let s=(await chrome.tabs.query({active:!0,currentWindow:!0}))[0]?.id;s&&y.has(s)?t({context:y.get(s)}):t({context:null})})(),!0;case"PROXY_FETCH":return(async()=>{try{if(n?.id!==chrome.runtime.id){t({success:!1,error:"forbidden sender"});return}let{url:e,method:s="GET",data:l}=r;if(typeof e!="string"||!O(e)){t({success:!1,error:"URL di luar allowlist host RS"});return}let o=e,i={method:s,credentials:"include"};if(l&&typeof l=="object"){let g=new URLSearchParams(l);s==="POST"?(i.body=g,i.headers={"Content-Type":"application/x-www-form-urlencoded"}):o+="?"+g.toString()}let c=await(await fetch(o,i)).text();t({success:!0,html:c})}catch(e){t({success:!1,error:String(e)})}})(),!0;case"QUEUE_API":return(async()=>{try{let{url:e,method:s="GET",body:l}=r;if(n?.id!==chrome.runtime.id){t({ok:!1,error:"forbidden sender"});return}if(typeof e!="string"||!O(e)){t({ok:!1,error:"URL di luar allowlist host RS"});return}let o={method:s,cache:"no-store"};l!=null&&(o.body=JSON.stringify(l),o.headers={"Content-Type":"application/json"});let i=await fetch(e,o),_=i.headers.get("content-type")||"",c=null;try{c=await i.json()}catch{c=await i.text()}t({ok:!0,status:i.status,contentType:_,data:c})}catch(e){t({ok:!1,error:String(e)})}})(),!0;case"TTS_LOCAL":return(async()=>{try{let{text:e}=r,s=await F(e);if(s){t({ok:!0,mime:s.mime,data:s.data});return}let l=async(i,_=5e3)=>{let c=await fetch(i,{mode:"cors",signal:AbortSignal.timeout(_)});if(!c.ok)throw new Error("http "+c.status);let g=await c.arrayBuffer();if(!g||g.byteLength===0)throw new Error("empty");return{mime:c.headers.get("content-type")||"audio/mpeg",data:Array.from(new Uint8Array(g))}},o;try{o=await l("http://127.0.0.1:8765/tts?text="+encodeURIComponent(e),3e3)}catch{let i=await d().catch(()=>null);if(i&&i.features?.ttsServer&&i.features.ttsServer.enabled===!1)throw new Error("tts-server-off");o=await l(C(w(e)))}v(e,o.mime,o.data),t({ok:!0,mime:o.mime,data:o.data})}catch(e){t({ok:!1,reason:"tts-fetch "+String(e).slice(0,60)})}})(),!0;case"TAB_ACTION":return(async()=>{let e=r.tabId;if(!e){t({success:!1});return}try{await chrome.tabs.sendMessage(e,r),t({success:!0})}catch(s){E.log("TAB_ACTION forward failed:",s),t({success:!1})}})(),!0;case"TAB_ACTION_RESULT":return chrome.runtime.sendMessage(r).catch(()=>{}),t({success:!0}),!0;default:return!1}});var K=1;chrome.runtime.onInstalled.addListener(function(){chrome.alarms.create("morbis-heartbeat",{periodInMinutes:K}),chrome.alarms.create("morbis-state-sync",{periodInMinutes:5}),E.log("Heartbeat and state-sync alarms registered")});chrome.alarms.onAlarm.addListener(function(a){a.name==="morbis-heartbeat"&&E.log("Heartbeat: SW alive"),a.name==="morbis-state-sync"&&(I().catch(function(){}),B().catch(function(){}))});async function I(){try{let a=await d();await chrome.storage.session.set({lastHeartbeat:Date.now(),lastSync:Date.now(),currentRole:a.currentRole,extensionEnabled:a.extensionEnabled})}catch(a){E.error("State sync failed:",a)}}async function W(a){["SET_ROLE","TOGGLE_EXTENSION","TOGGLE_FEATURE","CHANGE_FEATURE_MODE","RESET_CONFIG"].includes(a)&&await I()}var V=Object.values(h).filter(a=>a!=="CONFIG_CHANGED");function Y(a){if(!a||typeof a!="object")return null;let n=a;return typeof n.type!="string"||!V.includes(n.type)||(n.type==="PROXY_FETCH"||n.type==="QUEUE_API")&&typeof n.url!="string"||n.type==="TTS_LOCAL"&&typeof n.text!="string"?null:n}chrome.action.onClicked.addListener(function(a){a.id&&chrome.sidePanel.open({tabId:a.id}).catch(function(){})});E.log("Service worker started");})();
+"use strict";
+var __morbis_bg = (() => {
+  // src/shared/messaging.ts
+  var MessageTypes = {
+    GET_ALL: "GET_ALL",
+    GET_CONFIG: "GET_CONFIG",
+    GET_URLS: "GET_URLS",
+    SET_ROLE: "SET_ROLE",
+    TOGGLE_EXTENSION: "TOGGLE_EXTENSION",
+    TOGGLE_FEATURE: "TOGGLE_FEATURE",
+    CHANGE_FEATURE_MODE: "CHANGE_FEATURE_MODE",
+    RESET_CONFIG: "RESET_CONFIG",
+    ADD_URL: "ADD_URL",
+    DELETE_URL: "DELETE_URL",
+    TOGGLE_URL: "TOGGLE_URL",
+    OPEN_SIDE_PANEL: "OPEN_SIDE_PANEL",
+    CONFIG_CHANGED: "CONFIG_CHANGED",
+    // --- Batch feature actions (content script ↔ side panel via background proxy) ---
+    PAGE_CONTEXT: "PAGE_CONTEXT",
+    GET_PAGE_CONTEXT: "GET_PAGE_CONTEXT",
+    TAB_ACTION: "TAB_ACTION",
+    TAB_ACTION_RESULT: "TAB_ACTION_RESULT",
+    BATCH_UPLOAD_ACTION: "BATCH_UPLOAD_ACTION",
+    BATCH_DELETE_ACTION: "BATCH_DELETE_ACTION",
+    PROXY_FETCH: "PROXY_FETCH",
+    // Queue API via service worker (PNA-immune): content script → background →
+    // server antrian. SW punya host_permissions http://*/* sehingga fetch ke server
+    // lokal/privat (192.168.x) dari halaman HTTP publik TIDAK diblokir PNA.
+    QUEUE_API: "QUEUE_API",
+    // TTS: content script → background service worker → local TTS service.
+    // SW fetch bebas PNA/CORS halaman (host_permissions http://*/*) sehingga
+    // halaman HTTP publik MORBIS bisa ambil MP3 dari 127.0.0.1:8765.
+    TTS_LOCAL: "TTS_LOCAL"
+  };
+
+  // src/shared/logger.ts
+  function createLogger(name) {
+    const prefix = `[MORBIS Ext] [${name}]`;
+    return {
+      log: (...args) => console.log(prefix, ...args),
+      warn: (...args) => console.warn(prefix, ...args),
+      error: (...args) => console.error(prefix, ...args)
+    };
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = "http://dev.rsudkotajambi.id/rs";
+  var BASE_OVERRIDE_KEY = "ext-farmasi-app-base";
+  var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, "");
+    } catch {
+    }
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function buildTtsUrl(text, lang = "id") {
+    return resolveCasemixBase() + "/api/tts?text=" + encodeURIComponent(text) + "&lang=" + encodeURIComponent(lang);
+  }
+  function sanitizeTtsText(text) {
+    const t = String(text ?? "").trim();
+    if (!t) return t;
+    if (/^antrian\s+resep\s+obat/i.test(t) && /atas\s+nama/i.test(t)) {
+      return "Antrian resep obat. Silakan ke loket farmasi.";
+    }
+    return t.replace(/[,;]?\s*atas\s+nama\s+[^.!?]*[.!?]?\s*/gi, "").replace(/,\s*,/g, ",").replace(/\s{2,}/g, " ").replace(/[,\s]+([.!?])/g, "$1").trim();
+  }
+
+  // src/background.ts
+  var log = createLogger("Background");
+  var TTS_CACHE_TTL_MS = 12 * 60 * 60 * 1e3;
+  var TTS_CACHE_PREFIX = "ttsCache:";
+  var TTS_CACHE_MAX_ENTRIES = 60;
+  function ttsCacheKey(text) {
+    return TTS_CACHE_PREFIX + text;
+  }
+  async function ttsCacheGet(text) {
+    try {
+      const key = ttsCacheKey(text);
+      const raw = await chrome.storage.local.get(key);
+      const entry = raw[key];
+      if (!entry) return null;
+      if (Date.now() - entry.ts > TTS_CACHE_TTL_MS) {
+        await chrome.storage.local.remove(key);
+        return null;
+      }
+      return entry;
+    } catch {
+      return null;
+    }
+  }
+  async function ttsCacheSet(text, mime, data) {
+    try {
+      const entry = { mime, data, ts: Date.now() };
+      await chrome.storage.local.set({ [ttsCacheKey(text)]: entry });
+      const all = await chrome.storage.local.get(null);
+      const keys = Object.keys(all).filter((k) => k.startsWith(TTS_CACHE_PREFIX));
+      if (keys.length > TTS_CACHE_MAX_ENTRIES) {
+        const oldest = keys.map((k) => ({ k, ts: all[k].ts })).sort((a, b) => a.ts - b.ts).slice(0, keys.length - TTS_CACHE_MAX_ENTRIES);
+        await chrome.storage.local.remove(oldest.map((o) => o.k));
+      }
+    } catch {
+    }
+  }
+  async function ttsCacheSweep() {
+    try {
+      const all = await chrome.storage.local.get(null);
+      const now = Date.now();
+      const expired = Object.entries(all).filter(
+        ([k, v]) => k.startsWith(TTS_CACHE_PREFIX) && now - v.ts > TTS_CACHE_TTL_MS
+      ).map(([k]) => k);
+      if (expired.length > 0) await chrome.storage.local.remove(expired);
+    } catch {
+    }
+  }
+  var tabContexts = /* @__PURE__ */ new Map();
+  var STORAGE_KEY = "extensionConfig";
+  var URLS_STORAGE_KEY = "extensionCustomUrls";
+  var ROLES = {
+    CASEMIX: "casemix",
+    KASIR: "kasir",
+    DOKTER: "dokter",
+    APOTEK: "apotek",
+    ADMIN: "admin",
+    LABOR: "labor",
+    PENDAFTARAN: "pendaftaran"
+  };
+  var DEFAULT_CUSTOM_URLS = [
+    { id: "default-1", url: "http://192.168.8.4", enabled: true, isDefault: true },
+    { id: "default-2", url: "http://103.147.236.140", enabled: true, isDefault: true }
+  ];
+  var PROXY_ALLOWED_HOSTS = [
+    "192.168.8.4",
+    "103.147.236.140",
+    "103.147.236.138",
+    "localhost",
+    "127.0.0.1"
+  ];
+  var PROXY_ALLOWED_SUFFIX = ".rsudkotajambi.id";
+  function isAllowedProxyUrl(raw) {
+    try {
+      const u = new URL(raw);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+      const h = u.hostname.toLowerCase();
+      if (PROXY_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(PROXY_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  var DEFAULT_CONFIG = {
+    extensionEnabled: true,
+    currentRole: "admin",
+    features: {
+      openDetailInNewTab: {
+        enabled: true,
+        name: "Open Detail Mode",
+        description: "Pilih mode buka detail: tab baru / tab sama",
+        allowedRoles: ["casemix"],
+        mode: "same-tab",
+        modes: {
+          "same-tab": "Buka di Tab Sama (Default)",
+          "new-tab": "Buka di Tab Baru"
+        }
+      },
+      shortcutButtons: {
+        enabled: true,
+        allowedRoles: ["casemix"],
+        name: "Shortcut Buttons",
+        description: "Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap"
+      },
+      filterPersistence: {
+        enabled: true,
+        allowedRoles: ["casemix", "kasir", "dokter", "apotek"],
+        name: "Filter Persistence State",
+        description: "Simpan otomatis kolom pencarian agar tidak perlu diketik ulang"
+      },
+      scrollButtons: {
+        enabled: true,
+        allowedRoles: ["casemix"],
+        name: "Scroll Buttons (Top/Bottom)",
+        description: "Tombol scroll otomatis ke atas dan bawah halaman detail"
+      },
+      batchUpload: {
+        enabled: false,
+        allowedRoles: ["casemix"],
+        name: "Upload Dokumen Ulang",
+        description: "Upload batch dokumen via paste URL dengan metadata extraction otomatis"
+      },
+      batchDelete: {
+        enabled: false,
+        allowedRoles: ["casemix"],
+        name: "Batch Delete Dokumen",
+        description: "Hapus dokumen yang sudah diupload (safety measures)"
+      },
+      billingFilterPersistence: {
+        enabled: true,
+        allowedRoles: ["kasir", "casemix"],
+        name: "Billing Filter Persistence",
+        description: "Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang"
+      },
+      doctorFilterPersistence: {
+        enabled: true,
+        allowedRoles: ["casemix", "kasir", "dokter", "apotek"],
+        name: "Doctor Filter Persistence",
+        description: "Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang"
+      },
+      resepTools: {
+        enabled: true,
+        allowedRoles: ["apotek"],
+        name: "Resep Tools",
+        description: "Validasi aturan pakai, UI dosis kondisional, print safety lock"
+      },
+      fixJasaPelayanan: {
+        enabled: true,
+        allowedRoles: ["apotek"],
+        name: "Fix Jasa Pelayanan Reset",
+        description: "Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas"
+      },
+      consultationEnhancer: {
+        enabled: true,
+        allowedRoles: ["casemix"],
+        name: "Konsultasi Enhancer",
+        description: "Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien"
+      },
+      cpptSearchFilter: {
+        enabled: true,
+        allowedRoles: ["casemix"],
+        name: "CPPT Search & Filter",
+        description: "Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)"
+      },
+      resumeValidator: {
+        enabled: true,
+        allowedRoles: ["casemix", "dokter"],
+        name: "Resume Validator",
+        description: "Validasi ketat form resume rawat inap & rawat jalan + riwayat simpan (petugas, before/after)"
+      },
+      resumeHistory: {
+        enabled: true,
+        allowedRoles: ["casemix", "dokter"],
+        name: "Riwayat Resume",
+        description: "Catat riwayat tiap simpan resume + tombol Riwayat/Salin-ke-Form \u2014 tanpa validasi (jalan walau Validator mati)"
+      },
+      antrianTools: {
+        enabled: true,
+        allowedRoles: ["admin", "pendaftaran"],
+        name: "Antrian Tools",
+        description: "Penomoran unik per loket (L1-001), polling layar antrian, auto cetak, fullscreen"
+      },
+      antrianFarmasi: {
+        enabled: true,
+        allowedRoles: ["apotek"],
+        name: "Antrian Farmasi Voice",
+        description: "Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2\xD7)"
+      },
+      ttsServer: {
+        enabled: true,
+        allowedRoles: ["apotek", "admin"],
+        name: "Suara Server Cadangan",
+        description: "Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS."
+      },
+      penerimaanExport: {
+        enabled: true,
+        allowedRoles: ["admin", "apotek"],
+        name: "Rekap Penerimaan Resep (Reports SIMRS)",
+        description: "Tombol export penerimaan membuka halaman Rekap Penerimaan Resep + Waktu Antrian di Reports SIMRS (filter ter-prefill, export XLSX/CSV di sana)"
+      },
+      ttvEditor: {
+        enabled: true,
+        allowedRoles: ["casemix", "dokter"],
+        name: "TTV Editor (Surat Pengantar)",
+        description: "Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal"
+      },
+      resumeModal: {
+        enabled: true,
+        allowedRoles: ["casemix"],
+        name: "Resume Rajal Tab",
+        description: "Tab resume rawat jalan di halaman detail M-KLAIM"
+      },
+      resumeRanap: {
+        enabled: true,
+        allowedRoles: ["casemix", "dokter"],
+        name: "Resume Ranap Tab",
+        description: "Popup edit resume rawat inap di halaman detail M-KLAIM"
+      },
+      labHistory: {
+        enabled: true,
+        allowedRoles: ["labor"],
+        name: "Riwayat Permintaan Lab",
+        description: "Tombol lihat riwayat permintaan lab di halaman input hasil"
+      },
+      laporanKasirTime: {
+        enabled: true,
+        allowedRoles: ["kasir", "admin"],
+        name: "Laporan Kasir Time Integration",
+        description: "Flatpickr datetime, auto-fill kemarin/hari ini 12:00, tampilkan waktu di tabel"
+      },
+      cancelBatal: {
+        enabled: false,
+        allowedRoles: ["admin"],
+        name: "Tombol Batal (Lab & Radiologi)",
+        description: "Tambahkan tombol Batal pada tab Sudah Diinput di Lab dan Radiologi"
+      },
+      telaahResep: {
+        enabled: true,
+        allowedRoles: ["admin", "apotek"],
+        name: "UI Telaah Resep (Cetak)",
+        description: "Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, 2 kolom, info pasien/dokter)"
+      },
+      billingAdjustment: {
+        enabled: true,
+        allowedRoles: ["admin"],
+        name: "Billing Adjustment",
+        description: "Edit manual total billing & pembulatan, recalculate otomatis"
+      },
+      preOpMarker: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Pre-op Marker (M-KLAIM)",
+        description: "Tandai pasien Pre-op di kolom aksi tabel M-KLAIM (tersimpan 1 bulan)"
+      },
+      mKlaimVerifLog: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Verifikasi Klaim & Log Resume",
+        description: "Simpan snapshot resume & catat ke riwayat log / Reports SIMRS saat klik verif berkas"
+      },
+      paLabPrint: {
+        enabled: true,
+        allowedRoles: ["labor", "admin"],
+        name: "Cetak Hasil Lab PA (Redesign)",
+        description: "Redesign format cetak Laporan Hasil Pemeriksaan PA (kop instansi, info pasien, hasil) agar rapi saat tampil & dicetak A4"
+      }
+    }
+  };
+  function migrateConfig(config) {
+    if (!config || !config.features) return structuredClone(DEFAULT_CONFIG);
+    const validFeatures = Object.keys(DEFAULT_CONFIG.features);
+    const newFeatures = {};
+    for (const key of validFeatures) {
+      if (config.features[key]) {
+        newFeatures[key] = structuredClone(config.features[key]);
+      } else {
+        newFeatures[key] = structuredClone(DEFAULT_CONFIG.features[key]);
+      }
+    }
+    const ALL_KNOWN_ROLES = Object.values(ROLES);
+    for (const key of validFeatures) {
+      const defaultRoles = DEFAULT_CONFIG.features[key].allowedRoles;
+      const currentRoles = newFeatures[key].allowedRoles;
+      if (!Array.isArray(currentRoles) || currentRoles.length === 0) {
+        newFeatures[key].allowedRoles = [...defaultRoles];
+      } else {
+        const unknown = currentRoles.filter(
+          (r) => !ALL_KNOWN_ROLES.includes(r)
+        );
+        if (unknown.length > 0) {
+          newFeatures[key].allowedRoles = currentRoles.filter(
+            (r) => ALL_KNOWN_ROLES.includes(r)
+          );
+        }
+      }
+    }
+    for (const key of ["filterPersistence", "doctorFilterPersistence"]) {
+      if (newFeatures[key]) {
+        newFeatures[key].allowedRoles = [...Object.values(ROLES)];
+      }
+    }
+    if (newFeatures["antrianTools"]) {
+      const at = newFeatures["antrianTools"];
+      for (const r of ["admin", "pendaftaran"]) {
+        if (!at.allowedRoles.includes(r)) at.allowedRoles.push(r);
+      }
+    }
+    if (!config.currentRole) {
+      config.currentRole = "admin";
+    }
+    if (!ALL_KNOWN_ROLES.includes(config.currentRole)) {
+      config.currentRole = "admin";
+    }
+    config.features = newFeatures;
+    return config;
+  }
+  async function loadConfig() {
+    try {
+      const result = await chrome.storage.sync.get(STORAGE_KEY);
+      if (!result[STORAGE_KEY]) {
+        const config2 = structuredClone(DEFAULT_CONFIG);
+        await chrome.storage.sync.set({ [STORAGE_KEY]: config2 });
+        return config2;
+      }
+      const config = migrateConfig(structuredClone(result[STORAGE_KEY]));
+      await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+      return config;
+    } catch (e) {
+      log.error("Error loading config:", e);
+      return structuredClone(DEFAULT_CONFIG);
+    }
+  }
+  async function loadUrls() {
+    try {
+      const result = await chrome.storage.sync.get(URLS_STORAGE_KEY);
+      if (!result[URLS_STORAGE_KEY]) {
+        const urls = structuredClone(DEFAULT_CUSTOM_URLS);
+        await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+        return urls;
+      }
+      const saved = result[URLS_STORAGE_KEY];
+      const merged = structuredClone(DEFAULT_CUSTOM_URLS);
+      saved.forEach((u) => {
+        if (!u.isDefault) merged.push(u);
+      });
+      merged.forEach((u) => {
+        const m = saved.find((s) => s.id === u.id);
+        if (m && u.isDefault) u.enabled = m.enabled;
+      });
+      return merged;
+    } catch (e) {
+      log.error("Error loading URLs:", e);
+      return structuredClone(DEFAULT_CUSTOM_URLS);
+    }
+  }
+  async function broadcastConfigChange() {
+    const [tabs, urls] = await Promise.all([chrome.tabs.query({}), loadUrls()]);
+    const enabledBases = urls.filter((u) => u.enabled).map((u) => u.url);
+    if (enabledBases.length === 0) return;
+    for (const tab of tabs) {
+      if (tab.id && tab.url && enabledBases.some((base) => tab.url.startsWith(base))) {
+        chrome.tabs.sendMessage(tab.id, { type: "CONFIG_CHANGED" }).catch(() => {
+        });
+      }
+    }
+  }
+  chrome.runtime.onMessage.addListener(
+    (message, _sender, sendResponse) => {
+      const validated = validateMessage(message);
+      if (!validated) {
+        sendResponse({ error: "Invalid message" });
+        return false;
+      }
+      persistOnChange(validated.type);
+      switch (validated.type) {
+        case "GET_ALL": {
+          (async () => {
+            const [config, urls] = await Promise.all([loadConfig(), loadUrls()]);
+            sendResponse({ config, urls, defaultConfig: DEFAULT_CONFIG });
+          })();
+          return true;
+        }
+        case "GET_CONFIG": {
+          loadConfig().then((c) => sendResponse({ config: c }));
+          return true;
+        }
+        case "GET_URLS": {
+          loadUrls().then((u) => sendResponse({ urls: u }));
+          return true;
+        }
+        case "SET_ROLE": {
+          (async () => {
+            const config = await loadConfig();
+            config.currentRole = validated.role;
+            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "TOGGLE_EXTENSION": {
+          (async () => {
+            const config = await loadConfig();
+            config.extensionEnabled = validated.enabled;
+            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "TOGGLE_FEATURE": {
+          (async () => {
+            const config = await loadConfig();
+            if (config.features[validated.key]) {
+              config.features[validated.key].enabled = validated.enabled;
+              await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+              broadcastConfigChange();
+            }
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "CHANGE_FEATURE_MODE": {
+          (async () => {
+            const config = await loadConfig();
+            if (config.features[validated.key]) {
+              config.features[validated.key].mode = validated.mode;
+              await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            }
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "RESET_CONFIG": {
+          (async () => {
+            await chrome.storage.sync.set({
+              [STORAGE_KEY]: structuredClone(DEFAULT_CONFIG)
+            });
+            broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "ADD_URL": {
+          (async () => {
+            const urls = await loadUrls();
+            urls.push({
+              id: "url-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
+              url: validated.url,
+              enabled: true,
+              isDefault: false
+            });
+            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+            broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "DELETE_URL": {
+          (async () => {
+            let urls = await loadUrls();
+            urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
+            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+            broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "TOGGLE_URL": {
+          (async () => {
+            const urls = await loadUrls();
+            for (const u of urls) {
+              if (u.id === validated.id) u.enabled = validated.enabled;
+            }
+            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+            broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "OPEN_SIDE_PANEL": {
+          (async () => {
+            const tab = _sender.tab;
+            if (tab?.id) {
+              await chrome.sidePanel.open({ tabId: tab.id });
+            }
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        // --- Batch feature actions: proxy between content script & side panel ---
+        case "PAGE_CONTEXT": {
+          const tabId = _sender.tab?.id;
+          if (tabId && validated.feature) {
+            const v = validated;
+            tabContexts.set(tabId, {
+              feature: validated.feature,
+              data: v.data
+            });
+            log.log("Page context stored for tab", tabId, ":", validated.feature);
+          }
+          sendResponse({ success: true });
+          return true;
+        }
+        case "GET_PAGE_CONTEXT": {
+          (async () => {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            const tabId = tabs[0]?.id;
+            if (tabId && tabContexts.has(tabId)) {
+              sendResponse({ context: tabContexts.get(tabId) });
+            } else {
+              sendResponse({ context: null });
+            }
+          })();
+          return true;
+        }
+        case "PROXY_FETCH": {
+          (async () => {
+            try {
+              if (_sender?.id !== chrome.runtime.id) {
+                sendResponse({ success: false, error: "forbidden sender" });
+                return;
+              }
+              const { url, method = "GET", data } = validated;
+              if (typeof url !== "string" || !isAllowedProxyUrl(url)) {
+                sendResponse({ success: false, error: "URL di luar allowlist host RS" });
+                return;
+              }
+              let fetchUrl = url;
+              const opts = {
+                method,
+                credentials: "include"
+              };
+              if (data && typeof data === "object") {
+                const params = new URLSearchParams(data);
+                if (method === "POST") {
+                  opts.body = params;
+                  opts.headers = { "Content-Type": "application/x-www-form-urlencoded" };
+                } else {
+                  fetchUrl += "?" + params.toString();
+                }
+              }
+              const res = await fetch(fetchUrl, opts);
+              const text = await res.text();
+              sendResponse({ success: true, html: text });
+            } catch (e) {
+              sendResponse({ success: false, error: String(e) });
+            }
+          })();
+          return true;
+        }
+        case "QUEUE_API": {
+          (async () => {
+            try {
+              const {
+                url,
+                method = "GET",
+                body
+              } = validated;
+              if (_sender?.id !== chrome.runtime.id) {
+                sendResponse({ ok: false, error: "forbidden sender" });
+                return;
+              }
+              if (typeof url !== "string" || !isAllowedProxyUrl(url)) {
+                sendResponse({ ok: false, error: "URL di luar allowlist host RS" });
+                return;
+              }
+              const opts = { method, cache: "no-store" };
+              if (body !== void 0 && body !== null) {
+                opts.body = JSON.stringify(body);
+                opts.headers = { "Content-Type": "application/json" };
+              }
+              const res = await fetch(url, opts);
+              const contentType = res.headers.get("content-type") || "";
+              let data = null;
+              try {
+                data = await res.json();
+              } catch {
+                data = await res.text();
+              }
+              sendResponse({
+                ok: true,
+                status: res.status,
+                contentType,
+                data
+              });
+            } catch (e) {
+              sendResponse({ ok: false, error: String(e) });
+            }
+          })();
+          return true;
+        }
+        case "TTS_LOCAL": {
+          (async () => {
+            try {
+              const { text } = validated;
+              const cached = await ttsCacheGet(text);
+              if (cached) {
+                sendResponse({ ok: true, mime: cached.mime, data: cached.data });
+                return;
+              }
+              const fetchTts = async (url, timeoutMs = 5e3) => {
+                const res = await fetch(url, {
+                  mode: "cors",
+                  signal: AbortSignal.timeout(timeoutMs)
+                });
+                if (!res.ok) throw new Error("http " + res.status);
+                const buf = await res.arrayBuffer();
+                if (!buf || buf.byteLength === 0) throw new Error("empty");
+                return {
+                  mime: res.headers.get("content-type") || "audio/mpeg",
+                  data: Array.from(new Uint8Array(buf))
+                };
+              };
+              let r;
+              try {
+                r = await fetchTts(
+                  "http://127.0.0.1:8765/tts?text=" + encodeURIComponent(text),
+                  3e3
+                );
+              } catch {
+                const cfg = await loadConfig().catch(() => null);
+                if (cfg && cfg.features?.ttsServer && cfg.features.ttsServer.enabled === false) {
+                  throw new Error("tts-server-off");
+                }
+                r = await fetchTts(buildTtsUrl(sanitizeTtsText(text)));
+              }
+              void ttsCacheSet(text, r.mime, r.data);
+              sendResponse({ ok: true, mime: r.mime, data: r.data });
+            } catch (e) {
+              sendResponse({ ok: false, reason: "tts-fetch " + String(e).slice(0, 60) });
+            }
+          })();
+          return true;
+        }
+        case "TAB_ACTION": {
+          (async () => {
+            const targetTabId = validated.tabId;
+            if (!targetTabId) {
+              sendResponse({ success: false });
+              return;
+            }
+            try {
+              await chrome.tabs.sendMessage(targetTabId, validated);
+              sendResponse({ success: true });
+            } catch (err) {
+              log.log("TAB_ACTION forward failed:", err);
+              sendResponse({ success: false });
+            }
+          })();
+          return true;
+        }
+        case "TAB_ACTION_RESULT": {
+          chrome.runtime.sendMessage(validated).catch(() => {
+          });
+          sendResponse({ success: true });
+          return true;
+        }
+        default:
+          return false;
+      }
+    }
+  );
+  var HEARTBEAT_INTERVAL = 1;
+  chrome.runtime.onInstalled.addListener(function() {
+    chrome.alarms.create("morbis-heartbeat", { periodInMinutes: HEARTBEAT_INTERVAL });
+    chrome.alarms.create("morbis-state-sync", { periodInMinutes: 5 });
+    log.log("Heartbeat and state-sync alarms registered");
+  });
+  chrome.alarms.onAlarm.addListener(function(alarm) {
+    if (alarm.name === "morbis-heartbeat") {
+      log.log("Heartbeat: SW alive");
+    }
+    if (alarm.name === "morbis-state-sync") {
+      syncStateToSession().catch(function() {
+      });
+      ttsCacheSweep().catch(function() {
+      });
+    }
+  });
+  async function syncStateToSession() {
+    try {
+      const config = await loadConfig();
+      await chrome.storage.session.set({
+        lastHeartbeat: Date.now(),
+        lastSync: Date.now(),
+        currentRole: config.currentRole,
+        extensionEnabled: config.extensionEnabled
+      });
+    } catch (e) {
+      log.error("State sync failed:", e);
+    }
+  }
+  async function persistOnChange(type) {
+    if ([
+      "SET_ROLE",
+      "TOGGLE_EXTENSION",
+      "TOGGLE_FEATURE",
+      "CHANGE_FEATURE_MODE",
+      "RESET_CONFIG"
+    ].includes(type)) {
+      await syncStateToSession();
+    }
+  }
+  var VALID_ACTIONS = Object.values(MessageTypes).filter((t) => t !== "CONFIG_CHANGED");
+  function validateMessage(msg) {
+    if (!msg || typeof msg !== "object") return null;
+    const m = msg;
+    if (typeof m.type !== "string" || !VALID_ACTIONS.includes(m.type)) return null;
+    if (m.type === "PROXY_FETCH" || m.type === "QUEUE_API") {
+      if (typeof m.url !== "string") return null;
+    }
+    if (m.type === "TTS_LOCAL") {
+      if (typeof m.text !== "string") return null;
+    }
+    return m;
+  }
+  chrome.action.onClicked.addListener(function(tab) {
+    if (tab.id) {
+      chrome.sidePanel.open({ tabId: tab.id }).catch(function() {
+      });
+    }
+  });
+  log.log("Service worker started");
+})();
+//# sourceMappingURL=background.js.map

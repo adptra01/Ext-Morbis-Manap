@@ -1,1 +1,54 @@
-"use strict";var __morbis_feature=(()=>{(function(){if(window.__extAfdRecallDeleg)return;window.__extAfdRecallDeleg=!0;let u=1500,s="",r=0;function d(e,n){let t=e.getAttribute("data-id")||"";if(t)return t;let o=document.getElementById("id-antrian"+n);return o?o.value:""}document.addEventListener("click",e=>{let n=e.target;if(!n||typeof n.closest!="function"||n.closest("button, input, a, select, .ext-issue-printone, #ext-issue-print"))return;let t=n.closest("tr.status-called, tr[data-id]");if(!t)return;let o=t.getAttribute("data-jenis")||"tunggal",a=t.getAttribute("data-nomor")||"",l=d(t,a);if(!l)return;let i=Date.now();if(l===s&&i-r<u){e.stopPropagation(),e.preventDefault();return}s=l,r=i;let c=window.panggilUlang;if(typeof c=="function"){try{let g=(t.cells?.[0]?.textContent||"").trim();localStorage.setItem("ext-afd-recall",JSON.stringify({jenis:o,nomor:a,nomorTeks:g,ts:Date.now()}))}catch{}e.stopPropagation(),e.preventDefault(),c.call(window,l,o,a)}},!0)})();})();
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/farmasiRecallDeleg.ts
+  (function() {
+    if (window.__extAfdRecallDeleg) return;
+    window.__extAfdRecallDeleg = true;
+    const COOLDOWN_MS = 1500;
+    let lastRecallId = "";
+    let lastRecallTs = 0;
+    function resolveId(row, nomor) {
+      const direct = row.getAttribute("data-id") || "";
+      if (direct) return direct;
+      const inp = document.getElementById("id-antrian" + nomor);
+      return inp ? inp.value : "";
+    }
+    document.addEventListener(
+      "click",
+      (e) => {
+        const t = e.target;
+        if (!t || typeof t.closest !== "function") return;
+        if (t.closest("button, input, a, select, .ext-issue-printone, #ext-issue-print")) return;
+        const row = t.closest("tr.status-called, tr[data-id]");
+        if (!row) return;
+        const jenis = row.getAttribute("data-jenis") || "tunggal";
+        const nomor = row.getAttribute("data-nomor") || "";
+        const id = resolveId(row, nomor);
+        if (!id) return;
+        const now = Date.now();
+        if (id === lastRecallId && now - lastRecallTs < COOLDOWN_MS) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+        lastRecallId = id;
+        lastRecallTs = now;
+        const fn = window.panggilUlang;
+        if (typeof fn !== "function") return;
+        try {
+          const nomorTeks = (row.cells?.[0]?.textContent || "").trim();
+          localStorage.setItem(
+            "ext-afd-recall",
+            JSON.stringify({ jenis, nomor, nomorTeks, ts: Date.now() })
+          );
+        } catch {
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        fn.call(window, id, jenis, nomor);
+      },
+      true
+    );
+  })();
+})();
+//# sourceMappingURL=farmasiRecallDeleg.js.map

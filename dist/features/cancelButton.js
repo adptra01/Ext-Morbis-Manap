@@ -1,4 +1,8 @@
-"use strict";var __morbis_feature=(()=>{var q='"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',j=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/ui/web/tokens.ts
+  var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  var TOKENS_CSS = `
   :host {
     /* Brand */
     --ext-primary: #00875a;
@@ -29,7 +33,7 @@
     --ext-text-on-primary: #ffffff;
 
     /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
-    --ext-font-family: ${q};
+    --ext-font-family: ${FONT_STACK};
     --ext-font-size-xs: 12px;
     --ext-font-size-sm: 13px;
     --ext-font-size-md: 15px;
@@ -64,7 +68,34 @@
     --ext-duration-fast: 140ms;
     --ext-duration-normal: 220ms;
   }
-`,y=null;function M(){return y||(y=new CSSStyleSheet,y.replaceSync(j)),y}var T=!1;function z(){if(T||document.getElementById("ext-pjs-font"))return;T=!0;let e=document.createElement("link");e.id="ext-pjs-font",e.rel="stylesheet",e.href="http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",document.head.appendChild(e)}function b(e,n="open"){let t=e.attachShadow({mode:n});return t.adoptedStyleSheets=[M()],z(),t}var B=`
+`;
+  var sharedSheet = null;
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
+  }
+  var fontInjected = false;
+  function ensureFont() {
+    if (fontInjected || document.getElementById("ext-pjs-font")) return;
+    fontInjected = true;
+    const link = document.createElement("link");
+    link.id = "ext-pjs-font";
+    link.rel = "stylesheet";
+    link.href = "http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";
+    document.head.appendChild(link);
+  }
+  function attachShadowWithTokens(el, mode = "open") {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
+  }
+
+  // src/ui/web/ext-btn.ts
+  var STYLE = `
   :host { display: inline-block; }
   button {
     display: inline-flex;
@@ -120,13 +151,45 @@
   :host([loading]) .spinner { display: inline-block; }
   :host([loading]) button { pointer-events: none; opacity: 0.8; }
   @keyframes ext-spin { to { transform: rotate(360deg); } }
-`,k=class extends HTMLElement{constructor(){super();let n=b(this);n.innerHTML=`
-      <style>${B}</style>
+`;
+  var ExtBtn = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE}</style>
       <button type="button">
         <span class="spinner" aria-hidden="true"></span>
         <span class="label"><slot></slot></span>
       </button>
-    `,this.btn=n.querySelector("button")}connectedCallback(){this.btn.disabled=this.hasAttribute("disabled")||this.hasAttribute("loading"),this.btn.setAttribute("aria-busy",this.hasAttribute("loading")?"true":"false"),this.btn.addEventListener("click",n=>{if(this.hasAttribute("loading")||this.hasAttribute("disabled")){n.stopPropagation(),n.preventDefault();return}})}static get observedAttributes(){return["disabled","loading"]}attributeChangedCallback(n){(n==="disabled"||n==="loading")&&(this.btn.disabled=this.hasAttribute("disabled")||this.hasAttribute("loading"),this.btn.setAttribute("aria-busy",this.hasAttribute("loading")?"true":"false"))}};customElements.get("ext-btn")||customElements.define("ext-btn",k);var R=`
+    `;
+      this.btn = root.querySelector("button");
+    }
+    connectedCallback() {
+      this.btn.disabled = this.hasAttribute("disabled") || this.hasAttribute("loading");
+      this.btn.setAttribute("aria-busy", this.hasAttribute("loading") ? "true" : "false");
+      this.btn.addEventListener("click", (e) => {
+        if (this.hasAttribute("loading") || this.hasAttribute("disabled")) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      });
+    }
+    static get observedAttributes() {
+      return ["disabled", "loading"];
+    }
+    attributeChangedCallback(name) {
+      if (name === "disabled" || name === "loading") {
+        this.btn.disabled = this.hasAttribute("disabled") || this.hasAttribute("loading");
+        this.btn.setAttribute("aria-busy", this.hasAttribute("loading") ? "true" : "false");
+      }
+    }
+  };
+  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+
+  // src/ui/web/ext-badge.ts
+  var STYLE2 = `
   :host {
     display: inline-flex;
     align-items: center;
@@ -147,7 +210,18 @@
   :host([variant='info']) { background: var(--ext-info-soft); color: var(--ext-info); border-color: #c3d6f5; }
   :host([variant='neutral']) { background: var(--ext-surface-2); color: var(--ext-text-secondary); border-color: var(--ext-border); }
   :host([variant='primary']) { background: var(--ext-primary-soft); color: var(--ext-primary); border-color: #b8ddcd; }
-`,E=class extends HTMLElement{constructor(){super();let n=b(this);n.innerHTML=`<style>${R}</style><slot></slot>`}};customElements.get("ext-badge")||customElements.define("ext-badge",E);var _=`
+`;
+  var ExtBadge = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `<style>${STYLE2}</style><slot></slot>`;
+    }
+  };
+  if (!customElements.get("ext-badge")) customElements.define("ext-badge", ExtBadge);
+
+  // src/ui/web/ext-tabs.ts
+  var STYLE3 = `
   :host {
     display: flex;
     flex-direction: column;
@@ -186,11 +260,46 @@
   .panels { padding: var(--ext-space-5); }
   ::slotted([slot='panel']) { display: none; }
   ::slotted([slot='panel'][data-active]) { display: block; }
-`,w=class extends HTMLElement{constructor(){super(),this.attachShadowWithTokens()}attachShadowWithTokens(){let n=b(this);n.innerHTML=`
-      <style>${_}</style>
+`;
+  var ExtTabs = class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadowWithTokens();
+    }
+    attachShadowWithTokens() {
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE3}</style>
       <div class="tablist"><slot name="tab"></slot></div>
       <div class="panels"><slot name="panel"></slot></div>
-    `}connectedCallback(){this.addEventListener("click",t=>{let u=t.target.closest('[slot="tab"]');!u||!this.contains(u)||this.activate(u.getAttribute("data-tab")||"")});let n=this.querySelector('[slot="tab"][data-active]');n&&this.activate(n.getAttribute("data-tab")||"")}activate(n){n&&(this.querySelectorAll('[slot="tab"]').forEach(t=>{t.getAttribute("data-tab")===n?t.setAttribute("data-active",""):t.removeAttribute("data-active")}),this.querySelectorAll('[slot="panel"]').forEach(t=>{t.getAttribute("data-panel")===n?t.setAttribute("data-active",""):t.removeAttribute("data-active")}),this.dispatchEvent(new CustomEvent("ext-tab-change",{detail:{tab:n}})))}};customElements.get("ext-tabs")||customElements.define("ext-tabs",w);var O=`
+    `;
+    }
+    connectedCallback() {
+      this.addEventListener("click", (e) => {
+        const tab = e.target.closest('[slot="tab"]');
+        if (!tab || !this.contains(tab)) return;
+        this.activate(tab.getAttribute("data-tab") || "");
+      });
+      const current = this.querySelector('[slot="tab"][data-active]');
+      if (current) this.activate(current.getAttribute("data-tab") || "");
+    }
+    activate(tabId) {
+      if (!tabId) return;
+      this.querySelectorAll('[slot="tab"]').forEach((t) => {
+        if (t.getAttribute("data-tab") === tabId) t.setAttribute("data-active", "");
+        else t.removeAttribute("data-active");
+      });
+      this.querySelectorAll('[slot="panel"]').forEach((p) => {
+        if (p.getAttribute("data-panel") === tabId) p.setAttribute("data-active", "");
+        else p.removeAttribute("data-active");
+      });
+      this.dispatchEvent(new CustomEvent("ext-tab-change", { detail: { tab: tabId } }));
+    }
+  };
+  if (!customElements.get("ext-tabs")) customElements.define("ext-tabs", ExtTabs);
+
+  // src/ui/web/ext-modal.ts
+  var STYLE4 = `
   :host { display: none; }
   :host([open]) { display: block; }
   .overlay {
@@ -274,8 +383,16 @@
   @keyframes ext-slide-up {
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
   }
-`,S=class extends HTMLElement{constructor(){super();this.handleKey=t=>{t.key==="Escape"&&this.hasAttribute("open")&&this.cancel()};this.root=b(this),this.root.innerHTML=`
-      <style>${O}</style>
+`;
+  var ExtModal = class extends HTMLElement {
+    constructor() {
+      super();
+      this.handleKey = (e) => {
+        if (e.key === "Escape" && this.hasAttribute("open")) this.cancel();
+      };
+      this.root = attachShadowWithTokens(this);
+      this.root.innerHTML = `
+      <style>${STYLE4}</style>
       <div class="overlay">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="header">
@@ -288,8 +405,338 @@
           </div>
         </div>
       </div>
-    `}connectedCallback(){let t=this.root.querySelector(".overlay");this.root.querySelector(".close").addEventListener("click",()=>this.cancel()),t.addEventListener("click",p=>{p.target===t&&this.cancel()}),document.addEventListener("keydown",this.handleKey)}disconnectedCallback(){document.removeEventListener("keydown",this.handleKey)}get titleSlot(){return this.querySelector('[slot="title"]')}get footerSlot(){return this.querySelector('[slot="footer"]')}open(){this.setAttribute("open","")}close(){this.removeAttribute("open")}cancel(){this.dispatchEvent(new CustomEvent("ext-cancel")),this.close()}ok(){this.dispatchEvent(new CustomEvent("ext-ok"))}};customElements.get("ext-modal")||customElements.define("ext-modal",S);function h(e){return new Promise(n=>{let t=document.createElement("ext-modal");t.setAttribute("variant",e.variant??"warning"),e.okLabel&&t.setAttribute("ok-label",e.okLabel),e.cancelLabel&&t.setAttribute("cancel-label",e.cancelLabel),e.hideCancel&&t.setAttribute("hide-cancel",""),t.innerHTML=`<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
+    `;
+    }
+    connectedCallback() {
+      const overlay = this.root.querySelector(".overlay");
+      const closeBtn = this.root.querySelector(".close");
+      closeBtn.addEventListener("click", () => this.cancel());
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) this.cancel();
+      });
+      document.addEventListener("keydown", this.handleKey);
+    }
+    disconnectedCallback() {
+      document.removeEventListener("keydown", this.handleKey);
+    }
+    get titleSlot() {
+      return this.querySelector('[slot="title"]');
+    }
+    get footerSlot() {
+      return this.querySelector('[slot="footer"]');
+    }
+    open() {
+      this.setAttribute("open", "");
+    }
+    close() {
+      this.removeAttribute("open");
+    }
+    cancel() {
+      this.dispatchEvent(new CustomEvent("ext-cancel"));
+      this.close();
+    }
+    ok() {
+      this.dispatchEvent(new CustomEvent("ext-ok"));
+    }
+  };
+  if (!customElements.get("ext-modal")) customElements.define("ext-modal", ExtModal);
+
+  // src/ui/web/confirm.ts
+  function confirmExt(opts) {
+    return new Promise((resolve) => {
+      const modal = document.createElement("ext-modal");
+      modal.setAttribute("variant", opts.variant ?? "warning");
+      if (opts.okLabel) modal.setAttribute("ok-label", opts.okLabel);
+      if (opts.cancelLabel) modal.setAttribute("cancel-label", opts.cancelLabel);
+      if (opts.hideCancel) modal.setAttribute("hide-cancel", "");
+      modal.innerHTML = `<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
          <ext-btn data-ext-confirm-cancel variant="secondary"></ext-btn>
          <ext-btn data-ext-confirm-ok></ext-btn>
-       </div>`;let u=t.querySelector('[slot="title"]');u.textContent=e.title;let p=t.querySelector(".ext-confirm-body");if(e.icon){let x=document.createElement("div");x.className="ext-confirm-icon",x.textContent=e.icon,p.appendChild(x)}e.message&&e.message.split(`
-`).forEach((C,L)=>{L>0&&p.appendChild(document.createElement("br")),p.appendChild(document.createTextNode(C))}),t.querySelector("[data-ext-confirm-ok]").textContent=e.okLabel??"Lanjut";let v=t.querySelector("[data-ext-confirm-ok]");v.setAttribute("variant",e.variant==="danger"?"danger":"primary"),e.hideCancel?t.querySelector("[data-ext-confirm-cancel]")?.remove():t.querySelector("[data-ext-confirm-cancel]").textContent=e.cancelLabel??"Batal",v.addEventListener("click",()=>t.ok()),e.hideCancel||t.querySelector("[data-ext-confirm-cancel]").addEventListener("click",()=>t.cancel());let g=x=>{t.remove(),n(x)};t.addEventListener("ext-ok",()=>g(!0)),t.addEventListener("ext-cancel",()=>g(!1)),document.body.appendChild(t),t.open()})}(function(){"use strict";let e="ext-batal",t=null;function u(){t!==null&&(clearInterval(t),t=null)}function p(){return document.documentElement.getAttribute("data-ext-cancel-batal")==="1"}function v(s){if(!s)return null;let i=s.getAttribute("onclick");if(!i)return null;let r=i.match(/(?:edit_hasil|cetak_nota)\s*\(\s*['"]?(\d+)/);if(r){let d=i.match(/[?&]id_visit=(\d+)/);return{id:r[1],idVisit:d?d[1]:""}}let o=i.match(/[?&]id=(\d+)/),a=i.match(/[?&]id_visit=(\d+)/);return o?{id:o[1],idVisit:a?a[1]:""}:null}function g(s,i,r="sm"){let o=document.createElement("ext-btn");return o.setAttribute("variant",i),o.setAttribute("size",r),o.setAttribute("class",e),o.setAttribute("style","margin-left:5px;"),o.textContent=s,o}function x(){document.querySelectorAll("table tbody tr").forEach(s=>{if(s.querySelector("."+e))return;let i=s.querySelector('[onclick*="edit_hasil"],[onclick*="cetak_nota"]');if(!i)return;let r=i.closest("td");if(!r)return;let o=v(i);if(!o)return;let a=o.id,c=s.querySelector("td:nth-child(4)")?.textContent?.trim()||"",l=g("Batal","danger");l.onclick=()=>{typeof window.batal=="function"?window.batal(a,c):h({title:"Peringatan",message:"Fungsi batal() tidak ditemukan. Refresh halaman dan coba lagi.",variant:"warning",okLabel:"OK",hideCancel:!0})},r.appendChild(l)})}function C(){document.querySelectorAll("table tbody tr").forEach(s=>{if(s.querySelector("."+e))return;let i=s.querySelector('[onclick*="editBacaan"],[onclick*="showAddFotoRadiologi"]');if(!i)return;let r=i.closest("td");if(!r)return;let o=v(i);if(!o)return;let a=o.id,d=o.idVisit,c=g("Batal","ghost-danger","sm");c.onclick=()=>{let l=window;typeof l.batal_radiologi=="function"?l.batal_radiologi(a):typeof l.batal_pengajuan=="function"?l.batal_pengajuan(a,d):h({title:"Peringatan",message:"Fungsi pembatalan radiologi tidak ditemukan. Refresh halaman dan coba lagi.",variant:"warning",okLabel:"OK",hideCancel:!0})},r.appendChild(document.createElement("br")),r.appendChild(c)})}function L(s,i,r,o){let a=document.createElement("ext-modal");a.setAttribute("variant","danger"),a.setAttribute("ok-label",r),a.setAttribute("cancel-label","Tutup");let d=document.createElement("h3");d.setAttribute("slot","title"),d.textContent=s;let c=document.createElement("div");c.textContent=i;let l=document.createElement("ext-btn");l.setAttribute("variant","danger"),l.textContent=r;let m=document.createElement("ext-btn");m.setAttribute("variant","secondary"),m.textContent="Tutup";let f=document.createElement("div");f.setAttribute("slot","footer"),f.style.display="flex",f.style.gap="12px",f.appendChild(m),f.appendChild(l),a.appendChild(d),a.appendChild(c),a.appendChild(f),document.body.appendChild(a),a.open(),l.addEventListener("click",()=>{a.close(),a.remove(),o()}),m.addEventListener("click",()=>{a.close(),a.remove()}),a.addEventListener("ext-cancel",()=>a.remove())}function H(){let s=new URLSearchParams(location.search).get("id");if(!s)return;let i=document.querySelector(".field-group");if(!i||i.querySelector("."+e))return;let r=document.createElement("ext-btn");r.setAttribute("variant","danger"),r.setAttribute("size","md"),r.setAttribute("class",e),r.setAttribute("style","margin-left:8px;"),r.textContent="Batal Radiologi",r.onclick=()=>{L("Batal Radiologi","Jika Anda melanjutkan pembatalan maka billing pasien akan berubah, pastikan belum ada pembayaran atas pasien ini.","Ya, Batal",()=>{fetch("/routes/radiologi?opsi=batal-radiologi",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"idRadiologi="+encodeURIComponent(s),signal:AbortSignal.timeout(15e3)}).then(o=>o.json()).then(o=>{if(o.code===200){let a=document.createElement("ext-modal");a.setAttribute("variant","success"),a.setAttribute("hide-cancel","");let d=document.createElement("h3");d.setAttribute("slot","title"),d.textContent="Berhasil";let c=document.createElement("div");c.textContent="Data berhasil dibatalkan";let l=document.createElement("div");l.setAttribute("slot","footer"),l.appendChild((()=>{let m=document.createElement("ext-btn");return m.setAttribute("variant","primary"),m.textContent="OK",m.addEventListener("click",()=>{a.remove()}),m})()),a.appendChild(d),a.appendChild(c),a.appendChild(l),document.body.appendChild(a),a.open(),setTimeout(()=>location.reload(),5e3)}else h({title:"Gagal",message:o.code+" \u2014 "+o.message,variant:"danger",okLabel:"OK",hideCancel:!0})}).catch(()=>{h({title:"Gagal",message:"Terjadi kesalahan, coba lagi",variant:"danger",okLabel:"OK",hideCancel:!0})})})},i.appendChild(r)}function A(){if(!p())return;let s=location.pathname;/\/laboratorium\/input-hasil/.test(s)?x():/\/admisi\/radiologi\/pemeriksaan\/form-edit-bacaan-radiologi/.test(s)?H():/\/admisi\/radiologi\/pemeriksaan/.test(s)&&C()}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",A):A(),t=window.setInterval(A,3e3),window.addEventListener("beforeunload",u),new MutationObserver(()=>{document.documentElement.getAttribute("data-ext-cancel-batal")!=="1"&&u()}).observe(document.documentElement,{attributes:!0,attributeFilter:["data-ext-cancel-batal"]})})();})();
+       </div>`;
+      const title = modal.querySelector('[slot="title"]');
+      title.textContent = opts.title;
+      const body = modal.querySelector(".ext-confirm-body");
+      if (opts.icon) {
+        const icon = document.createElement("div");
+        icon.className = "ext-confirm-icon";
+        icon.textContent = opts.icon;
+        body.appendChild(icon);
+      }
+      if (opts.message) {
+        const lines = opts.message.split("\n");
+        lines.forEach((line, i) => {
+          if (i > 0) body.appendChild(document.createElement("br"));
+          body.appendChild(document.createTextNode(line));
+        });
+      }
+      modal.querySelector("[data-ext-confirm-ok]").textContent = opts.okLabel ?? "Lanjut";
+      const okBtn = modal.querySelector("[data-ext-confirm-ok]");
+      okBtn.setAttribute("variant", opts.variant === "danger" ? "danger" : "primary");
+      if (opts.hideCancel) {
+        modal.querySelector("[data-ext-confirm-cancel]")?.remove();
+      } else {
+        modal.querySelector("[data-ext-confirm-cancel]").textContent = opts.cancelLabel ?? "Batal";
+      }
+      okBtn.addEventListener("click", () => modal.ok());
+      if (!opts.hideCancel) {
+        const cancelBtn = modal.querySelector("[data-ext-confirm-cancel]");
+        cancelBtn.addEventListener("click", () => modal.cancel());
+      }
+      const done = (result) => {
+        modal.remove();
+        resolve(result);
+      };
+      modal.addEventListener("ext-ok", () => done(true));
+      modal.addEventListener("ext-cancel", () => done(false));
+      document.body.appendChild(modal);
+      modal.open();
+    });
+  }
+
+  // src/features/cancelButton.ts
+  (function() {
+    "use strict";
+    const EXT_CLASS = "ext-batal";
+    const INTERVAL_MS = 3e3;
+    let _runIntervalId = null;
+    function stopPolling() {
+      if (_runIntervalId !== null) {
+        clearInterval(_runIntervalId);
+        _runIntervalId = null;
+      }
+    }
+    function isEnabled() {
+      return document.documentElement.getAttribute("data-ext-cancel-batal") === "1";
+    }
+    function getIdFromOnclick(el) {
+      if (!el) return null;
+      const onclick = el.getAttribute("onclick");
+      if (!onclick) return null;
+      const mFn = onclick.match(/(?:edit_hasil|cetak_nota)\s*\(\s*['"]?(\d+)/);
+      if (mFn) {
+        const mVisitFn = onclick.match(/[?&]id_visit=(\d+)/);
+        return { id: mFn[1], idVisit: mVisitFn ? mVisitFn[1] : "" };
+      }
+      const mId = onclick.match(/[?&]id=(\d+)/);
+      const mVisit = onclick.match(/[?&]id_visit=(\d+)/);
+      if (!mId) return null;
+      return { id: mId[1], idVisit: mVisit ? mVisit[1] : "" };
+    }
+    function makeBtn(label, variant, size = "sm") {
+      const btn = document.createElement("ext-btn");
+      btn.setAttribute("variant", variant);
+      btn.setAttribute("size", size);
+      btn.setAttribute("class", EXT_CLASS);
+      btn.setAttribute("style", "margin-left:5px;");
+      btn.textContent = label;
+      return btn;
+    }
+    function injectLab() {
+      document.querySelectorAll("table tbody tr").forEach((row) => {
+        if (row.querySelector("." + EXT_CLASS)) return;
+        const editEl = row.querySelector(
+          '[onclick*="edit_hasil"],[onclick*="cetak_nota"]'
+        );
+        if (!editEl) return;
+        const aksiCell = editEl.closest("td");
+        if (!aksiCell) return;
+        const params = getIdFromOnclick(editEl);
+        if (!params) return;
+        const idLab = params.id;
+        const visitCell = row.querySelector("td:nth-child(4)");
+        const idVisit = visitCell?.textContent?.trim() || "";
+        const btn = makeBtn("Batal", "danger");
+        btn.onclick = () => {
+          if (typeof window.batal === "function") {
+            window.batal(idLab, idVisit);
+          } else {
+            void confirmExt({
+              title: "Peringatan",
+              message: "Fungsi batal() tidak ditemukan. Refresh halaman dan coba lagi.",
+              variant: "warning",
+              okLabel: "OK",
+              hideCancel: true
+            });
+          }
+        };
+        aksiCell.appendChild(btn);
+      });
+    }
+    function injectRadio() {
+      document.querySelectorAll("table tbody tr").forEach((row) => {
+        if (row.querySelector("." + EXT_CLASS)) return;
+        const editEl = row.querySelector(
+          '[onclick*="editBacaan"],[onclick*="showAddFotoRadiologi"]'
+        );
+        if (!editEl) return;
+        const aksiCell = editEl.closest("td");
+        if (!aksiCell) return;
+        const params = getIdFromOnclick(editEl);
+        if (!params) return;
+        const id = params.id;
+        const idVisit = params.idVisit;
+        const btn = makeBtn("Batal", "ghost-danger", "sm");
+        btn.onclick = () => {
+          const w = window;
+          if (typeof w.batal_radiologi === "function") {
+            w.batal_radiologi(id);
+          } else if (typeof w.batal_pengajuan === "function") {
+            w.batal_pengajuan(id, idVisit);
+          } else {
+            void confirmExt({
+              title: "Peringatan",
+              message: "Fungsi pembatalan radiologi tidak ditemukan. Refresh halaman dan coba lagi.",
+              variant: "warning",
+              okLabel: "OK",
+              hideCancel: true
+            });
+          }
+        };
+        aksiCell.appendChild(document.createElement("br"));
+        aksiCell.appendChild(btn);
+      });
+    }
+    function confirmBatal(title, message, okLabel, onOk) {
+      const modal = document.createElement("ext-modal");
+      modal.setAttribute("variant", "danger");
+      modal.setAttribute("ok-label", okLabel);
+      modal.setAttribute("cancel-label", "Tutup");
+      const titleEl = document.createElement("h3");
+      titleEl.setAttribute("slot", "title");
+      titleEl.textContent = title;
+      const body = document.createElement("div");
+      body.textContent = message;
+      const okBtn = document.createElement("ext-btn");
+      okBtn.setAttribute("variant", "danger");
+      okBtn.textContent = okLabel;
+      const cancelBtn = document.createElement("ext-btn");
+      cancelBtn.setAttribute("variant", "secondary");
+      cancelBtn.textContent = "Tutup";
+      const footer = document.createElement("div");
+      footer.setAttribute("slot", "footer");
+      footer.style.display = "flex";
+      footer.style.gap = "12px";
+      footer.appendChild(cancelBtn);
+      footer.appendChild(okBtn);
+      modal.appendChild(titleEl);
+      modal.appendChild(body);
+      modal.appendChild(footer);
+      document.body.appendChild(modal);
+      modal.open();
+      okBtn.addEventListener("click", () => {
+        modal.close();
+        modal.remove();
+        onOk();
+      });
+      cancelBtn.addEventListener("click", () => {
+        modal.close();
+        modal.remove();
+      });
+      modal.addEventListener("ext-cancel", () => modal.remove());
+    }
+    function injectRadioForm() {
+      const id = new URLSearchParams(location.search).get("id");
+      if (!id) return;
+      const group = document.querySelector(".field-group");
+      if (!group || group.querySelector("." + EXT_CLASS)) return;
+      const btn = document.createElement("ext-btn");
+      btn.setAttribute("variant", "danger");
+      btn.setAttribute("size", "md");
+      btn.setAttribute("class", EXT_CLASS);
+      btn.setAttribute("style", "margin-left:8px;");
+      btn.textContent = "Batal Radiologi";
+      btn.onclick = () => {
+        confirmBatal(
+          "Batal Radiologi",
+          "Jika Anda melanjutkan pembatalan maka billing pasien akan berubah, pastikan belum ada pembayaran atas pasien ini.",
+          "Ya, Batal",
+          () => {
+            fetch("/routes/radiologi?opsi=batal-radiologi", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: "idRadiologi=" + encodeURIComponent(id),
+              // FIX: timeout 15s — server lambat jangan bikin konfirmasi hang
+              // selamanya; catch di bawah menampilkan error ramah.
+              signal: AbortSignal.timeout(15e3)
+            }).then((r) => r.json()).then((data) => {
+              if (data.code === 200) {
+                const ok = document.createElement("ext-modal");
+                ok.setAttribute("variant", "success");
+                ok.setAttribute("hide-cancel", "");
+                const t = document.createElement("h3");
+                t.setAttribute("slot", "title");
+                t.textContent = "Berhasil";
+                const b = document.createElement("div");
+                b.textContent = "Data berhasil dibatalkan";
+                const f = document.createElement("div");
+                f.setAttribute("slot", "footer");
+                f.appendChild(
+                  (() => {
+                    const c = document.createElement("ext-btn");
+                    c.setAttribute("variant", "primary");
+                    c.textContent = "OK";
+                    c.addEventListener("click", () => {
+                      ok.remove();
+                    });
+                    return c;
+                  })()
+                );
+                ok.appendChild(t);
+                ok.appendChild(b);
+                ok.appendChild(f);
+                document.body.appendChild(ok);
+                ok.open();
+                setTimeout(() => location.reload(), 5e3);
+              } else {
+                void confirmExt({
+                  title: "Gagal",
+                  message: data.code + " \u2014 " + data.message,
+                  variant: "danger",
+                  okLabel: "OK",
+                  hideCancel: true
+                });
+              }
+            }).catch(() => {
+              void confirmExt({
+                title: "Gagal",
+                message: "Terjadi kesalahan, coba lagi",
+                variant: "danger",
+                okLabel: "OK",
+                hideCancel: true
+              });
+            });
+          }
+        );
+      };
+      group.appendChild(btn);
+    }
+    function run() {
+      if (!isEnabled()) return;
+      const path = location.pathname;
+      if (/\/laboratorium\/input-hasil/.test(path)) {
+        injectLab();
+      } else if (/\/admisi\/radiologi\/pemeriksaan\/form-edit-bacaan-radiologi/.test(path)) {
+        injectRadioForm();
+      } else if (/\/admisi\/radiologi\/pemeriksaan/.test(path)) {
+        injectRadio();
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run);
+    } else {
+      run();
+    }
+    _runIntervalId = window.setInterval(run, INTERVAL_MS);
+    window.addEventListener("beforeunload", stopPolling);
+    const observer = new MutationObserver(() => {
+      if (document.documentElement.getAttribute("data-ext-cancel-batal") !== "1") {
+        stopPolling();
+      }
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-ext-cancel-batal"]
+    });
+  })();
+})();
+//# sourceMappingURL=cancelButton.js.map

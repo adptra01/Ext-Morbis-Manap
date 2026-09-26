@@ -1,4 +1,8 @@
-"use strict";var __morbis_feature=(()=>{var D='"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',O=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/ui/web/tokens.ts
+  var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  var TOKENS_CSS = `
   :host {
     /* Brand */
     --ext-primary: #00875a;
@@ -29,7 +33,7 @@
     --ext-text-on-primary: #ffffff;
 
     /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
-    --ext-font-family: ${D};
+    --ext-font-family: ${FONT_STACK};
     --ext-font-size-xs: 12px;
     --ext-font-size-sm: 13px;
     --ext-font-size-md: 15px;
@@ -64,7 +68,34 @@
     --ext-duration-fast: 140ms;
     --ext-duration-normal: 220ms;
   }
-`,w=null;function B(){return w||(w=new CSSStyleSheet,w.replaceSync(O)),w}var _=!1;function V(){if(_||document.getElementById("ext-pjs-font"))return;_=!0;let f=document.createElement("link");f.id="ext-pjs-font",f.rel="stylesheet",f.href="http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",document.head.appendChild(f)}function A(f,l="open"){let b=f.attachShadow({mode:l});return b.adoptedStyleSheets=[B()],V(),b}var W=`
+`;
+  var sharedSheet = null;
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
+  }
+  var fontInjected = false;
+  function ensureFont() {
+    if (fontInjected || document.getElementById("ext-pjs-font")) return;
+    fontInjected = true;
+    const link = document.createElement("link");
+    link.id = "ext-pjs-font";
+    link.rel = "stylesheet";
+    link.href = "http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";
+    document.head.appendChild(link);
+  }
+  function attachShadowWithTokens(el, mode = "open") {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
+  }
+
+  // src/ui/web/ext-btn.ts
+  var STYLE = `
   :host { display: inline-block; }
   button {
     display: inline-flex;
@@ -120,10 +151,363 @@
   :host([loading]) .spinner { display: inline-block; }
   :host([loading]) button { pointer-events: none; opacity: 0.8; }
   @keyframes ext-spin { to { transform: rotate(360deg); } }
-`,T=class extends HTMLElement{constructor(){super();let l=A(this);l.innerHTML=`
-      <style>${W}</style>
+`;
+  var ExtBtn = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE}</style>
       <button type="button">
         <span class="spinner" aria-hidden="true"></span>
         <span class="label"><slot></slot></span>
       </button>
-    `,this.btn=l.querySelector("button")}connectedCallback(){this.btn.disabled=this.hasAttribute("disabled")||this.hasAttribute("loading"),this.btn.setAttribute("aria-busy",this.hasAttribute("loading")?"true":"false"),this.btn.addEventListener("click",l=>{if(this.hasAttribute("loading")||this.hasAttribute("disabled")){l.stopPropagation(),l.preventDefault();return}})}static get observedAttributes(){return["disabled","loading"]}attributeChangedCallback(l){(l==="disabled"||l==="loading")&&(this.btn.disabled=this.hasAttribute("disabled")||this.hasAttribute("loading"),this.btn.setAttribute("aria-busy",this.hasAttribute("loading")?"true":"false"))}};customElements.get("ext-btn")||customElements.define("ext-btn",T);(function(){let f=t=>document.querySelector(t),l=t=>f(t)?.value?.trim()||"",b=null;function P(){return{idLab:new URLSearchParams(window.location.search).get("id_lab")||l('input[name="id_lab"]'),idVisit:l('input[name="id_visit"]'),idHasilLab:l('input[name="hasil[1][id]"]')}}async function j(t,e){try{let o=((await(await fetch(`/admisi/pelaksanaan_pelayanan/laboratorium-data?id_visit=${e}`,{credentials:"same-origin"})).text()).match(/<tr[^>]*>[\s\S]*?<\/tr>/g)||[]).find(d=>d.includes(`nolab="${t}"`));if(!o)return null;let i=o.match(/cetakFormPermintaanLab\(\s*(\d+)/)?.[1]||null,s=o.match(/edit_tanggal\(\s*\d+\s*,\s*\d+\s*,\s*"([^"]+)"/)?.[1]||null;return i?{id:i,tgl:s}:null}catch{return null}}function g(t){window.open(t,"_blank")}let h=["dok_luar","nama_rs"],m={},y=null;function S(t){return t.toLowerCase().split(" ").map(e=>e&&e.charAt(0).toUpperCase()+e.slice(1)).join(" ")}function L(t){return document.querySelector(`[name="${t}"]`)}function C(t,e){let n=m[t];return n===void 0?(e&&(m[t]=e),!1):e===n?!1:e.toLowerCase()!==n.toLowerCase()?(m[t]=e,!1):e===S(n)?!0:(m[t]=e,!1)}function v(){try{for(let t of h){let e=L(t);e&&C(t,(e.value??"").trim())}}catch{}}function z(){try{for(let t of h){let e=L(t);e&&C(t,(e.value??"").trim())&&(e.value=m[t],window.console.info("[paKeepCase] "+t+" dikembalikan ke ejaan asli"))}}catch{}}function H(){let t=window.XMLHttpRequest.prototype;if(t.__extKeepPatched)return;t.__extKeepPatched=!0;let e=t.open,n=t.send;t.open=function(...r){try{let c=r[1];this.__extUrl=typeof c=="string"?c:String(c)}catch{}return e.apply(this,r)},t.send=function(...r){try{let c=this,o=r[0],i=c.__extUrl;if(Object.keys(m).length&&typeof i=="string"&&i.includes("pemeriksaan-pa")&&typeof o=="string"&&o.includes("dok_luar=")){let s=new URLSearchParams(o),d=!1;for(let a of h){let u=m[a],p=s.get(a);u&&p!==null&&p!==u&&p===S(u)&&(s.set(a,u),d=!0)}if(d)return window.console.info("[paKeepCase] payload dok_luar/nama_rs dikembalikan ke ejaan asli"),n.call(this,s.toString())}else if(Object.keys(m).length&&typeof i=="string"&&i.includes("pemeriksaan-pa")&&typeof FormData<"u"&&o instanceof FormData&&(o.has("dok_luar")||o.has("nama_rs")))for(let s of h){let d=m[s],a=o.get(s);d&&typeof a=="string"&&a!==d&&a===S(d)&&(window.console.info("[paKeepCase] payload FormData "+s+" dikembalikan"),o.set(s,d))}}catch{}return n.apply(this,r)}}function M(){let t=window;t.__paKeepCase||(t.__paKeepCase=!0,v(),document.addEventListener("input",e=>{let n=e.target;n&&typeof n.matches=="function"&&n.matches("input, textarea, select")&&v()},!0),document.addEventListener("focusout",()=>v(),!0),document.addEventListener("submit",()=>v(),!0),H(),y=window.setInterval(z,300),window.console.info("[paKeepCase] aktif di input-hasil-pa"))}function $(t,e){let n=document.createElement("div");n.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999999;display:flex;align-items:center;justify-content:center;";let r=document.createElement("div");r.style.cssText="background:#fff;border-radius:8px;padding:16px 18px;min-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.25);font-family:Arial,sans-serif;";let c=document.createElement("div");c.textContent="Edit Tanggal Pengajuan",c.style.cssText="font-weight:700;font-size:14px;margin-bottom:10px;color:#1e293b;";let o=document.createElement("input");o.type="date",o.style.cssText="width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;padding:10px;";let i=b?.match(/^(\d{2})\/(\d{2})\/(\d{4})/);i&&(o.value=`${i[3]}-${i[2]}-${i[1]}`);let s=document.createElement("div");s.textContent="Server menerima dd/mm/yyyy hh:mm:ss \u2014 waktu diset otomatis ke 00:00:00.",s.style.cssText="font-size:11px;color:#64748b;margin:4px 0 12px;";let d=document.createElement("div");d.style.cssText="display:flex;justify-content:flex-end;";let a=document.createElement("button");a.type="button",a.textContent="Edit Tanggal",a.style.cssText="margin:18px;padding:15px;border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#2563eb;cursor:pointer;";let u=document.createElement("button");u.type="button",u.textContent="Batal",u.style.cssText="margin:18px;padding:15px;border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#dc2626;cursor:pointer;",a.addEventListener("click",async()=>{let p=o.value.trim();if(!p){alert("Isi tanggal pengajuan baru dulu.");return}let[x,I,q]=p.split("-"),U=`${q}/${I}/${x} 00:00:00`;a.disabled=!0,a.textContent="Menyimpan\u2026";let k=!1;try{k=(await(await fetch("/laboratorium/control/edit_tanggal",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest"},body:new URLSearchParams({lab:t,id_visit:e,date:U,action:"edit"}).toString()})).json()).status==1}catch{k=!1}n.remove(),alert(k?"Edit Tanggal Pengajuan berhasil diubah.":"Gagal menyimpan tanggal baru."),k&&window.location.reload()}),u.addEventListener("click",()=>n.remove()),n.addEventListener("click",p=>{p.target===n&&n.remove()}),d.append(a,u),r.append(c,o,s,d),n.appendChild(r),document.body.appendChild(n),o.focus()}function R(){let t=Array.from(document.querySelectorAll("fieldset")).find(a=>a.textContent?.includes("Data Pasien"));if(!t)return;let e=document.querySelector("[data-ext-lab-actions]");e&&e.remove();let{idLab:n,idVisit:r,idHasilLab:c}=P();if(!n||!r||!c){console.warn("[inputHasilPa] Missing ids",{idLab:n,idVisit:r,idHasilLab:c});return}let o=document.createElement("div");o.setAttribute("data-ext-lab-actions","true"),o.style.cssText="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;";let i=(a,u,p)=>{let x=document.createElement("ext-btn");return x.setAttribute("variant",u),x.setAttribute("size","sm"),x.textContent=a,x.addEventListener("click",p),x},s=c;j(n,r).then(a=>{a?(s=a.id,b=a.tgl,console.log("[inputHasilPa] permintaan data",{idLab:n,idVisit:r,id:a.id,tgl:a.tgl})):console.warn("[inputHasilPa] Baris lab tidak ditemukan di daftar, pakai hasil[1][id].",{idLab:n,idVisit:r})}),o.append(i("Edit Tanggal Pengajuan","primary",()=>$(n,r)),i("Cetak","info",()=>g(`/laboratorium/print/hasil-lab?id=${n}&nolab=${n}`)),i("Cetak Form Permintaan Lab","secondary",()=>g(`/admisi/formulir-permintaan-labor/cetak?id=${s}&id_visit=${r}&jenis=cetak`)),i("Edit Form Permintaan Lab","secondary",()=>g(`/admisi/formulir-permintaan-labor/form?id=${s}&id_visit=undefined&jenis=edit`)),i("Halaman Asli Pengajuan Lab","ghost",()=>g(`/admisi/pelaksanaan_pelayanan/laboratorium-data?id_visit=${r}`)));let d=Array.from(document.querySelectorAll("fieldset")).find(a=>a.textContent?.includes("Tanggal Hasil"));if(d)d.after(o);else{let a=document.querySelector("form");a?a.appendChild(o):t.after(o)}}function E(){document.documentElement.getAttribute("data-ext-lab-history")&&(M(),R())}let K=performance.now();(function t(){document.documentElement.getAttribute("data-ext-lab-history")?E():performance.now()-K<5e3&&setTimeout(t,200)})();let F=history.pushState;history.pushState=function(...t){F.apply(this,t),setTimeout(E,100)},window.addEventListener("popstate",()=>setTimeout(E,100)),window.addEventListener("pagehide",()=>{y!==null&&(clearInterval(y),y=null)})})();})();
+    `;
+      this.btn = root.querySelector("button");
+    }
+    connectedCallback() {
+      this.btn.disabled = this.hasAttribute("disabled") || this.hasAttribute("loading");
+      this.btn.setAttribute("aria-busy", this.hasAttribute("loading") ? "true" : "false");
+      this.btn.addEventListener("click", (e) => {
+        if (this.hasAttribute("loading") || this.hasAttribute("disabled")) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      });
+    }
+    static get observedAttributes() {
+      return ["disabled", "loading"];
+    }
+    attributeChangedCallback(name) {
+      if (name === "disabled" || name === "loading") {
+        this.btn.disabled = this.hasAttribute("disabled") || this.hasAttribute("loading");
+        this.btn.setAttribute("aria-busy", this.hasAttribute("loading") ? "true" : "false");
+      }
+    }
+  };
+  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+
+  // src/features/inputHasilPa.ts
+  (function() {
+    const $ = (sel) => document.querySelector(sel);
+    const val = (sel) => $(sel)?.value?.trim() || "";
+    let tanggalPengajuan = null;
+    function readIds() {
+      return {
+        idLab: new URLSearchParams(window.location.search).get("id_lab") || val('input[name="id_lab"]'),
+        idVisit: val('input[name="id_visit"]'),
+        idHasilLab: val('input[name="hasil[1][id]"]')
+      };
+    }
+    async function fetchPermintaanData(idLab, idVisit) {
+      try {
+        const res = await fetch(
+          `/admisi/pelaksanaan_pelayanan/laboratorium-data?id_visit=${idVisit}`,
+          {
+            credentials: "same-origin"
+          }
+        );
+        const html = await res.text();
+        const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
+        const row = rows.find((r) => r.includes(`nolab="${idLab}"`));
+        if (!row) return null;
+        const id = row.match(/cetakFormPermintaanLab\(\s*(\d+)/)?.[1] || null;
+        const tgl = row.match(/edit_tanggal\(\s*\d+\s*,\s*\d+\s*,\s*"([^"]+)"/)?.[1] || null;
+        return id ? { id, tgl } : null;
+      } catch {
+        return null;
+      }
+    }
+    function openUrl(path) {
+      window.open(path, "_blank");
+    }
+    const KEEP_FIELDS = ["dok_luar", "nama_rs"];
+    const keepBest = {};
+    let _keepCaseIntervalId = null;
+    function camelWords(s) {
+      return s.toLowerCase().split(" ").map((w) => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
+    }
+    function readKeepField(name) {
+      return document.querySelector(`[name="${name}"]`);
+    }
+    function noteValue(name, v) {
+      const cur = keepBest[name];
+      if (cur === void 0) {
+        if (v) keepBest[name] = v;
+        return false;
+      }
+      if (v === cur) return false;
+      if (v.toLowerCase() !== cur.toLowerCase()) {
+        keepBest[name] = v;
+        return false;
+      }
+      if (v === camelWords(cur)) return true;
+      keepBest[name] = v;
+      return false;
+    }
+    function snapEvent() {
+      try {
+        for (const name of KEEP_FIELDS) {
+          const el = readKeepField(name);
+          if (el) noteValue(name, (el.value ?? "").trim());
+        }
+      } catch {
+      }
+    }
+    function pollKeep() {
+      try {
+        for (const name of KEEP_FIELDS) {
+          const el = readKeepField(name);
+          if (!el) continue;
+          if (noteValue(name, (el.value ?? "").trim())) {
+            el.value = keepBest[name];
+            window.console.info("[paKeepCase] " + name + " dikembalikan ke ejaan asli");
+          }
+        }
+      } catch {
+      }
+    }
+    function patchXhrKeepCase() {
+      const proto = window.XMLHttpRequest.prototype;
+      if (proto.__extKeepPatched) return;
+      proto.__extKeepPatched = true;
+      const origOpen = proto.open;
+      const origSend = proto.send;
+      proto.open = function(...args) {
+        try {
+          const u = args[1];
+          this.__extUrl = typeof u === "string" ? u : String(u);
+        } catch {
+        }
+        return origOpen.apply(this, args);
+      };
+      proto.send = function(...args) {
+        try {
+          const self = this;
+          const body = args[0];
+          const url = self.__extUrl;
+          if (Object.keys(keepBest).length && typeof url === "string" && url.includes("pemeriksaan-pa") && typeof body === "string" && body.includes("dok_luar=")) {
+            const params = new URLSearchParams(body);
+            let changed = false;
+            for (const name of KEEP_FIELDS) {
+              const base = keepBest[name];
+              const curP = params.get(name);
+              if (base && curP !== null && curP !== base && curP === camelWords(base)) {
+                params.set(name, base);
+                changed = true;
+              }
+            }
+            if (changed) {
+              window.console.info("[paKeepCase] payload dok_luar/nama_rs dikembalikan ke ejaan asli");
+              return origSend.call(this, params.toString());
+            }
+          } else if (Object.keys(keepBest).length && typeof url === "string" && url.includes("pemeriksaan-pa") && typeof FormData !== "undefined" && body instanceof FormData && (body.has("dok_luar") || body.has("nama_rs"))) {
+            for (const name of KEEP_FIELDS) {
+              const base = keepBest[name];
+              const cur = body.get(name);
+              if (base && typeof cur === "string" && cur !== base && cur === camelWords(base)) {
+                window.console.info("[paKeepCase] payload FormData " + name + " dikembalikan");
+                body.set(name, base);
+              }
+            }
+          }
+        } catch {
+        }
+        return origSend.apply(this, args);
+      };
+    }
+    function startKeepCase() {
+      const w = window;
+      if (w.__paKeepCase) return;
+      w.__paKeepCase = true;
+      snapEvent();
+      document.addEventListener(
+        "input",
+        (e) => {
+          const t = e.target;
+          if (t && typeof t.matches === "function" && t.matches("input, textarea, select")) {
+            snapEvent();
+          }
+        },
+        true
+      );
+      document.addEventListener("focusout", () => snapEvent(), true);
+      document.addEventListener("submit", () => snapEvent(), true);
+      patchXhrKeepCase();
+      _keepCaseIntervalId = window.setInterval(pollKeep, 300);
+      window.console.info("[paKeepCase] aktif di input-hasil-pa");
+    }
+    function showEditTanggalModal(idLab, idVisit) {
+      const overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999999;display:flex;align-items:center;justify-content:center;";
+      const box = document.createElement("div");
+      box.style.cssText = "background:#fff;border-radius:8px;padding:16px 18px;min-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.25);font-family:Arial,sans-serif;";
+      const title = document.createElement("div");
+      title.textContent = "Edit Tanggal Pengajuan";
+      title.style.cssText = "font-weight:700;font-size:14px;margin-bottom:10px;color:#1e293b;";
+      const dateInput = document.createElement("input");
+      dateInput.type = "date";
+      dateInput.style.cssText = "width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;padding:10px;";
+      const m = tanggalPengajuan?.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      if (m) dateInput.value = `${m[3]}-${m[2]}-${m[1]}`;
+      const hint = document.createElement("div");
+      hint.textContent = "Server menerima dd/mm/yyyy hh:mm:ss \u2014 waktu diset otomatis ke 00:00:00.";
+      hint.style.cssText = "font-size:11px;color:#64748b;margin:4px 0 12px;";
+      const btnRow = document.createElement("div");
+      btnRow.style.cssText = "display:flex;justify-content:flex-end;";
+      const save = document.createElement("button");
+      save.type = "button";
+      save.textContent = "Edit Tanggal";
+      save.style.cssText = "margin:18px;padding:15px;border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#2563eb;cursor:pointer;";
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.textContent = "Batal";
+      cancel.style.cssText = "margin:18px;padding:15px;border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#dc2626;cursor:pointer;";
+      save.addEventListener("click", async () => {
+        const raw = dateInput.value.trim();
+        if (!raw) {
+          alert("Isi tanggal pengajuan baru dulu.");
+          return;
+        }
+        const [y, mo, da] = raw.split("-");
+        const date = `${da}/${mo}/${y} 00:00:00`;
+        save.disabled = true;
+        save.textContent = "Menyimpan\u2026";
+        let ok = false;
+        try {
+          const res = await fetch("/laboratorium/control/edit_tanggal", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: new URLSearchParams({
+              lab: idLab,
+              id_visit: idVisit,
+              date,
+              action: "edit"
+            }).toString()
+          });
+          ok = (await res.json()).status == 1;
+        } catch {
+          ok = false;
+        }
+        overlay.remove();
+        alert(ok ? "Edit Tanggal Pengajuan berhasil diubah." : "Gagal menyimpan tanggal baru.");
+        if (ok) window.location.reload();
+      });
+      cancel.addEventListener("click", () => overlay.remove());
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.remove();
+      });
+      btnRow.append(save, cancel);
+      box.append(title, dateInput, hint, btnRow);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      dateInput.focus();
+    }
+    function renderActions() {
+      const fieldset = Array.from(document.querySelectorAll("fieldset")).find(
+        (fs) => fs.textContent?.includes("Data Pasien")
+      );
+      if (!fieldset) return;
+      const old = document.querySelector("[data-ext-lab-actions]");
+      if (old) old.remove();
+      const { idLab, idVisit, idHasilLab } = readIds();
+      if (!idLab || !idVisit || !idHasilLab) {
+        console.warn("[inputHasilPa] Missing ids", { idLab, idVisit, idHasilLab });
+        return;
+      }
+      const container = document.createElement("div");
+      container.setAttribute("data-ext-lab-actions", "true");
+      container.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;";
+      const mk = (label, variant, onClick) => {
+        const b = document.createElement("ext-btn");
+        b.setAttribute("variant", variant);
+        b.setAttribute("size", "sm");
+        b.textContent = label;
+        b.addEventListener("click", onClick);
+        return b;
+      };
+      let permintaanId = idHasilLab;
+      fetchPermintaanData(idLab, idVisit).then((got) => {
+        if (got) {
+          permintaanId = got.id;
+          tanggalPengajuan = got.tgl;
+          console.log("[inputHasilPa] permintaan data", { idLab, idVisit, id: got.id, tgl: got.tgl });
+        } else {
+          console.warn("[inputHasilPa] Baris lab tidak ditemukan di daftar, pakai hasil[1][id].", {
+            idLab,
+            idVisit
+          });
+        }
+      });
+      container.append(
+        mk("Edit Tanggal Pengajuan", "primary", () => showEditTanggalModal(idLab, idVisit)),
+        mk(
+          "Cetak",
+          "info",
+          () => openUrl(`/laboratorium/print/hasil-lab?id=${idLab}&nolab=${idLab}`)
+        ),
+        mk(
+          "Cetak Form Permintaan Lab",
+          "secondary",
+          () => openUrl(
+            `/admisi/formulir-permintaan-labor/cetak?id=${permintaanId}&id_visit=${idVisit}&jenis=cetak`
+          )
+        ),
+        // tombol asli panggil editFormPermintaanLab(idHasilLab) — 1 arg → id_visit=undefined
+        mk(
+          "Edit Form Permintaan Lab",
+          "secondary",
+          () => openUrl(
+            `/admisi/formulir-permintaan-labor/form?id=${permintaanId}&id_visit=undefined&jenis=edit`
+          )
+        ),
+        mk(
+          "Halaman Asli Pengajuan Lab",
+          "ghost",
+          () => openUrl(`/admisi/pelaksanaan_pelayanan/laboratorium-data?id_visit=${idVisit}`)
+        )
+      );
+      const target = Array.from(document.querySelectorAll("fieldset")).find(
+        (fs) => fs.textContent?.includes("Tanggal Hasil")
+      );
+      if (target) {
+        target.after(container);
+      } else {
+        const form = document.querySelector("form");
+        if (form) form.appendChild(container);
+        else fieldset.after(container);
+      }
+    }
+    function injectUi() {
+      if (!document.documentElement.getAttribute("data-ext-lab-history")) return;
+      startKeepCase();
+      renderActions();
+    }
+    const start = performance.now();
+    (function poll() {
+      if (document.documentElement.getAttribute("data-ext-lab-history")) {
+        injectUi();
+      } else if (performance.now() - start < 5e3) {
+        setTimeout(poll, 200);
+      }
+    })();
+    const origPushState = history.pushState;
+    history.pushState = function(...args) {
+      origPushState.apply(this, args);
+      setTimeout(injectUi, 100);
+    };
+    window.addEventListener("popstate", () => setTimeout(injectUi, 100));
+    window.addEventListener("pagehide", () => {
+      if (_keepCaseIntervalId !== null) {
+        clearInterval(_keepCaseIntervalId);
+        _keepCaseIntervalId = null;
+      }
+    });
+  })();
+})();
+//# sourceMappingURL=inputHasilPa.js.map

@@ -5,12 +5,12 @@ node_modules/
 # dist/ SENGAJA tracked (konvensi proyek: CI & enterprise CRX memakai isi
 # repo; jangan di-ignore). Yang TIDAK ikut: sourcemap (membengkak + kode
 # sumber tersebar ke artifact), paket,& private key.
-dist/**/*.map
-*.crx
-*.xpi
-*.zip
-*.pem
-deploy/update.xml
+# dist/**/*.map
+# *.crx
+# *.xpi
+# *.zip
+# *.pem
+# deploy/update.xml
 
 # Dokumentasi desain internal (rujukan lokal developer, tidak dikirim repo).
 # examples/ & *.md yang dipakai user (Pages) tetap tracked.

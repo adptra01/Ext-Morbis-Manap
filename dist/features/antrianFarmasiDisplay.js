@@ -1,1 +1,1432 @@
-"use strict";var __morbis_feature=(()=>{function Et(a,u,g){if(u.type==="we-wrote")return{next:{...a,nativeSig:u.signal,staleStreak:0,ourSig:u.signal},startPolling:!1,stopPolling:!1};let S=u.signal;if(S!==a.nativeSig){let d=S!==a.ourSig;return{next:{...a,nativeActive:d?!0:a.nativeActive,nativeSig:S,staleStreak:0,ourSig:d?"":a.ourSig},startPolling:!a.nativeActive&&!d,stopPolling:a.nativeActive===!1&&d}}let w=a.nativeActive?a.staleStreak+1:a.staleStreak;return a.nativeActive&&w>=g.staleMax?{next:{...a,nativeActive:!1,staleStreak:0},startPolling:!0,stopPolling:!1}:{next:{...a,staleStreak:w},startPolling:!1,stopPolling:!1}}var he="http://dev.rsudkotajambi.id/rs",Te="ext-farmasi-app-base";var ve=["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"],Re=".rsudkotajambi.id";function xe(a){try{let u=new URL(a);if(u.protocol!=="http:"&&u.protocol!=="https:")return!1;let g=u.hostname.toLowerCase();return ve.includes(g)?!0:g.endsWith(Re)}catch{return!1}}function Pe(){try{let a=localStorage.getItem(Te);if(a&&xe(a))return a.replace(/\/+$/,"")}catch{}return he}function Vt(a,u="id"){return Pe()+"/api/tts?text="+encodeURIComponent(a)+"&lang="+encodeURIComponent(u)}function Kt(a){let u=String(a??"").trim();return u&&(/^antrian\s+resep\s+obat/i.test(u)&&/atas\s+nama/i.test(u)?"Antrian resep obat. Silakan ke loket farmasi.":u.replace(/[,;]?\s*atas\s+nama\s+[^.!?]*[.!?]?\s*/gi,"").replace(/,\s*,/g,",").replace(/\s{2,}/g," ").replace(/[,\s]+([.!?])/g,"$1").trim())}var Ce="MORBIS-FARMASI",Me="MORBIS-FARMASI-BRIDGE";function ht(a,u){let g="q-"+Date.now()+"-"+Math.floor(Math.random()*1e6);return new Promise((S,w)=>{let d=y=>{if(y.source!==window)return;let T=y.data;if(!(!T||T.source!==Me||T.type!==a||T.reqId!==g)){if(window.removeEventListener("message",d),clearTimeout(b),!T.ok)return w(new Error(T.error||a+" gagal"));S(T)}};window.addEventListener("message",d);let b=window.setTimeout(()=>{window.removeEventListener("message",d),w(new Error("farmasiQueueBridge: no reply (extension reloaded?)"))},4e3);window.postMessage({source:Ce,type:a,reqId:g,...u},"*")})}async function Gt(){return ht("QUEUE_GET_STATE",{}).then(a=>a.state)}async function Wt(a){await ht("QUEUE_MARK_CALLED",{id:a})}async function Tt(){return ht("QUEUE_RESET",{}).then(a=>a.state)}function ot(a,u){return a.tickets[u]??null}function vt(a){let u=String(a.STATUS_PANGGIL??"");return{id:String(a.ID??""),nomor:String(a.NOMOR??""),status:String(a.STATUS??""),statusPanggil:u,jenis:/racik/i.test(String(a.JENIS??""))?"racikan":"tunggal",nama:String(a.NAMA_PASIEN??""),diserahkan:a.WAKTU_PENYERAHAN!=null&&String(a.WAKTU_PENYERAHAN).trim()!=="",called:u==="1"}}function X(a,u,g){let S=a.filter(b=>b.nomor===u&&b.jenis===g&&b.status!=="0");if(S.length===0)return null;let w=S.filter(b=>b.called);return(w.length>0?w:S).slice().sort((b,y)=>Number(b.id)-Number(y.id)||b.id.localeCompare(y.id))[0].id}var Le=/current-number[^>]*data-counter="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g,Ne=/<tr[^>]*data-nomor="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/g;function Jt(a){let u=new Map;if(!a)return u;for(let g of a.querySelectorAll("dl")){let S=g.querySelector("h4");if(!S)continue;let w=g.getAttribute("data-nomor-morbis")||S.textContent||"",d=w.match(/(\d+)$/);if(!d)continue;let b=d[1],y=g.querySelector("dd.col-3, dd.col-md-3"),T=y?Array.from(y.childNodes).filter(v=>v.nodeType===3).map(v=>v.textContent||"").join("").replace(/\s+/g," ").trim():"",x=y&&/[A-Za-z]/.test(w.split("-")[0]||"")?w.split("-")[0].toUpperCase():"";b&&u.set(b,{nama:T,kode:x})}return u}function $t(a){let u=new Map;for(let g of a.matchAll(Le)){let S=g[1].trim(),w=g[2].replace(/\s+/g," ").trim();S&&u.set(S,w)}return u}function Yt(a){let u=new Map;for(let g of a.matchAll(Ne)){let S=g[1].trim();if(!S)continue;let w=[...g[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(y=>y[1].replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim()),d=w[0]&&/[A-Za-z]/.test(w[0])?w[0].split("-")[0]:"",b=w.find(y=>/[A-Za-z]{2,}/.test(y)&&!/^[A-Z]{1,3}-\d+$/.test(y))||w[w.length-2]||"";(b||d)&&u.set(S,{nama:b,kode:d})}return u}function Xt(a){let u=["1","2"];for(let g of u){let S=a.get(g);if(S&&S!=="0")return S}for(let g of a.values())if(g&&g!=="0")return g;return""}function Rt(a,u){if(u.size===0)return!1;for(let[g,S]of a){let w=u.get(g);if(w===void 0)continue;let d=Number(w),b=Number(S);if(Number.isFinite(d)&&Number.isFinite(b)&&b<d&&b<=1)return!0}return!1}(function(){let a="/public/antrian-farmasi-v2/list-antrian-v2",u=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){return this.id==="unine"?(this.muted=!0,Promise.resolve()):u.call(this)};let g=[500,1500,3e3,6e3],S=0,w=1e3,d=null,b=null;function y(){if(b||!document.body)return;let t=document.querySelector(".side"),e=document.createElement("div");e.id="ext-afd-controls",e.style.cssText="display:flex;flex-direction:column;gap:10px;margin:12px 4px 4px;padding:12px;background:#fff;border:1px solid #0f5132;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.08);",(t??document.body).appendChild(e),b=e}function T(){if(d)return;y(),d=document.createElement("div"),d.id="ext-afd-status",d.style.cssText='padding:5px 12px;border-radius:999px;align-self:flex-start;font:700 12px/1.3 "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);color:#fff;',d.setAttribute("data-state","init");let t=d,e=()=>{document.body&&(y(),t&&!t.isConnected&&b?.appendChild(t))};document.addEventListener("DOMContentLoaded",e),wt=window.setInterval(e,300),e()}function x(t){if(T(),!d)return;d.setAttribute("data-state",t);let e='<span style="width:9px;height:9px;border-radius:999px;background:currentColor;display:inline-block;flex-shrink:0;"></span>';t==="loading"?(d.style.background="#d97706",d.innerHTML=e+"MEMPERBARUI\u2026"):t==="slow"?(d.style.background="#b45309",d.innerHTML=e+"MEMPERBARUI (JARINGAN LAMBAT)\u2026"):t==="ok"?(d.style.background="#0f5132",d.innerHTML=e+"SIAP \xB7 "+new Date().toLocaleTimeString("id-ID",{hour12:!1})):(d.style.background="#b91c1c",d.innerHTML=e+"GAGAL")}let v=null;function zt(){if(v)return;y(),v=document.createElement("div"),v.id="ext-afd-toolbar",v.style.cssText="display:flex;gap:8px;flex-wrap:wrap;",v.innerHTML='<button id="ext-afd-testsound" style="flex:1;min-width:120px;padding:8px 12px;border:none;border-radius:12px;background:#0f5132;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">\u{1F50A} Tes Suara</button><button id="ext-afd-fs" style="flex:1;min-width:120px;padding:8px 12px;border:none;border-radius:12px;background:#155e75;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">\u26F6 Full Screen</button>';let t=v,e=()=>{!t||t.isConnected||(y(),b?.appendChild(t))};document.body?e():document.addEventListener("DOMContentLoaded",e),St=window.setInterval(e,300),v.querySelector("#ext-afd-testsound")?.addEventListener("click",()=>{W(),x("loading"),m({ttsMode:null,ttsEngine:null,ttsLastError:null,ttsAttempts:0,lastTtsStart:null,lastTtsEnd:null}),q.push({kind:"bell"},{kind:"voice",text:"Tes suara antrian farmasi."}),dt(),window.setTimeout(()=>x("ok"),6e3)}),v.querySelector("#ext-afd-fs")?.addEventListener("click",()=>{let n=document,r=document.documentElement;document.fullscreenElement||n.webkitFullscreenElement?document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen():r.requestFullscreen?r.requestFullscreen():r.webkitRequestFullscreen&&r.webkitRequestFullscreen()});try{let n=new BroadcastChannel("morbis-antrian-display");n.onmessage=r=>{if(r.data?.type==="toggleFullscreen"){let i=document,o=document.documentElement;document.fullscreenElement||i.webkitFullscreenElement?document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen():o.requestFullscreen?o.requestFullscreen():o.webkitRequestFullscreen&&o.webkitRequestFullscreen()}}}catch{}}let Zt=1500,te=2,z=new Map,Z=new Map,D={tunggal:"",racikan:""};async function xt(t){let e=await Gt(),n=new Map;for(let r of t){let i=String(r.ID??""),o=ot(e,i);o&&n.set(i,o.code)}z=n;for(let r of t){let i=String(r.ID??""),o=ot(e,i);if(!o)continue;let s=String(r.NOMOR??"").trim();if(!s)continue;let c=/racik/i.test(String(r.JENIS??""))?"racikan":"tunggal";Z.set(`${c}:${s}`,{code:o.code,nama:String(r.NAMA_PASIEN??"")})}}function P(t,e){if(!e||e==="0"||/^[TR]-\d+$/.test(e))return e;let n=X(Pt(),e,t);if(n){let i=z.get(n);if(i)return i}let r=Z.get(`${t}:${e}`);return r?.code?r.code:D[t]||e}function Pt(){return Q.map(t=>vt(t)).filter(t=>t.id)}async function Ct(){let t=await fetch(a,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"},body:"type=check_antrian",cache:"no-store"});if(!t.ok)throw new Error("HTTP "+t.status);let e=await t.text(),n=JSON.parse(e);if(!Array.isArray(n))throw new Error("Respons bukan array: "+String(e).slice(0,80));return n}function Mt(){let t=document.querySelector("#no_loket");return t&&t.value?t.value:"4324"}async function Lt(){let t=await fetch("/antrian-farmasi/v2?section=isi&nomor="+encodeURIComponent(Mt()),{method:"GET",headers:{"X-Requested-With":"XMLHttpRequest"},cache:"no-store"});if(!t.ok)throw new Error("HTTP "+t.status);let e=await t.text();return{current:$t(e),patients:Yt(e)}}function st(t){let e=/racik/i.test(String(t.JENIS??""))?"racikan":"tunggal";return{id:String(t.ID),nomor:t.COUNTER!=null?String(t.COUNTER):t.NOMOR!=null?String(t.NOMOR):"",kode:t.KODE||t.NAMA||"BT",namaPasien:t.NAMA_PASIEN??"",unit:t.NAMA_UNIT??"",jenis:e,rm:t.ID_PASIEN!=null?String(t.ID_PASIEN):""}}function ee(t){let e=[],n=[];for(let r of t){if(!r||r.ID==null)continue;let i=st(r),o=String(r.STATUS).trim(),s=r.WAKTU_PENERIMAAN!=null&&String(r.WAKTU_PENERIMAAN).trim()!=="",c=r.WAKTU_PENYERAHAN!=null&&String(r.WAKTU_PENYERAHAN).trim()!=="";o==="0"?e.push(i):s&&!c&&n.push(i)}return{panggilan:e,siapDiambil:n}}let U="#antrian-penyerahan",O="#antrian-view";function tt(t,e,n){return'<div class="antrian-title">'+t+'</div><div class="antrian-nomor">'+(e&&e!=="0"?e:"\u2014")+"</div>"+(n?'<div class="antrian-rm">'+n+"</div>":"")}function F(t,e){if(!e||e==="0")return"";let n=X(Pt(),e,t);if(!n)return"";let r=Q.find(i=>String(i.ID??"")===n);return r?.NAMA_PASIEN?String(r.NAMA_PASIEN):Z.get(`${t}:${e}`)?.nama||""}function N(t){let e=document.querySelector(t);if(!e)return"";let n=(e.querySelector?.(".antrian-nomor")?.textContent||"").trim();return/^(?:[TR]-)?\d+$/.test(n)?n:""}function Nt(){let t=document.querySelector("#list-content");if(!t)return;let e=[k.tunggal,k.racikan].filter(i=>i&&i!=="0"),n=[K.tunggal?.namaPasien||"",K.racikan?.namaPasien||""].filter(Boolean),r=null;for(let i of t.querySelectorAll("dl")){let o=i.querySelector("h4"),s=((i.getAttribute("data-nomor-morbis")||o?.textContent||"").match(/(\d+)$/)||[])[1]||"",p=(i.querySelector("dd.col-3, dd.col-md-3")?.textContent||"").replace(/\s+/g," ").trim(),A=e.some(R=>s&&R===s),l=n.some(R=>R&&p===R),f=A||l;i.style.background=f?"#fde68a":"",i.style.fontSize=f?"1.35em":"",f?(r=i,i.style.outline="3px solid #b45309",i.style.outlineOffset="2px"):i.style.outline=""}r&&(r.scrollIntoView({behavior:"smooth",block:"center"}),r.focus?.(),r.setAttribute("tabindex","-1"),r.focus())}function at(){let t=document.querySelector("#list-content");if(!t)return;let e=0;for(let n of t.querySelectorAll("dl")){let r=n.querySelector("h4");if(!r||(n.hasAttribute("data-nomor-morbis")||n.setAttribute("data-nomor-morbis",(r.textContent||"").trim()),n.hasAttribute("data-public-code")))continue;let i=((n.querySelector("dd.col-3 p, dd.col-md-3 p")?.textContent||"").match(/RM\s*:\s*(\d+)/i)||[])[1]||"",o=n.classList.contains("racikan"),s=Q.find(A=>String(A.ID_PASIEN??"")===i&&(o?/racik/i.test(String(A.JENIS??"")):!/racik/i.test(String(A.JENIS??"")))),c=s?String(s.ID??""):"",p=c&&z.get(c)||"";p?(r.textContent=p,n.setAttribute("data-public-code",p),n.setAttribute("data-morbis-id",c)):i&&(r.textContent="\u2014",n.setAttribute("data-public-code","\u2014"),e++)}e>0&&console.warn("[AFD] tabel antrian: "+e+" baris tak bisa di-resolve ke publicCode (tampil \u2014)")}async function ne(t){let e=Mt(),n=t.ID!=null?String(t.ID):"",r=t.COUNTER!=null?String(t.COUNTER):t.NOMOR!=null?String(t.NOMOR):"",i=/racik/i.test(String(t.JENIS??""))?"racikan":"tunggal";if(n&&window.confirm("Panggil ulang "+(t.NAMA_PASIEN||"")+" ("+r+")?"))try{let o=await fetch("/antrian-farmasi/control",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest"},body:"id="+encodeURIComponent(n)+"&nomor="+encodeURIComponent(r)+"&jenis="+encodeURIComponent(i)+"&loket="+encodeURIComponent(e)});if(!o.ok){console.error("[AFD] recall gagal HTTP",o.status);return}let s=window;typeof s.contentloader=="function"&&s.contentloader("/antrian-farmasi/v2?section=isi&nomor="+e,"#isi")}catch(o){console.error("[AFD] recall error",o)}}function re(){let t=document.querySelector("#list-content");if(!t||t.__afdRecall)return;t.__afdRecall=!0;let e=t.querySelectorAll("dl");for(let n of e){let i=(n.querySelector("dd.col-3, dd.col-md-3")?.textContent||"").replace(/\s+/g," ").trim();!i||n.__afdRec||(n.__afdRec=!0,n.addEventListener("click",()=>{let o=Q.find(s=>((s.NAMA_PASIEN||"").replace(/\s+/g," ").trim()||"").indexOf(i)!==-1);o&&ne(o)}))}}function ie(){try{let t=localStorage.getItem("ext-afd-recall");if(!t)return;let e=JSON.parse(t),n=`${e.jenis}:${e.nomor}`;if(Date.now()-(e.ts||0)<8e3&&n!==ct){ct=n,localStorage.removeItem("ext-afd-recall");let i=e.jenis==="racikan"?"racikan":"tunggal",o=P(i,e.nomor),s=F(i,e.nomor)||(C&&C.jenis===i?C.namaPasien:"");m({lastAnnouncement:`recall:${i}:${o}`}),it({id:`local-recall-${n}`,nomor:o,kode:"",namaPasien:s,unit:"",jenis:i,rm:""})}}catch{}}async function lt(){let t=Date.now();if(document.hidden){bt=window.setTimeout(()=>{lt()},w);return}x("loading"),ie();try{let[{current:e},n]=await Promise.all([Lt(),Ct()]);Q=n,await xt(n),at(),m({lastPoll:Date.now(),lastDataCount:n.length});let r=e.get("1")?.trim(),i=e.get("2")?.trim();k.tunggal=r&&r!=="0"?r:"",k.racikan=i&&i!=="0"?i:"";let o=!1;Rt(e,H)&&(Dt(),o=!0,Ot()),H.clear();for(let[l,f]of e)H.set(l,f);m({currentByJenis:{...k},lastNormalKey:G});let s=N(U),c=N(O),p=!o&&k.tunggal!==""&&s&&s!=="0"&&s!==k.tunggal&&s!==M.tunggal,A=!o&&k.racikan!==""&&c&&c!=="0"&&c!==k.racikan&&c!==M.racikan;if(p||A){let l=p?"tunggal":"racikan",f=p?s:c,R=P(l,f),E=l+":"+R;if(E!==rt){rt=E;let _=F(l,f)||(C&&C.jenis===l?C.namaPasien:"");it({id:"recall:"+E,nomor:R,kode:"",namaPasien:_,unit:"",jenis:l,rm:""}),m({lastAnnouncement:"recall:"+E})}x("ok");return}for(let l of["tunggal","racikan"]){let f=k[l],R=nt[l];if(f&&f!=="0"&&f!==R){let E=P(l,f),_=l+":"+E;if(_!==G){G=_,rt=null;let yt=F(l,f);it({id:_,nomor:E,kode:"",namaPasien:yt,unit:"",jenis:l,rm:""}),m({lastAnnouncement:_})}}nt[l]=f||""}It(),Nt(),M.tunggal=P("tunggal",k.tunggal)||D.tunggal,M.racikan=P("racikan",k.racikan)||D.racikan,m({writtenByUs:{...M}}),qt(),x("ok")}catch{x("error")}finally{Date.now()-t>1e3&&d?.getAttribute("data-state")!=="error"&&x("slow"),bt=window.setTimeout(()=>{lt()},w)}}function V(t,e){if(It(t),e){K[e.jenis]=e,oe(t);let n=P("tunggal",k.tunggal),r=P("racikan",k.racikan),i=N(U)&&N(U)!==k.tunggal&&N(U)!==M.tunggal,o=N(O)&&N(O)!==k.racikan&&N(O)!==M.racikan,s=i?null:document.querySelector(U);s&&(s.innerHTML=tt("Obat Tunggal",n,F("tunggal",k.tunggal)));let c=o?null:document.querySelector(O);c&&(c.innerHTML=tt("Obat Racikan",r,F("racikan",k.racikan))),Nt(),re(),M.tunggal=n,M.racikan=r}qt()}function It(t){let e=document.querySelector(U),n=document.querySelector(O),r=k.tunggal,i=k.racikan,o=P("tunggal",r)||D.tunggal,s=P("racikan",i)||D.racikan;e&&(e.innerHTML=tt("Obat Tunggal",o,r?F("tunggal",r):"")),n&&(n.innerHTML=tt("Obat Racikan",s,i?F("racikan",i):""))}function oe(t){for(let e of t.panggilan)K[e.jenis]||(K[e.jenis]=e);for(let e of Q){let n=st(e);K[n.jenis]=n}}let et="",H=new Map,h=null,_t=!1,K={tunggal:null,racikan:null},k={tunggal:"",racikan:""},nt={tunggal:"",racikan:""},M={tunggal:"",racikan:""},rt=null,ct="",Q=[],G="",C=null;function Dt(){C=null,rt=null,ct="",et="",G="",nt.tunggal="",nt.racikan="",H.clear(),m({lastCalledPatient:null,lastCalledNumber:null,lastRealtimeEvent:"reset"})}let Ut=0;function Ot(){let t=Date.now();t-Ut<3e3||(Ut=t,Tt().then(()=>{z.clear(),Z.clear(),D.tunggal="",D.racikan="",m({lastRealtimeEvent:"reset:queue"})}).catch(e=>{console.warn("[FarmasiDisplay] reset QueueManager gagal:",e)}))}let B=window.speechSynthesis,se=B.speak.bind(B),ut=!1,q=[];function dt(){if(ut||q.length===0)return;ut=!0;let t=q.shift(),e=!1,n=()=>{e||(e=!0,ut=!1,setTimeout(()=>dt(),S))};if(t.kind==="bell"){de(n);return}ue(t.text).then(n,n)}let L=[];function Ft(){return L.length>0?Promise.resolve(L):new Promise(t=>{let e=()=>{let i=B.getVoices();return i.length>0?(L=i,t(i),!0):!1};if(e())return;let n=0,r=window.setInterval(()=>{n+=1,(e()||n>=50)&&(window.clearInterval(r),L.length||(L=B.getVoices(),t(L)))},100);B.addEventListener("voiceschanged",()=>{L.length||e()})})}function gt(t){let e=L,n=r=>(r||"").toLowerCase();return t==="id-local"?e.find(r=>n(r.lang).startsWith("id")&&r.localService)??e.find(r=>/indonesia/i.test(r.name))??null:t==="id-any"?e.find(r=>n(r.lang).startsWith("id"))??null:t==="any-local"?e.find(r=>r.localService)??null:e[0]??null}function mt(t,e,n=2e4){return new Promise(r=>{try{let i=new SpeechSynthesisUtterance(t);i.lang=e&&e.lang||"id-ID",e&&(i.voice=e),i.rate=.8,i.volume=1;let o=!1,s=!1,c=Date.now(),p=l=>{s||(s=!0,window.clearTimeout(A),m({lastTtsEnd:Date.now()}),console.info("[AFD] [TTS] speakSynth "+(l?"SUCCESS":"FAIL")+" voice="+(e?e.name+"/"+e.lang+(e.localService?"/local":"/net"):"null")+" durasi="+(Date.now()-c)+"ms"),r(l))};i.onstart=()=>{o=!0,m({lastTtsStart:Date.now()}),console.info("[AFD] [TTS] onstart voice="+(e?e.name:"null"))},i.onend=()=>p(!0),i.onerror=l=>{console.info("[AFD] [TTS] onerror started="+o+" err="+(l.error||"")),p(o)},se.call(B,i);let A=window.setTimeout(()=>{console.info("[AFD] [TTS] timeout "+n+"ms started="+o),p(o)},n)}catch(i){console.info("[AFD] [TTS] speakSynth throw",i),r(!1)}})}function ae(){try{return document.documentElement.getAttribute("data-ext-tts-server")!=="0"}catch{return!0}}function le(t,e=15e3){let n=Vt(Kt(t));return new Promise(r=>{let i=!1,o=null,s=null,c=l=>{i||(i=!0,window.clearTimeout(p),s&&(s.onended=null,s.onerror=null,s.oncanplay=null),o&&URL.revokeObjectURL(o),m({lastTtsEnd:Date.now()}),console.info("[AFD] [TTS] server-mp3 "+(l?"SUCCESS":"FAIL")),r(l))},p=window.setTimeout(()=>c(!1),e),A=l=>{s=new Audio(l),s.onended=()=>c(!0),s.onerror=()=>c(!1),s.oncanplay=()=>{s.play().catch(()=>c(!1))},s.load()};fetch(n,{mode:"cors"}).then(l=>{if(!l.ok)throw new Error("HTTP "+l.status);return l.blob()}).then(l=>{if(!l||l.size===0)throw new Error("empty blob");o=URL.createObjectURL(l),A(o)}).catch(()=>A(n))})}function ce(t,e=1e4){return new Promise(n=>{let r=!1,i=null,o=null,s=(l,f)=>{r||(r=!0,window.clearTimeout(p),o&&(o.onended=null,o.onerror=null,o.oncanplay=null,o.onplay=null),i&&URL.revokeObjectURL(i),m({lastTtsEnd:Date.now(),ttsTrace:[...c,"end:"+f]}),console.info("[AFD] [TTS] local-service "+(l?"SUCCESS":"FAIL "+f)),n({ok:l,reason:f}))},c=["start"],p=window.setTimeout(()=>s(!1,"timeout"),e),A=l=>{c.push("audio-new"),o=new Audio(l),o.onplay=()=>{c.push("play"),m({lastTtsStart:Date.now(),ttsTrace:[...c]})},o.onended=()=>s(!0,"ended"),o.onerror=()=>s(!1,"audio-error "+(o&&o.error?o.error.code:"?")),o.oncanplay=()=>{c.push("canplay"),o.play().catch(f=>s(!1,"play-rejected "+String(f).slice(0,60)))},o.load()};try{let l="tts-"+Date.now()+"-"+Math.floor(Math.random()*1e6),f=R=>{if(R.source!==window)return;let E=R.data;if(!E||E.source!=="MORBIS-FARMASI-BRIDGE"||E.type!=="TTS_RESULT"||E.id!==l)return;if(window.removeEventListener("message",f),!E.ok){s(!1,E.reason||"message-error no-response");return}if(!E.data||E.data.length===0){s(!1,"blob-error empty-data");return}c.push("blob:"+E.data.length);let _=new Uint8Array(E.data),yt=new Blob([_],{type:E.mime||"audio/mpeg"});i=URL.createObjectURL(yt),A(i)};window.addEventListener("message",f),window.postMessage({source:"MORBIS-FARMASI",type:"TTS_REQUEST",id:l,text:t},"*")}catch(l){s(!1,"message-error postmessage "+String(l).slice(0,40))}})}async function ue(t){m({ttsAttempts:0,ttsLastError:null,ttsEngine:null});try{B.cancel()}catch{}await Ft(),console.info("[AFD] [TTS] voices="+L.map(c=>c.name).join(", "));let e=await ce(t);if(e.ok){m({ttsMode:"local",ttsEngine:"local-service:8765"});return}let n="local-service: "+e.reason;m({ttsLastError:n});let r=gt("id-local");if(r&&(m({ttsMode:"speech",ttsEngine:"speech:"+r.name}),await mt(t,r)))return;let i=ae(),o=gt("id-any");if(o&&o!==r&&(i||o.localService)&&(m({ttsMode:"speech",ttsEngine:"speech:"+o.name,ttsAttempts:1}),await mt(t,o)))return;let s=gt("any-local");s&&s!==r&&s!==o&&(m({ttsMode:"local",ttsEngine:"local:"+s.name,ttsAttempts:2}),await mt(t,s))||i&&(m({ttsMode:"mp3",ttsEngine:"rs-server",ttsAttempts:3}),await le(t))||(m({ttsMode:"error",ttsEngine:null,ttsLastError:"all engines failed \u2014 layer0="+n+" (speech id-local/id-any/any-local, server-mp3"+(i?"":" nonaktif")+")",ttsAttempts:4}),m({lastTtsEnd:Date.now()}),console.error("[AFD] [TTS] semua engine gagal utk:",t.slice(0,40)))}let j=null;function de(t){try{let e=window.AudioContext||window.webkitAudioContext;if(!e)return t();j=j||new e,j.resume();let n=j.currentTime,r=[[1318.5,n],[1760,n+.14]];for(let[o,s]of r){let c=j.createOscillator(),p=j.createGain();c.type="sine",c.frequency.setValueAtTime(o,s),p.gain.setValueAtTime(1e-4,s),p.gain.exponentialRampToValueAtTime(.45,s+.02),p.gain.exponentialRampToValueAtTime(1e-4,s+.16),c.connect(p),p.connect(j.destination),c.start(s),c.stop(s+.18)}setTimeout(t,350)}catch{t()}}function ge(t){return t.split(/\s+/).map(e=>e&&e[0].toUpperCase()+e.slice(1).toLowerCase()).join(" ")}function it(t){if(!ft){console.warn("[FarmasiDisplay] audio belum unlocked \u2014 TTS/bell dilewati");return}C={id:String(t.id||""),jenis:t.jenis,nomor:String(t.nomor),namaPasien:String(t.namaPasien||"")};let e=String(t.id||"");e&&!e.startsWith("cur-")&&Wt(e).catch(()=>{}),m({lastCalledPatient:C.namaPasien,lastCalledNumber:C.nomor,lastRealtimeEvent:"announce:"+t.id});let n=t.namaPasien?"Antrian resep obat, atas nama "+ge(String(t.namaPasien))+". Silakan ke loket farmasi.":"Antrian resep obat. Silakan ke loket farmasi.";for(let r=q.length-1;r>=0;r--)q[r].kind==="voice"&&q.splice(r,1);q.push({kind:"bell"},{kind:"voice",text:n},{kind:"voice",text:n,repeat:!0}),dt()}let ft=!1;function W(){ft||(ft=!0,m({audioUnlocked:!0}),document.removeEventListener("pointerdown",W),document.removeEventListener("keydown",W),console.log("[FarmasiDisplay] audio unlocked via gesture"))}document.addEventListener("pointerdown",W),document.addEventListener("keydown",W),(function(){let e=!1,n=()=>{e||(e=!0,W())},r=()=>{try{let i=window.AudioContext;if(i){let o=new i;o.onstatechange=()=>{o.state==="running"&&(o.close().catch(()=>{}),n())},o.resume().catch(()=>{}),window.setTimeout(()=>{if(!e)try{o.state==="running"&&(o.close().catch(()=>{}),n())}catch{}},800)}else n()}catch{n()}};document.readyState!=="loading"?r():document.addEventListener("DOMContentLoaded",r)})();let pt=!1,Ht=!1,Qt=null,wt=null,St=null,J=null,bt=null,Bt={staleMax:te},I={nativeActive:!0,staleStreak:0,nativeSig:"",ourSig:""},me=new URLSearchParams(window.location.search).get("debug")==="1",kt={started:!1,mode:"NATIVE",nativeActive:!0,pollingActive:!1,lastNativeActivity:null,lastPoll:null,lastDataCount:null,lastAnnouncement:null,audioUnlocked:!1,ttsMode:null,ttsEngine:null,ttsLastError:null,ttsAttempts:0,lastCalledPatient:null,lastCalledNumber:null,lastTtsStart:null,lastTtsEnd:null,lastRealtimeEvent:null,ttsTrace:null};function m(t){me&&(Object.assign(kt,t),window.__ANTRIAN_FARMASI_DEBUG__={...kt},document.documentElement.setAttribute("data-afd-debug",JSON.stringify(kt)),document.documentElement.setAttribute("data-afd-world",typeof chrome<"u"&&chrome.runtime?"isolated-has-cr":"no-cr"))}function At(){let t=document.querySelector(U),e=document.querySelector(O);return(t?t.textContent??"":"")+"|"+(e?e.textContent??"":"")}function qt(){I=Et(I,{type:"we-wrote",signal:At()},Bt).next}function fe(){J&&(window.clearTimeout(J),J=null)}function jt(){I.nativeActive||J||pt&&(J=window.setTimeout(()=>{pe()},g[$]))}let $=0;async function pe(){J=null;try{let[{current:t,patients:e},n]=await Promise.all([Lt(),Ct()]);$=0,m({lastPoll:Date.now(),lastDataCount:n.length}),Q=n,await xt(n);let r=ee(n),i=Xt(t),o=t.get("1")?.trim(),s=t.get("2")?.trim();k.tunggal=o&&o!=="0"?o:"",k.racikan=s&&s!=="0"?s:"";let c=i!==""?[...t.entries()].filter(([,p])=>p===i).map(([p])=>p+":"+i).join("|"):"";if(i!==""){let A=Jt(document.querySelector("#list-content")).get(i);(!A||!A.nama)&&(A=e.get(i));let l=Se(n,i),f={id:"cur-"+i,nomor:P(l?.jenis||"tunggal",i),kode:A&&A.kode||l?.kode||"",namaPasien:A&&A.nama||l?.namaPasien||"",unit:l?.unit||"",jenis:l?.jenis||"tunggal",rm:l?.rm||""};_t?c!==et&&we(t)?Rt(t,H)?(Dt(),Ot(),h=f,V(r,h)):(et=c,h=f,V(r,h),be(r,h)):(h||(h=f),V(r,h)):(_t=!0,h=f,V(r,h))}else r.siapDiambil.length>0&&h&&V(r,h)}catch(t){$=Math.min($+1,g.length-1),console.warn("[FarmasiDisplay] fallback gagal (backoff "+g[$]+"ms):",t)}finally{jt()}}function we(t){if(H.size===0)return!1;for(let[e,n]of t)if(H.get(e)!==n)return!0;return!1}function Se(t,e){let n=t.map(o=>vt(o)).filter(o=>o.id),r=X(n,e,"tunggal")??X(n,e,"racikan"),i=r?t.find(o=>String(o.ID??"")===r):null;return i?st(i):null}function be(t,e){if(!pt)return;let n=e.jenis+":"+e.nomor;if(n===G){console.info("[AFD] duplicate ignored "+n);return}G=n,et=e.id,m({lastAnnouncement:n}),console.info("[AFD] ANNOUNCE "+n),it(e)}let Y="NATIVE";function ke(){let t=Et(I,{type:"observe",signal:At()},Bt);I=t.next,t.startPolling?($=0,jt(),Y!=="FALLBACK"&&(Y="FALLBACK",console.info("[AFD] MODE=FALLBACK")),m({mode:"FALLBACK",nativeActive:!1,pollingActive:!0})):t.stopPolling?(fe(),Y!=="NATIVE"&&(Y="NATIVE",console.info("[AFD] MODE=NATIVE")),m({mode:"NATIVE",nativeActive:!0,pollingActive:!1,lastNativeActivity:Date.now()})):!I.nativeActive&&Y!=="FALLBACK"&&(Y="FALLBACK",m({mode:"FALLBACK",nativeActive:!1,pollingActive:!0}))}function Ae(){let t=document.createElement("style");t.id="ext-afd-hide-swal",t.textContent=".swal2-container, .swal2-backdrop { display: none !important; visibility: hidden !important; }",(document.head||document.documentElement).appendChild(t),new MutationObserver(()=>{document.querySelectorAll(".swal2-container").forEach(n=>{n.style.display="none"})}).observe(document.documentElement,{childList:!0,subtree:!0})}function ye(){if(Ht)return;Ht=!0,m({started:!0}),Ae();let t=new URLSearchParams(window.location.search);if(t.get("extReset")==="1"){t.delete("extReset");let n=t.toString();window.history.replaceState(null,"",window.location.pathname+(n?"?"+n:"")),Tt().then(r=>{console.log("[MORBIS Ext] queue di-reset (tiket aktif: "+Object.keys(r.tickets??{}).length+")")})}T(),zt(),x("loading");let e=document.querySelector("#list-content");e&&!e.hasAttribute("data-ext-afd-patch")&&(e.setAttribute("data-ext-afd-patch","1"),new MutationObserver(()=>{at()}).observe(e,{childList:!0,subtree:!0})),at(),pt=!0,Ft().catch(()=>{}),I={...I,nativeSig:At()},Qt===null&&(Qt=setInterval(ke,Zt)),bt===null&&lt()}ye();let Ee=()=>{wt!==null&&clearInterval(wt),St!==null&&clearInterval(St)};window.addEventListener("beforeunload",Ee)})();})();
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/wsHealth.ts
+  function nextHealth(state, action, config) {
+    if (action.type === "we-wrote") {
+      return {
+        next: { ...state, nativeSig: action.signal, staleStreak: 0, ourSig: action.signal },
+        startPolling: false,
+        stopPolling: false
+      };
+    }
+    const sig = action.signal;
+    if (sig !== state.nativeSig) {
+      const recovered = sig !== state.ourSig;
+      return {
+        next: {
+          ...state,
+          nativeActive: recovered ? true : state.nativeActive,
+          nativeSig: sig,
+          staleStreak: 0,
+          ourSig: recovered ? "" : state.ourSig
+        },
+        startPolling: !state.nativeActive && !recovered,
+        // masih fallback & bukan tulis sendiri → lanjut polling
+        stopPolling: state.nativeActive === false && recovered
+        // pulih dari fallback → berhenti polling
+      };
+    }
+    const streak = state.nativeActive ? state.staleStreak + 1 : state.staleStreak;
+    if (state.nativeActive && streak >= config.staleMax) {
+      return {
+        next: { ...state, nativeActive: false, staleStreak: 0 },
+        startPolling: true,
+        stopPolling: false
+      };
+    }
+    return {
+      next: { ...state, staleStreak: streak },
+      startPolling: false,
+      stopPolling: false
+    };
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = "http://dev.rsudkotajambi.id/rs";
+  var BASE_OVERRIDE_KEY = "ext-farmasi-app-base";
+  var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, "");
+    } catch {
+    }
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function buildTtsUrl(text, lang = "id") {
+    return resolveCasemixBase() + "/api/tts?text=" + encodeURIComponent(text) + "&lang=" + encodeURIComponent(lang);
+  }
+  function sanitizeTtsText(text) {
+    const t = String(text ?? "").trim();
+    if (!t) return t;
+    if (/^antrian\s+resep\s+obat/i.test(t) && /atas\s+nama/i.test(t)) {
+      return "Antrian resep obat. Silakan ke loket farmasi.";
+    }
+    return t.replace(/[,;]?\s*atas\s+nama\s+[^.!?]*[.!?]?\s*/gi, "").replace(/,\s*,/g, ",").replace(/\s{2,}/g, " ").replace(/[,\s]+([.!?])/g, "$1").trim();
+  }
+
+  // src/features/shared/farmasiQueueBridge.ts
+  var REQ_SOURCE = "MORBIS-FARMASI";
+  var RES_SOURCE = "MORBIS-FARMASI-BRIDGE";
+  var REPLY_TIMEOUT_MS = 4e3;
+  function post(type, payload) {
+    const reqId = "q-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
+    return new Promise((resolve, reject) => {
+      const onMsg = (event) => {
+        if (event.source !== window) return;
+        const d = event.data;
+        if (!d || d.source !== RES_SOURCE || d.type !== type || d.reqId !== reqId) return;
+        window.removeEventListener("message", onMsg);
+        clearTimeout(timer);
+        if (!d.ok) return reject(new Error(d.error || type + " gagal"));
+        resolve(d);
+      };
+      window.addEventListener("message", onMsg);
+      const timer = window.setTimeout(() => {
+        window.removeEventListener("message", onMsg);
+        reject(new Error("farmasiQueueBridge: no reply (extension reloaded?)"));
+      }, REPLY_TIMEOUT_MS);
+      window.postMessage({ source: REQ_SOURCE, type, reqId, ...payload }, "*");
+    });
+  }
+  async function getQueueState() {
+    return post("QUEUE_GET_STATE", {}).then((r) => r.state);
+  }
+  async function markCalled(id) {
+    await post("QUEUE_MARK_CALLED", { id });
+  }
+  async function reset() {
+    return post("QUEUE_RESET", {}).then((r) => r.state);
+  }
+
+  // src/features/shared/farmasiQueue.ts
+  function getTicket(st, id) {
+    return st.tickets[id] ?? null;
+  }
+
+  // src/features/shared/farmasiEvent.ts
+  function toRowState(r) {
+    const sp = String(r.STATUS_PANGGIL ?? "");
+    return {
+      id: String(r.ID ?? ""),
+      nomor: String(r.NOMOR ?? ""),
+      status: String(r.STATUS ?? ""),
+      statusPanggil: sp,
+      jenis: /racik/i.test(String(r.JENIS ?? "")) ? "racikan" : "tunggal",
+      nama: String(r.NAMA_PASIEN ?? ""),
+      diserahkan: r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== "",
+      called: sp === "1"
+    };
+  }
+  function resolveCalledId(rows, morbisNum, jenis) {
+    const cands = rows.filter((r) => r.nomor === morbisNum && r.jenis === jenis && r.status !== "0");
+    if (cands.length === 0) return null;
+    const called = cands.filter((r) => r.called);
+    const pick = (called.length > 0 ? called : cands).slice().sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
+    return pick[0].id;
+  }
+
+  // src/features/shared/currentNumber.ts
+  var CURRENT_RE = /current-number[^>]*data-counter="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g;
+  var ROW_RE = /<tr[^>]*data-nomor="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/g;
+  function parseListContentPatient(listContent) {
+    const m = /* @__PURE__ */ new Map();
+    if (!listContent) return m;
+    for (const dl of listContent.querySelectorAll("dl")) {
+      const h4 = dl.querySelector("h4");
+      if (!h4) continue;
+      const h4Text = dl.getAttribute("data-nomor-morbis") || h4.textContent || "";
+      const nomorMatch = h4Text.match(/(\d+)$/);
+      if (!nomorMatch) continue;
+      const nomor = nomorMatch[1];
+      const dd3 = dl.querySelector("dd.col-3, dd.col-md-3");
+      const nama = dd3 ? Array.from(dd3.childNodes).filter((n) => n.nodeType === 3).map((n) => n.textContent || "").join("").replace(/\s+/g, " ").trim() : "";
+      const kode = dd3 && /[A-Za-z]/.test(h4Text.split("-")[0] || "") ? h4Text.split("-")[0].toUpperCase() : "";
+      if (nomor) m.set(nomor, { nama, kode });
+    }
+    return m;
+  }
+  function parseCurrentNumbers(html) {
+    const m = /* @__PURE__ */ new Map();
+    for (const mm of html.matchAll(CURRENT_RE)) {
+      const counter = mm[1].trim();
+      const value = mm[2].replace(/\s+/g, " ").trim();
+      if (counter) m.set(counter, value);
+    }
+    return m;
+  }
+  function parsePatients(html) {
+    const m = /* @__PURE__ */ new Map();
+    for (const row of html.matchAll(ROW_RE)) {
+      const nomor = row[1].trim();
+      if (!nomor) continue;
+      const tds = [...row[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(
+        (t) => t[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()
+      );
+      const kode = tds[0] && /[A-Za-z]/.test(tds[0]) ? tds[0].split("-")[0] : "";
+      const nama = tds.find((t) => /[A-Za-z]{2,}/.test(t) && !/^[A-Z]{1,3}-\d+$/.test(t)) || tds[tds.length - 2] || "";
+      if (nama || kode) m.set(nomor, { nama, kode });
+    }
+    return m;
+  }
+  function activeNumber(cur) {
+    const prefer = ["1", "2"];
+    for (const c of prefer) {
+      const v = cur.get(c);
+      if (v && v !== "0") return v;
+    }
+    for (const v of cur.values()) {
+      if (v && v !== "0") return v;
+    }
+    return "";
+  }
+  function isReset(cur, prev) {
+    if (prev.size === 0) return false;
+    for (const [c, v] of cur) {
+      const p = prev.get(c);
+      if (p === void 0) continue;
+      const pn = Number(p);
+      const vn = Number(v);
+      if (Number.isFinite(pn) && Number.isFinite(vn) && vn < pn && vn <= 1) return true;
+    }
+    return false;
+  }
+
+  // src/features/antrianFarmasiDisplay.ts
+  (function() {
+    const LIST_URL = "/public/antrian-farmasi-v2/list-antrian-v2";
+    const __extPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function() {
+      if (this.id === "unine") {
+        this.muted = true;
+        return Promise.resolve();
+      }
+      return __extPlay.call(this);
+    };
+    const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
+    const GAP_MS = 0;
+    const CARD_MS = 1e3;
+    let statusBadge = null;
+    let controlsHost = null;
+    function ensureControlsHost() {
+      if (controlsHost) return;
+      if (!document.body) return;
+      const side = document.querySelector(".side");
+      const host = document.createElement("div");
+      host.id = "ext-afd-controls";
+      host.style.cssText = "display:flex;flex-direction:column;gap:10px;margin:12px 4px 4px;padding:12px;background:#fff;border:1px solid #0f5132;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.08);";
+      (side ?? document.body).appendChild(host);
+      controlsHost = host;
+    }
+    function ensureStatusBadge() {
+      if (statusBadge) return;
+      ensureControlsHost();
+      statusBadge = document.createElement("div");
+      statusBadge.id = "ext-afd-status";
+      statusBadge.style.cssText = 'padding:5px 12px;border-radius:999px;align-self:flex-start;font:700 12px/1.3 "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);color:#fff;';
+      statusBadge.setAttribute("data-state", "init");
+      const sb = statusBadge;
+      const mount = () => {
+        if (!document.body) return;
+        ensureControlsHost();
+        if (sb && !sb.isConnected) controlsHost?.appendChild(sb);
+      };
+      document.addEventListener("DOMContentLoaded", mount);
+      _mountIntervalId1 = window.setInterval(mount, 300);
+      mount();
+    }
+    function setStatus(state) {
+      ensureStatusBadge();
+      if (!statusBadge) return;
+      statusBadge.setAttribute("data-state", state);
+      const dot = '<span style="width:9px;height:9px;border-radius:999px;background:currentColor;display:inline-block;flex-shrink:0;"></span>';
+      if (state === "loading") {
+        statusBadge.style.background = "#d97706";
+        statusBadge.innerHTML = dot + "MEMPERBARUI\u2026";
+      } else if (state === "slow") {
+        statusBadge.style.background = "#b45309";
+        statusBadge.innerHTML = dot + "MEMPERBARUI (JARINGAN LAMBAT)\u2026";
+      } else if (state === "ok") {
+        statusBadge.style.background = "#0f5132";
+        statusBadge.innerHTML = dot + "SIAP \xB7 " + (/* @__PURE__ */ new Date()).toLocaleTimeString("id-ID", { hour12: false });
+      } else {
+        statusBadge.style.background = "#b91c1c";
+        statusBadge.innerHTML = dot + "GAGAL";
+      }
+    }
+    let toolbar = null;
+    function ensureToolbar() {
+      if (toolbar) return;
+      ensureControlsHost();
+      toolbar = document.createElement("div");
+      toolbar.id = "ext-afd-toolbar";
+      toolbar.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;";
+      toolbar.innerHTML = '<button id="ext-afd-testsound" style="flex:1;min-width:120px;padding:8px 12px;border:none;border-radius:12px;background:#0f5132;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">\u{1F50A} Tes Suara</button><button id="ext-afd-fs" style="flex:1;min-width:120px;padding:8px 12px;border:none;border-radius:12px;background:#155e75;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">\u26F6 Full Screen</button>';
+      const el = toolbar;
+      const mount = () => {
+        if (!el || el.isConnected) return;
+        ensureControlsHost();
+        controlsHost?.appendChild(el);
+      };
+      if (document.body) mount();
+      else document.addEventListener("DOMContentLoaded", mount);
+      _mountIntervalId2 = window.setInterval(mount, 300);
+      toolbar.querySelector("#ext-afd-testsound")?.addEventListener("click", () => {
+        unlockAudio();
+        setStatus("loading");
+        updateDebugState({
+          ttsMode: null,
+          ttsEngine: null,
+          ttsLastError: null,
+          ttsAttempts: 0,
+          lastTtsStart: null,
+          lastTtsEnd: null
+        });
+        queue.push({ kind: "bell" }, { kind: "voice", text: "Tes suara antrian farmasi." });
+        next();
+        window.setTimeout(() => setStatus("ok"), 6e3);
+      });
+      toolbar.querySelector("#ext-afd-fs")?.addEventListener("click", () => {
+        const doc = document;
+        const el2 = document.documentElement;
+        if (document.fullscreenElement || doc.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen)
+            document.webkitExitFullscreen();
+        } else if (el2.requestFullscreen) {
+          void el2.requestFullscreen();
+        } else if (el2.webkitRequestFullscreen) {
+          el2.webkitRequestFullscreen();
+        }
+      });
+      try {
+        const fsChannel = new BroadcastChannel("morbis-antrian-display");
+        fsChannel.onmessage = (ev) => {
+          if (ev.data?.type === "toggleFullscreen") {
+            const doc = document;
+            const el2 = document.documentElement;
+            if (document.fullscreenElement || doc.webkitFullscreenElement) {
+              if (document.exitFullscreen) document.exitFullscreen();
+              else if (document.webkitExitFullscreen)
+                document.webkitExitFullscreen();
+            } else if (el2.requestFullscreen) {
+              void el2.requestFullscreen();
+            } else if (el2.webkitRequestFullscreen) {
+              el2.webkitRequestFullscreen();
+            }
+          }
+        };
+      } catch {
+      }
+    }
+    const WATCH_MS = 1500;
+    const STALE_MAX = 2;
+    let renumberCache = /* @__PURE__ */ new Map();
+    const morbisNumCache = /* @__PURE__ */ new Map();
+    const nextToCallByJenis = { tunggal: "", racikan: "" };
+    async function updateRenumber(rows) {
+      const st = await getQueueState();
+      const next2 = /* @__PURE__ */ new Map();
+      for (const r of rows) {
+        const id = String(r.ID ?? "");
+        const t = getTicket(st, id);
+        if (t) next2.set(id, t.code);
+      }
+      renumberCache = next2;
+      for (const r of rows) {
+        const id = String(r.ID ?? "");
+        const t = getTicket(st, id);
+        if (!t) continue;
+        const nomor = String(r.NOMOR ?? "").trim();
+        if (!nomor) continue;
+        const jenis = /racik/i.test(String(r.JENIS ?? "")) ? "racikan" : "tunggal";
+        morbisNumCache.set(`${jenis}:${nomor}`, {
+          code: t.code,
+          nama: String(r.NAMA_PASIEN ?? "")
+        });
+      }
+    }
+    function kodeTampil(jenis, num) {
+      if (!num || num === "0") return num;
+      if (/^[TR]-\d+$/.test(num)) return num;
+      const id = resolveCalledId(morbisStates(), num, jenis);
+      if (id) {
+        const c = renumberCache.get(id);
+        if (c) return c;
+      }
+      const cached = morbisNumCache.get(`${jenis}:${num}`);
+      if (cached?.code) return cached.code;
+      return nextToCallByJenis[jenis] || num;
+    }
+    function morbisStates() {
+      return lastRows.map((r) => toRowState(r)).filter((r) => r.id);
+    }
+    async function fetchCallData() {
+      const res = await fetch(LIST_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+        body: "type=check_antrian",
+        cache: "no-store"
+        // harus segar (nama pasien recall)
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const text = await res.text();
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) {
+        throw new Error("Respons bukan array: " + String(text).slice(0, 80));
+      }
+      return parsed;
+    }
+    function loket() {
+      const el = document.querySelector("#no_loket");
+      if (el && el.value) return el.value;
+      return "4324";
+    }
+    async function fetchCurrentNumber() {
+      const res = await fetch(
+        "/antrian-farmasi/v2?section=isi&nomor=" + encodeURIComponent(loket()),
+        {
+          method: "GET",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          cache: "no-store"
+          // jangan pernah pakai cache browser: current-number harus segar
+        }
+      );
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const html = await res.text();
+      return { current: parseCurrentNumbers(html), patients: parsePatients(html) };
+    }
+    function toViewRow(r) {
+      const j = /racik/i.test(String(r.JENIS ?? "")) ? "racikan" : "tunggal";
+      return {
+        id: String(r.ID),
+        nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : "",
+        kode: r.KODE || r.NAMA || "BT",
+        namaPasien: r.NAMA_PASIEN ?? "",
+        unit: r.NAMA_UNIT ?? "",
+        jenis: j,
+        rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : ""
+      };
+    }
+    function normalize(rows) {
+      const panggilan = [];
+      const siapDiambil = [];
+      for (const r of rows) {
+        if (!r || r.ID == null) continue;
+        const v = toViewRow(r);
+        const st = String(r.STATUS).trim();
+        const diterima = r.WAKTU_PENERIMAAN != null && String(r.WAKTU_PENERIMAAN).trim() !== "";
+        const diserahkan = r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== "";
+        if (st === "0") panggilan.push(v);
+        else if (diterima && !diserahkan) siapDiambil.push(v);
+      }
+      return { panggilan, siapDiambil };
+    }
+    const PANGGILAN_SEL = "#antrian-penyerahan";
+    const SIAP_SEL = "#antrian-view";
+    function cardSection(label, numText, nama) {
+      return '<div class="antrian-title">' + label + '</div><div class="antrian-nomor">' + (numText && numText !== "0" ? numText : "\u2014") + "</div>" + (nama ? '<div class="antrian-rm">' + nama + "</div>" : "");
+    }
+    function currentPatientName(jenis, morbisNum) {
+      if (!morbisNum || morbisNum === "0") return "";
+      const id = resolveCalledId(morbisStates(), morbisNum, jenis);
+      if (!id) return "";
+      const row = lastRows.find((r) => String(r.ID ?? "") === id);
+      if (row?.NAMA_PASIEN) return String(row.NAMA_PASIEN);
+      return morbisNumCache.get(`${jenis}:${morbisNum}`)?.nama || "";
+    }
+    function readPanelNumber(sel) {
+      const el = document.querySelector(sel);
+      if (!el) return "";
+      const m = (el.querySelector?.(".antrian-nomor")?.textContent || "").trim();
+      return /^(?:[TR]-)?\d+$/.test(m) ? m : "";
+    }
+    function highlightCurrents() {
+      const lc = document.querySelector("#list-content");
+      if (!lc) return;
+      const targets = [currentByJenis.tunggal, currentByJenis.racikan].filter((n) => n && n !== "0");
+      const names = [
+        lastByJenis.tunggal?.namaPasien || "",
+        lastByJenis.racikan?.namaPasien || ""
+      ].filter(Boolean);
+      let highlighted = null;
+      for (const dl of lc.querySelectorAll("dl")) {
+        const h4 = dl.querySelector("h4");
+        const num = ((dl.getAttribute("data-nomor-morbis") || h4?.textContent || "").match(/(\d+)$/) || [])[1] || "";
+        const dd3 = dl.querySelector("dd.col-3, dd.col-md-3");
+        const d = (dd3?.textContent || "").replace(/\s+/g, " ").trim();
+        const matchNum = targets.some((n) => num && n === num);
+        const matchName = names.some((nm) => nm && d === nm);
+        const isHighlight = matchNum || matchName;
+        dl.style.background = isHighlight ? "#fde68a" : "";
+        dl.style.fontSize = isHighlight ? "1.35em" : "";
+        if (isHighlight) {
+          highlighted = dl;
+          dl.style.outline = "3px solid #b45309";
+          dl.style.outlineOffset = "2px";
+        } else {
+          dl.style.outline = "";
+        }
+      }
+      if (highlighted) {
+        highlighted.scrollIntoView({ behavior: "smooth", block: "center" });
+        highlighted.focus?.();
+        highlighted.setAttribute("tabindex", "-1");
+        highlighted.focus();
+      }
+    }
+    function patchListContentAntrian() {
+      const lc = document.querySelector("#list-content");
+      if (!lc) return;
+      let unresolved = 0;
+      for (const dl of lc.querySelectorAll("dl")) {
+        const h4 = dl.querySelector("h4");
+        if (!h4) continue;
+        if (!dl.hasAttribute("data-nomor-morbis")) {
+          dl.setAttribute("data-nomor-morbis", (h4.textContent || "").trim());
+        }
+        if (dl.hasAttribute("data-public-code")) continue;
+        const rm = ((dl.querySelector("dd.col-3 p, dd.col-md-3 p")?.textContent || "").match(
+          /RM\s*:\s*(\d+)/i
+        ) || [])[1] || "";
+        const isR = dl.classList.contains("racikan");
+        const row = lastRows.find(
+          (r) => String(r.ID_PASIEN ?? "") === rm && (isR ? /racik/i.test(String(r.JENIS ?? "")) : !/racik/i.test(String(r.JENIS ?? "")))
+        );
+        const id = row ? String(row.ID ?? "") : "";
+        const code = id ? renumberCache.get(id) || "" : "";
+        if (code) {
+          h4.textContent = code;
+          dl.setAttribute("data-public-code", code);
+          dl.setAttribute("data-morbis-id", id);
+        } else if (rm) {
+          h4.textContent = "\u2014";
+          dl.setAttribute("data-public-code", "\u2014");
+          unresolved++;
+        }
+      }
+      if (unresolved > 0) {
+        console.warn(
+          "[AFD] tabel antrian: " + unresolved + " baris tak bisa di-resolve ke publicCode (tampil \u2014)"
+        );
+      }
+    }
+    async function recallPatient(row) {
+      const noLoket = loket();
+      const id = row.ID != null ? String(row.ID) : "";
+      const nomor = row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : "";
+      const jenis = /racik/i.test(String(row.JENIS ?? "")) ? "racikan" : "tunggal";
+      if (!id) return;
+      if (!window.confirm("Panggil ulang " + (row.NAMA_PASIEN || "") + " (" + nomor + ")?")) return;
+      try {
+        const res = await fetch("/antrian-farmasi/control", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: "id=" + encodeURIComponent(id) + "&nomor=" + encodeURIComponent(nomor) + "&jenis=" + encodeURIComponent(jenis) + "&loket=" + encodeURIComponent(noLoket)
+        });
+        if (!res.ok) {
+          console.error("[AFD] recall gagal HTTP", res.status);
+          return;
+        }
+        const loader = window;
+        if (typeof loader.contentloader === "function") {
+          loader.contentloader("/antrian-farmasi/v2?section=isi&nomor=" + noLoket, "#isi");
+        }
+      } catch (e) {
+        console.error("[AFD] recall error", e);
+      }
+    }
+    function wireRowRecall() {
+      const lc = document.querySelector("#list-content");
+      if (!lc || lc.__afdRecall) return;
+      lc.__afdRecall = true;
+      const rows = lc.querySelectorAll("dl");
+      for (const dl of rows) {
+        const dd3 = dl.querySelector("dd.col-3, dd.col-md-3");
+        const nameTxt = (dd3?.textContent || "").replace(/\s+/g, " ").trim();
+        if (!nameTxt || dl.__afdRec) continue;
+        dl.__afdRec = true;
+        dl.addEventListener("click", () => {
+          const row = lastRows.find(
+            (r) => ((r.NAMA_PASIEN || "").replace(/\s+/g, " ").trim() || "").indexOf(nameTxt) !== -1
+          );
+          if (row) void recallPatient(row);
+        });
+      }
+    }
+    function processLocalRecall() {
+      try {
+        const raw = localStorage.getItem("ext-afd-recall");
+        if (!raw) return;
+        const sig = JSON.parse(raw);
+        const key = `${sig.jenis}:${sig.nomor}`;
+        const segar = Date.now() - (sig.ts || 0) < 8e3;
+        if (segar && key !== lastLocalRecallKey) {
+          lastLocalRecallKey = key;
+          localStorage.removeItem("ext-afd-recall");
+          const jenis = sig.jenis === "racikan" ? "racikan" : "tunggal";
+          const kode = kodeTampil(jenis, sig.nomor);
+          const nama = currentPatientName(jenis, sig.nomor) || (lastCalled && lastCalled.jenis === jenis ? lastCalled.namaPasien : "");
+          updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
+          announce({
+            id: `local-recall-${key}`,
+            nomor: kode,
+            kode: "",
+            namaPasien: nama,
+            unit: "",
+            jenis,
+            rm: ""
+          });
+        }
+      } catch {
+      }
+    }
+    async function refreshCardNumber() {
+      const tickT0 = Date.now();
+      if (document.hidden) {
+        cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
+        return;
+      }
+      setStatus("loading");
+      processLocalRecall();
+      try {
+        const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
+        lastRows = rows;
+        await updateRenumber(rows);
+        patchListContentAntrian();
+        updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
+        const g1 = cur.get("1")?.trim();
+        const g2 = cur.get("2")?.trim();
+        currentByJenis.tunggal = g1 && g1 !== "0" ? g1 : "";
+        currentByJenis.racikan = g2 && g2 !== "0" ? g2 : "";
+        let justReset = false;
+        if (isReset(cur, prevCurrent)) {
+          clearCallState();
+          justReset = true;
+          void resetQueueAfterAntrian();
+        }
+        prevCurrent.clear();
+        for (const [c, v] of cur) prevCurrent.set(c, v);
+        updateDebugState({
+          currentByJenis: { ...currentByJenis },
+          lastNormalKey
+        });
+        const panelT = readPanelNumber(PANGGILAN_SEL);
+        const panelR = readPanelNumber(SIAP_SEL);
+        const recallT = !justReset && currentByJenis.tunggal !== "" && panelT && panelT !== "0" && panelT !== currentByJenis.tunggal && panelT !== writtenByUs.tunggal;
+        const recallR = !justReset && currentByJenis.racikan !== "" && panelR && panelR !== "0" && panelR !== currentByJenis.racikan && panelR !== writtenByUs.racikan;
+        if (recallT || recallR) {
+          const jenis = recallT ? "tunggal" : "racikan";
+          const panelNum = recallT ? panelT : panelR;
+          const kode = kodeTampil(jenis, panelNum);
+          const key = jenis + ":" + kode;
+          if (key !== lastNativeCall) {
+            lastNativeCall = key;
+            const nama = currentPatientName(jenis, panelNum) || (lastCalled && lastCalled.jenis === jenis ? lastCalled.namaPasien : "");
+            announce({
+              id: "recall:" + key,
+              nomor: kode,
+              kode: "",
+              namaPasien: nama,
+              unit: "",
+              jenis,
+              rm: ""
+            });
+            updateDebugState({ lastAnnouncement: "recall:" + key });
+          }
+          setStatus("ok");
+          return;
+        }
+        for (const j of ["tunggal", "racikan"]) {
+          const cur2 = currentByJenis[j];
+          const prev = prevByJenis[j];
+          if (cur2 && cur2 !== "0" && cur2 !== prev) {
+            const kode = kodeTampil(j, cur2);
+            const key = j + ":" + kode;
+            if (key !== lastNormalKey) {
+              lastNormalKey = key;
+              lastNativeCall = null;
+              const nama = currentPatientName(j, cur2);
+              announce({
+                id: key,
+                nomor: kode,
+                kode: "",
+                namaPasien: nama,
+                unit: "",
+                jenis: j,
+                rm: ""
+              });
+              updateDebugState({ lastAnnouncement: key });
+            }
+          }
+          prevByJenis[j] = cur2 || "";
+        }
+        {
+          renderCardPanel();
+          highlightCurrents();
+          writtenByUs.tunggal = kodeTampil("tunggal", currentByJenis.tunggal) || nextToCallByJenis.tunggal;
+          writtenByUs.racikan = kodeTampil("racikan", currentByJenis.racikan) || nextToCallByJenis.racikan;
+          updateDebugState({ writtenByUs: { ...writtenByUs } });
+          onWeWrote();
+          setStatus("ok");
+        }
+      } catch {
+        setStatus("error");
+      } finally {
+        if (Date.now() - tickT0 > 1e3) {
+          const cur = statusBadge?.getAttribute("data-state");
+          if (cur !== "error") setStatus("slow");
+        }
+        cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
+      }
+    }
+    function renderDisplay(view, call) {
+      renderCardPanel(view);
+      if (call) {
+        lastByJenis[call.jenis] = call;
+        seedLastByJenis(view);
+        const kodeT = kodeTampil("tunggal", currentByJenis.tunggal);
+        const kodeR = kodeTampil("racikan", currentByJenis.racikan);
+        const atasRecall = readPanelNumber(PANGGILAN_SEL) && readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal && readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
+        const bawahRecall = readPanelNumber(SIAP_SEL) && readPanelNumber(SIAP_SEL) !== currentByJenis.racikan && readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
+        const atas = atasRecall ? null : document.querySelector(PANGGILAN_SEL);
+        if (atas)
+          atas.innerHTML = cardSection(
+            "Obat Tunggal",
+            kodeT,
+            currentPatientName("tunggal", currentByJenis.tunggal)
+          );
+        const bawah = bawahRecall ? null : document.querySelector(SIAP_SEL);
+        if (bawah)
+          bawah.innerHTML = cardSection(
+            "Obat Racikan",
+            kodeR,
+            currentPatientName("racikan", currentByJenis.racikan)
+          );
+        highlightCurrents();
+        wireRowRecall();
+        writtenByUs.tunggal = kodeT;
+        writtenByUs.racikan = kodeR;
+      }
+      onWeWrote();
+    }
+    function renderCardPanel(_view) {
+      const atas = document.querySelector(PANGGILAN_SEL);
+      const bawah = document.querySelector(SIAP_SEL);
+      const curT = currentByJenis.tunggal;
+      const curR = currentByJenis.racikan;
+      const t = kodeTampil("tunggal", curT) || nextToCallByJenis.tunggal;
+      const r = kodeTampil("racikan", curR) || nextToCallByJenis.racikan;
+      if (atas)
+        atas.innerHTML = cardSection(
+          "Obat Tunggal",
+          t,
+          curT ? currentPatientName("tunggal", curT) : ""
+        );
+      if (bawah)
+        bawah.innerHTML = cardSection(
+          "Obat Racikan",
+          r,
+          curR ? currentPatientName("racikan", curR) : ""
+        );
+    }
+    function seedLastByJenis(view) {
+      for (const row of view.panggilan) {
+        if (!lastByJenis[row.jenis]) lastByJenis[row.jenis] = row;
+      }
+      for (const row of lastRows) {
+        const v = toViewRow(row);
+        lastByJenis[v.jenis] = v;
+      }
+    }
+    let announcedSig = "";
+    const prevCurrent = /* @__PURE__ */ new Map();
+    let currentCall = null;
+    let baselineSet = false;
+    const lastByJenis = {
+      tunggal: null,
+      racikan: null
+    };
+    const currentByJenis = {
+      tunggal: "",
+      racikan: ""
+    };
+    const prevByJenis = { tunggal: "", racikan: "" };
+    const writtenByUs = { tunggal: "", racikan: "" };
+    let lastNativeCall = null;
+    let lastLocalRecallKey = "";
+    let lastRows = [];
+    let lastNormalKey = "";
+    let lastCalled = null;
+    function clearCallState() {
+      lastCalled = null;
+      lastNativeCall = null;
+      lastLocalRecallKey = "";
+      announcedSig = "";
+      lastNormalKey = "";
+      prevByJenis.tunggal = "";
+      prevByJenis.racikan = "";
+      prevCurrent.clear();
+      updateDebugState({
+        lastCalledPatient: null,
+        lastCalledNumber: null,
+        lastRealtimeEvent: "reset"
+      });
+    }
+    let lastQueueResetAt = 0;
+    function resetQueueAfterAntrian() {
+      const now = Date.now();
+      if (now - lastQueueResetAt < 3e3) return;
+      lastQueueResetAt = now;
+      void reset().then(() => {
+        renumberCache.clear();
+        morbisNumCache.clear();
+        nextToCallByJenis.tunggal = "";
+        nextToCallByJenis.racikan = "";
+        updateDebugState({ lastRealtimeEvent: "reset:queue" });
+      }).catch((err) => {
+        console.warn("[FarmasiDisplay] reset QueueManager gagal:", err);
+      });
+    }
+    const synth = window.speechSynthesis;
+    const RealSpeak = synth.speak.bind(synth);
+    let busy = false;
+    const queue = [];
+    function next() {
+      if (busy || queue.length === 0) return;
+      busy = true;
+      const item = queue.shift();
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        busy = false;
+        setTimeout(() => next(), GAP_MS);
+      };
+      if (item.kind === "bell") {
+        ringBell(finish);
+        return;
+      }
+      void playVoice(item.text).then(finish, finish);
+    }
+    let voicesCache = [];
+    function ensureVoices() {
+      if (voicesCache.length > 0) return Promise.resolve(voicesCache);
+      return new Promise((resolve) => {
+        const got = () => {
+          const vs = synth.getVoices();
+          if (vs.length > 0) {
+            voicesCache = vs;
+            resolve(vs);
+            return true;
+          }
+          return false;
+        };
+        if (got()) return;
+        let tries = 0;
+        const timer = window.setInterval(() => {
+          tries += 1;
+          if (got() || tries >= 50) {
+            window.clearInterval(timer);
+            if (!voicesCache.length) {
+              voicesCache = synth.getVoices();
+              resolve(voicesCache);
+            }
+          }
+        }, 100);
+        synth.addEventListener("voiceschanged", () => {
+          if (!voicesCache.length) got();
+        });
+      });
+    }
+    function pickVoice(prefer) {
+      const vs = voicesCache;
+      const low = (s) => (s || "").toLowerCase();
+      if (prefer === "id-local")
+        return vs.find((v) => low(v.lang).startsWith("id") && v.localService) ?? vs.find((v) => /indonesia/i.test(v.name)) ?? null;
+      if (prefer === "id-any") return vs.find((v) => low(v.lang).startsWith("id")) ?? null;
+      if (prefer === "any-local") return vs.find((v) => v.localService) ?? null;
+      return vs[0] ?? null;
+    }
+    function speakSynth(text, voice, timeoutMs = 2e4) {
+      return new Promise((resolve) => {
+        try {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = voice && voice.lang || "id-ID";
+          if (voice) u.voice = voice;
+          u.rate = 0.8;
+          u.volume = 1;
+          let started2 = false;
+          let done = false;
+          const t0 = Date.now();
+          const fin = (ok) => {
+            if (done) return;
+            done = true;
+            window.clearTimeout(timer);
+            updateDebugState({ lastTtsEnd: Date.now() });
+            console.info(
+              "[AFD] [TTS] speakSynth " + (ok ? "SUCCESS" : "FAIL") + " voice=" + (voice ? voice.name + "/" + voice.lang + (voice.localService ? "/local" : "/net") : "null") + " durasi=" + (Date.now() - t0) + "ms"
+            );
+            resolve(ok);
+          };
+          u.onstart = () => {
+            started2 = true;
+            updateDebugState({ lastTtsStart: Date.now() });
+            console.info("[AFD] [TTS] onstart voice=" + (voice ? voice.name : "null"));
+          };
+          u.onend = () => fin(true);
+          u.onerror = (e) => {
+            console.info("[AFD] [TTS] onerror started=" + started2 + " err=" + (e.error || ""));
+            fin(started2);
+          };
+          RealSpeak.call(synth, u);
+          const timer = window.setTimeout(() => {
+            console.info("[AFD] [TTS] timeout " + timeoutMs + "ms started=" + started2);
+            fin(started2);
+          }, timeoutMs);
+        } catch (e) {
+          console.info("[AFD] [TTS] speakSynth throw", e);
+          resolve(false);
+        }
+      });
+    }
+    function isServerVoiceAllowed() {
+      try {
+        return document.documentElement.getAttribute("data-ext-tts-server") !== "0";
+      } catch {
+        return true;
+      }
+    }
+    function speakServerMp3(text, timeoutMs = 15e3) {
+      const url = buildTtsUrl(sanitizeTtsText(text));
+      return new Promise((resolve) => {
+        let settled = false;
+        let objUrl = null;
+        let audio = null;
+        const fin = (ok) => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          if (audio) {
+            audio.onended = null;
+            audio.onerror = null;
+            audio.oncanplay = null;
+          }
+          if (objUrl) URL.revokeObjectURL(objUrl);
+          updateDebugState({ lastTtsEnd: Date.now() });
+          console.info("[AFD] [TTS] server-mp3 " + (ok ? "SUCCESS" : "FAIL"));
+          resolve(ok);
+        };
+        const timer = window.setTimeout(() => fin(false), timeoutMs);
+        const playAudio = (src) => {
+          audio = new Audio(src);
+          audio.onended = () => fin(true);
+          audio.onerror = () => fin(false);
+          audio.oncanplay = () => {
+            void audio.play().catch(() => fin(false));
+          };
+          audio.load();
+        };
+        fetch(url, { mode: "cors" }).then((r) => {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.blob();
+        }).then((blob) => {
+          if (!blob || blob.size === 0) throw new Error("empty blob");
+          objUrl = URL.createObjectURL(blob);
+          playAudio(objUrl);
+        }).catch(() => playAudio(url));
+      });
+    }
+    function speakLocalService(text, timeoutMs = 1e4) {
+      return new Promise((resolve) => {
+        let settled = false;
+        let objUrl = null;
+        let audio = null;
+        const fin = (ok, reason) => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          if (audio) {
+            audio.onended = null;
+            audio.onerror = null;
+            audio.oncanplay = null;
+            audio.onplay = null;
+          }
+          if (objUrl) URL.revokeObjectURL(objUrl);
+          updateDebugState({ lastTtsEnd: Date.now(), ttsTrace: [...ttsTrace, "end:" + reason] });
+          console.info("[AFD] [TTS] local-service " + (ok ? "SUCCESS" : "FAIL " + reason));
+          resolve({ ok, reason });
+        };
+        const ttsTrace = ["start"];
+        const timer = window.setTimeout(() => fin(false, "timeout"), timeoutMs);
+        const playAudio = (src) => {
+          ttsTrace.push("audio-new");
+          audio = new Audio(src);
+          audio.onplay = () => {
+            ttsTrace.push("play");
+            updateDebugState({ lastTtsStart: Date.now(), ttsTrace: [...ttsTrace] });
+          };
+          audio.onended = () => fin(true, "ended");
+          audio.onerror = () => fin(false, "audio-error " + (audio && audio.error ? audio.error.code : "?"));
+          audio.oncanplay = () => {
+            ttsTrace.push("canplay");
+            audio.play().catch((e) => fin(false, "play-rejected " + String(e).slice(0, 60)));
+          };
+          audio.load();
+        };
+        try {
+          const reqId = "tts-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
+          const onResult = (event) => {
+            if (event.source !== window) return;
+            const d = event.data;
+            if (!d || d.source !== "MORBIS-FARMASI-BRIDGE" || d.type !== "TTS_RESULT" || d.id !== reqId)
+              return;
+            window.removeEventListener("message", onResult);
+            if (!d.ok) {
+              fin(false, d.reason || "message-error no-response");
+              return;
+            }
+            if (!d.data || d.data.length === 0) {
+              fin(false, "blob-error empty-data");
+              return;
+            }
+            ttsTrace.push("blob:" + d.data.length);
+            const bytes = new Uint8Array(d.data);
+            const blob = new Blob([bytes], { type: d.mime || "audio/mpeg" });
+            objUrl = URL.createObjectURL(blob);
+            playAudio(objUrl);
+          };
+          window.addEventListener("message", onResult);
+          window.postMessage({ source: "MORBIS-FARMASI", type: "TTS_REQUEST", id: reqId, text }, "*");
+        } catch (e) {
+          fin(false, "message-error postmessage " + String(e).slice(0, 40));
+        }
+      });
+    }
+    async function playVoice(text) {
+      updateDebugState({ ttsAttempts: 0, ttsLastError: null, ttsEngine: null });
+      try {
+        synth.cancel();
+      } catch {
+      }
+      await ensureVoices();
+      console.info("[AFD] [TTS] voices=" + voicesCache.map((v) => v.name).join(", "));
+      const svc = await speakLocalService(text);
+      if (svc.ok) {
+        updateDebugState({ ttsMode: "local", ttsEngine: "local-service:8765" });
+        return;
+      }
+      const ttsFailDetail = "local-service: " + svc.reason;
+      updateDebugState({ ttsLastError: ttsFailDetail });
+      const idLocal = pickVoice("id-local");
+      if (idLocal) {
+        updateDebugState({ ttsMode: "speech", ttsEngine: "speech:" + idLocal.name });
+        const ok = await speakSynth(text, idLocal);
+        if (ok) return;
+      }
+      const serverVoiceOk = isServerVoiceAllowed();
+      const idAny = pickVoice("id-any");
+      if (idAny && idAny !== idLocal && (serverVoiceOk || idAny.localService)) {
+        updateDebugState({ ttsMode: "speech", ttsEngine: "speech:" + idAny.name, ttsAttempts: 1 });
+        const ok = await speakSynth(text, idAny);
+        if (ok) return;
+      }
+      const anyLocal = pickVoice("any-local");
+      if (anyLocal && anyLocal !== idLocal && anyLocal !== idAny) {
+        updateDebugState({ ttsMode: "local", ttsEngine: "local:" + anyLocal.name, ttsAttempts: 2 });
+        const ok = await speakSynth(text, anyLocal);
+        if (ok) return;
+      }
+      if (serverVoiceOk) {
+        updateDebugState({ ttsMode: "mp3", ttsEngine: "rs-server", ttsAttempts: 3 });
+        const okMp3 = await speakServerMp3(text);
+        if (okMp3) return;
+      }
+      updateDebugState({
+        ttsMode: "error",
+        ttsEngine: null,
+        ttsLastError: "all engines failed \u2014 layer0=" + ttsFailDetail + " (speech id-local/id-any/any-local, server-mp3" + (serverVoiceOk ? "" : " nonaktif") + ")",
+        ttsAttempts: 4
+      });
+      updateDebugState({ lastTtsEnd: Date.now() });
+      console.error("[AFD] [TTS] semua engine gagal utk:", text.slice(0, 40));
+    }
+    let bellCtx = null;
+    function ringBell(onDone) {
+      try {
+        const Ctor = window.AudioContext || window.webkitAudioContext;
+        if (!Ctor) return onDone();
+        bellCtx = bellCtx || new Ctor();
+        void bellCtx.resume();
+        const now = bellCtx.currentTime;
+        const notes = [
+          [1318.5, now],
+          [1760, now + 0.14]
+        ];
+        for (const [freq, t0] of notes) {
+          const osc = bellCtx.createOscillator();
+          const g = bellCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, t0);
+          g.gain.setValueAtTime(1e-4, t0);
+          g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
+          g.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.16);
+          osc.connect(g);
+          g.connect(bellCtx.destination);
+          osc.start(t0);
+          osc.stop(t0 + 0.18);
+        }
+        const totalMs = 140 + 180 + 30;
+        setTimeout(onDone, totalMs);
+      } catch {
+        onDone();
+      }
+    }
+    function titleCase(s) {
+      return s.split(/\s+/).map((w) => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w).join(" ");
+    }
+    function announce(row) {
+      if (!audioUnlocked) {
+        console.warn("[FarmasiDisplay] audio belum unlocked \u2014 TTS/bell dilewati");
+        return;
+      }
+      lastCalled = {
+        id: String(row.id || ""),
+        jenis: row.jenis,
+        nomor: String(row.nomor),
+        namaPasien: String(row.namaPasien || "")
+      };
+      const calledId = String(row.id || "");
+      if (calledId && !calledId.startsWith("cur-")) {
+        markCalled(calledId).catch(() => {
+        });
+      }
+      updateDebugState({
+        lastCalledPatient: lastCalled.namaPasien,
+        lastCalledNumber: lastCalled.nomor,
+        lastRealtimeEvent: "announce:" + row.id
+      });
+      const kalimat = row.namaPasien ? "Antrian resep obat, atas nama " + titleCase(String(row.namaPasien)) + ". Silakan ke loket farmasi." : "Antrian resep obat. Silakan ke loket farmasi.";
+      for (let i = queue.length - 1; i >= 0; i--) {
+        const qi = queue[i];
+        if (qi.kind === "voice") queue.splice(i, 1);
+      }
+      queue.push(
+        { kind: "bell" },
+        { kind: "voice", text: kalimat },
+        { kind: "voice", text: kalimat, repeat: true }
+      );
+      next();
+    }
+    let audioUnlocked = false;
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      updateDebugState({ audioUnlocked: true });
+      document.removeEventListener("pointerdown", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+      console.log("[FarmasiDisplay] audio unlocked via gesture");
+    }
+    document.addEventListener("pointerdown", unlockAudio);
+    document.addEventListener("keydown", unlockAudio);
+    (function tryAutoUnlock() {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        unlockAudio();
+      };
+      const run = () => {
+        try {
+          const Ctor = window.AudioContext;
+          if (Ctor) {
+            const a = new Ctor();
+            a.onstatechange = () => {
+              if (a.state === "running") {
+                a.close().catch(() => {
+                });
+                finish();
+              }
+            };
+            void a.resume().catch(() => {
+            });
+            window.setTimeout(() => {
+              if (done) return;
+              try {
+                if (a.state === "running") {
+                  a.close().catch(() => {
+                  });
+                  finish();
+                }
+              } catch {
+              }
+            }, 800);
+          } else {
+            finish();
+          }
+        } catch {
+          finish();
+        }
+      };
+      if (document.readyState !== "loading") run();
+      else document.addEventListener("DOMContentLoaded", run);
+    })();
+    let voiceEnabled = false;
+    let started = false;
+    let watchTimer = null;
+    let _mountIntervalId1 = null;
+    let _mountIntervalId2 = null;
+    let pollTimer = null;
+    let cardTimer = null;
+    const healthCfg = { staleMax: STALE_MAX };
+    let health = { nativeActive: true, staleStreak: 0, nativeSig: "", ourSig: "" };
+    const debugEnabled = new URLSearchParams(window.location.search).get("debug") === "1";
+    const debugState = {
+      started: false,
+      mode: "NATIVE",
+      nativeActive: true,
+      pollingActive: false,
+      lastNativeActivity: null,
+      lastPoll: null,
+      lastDataCount: null,
+      lastAnnouncement: null,
+      audioUnlocked: false,
+      ttsMode: null,
+      ttsEngine: null,
+      ttsLastError: null,
+      ttsAttempts: 0,
+      lastCalledPatient: null,
+      lastCalledNumber: null,
+      lastTtsStart: null,
+      lastTtsEnd: null,
+      lastRealtimeEvent: null,
+      ttsTrace: null
+    };
+    function updateDebugState(patch) {
+      if (!debugEnabled) return;
+      Object.assign(debugState, patch);
+      window.__ANTRIAN_FARMASI_DEBUG__ = { ...debugState };
+      document.documentElement.setAttribute("data-afd-debug", JSON.stringify(debugState));
+      document.documentElement.setAttribute(
+        "data-afd-world",
+        typeof chrome !== "undefined" && !!chrome.runtime ? "isolated-has-cr" : "no-cr"
+      );
+    }
+    function domSignal() {
+      const p = document.querySelector(PANGGILAN_SEL);
+      const s = document.querySelector(SIAP_SEL);
+      return (p ? p.textContent ?? "" : "") + "|" + (s ? s.textContent ?? "" : "");
+    }
+    function onWeWrote() {
+      health = nextHealth(health, { type: "we-wrote", signal: domSignal() }, healthCfg).next;
+    }
+    function stopPolling() {
+      if (pollTimer) {
+        window.clearTimeout(pollTimer);
+        pollTimer = null;
+      }
+    }
+    function schedulePoll() {
+      if (health.nativeActive || pollTimer) return;
+      if (!voiceEnabled) return;
+      pollTimer = window.setTimeout(() => void pollFallback(), POLL_LADDER_MS[ladderIdx]);
+    }
+    let ladderIdx = 0;
+    async function pollFallback() {
+      pollTimer = null;
+      try {
+        const [{ current: cur, patients }, rows] = await Promise.all([
+          fetchCurrentNumber(),
+          fetchCallData()
+        ]);
+        ladderIdx = 0;
+        updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
+        lastRows = rows;
+        await updateRenumber(rows);
+        const view = normalize(rows);
+        const num = activeNumber(cur);
+        const g1 = cur.get("1")?.trim();
+        const g2 = cur.get("2")?.trim();
+        currentByJenis.tunggal = g1 && g1 !== "0" ? g1 : "";
+        currentByJenis.racikan = g2 && g2 !== "0" ? g2 : "";
+        const sig = num !== "" ? [...cur.entries()].filter(([, v]) => v === num).map(([c]) => c + ":" + num).join("|") : "";
+        if (num !== "") {
+          const domNames = parseListContentPatient(document.querySelector("#list-content"));
+          let pr = domNames.get(num);
+          if (!pr || !pr.nama) pr = patients.get(num);
+          const mPat = matchPatient(rows, num);
+          const call = {
+            id: "cur-" + num,
+            nomor: kodeTampil(mPat?.jenis || "tunggal", num),
+            // kode renumber (kertas)
+            kode: pr && pr.kode || mPat?.kode || "",
+            namaPasien: pr && pr.nama || mPat?.namaPasien || "",
+            unit: mPat?.unit || "",
+            jenis: mPat?.jenis || "tunggal",
+            rm: mPat?.rm || ""
+          };
+          if (!baselineSet) {
+            baselineSet = true;
+            currentCall = call;
+            renderDisplay(view, currentCall);
+          } else if (sig !== announcedSig && isNewCurrent(cur)) {
+            if (isReset(cur, prevCurrent)) {
+              clearCallState();
+              resetQueueAfterAntrian();
+              currentCall = call;
+              renderDisplay(view, currentCall);
+            } else {
+              announcedSig = sig;
+              currentCall = call;
+              renderDisplay(view, currentCall);
+              maybeAnnounce(view, currentCall);
+            }
+          } else {
+            if (currentCall) renderDisplay(view, currentCall);
+            else {
+              currentCall = call;
+              renderDisplay(view, currentCall);
+            }
+          }
+        } else if (view.siapDiambil.length > 0) {
+          if (currentCall) renderDisplay(view, currentCall);
+        }
+      } catch (error) {
+        ladderIdx = Math.min(ladderIdx + 1, POLL_LADDER_MS.length - 1);
+        console.warn(
+          "[FarmasiDisplay] fallback gagal (backoff " + POLL_LADDER_MS[ladderIdx] + "ms):",
+          error
+        );
+      } finally {
+        schedulePoll();
+      }
+    }
+    function isNewCurrent(cur) {
+      if (prevCurrent.size === 0) return false;
+      for (const [c, v] of cur) {
+        if (prevCurrent.get(c) !== v) return true;
+      }
+      return false;
+    }
+    function matchPatient(rows, nomor) {
+      const states = rows.map((r) => toRowState(r)).filter((r) => r.id);
+      const id = resolveCalledId(states, nomor, "tunggal") ?? resolveCalledId(states, nomor, "racikan");
+      const hit = id ? rows.find((r) => String(r.ID ?? "") === id) : null;
+      return hit ? toViewRow(hit) : null;
+    }
+    function maybeAnnounce(view, call) {
+      if (!voiceEnabled) return;
+      const key = call.jenis + ":" + call.nomor;
+      if (key === lastNormalKey) {
+        console.info("[AFD] duplicate ignored " + key);
+        return;
+      }
+      lastNormalKey = key;
+      announcedSig = call.id;
+      updateDebugState({ lastAnnouncement: key });
+      console.info("[AFD] ANNOUNCE " + key);
+      announce(call);
+    }
+    let lastMode = "NATIVE";
+    function watch() {
+      const result = nextHealth(health, { type: "observe", signal: domSignal() }, healthCfg);
+      health = result.next;
+      if (result.startPolling) {
+        ladderIdx = 0;
+        schedulePoll();
+        if (lastMode !== "FALLBACK") {
+          lastMode = "FALLBACK";
+          console.info("[AFD] MODE=FALLBACK");
+        }
+        updateDebugState({ mode: "FALLBACK", nativeActive: false, pollingActive: true });
+      } else if (result.stopPolling) {
+        stopPolling();
+        if (lastMode !== "NATIVE") {
+          lastMode = "NATIVE";
+          console.info("[AFD] MODE=NATIVE");
+        }
+        updateDebugState({
+          mode: "NATIVE",
+          nativeActive: true,
+          pollingActive: false,
+          lastNativeActivity: Date.now()
+        });
+      } else if (!health.nativeActive && lastMode !== "FALLBACK") {
+        lastMode = "FALLBACK";
+        updateDebugState({ mode: "FALLBACK", nativeActive: false, pollingActive: true });
+      }
+    }
+    function hideNativeSwal() {
+      const s = document.createElement("style");
+      s.id = "ext-afd-hide-swal";
+      s.textContent = ".swal2-container, .swal2-backdrop { display: none !important; visibility: hidden !important; }";
+      (document.head || document.documentElement).appendChild(s);
+      const mo = new MutationObserver(() => {
+        document.querySelectorAll(".swal2-container").forEach((el) => {
+          el.style.display = "none";
+        });
+      });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    }
+    function startWithRole() {
+      if (started) return;
+      started = true;
+      updateDebugState({ started: true });
+      hideNativeSwal();
+      const qp = new URLSearchParams(window.location.search);
+      if (qp.get("extReset") === "1") {
+        qp.delete("extReset");
+        const qs = qp.toString();
+        window.history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
+        void reset().then((s) => {
+          console.log(
+            "[MORBIS Ext] queue di-reset (tiket aktif: " + Object.keys(s.tickets ?? {}).length + ")"
+          );
+        });
+      }
+      ensureStatusBadge();
+      ensureToolbar();
+      setStatus("loading");
+      const lc = document.querySelector("#list-content");
+      if (lc && !lc.hasAttribute("data-ext-afd-patch")) {
+        lc.setAttribute("data-ext-afd-patch", "1");
+        new MutationObserver(() => {
+          patchListContentAntrian();
+        }).observe(lc, { childList: true, subtree: true });
+      }
+      patchListContentAntrian();
+      voiceEnabled = true;
+      ensureVoices().catch(() => {
+      });
+      health = { ...health, nativeSig: domSignal() };
+      if (watchTimer === null) {
+        watchTimer = setInterval(watch, WATCH_MS);
+      }
+      if (cardTimer === null) {
+        void refreshCardNumber();
+      }
+    }
+    startWithRole();
+    const _cleanupAfd = () => {
+      if (_mountIntervalId1 !== null) clearInterval(_mountIntervalId1);
+      if (_mountIntervalId2 !== null) clearInterval(_mountIntervalId2);
+    };
+    window.addEventListener("beforeunload", _cleanupAfd);
+  })();
+})();
+//# sourceMappingURL=antrianFarmasiDisplay.js.map
