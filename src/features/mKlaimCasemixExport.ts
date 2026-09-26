@@ -183,8 +183,8 @@ export function buildExportHtml(
     `<th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` +
     (centralOk
       ? ''
-      : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export ` +
-        `(offline/sinyal lambat) — kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
+      : `<p style="color:#b45309"><b>Catatan:</b> Server Reports HTTP — ` +
+        `kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
     // TANPA inline <script>: window about:blank mewarisi CSP extension
     // yang memblokir 'unsafe-inline' → cetak dipicu dari opener
     // (w.print() di processExport), bukan dari dalam dokumen.

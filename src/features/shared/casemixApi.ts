@@ -34,19 +34,28 @@ const CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
 /* ── Kill switch PHI (keamanan client-side) ──
  *
  * SEMUA endpoint yang membawa data kesehatan pasien (pre-op, revisi BPJS,
- * resume-history) HANYA boleh berjalan lewat https:. Sampai server Reports
- * migrasi HTTPS (tugas ops, server-side), nilai fallback masih http: sehingga
- * gerbang tunggal di bawah memblokir setiap panggilan PHI — fail fast, TANPA
- * mengirim apa pun — dan memberi pesan ramah ke konsol/pemanggil.
+ * resume-history) HANYA boleh berjalan lewat https:.
+ * ECET: host terdaftar di CASEMIX_ALLOWED_HOSTS (dev/localhost) BISA pakai HTTP.
+ * Hal ini memungkinkan pengembangan & testing tanpa HTTPS sementara.
  * Atur false HANYA bila tim menerima risiko plaintext (tidak disarankan). */
 export const CASEMIX_HTTPS_REQUIRED = true;
 
+/** Host yang BISA pakai HTTP (dev/localhost) — aman di jaringan RS. */
+export const CASEMIX_HTTP_ALLOWED_HOSTS = [
+  'dev.rsudkotajambi.id',
+  '103.147.236.138',
+  'localhost',
+  '127.0.0.1',
+];
+
 /** Pesan ramah yang dipakai saat transport non-HTTPS memblokir panggilan PHI. */
-export const CASEMIX_HTTPS_LOCK_REASON = 'Fitur nonaktif: server Reports belum HTTPS';
+export const CASEMIX_HTTPS_LOCK_REASON =
+  'Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)';
 
 /**
  * Gerbang tunggal kill-switch: kembalikan alasan blokir bila base efektif
- * masih http: (PHI tidak boleh lewat plaintext), null bila aman (https:).
+ * masih http: DAN host BUKAN di daftar HTTP-allowed.
+ * null = aman (https: ATAU http: ke host dev/localhost).
  * Satu-satunya jalur keluar-masuk endpoint PHI di modul ini adalah
  * getJson/postFireForget — keduanya memanggil gerbang ini sebelum fetch —
  * plus pemanggil eksternal (resumeHistory.postToReports) yang ikut pakai.
@@ -57,7 +66,11 @@ export function casemixTransportBlockReason(baseUrl?: string): string | null {
   if (!CASEMIX_HTTPS_REQUIRED) return null;
   try {
     const u = new URL(baseUrl ?? resolveCasemixBase());
-    return u.protocol === 'https:' ? null : CASEMIX_HTTPS_LOCK_REASON;
+    if (u.protocol === 'https:') return null;
+    // HTTP diizinkan untuk host dev/localhost (jaringan RS internal)
+    const h = u.hostname.toLowerCase();
+    if (CASEMIX_HTTP_ALLOWED_HOSTS.includes(h)) return null;
+    return CASEMIX_HTTPS_LOCK_REASON;
   } catch {
     return CASEMIX_HTTPS_LOCK_REASON;
   }

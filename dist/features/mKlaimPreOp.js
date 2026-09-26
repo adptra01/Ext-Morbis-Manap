@@ -156,12 +156,16 @@ var __morbis_feature = (() => {
   var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
   var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
   var CASEMIX_HTTPS_REQUIRED = true;
-  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports belum HTTPS";
+  var CASEMIX_HTTP_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
   function casemixTransportBlockReason(baseUrl) {
     if (!CASEMIX_HTTPS_REQUIRED) return null;
     try {
       const u = new URL(baseUrl ?? resolveCasemixBase());
-      return u.protocol === "https:" ? null : CASEMIX_HTTPS_LOCK_REASON;
+      if (u.protocol === "https:") return null;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_HTTP_ALLOWED_HOSTS.includes(h)) return null;
+      return CASEMIX_HTTPS_LOCK_REASON;
     } catch {
       return CASEMIX_HTTPS_LOCK_REASON;
     }

@@ -40,12 +40,16 @@ var __morbis_feature = (() => {
   var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
   var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
   var CASEMIX_HTTPS_REQUIRED = true;
-  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports belum HTTPS";
+  var CASEMIX_HTTP_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
   function casemixTransportBlockReason(baseUrl) {
     if (!CASEMIX_HTTPS_REQUIRED) return null;
     try {
       const u = new URL(baseUrl ?? resolveCasemixBase());
-      return u.protocol === "https:" ? null : CASEMIX_HTTPS_LOCK_REASON;
+      if (u.protocol === "https:") return null;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_HTTP_ALLOWED_HOSTS.includes(h)) return null;
+      return CASEMIX_HTTPS_LOCK_REASON;
     } catch {
       return CASEMIX_HTTPS_LOCK_REASON;
     }
@@ -296,7 +300,7 @@ var __morbis_feature = (() => {
       return `<tr><td>${i + 1}</td><td>${esc(r.norm)}</td><td>${esc(r.nama)}</td><td>${esc(r.noReg)}</td><td>${esc(r.poli)}</td><td>${m ? "YA" : "-"}</td><td>${esc(m?.marked_at)}</td><td>${esc(m?.user)}</td><td>${rl.length || "-"}</td><td>${esc(last?.keterangan)}</td></tr>`;
     }).join("");
     const f = (l, v) => v ? `<span style="margin-right:18px"><b>${l}:</b> ${esc(v)}</span>` : "";
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${f("Periode", [filter.tanggalAwal, filter.tanggalAkhir].filter(Boolean).join(" s.d. "))}${f("NORM", filter.norm)}${f("Nama", filter.nama)}${f("Reg", filter.reg)}${f("Billing", filter.billing)}${f("Status", filter.status)}${f("Poli", filter.poli || filter.idPoli)}<br>Sumber: DB pusat ${esc(resolveCasemixBaseSafe())} \u2014 ${esc((/* @__PURE__ */ new Date()).toLocaleString("id-ID"))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` + (centralOk ? "" : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) + // TANPA inline <script>: window about:blank mewarisi CSP extension
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${f("Periode", [filter.tanggalAwal, filter.tanggalAkhir].filter(Boolean).join(" s.d. "))}${f("NORM", filter.norm)}${f("Nama", filter.nama)}${f("Reg", filter.reg)}${f("Billing", filter.billing)}${f("Status", filter.status)}${f("Poli", filter.poli || filter.idPoli)}<br>Sumber: DB pusat ${esc(resolveCasemixBaseSafe())} \u2014 ${esc((/* @__PURE__ */ new Date()).toLocaleString("id-ID"))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` + (centralOk ? "" : `<p style="color:#b45309"><b>Catatan:</b> Server Reports HTTP \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) + // TANPA inline <script>: window about:blank mewarisi CSP extension
     // yang memblokir 'unsafe-inline' → cetak dipicu dari opener
     // (w.print() di processExport), bukan dari dalam dokumen.
     `</body></html>`;

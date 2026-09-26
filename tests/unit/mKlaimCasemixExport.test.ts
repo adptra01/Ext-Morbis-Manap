@@ -55,11 +55,11 @@ describe('mKlaimCasemixExport buildExportHtml', () => {
     expect(html).toContain('<td>-</td>');
   });
 
-  it('spanduk offline bila pusat tak terjangkau', () => {
+  it('spanduk offline bila server Reports HTTP (belum HTTPS)', () => {
     const online = buildExportHtml(filter, rows, {}, {});
-    expect(online).not.toContain('tak terjangkau');
+    expect(online).not.toContain('Server Reports HTTP');
     const offline = buildExportHtml(filter, rows, {}, {}, false);
-    expect(offline).toContain('tak terjangkau');
+    expect(offline).toContain('Server Reports HTTP');
     expect(offline).toContain('cache lokal');
   });
 

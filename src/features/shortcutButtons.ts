@@ -322,8 +322,7 @@ function setSyncHint(online: boolean, centralCount: number): void {
       hint.style.color = '';
     } else {
       hint.textContent =
-        'Pusat tak terjangkau (offline/sinyal lambat) — menampilkan cache lokal, ' +
-        'data aman dan akan tersinkron otomatis.';
+        'Server Reports HTTP — cache lokal ditampilkan, sinkron otomatis saat tersedia.';
       hint.style.color = '#b45309';
     }
   } catch {
