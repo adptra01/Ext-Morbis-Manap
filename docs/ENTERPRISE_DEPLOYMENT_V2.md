@@ -54,6 +54,7 @@ L = likelihood (Rendah/Sedang/Tinggi), I = impact (R/L/M/H).
 6. **Two-channel**: staging `channels/staging/update.xml` hanya untuk pilot; production hanya via tag; publish Edge hanya pada tag.
 7. **Kill-switch PHI/casemix**: fitur SIGNA (SIMRS Reports) tidak diaktifkan selama server HTTP polos (tanpa autentikasi) — lihat PANDUAN_DEPLOYMENT.md §Keamanan.
 8. **Key rotation manual**: `.pem` lokal = backup; uji berkala: `scripts/pack.mjs --key` + verifikasi EXT_ID tidak berubah.
+9. **Audit `world: MAIN` (19/36 content scripts)**: diperlukan untuk manipulasi DOM langsung pada halaman SIMRS (dropdown/autocomplete ICD, resume, antrian, dsb). Seluruh **104 pattern matches** terkunci hanya di 4 host produksi (audit: 0 match di luar — 140, 138, 192.168.8.4, dev.rsudkotajambi.id); host dev hanya ada di `host_permissions` dan di-strip di build production (Phase D). Risiko injeksi dibatasi dua lapis: `runtime_allowed_hosts` (policy) + `host_permissions` production. Script `world: ISOLATED` (17/36) dipakai untuk yang tidak butuh akses DOM utama.
 
 ---
 
