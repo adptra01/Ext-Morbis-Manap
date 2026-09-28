@@ -112,12 +112,16 @@ for %%P in (
     REM Host restriction (least-privilege): runtime_allowed_hosts membatasi
     REM SITE tempat extension boleh berjalan/menyuntik content script — hanya
     REM host SIMRS produksi. List = array string (value "1","2",...).
+    REM PENTING: Chrome MEMBUKA entri policy ExtensionSettings bila satu nilai
+    REM tidak valid. Pola runtime_allowed_hosts WAJIB scheme://host TANPA path
+    REM (tanpa "/*") — kalau ada path, seluruh ExtensionSettings (termasuk
+    REM force_installed) ditolak. Diverifikasi di chrome://policy (Linux).
     REM Catatan: ini pelengkap host_permissions; fetch jaringan tetap diatur
     REM manifest (Phase D menghapus host dev dari build produksi).
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "1" /t REG_SZ /d "http://103.147.236.140/*" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "2" /t REG_SZ /d "http://103.147.236.138/*" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "3" /t REG_SZ /d "http://192.168.8.4/*" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "4" /t REG_SZ /d "http://dev.rsudkotajambi.id/*" /f /reg:64 >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "1" /t REG_SZ /d "http://103.147.236.140" /f /reg:64 >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "2" /t REG_SZ /d "http://103.147.236.138" /f /reg:64 >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "3" /t REG_SZ /d "http://192.168.8.4" /f /reg:64 >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "4" /t REG_SZ /d "http://dev.rsudkotajambi.id" /f /reg:64 >nul 2>&1
     REM Autoplay: izinkan suara TTS antrian tanpa klik (value di root key).
     reg add "!BASE!" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f /reg:64 >nul 2>&1
 )

@@ -58,14 +58,20 @@ Kedua file berisi:
     "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
     "override_update_url": true,
     "runtime_allowed_hosts": [
-      "http://103.147.236.140/*",
-      "http://103.147.236.138/*",
-      "http://192.168.8.4/*",
-      "http://dev.rsudkotajambi.id/*"
+      "http://103.147.236.140",
+      "http://103.147.236.138",
+      "http://192.168.8.4",
+      "http://dev.rsudkotajambi.id"
     ]
   }
 }
 ```
+
+> ⚠️ **WAJIB tanpa path:** pola `runtime_allowed_hosts` harus `scheme://host` polos
+> (tanpa `/*`). Chrome **menolak seluruh entri `ExtensionSettings`** (termasuk
+> `force_installed`) bila satu nilai punya path — diverifikasi langsung di
+> `chrome://policy` (Platform → Nilai/Error). Gejalanya: ekstensi tidak pernah
+> ter-install despite policy terpasang.
 
 Penjelasan kunci:
 
@@ -80,6 +86,29 @@ Penjelasan kunci:
 > Catatan akurat: `runtime_allowed_hosts` membatasi **situs tempat ekstensi
 > berjalan** (content script, dsb). Fetch jaringan lintas origin tetap diatur
 > `host_permissions` manifest. Dua-duanya sudah dibatasi ke 4 host SIMRS.
+
+### Uji coba di Linux/Chrome SEBELUM GPO Windows (sangat disarankan)
+
+Mengecek policy di Linux jauh lebih cepat daripada GPO di PC RS, dan
+menangkap error schema yang akan membuat GPO ditolak diam-diam.
+
+1. Salin JSON policy ke `/etc/opt/chrome/policies/managed/morbis-ext.json`
+   (Google Chrome Linux **hanya** membaca lokasi ini — folder user-level
+   `~/.config/google-chrome/policies/managed/` hanya berlaku untuk Chromium):
+   ```bash
+   sudo install -d -m 755 /etc/opt/chrome/policies/managed
+   sudo install -m 644 ExtensionSettings-production.json \
+     /etc/opt/chrome/policies/managed/morbis-ext.json
+   ```
+2. Restart Chrome, lalu buka `chrome://policy` → **ExtensionSettings** harus
+   muncul (Platform / Mesin / Wajib) **tanpa baris "Error"**.
+3. Buka `chrome://extensions` → ekstensi terpasang paksa, versi terbaru.
+4. Uji auto-update: naikkan versi (rilis/tag), klik **Perbarui** di
+   `chrome://extensions` (Mode developer aktif) → versi naik.
+5. Bersihkan: `sudo rm /etc/opt/chrome/policies/managed/morbis-ext.json`.
+
+> Ekstensi **unpacked** ("Load unpacked") tidak pernah auto-update — selalu
+> uji lewat policy seperti di atas agar mekanismenya sama dengan produksi.
 
 ---
 
