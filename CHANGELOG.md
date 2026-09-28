@@ -11,6 +11,7 @@
 
 ### 🐛 fix
 
+- **changelog** — marker pakai generation point (upto/HEAD) (`17593b9`)
 - **changelog** — marker changelog-upto utk --check akurat (lag-1 + bump CI) (`266ccb8`)
 - **changelog** — saring commit bump CI yang lolos klasifikasi conventional (`007072f`)
 
@@ -1614,4 +1615,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 266ccb8dae609414ce228951ee1842ce63a9286f -->
+<!-- changelog-upto: 17593b9fb512059375fb4c194dd6beec6509d5f6 -->

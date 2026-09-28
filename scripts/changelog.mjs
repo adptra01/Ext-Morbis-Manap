@@ -105,8 +105,10 @@ function currentHead() {
 /**
  * Render Markdown changelog dari git history.
  * @param {{ upto?: string|null }} opts — `upto`: hanya riwayat hingga commit
- *   dengan hash tersebut (inklusif). Mengembalikan null bila `upto` tidak
- *   ditemukan di history (marker phantom/stale).
+ *   dengan hash tersebut (inklusif). `git log` berurut terbaru→terlama, jadi
+ *   "riwayat hingga C" = C dan semua yang lebih tua = slice dari posisi C
+ *   (asumsi history linear single-branch; aman untuk repo ini).
+ *   Mengembalikan null bila `upto` tidak ditemukan (marker phantom/stale).
  */
 export function buildMd({ upto = null } = {}) {
   const commits = gitLog();
@@ -114,7 +116,7 @@ export function buildMd({ upto = null } = {}) {
   if (upto) {
     const idx = commits.findIndex((c) => c.hash === upto || c.hash7 === upto);
     if (idx === -1) return null;
-    src = commits.slice(0, idx + 1);
+    src = commits.slice(idx);
   }
 
   const byDay = new Map(); // date -> Map<type, entries[]>
