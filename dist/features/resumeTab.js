@@ -32917,7 +32917,17 @@ video {
     }
     return allLines.length ? allLines.join("\n") : null;
   }
+  function logBuildTag(stage) {
+    let v = "?";
+    try {
+      v = globalThis.chrome?.runtime?.getManifest?.()?.version ?? "runtime-tidak-ada";
+    } catch {
+      v = "gagal-baca";
+    }
+    console.log(`[RJ-BUILD ${stage}] versi=${v} ic-N dihapus=ya tanpa-baris-dummy=ya`);
+  }
   function setupFloatingButton() {
+    logBuildTag("load");
     const targetPage = "/v2/m-klaim/detail-v2-refaktor";
     if (!location.href.startsWith(location.origin + targetPage)) {
       return;

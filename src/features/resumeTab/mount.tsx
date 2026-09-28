@@ -1426,7 +1426,31 @@ async function fetchAllPrescriptionHistories(): Promise<string | null> {
   return allLines.length ? allLines.join('\n') : null;
 }
 
+/**
+ * Penanda build. Dicetak saat modul dimuat (bukan saat Simpan) supaya
+ * versi yang benar-benar jalan di browser bisa langsung terlihat di
+ * console tanpa harus melakukan apa pun. Kalau baris ini tidak muncul
+ * di halaman RJ, berarti content script yang aktif masih versi lama —
+ * reload extension saja tidak cukup, halaman harus di-reload penuh
+ * (atau dibuka di tab/incognito baru).
+ */
+function logBuildTag(stage: string): void {
+  let v = '?';
+  try {
+    v =
+      (
+        globalThis as {
+          chrome?: { runtime?: { getManifest?: () => { version?: string } } };
+        }
+      ).chrome?.runtime?.getManifest?.()?.version ?? 'runtime-tidak-ada';
+  } catch {
+    v = 'gagal-baca';
+  }
+  console.log(`[RJ-BUILD ${stage}] versi=${v} ic-N dihapus=ya tanpa-baris-dummy=ya`);
+}
+
 function setupFloatingButton() {
+  logBuildTag('load');
   const targetPage = '/v2/m-klaim/detail-v2-refaktor';
   if (!location.href.startsWith(location.origin + targetPage)) {
     return;
