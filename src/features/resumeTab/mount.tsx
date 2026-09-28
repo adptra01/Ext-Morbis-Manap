@@ -582,154 +582,191 @@ function serializeKlaim(data: ResumeData): string {
 }
 
 function serializeRawatJalan(data: ResumeData): string {
-  const pairs: [string, string][] = [];
-  const add = (name: string, value: string | number) => pairs.push([name, String(value)]);
+  const params = new URLSearchParams();
 
-  const el = (name: string) =>
-    (document.querySelector(`input[name="${name}"]`) as HTMLInputElement | null)?.value || '';
-  const sel = (id: string) =>
-    (document.getElementById(id) as HTMLSelectElement | null)?.value || '';
-  const radioChecked = (name: string) =>
-    (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement | null)?.value ||
-    '';
-  const fs = (name: string) => {
-    const val =
-      typeof cachedFormState?.[name] === 'string' ? (cachedFormState[name] as string) : '';
-    return val;
+  // ═══════════════════════════════════════════════════════════
+  // 1. BASE: ambil SEMUA field dari <form id="formdata"> yang ada
+  //    di halaman asli — ini yang menjamin id_kunjungan, ihs_number,
+  //    waktu_visit, dll. ikut terkirim.
+  // ═══════════════════════════════════════════════════════════
+  const form = document.getElementById('formdata') as HTMLFormElement | null;
+
+  if (form) {
+    const fd = new FormData(form);
+    fd.forEach((value, key) => {
+      if (typeof value === 'string') params.append(key, value);
+    });
+  } else if (cachedFormState) {
+    // Fallback kalau form sudah tidak ada (mis. setelah di-unmount)
+    for (const [key, val] of Object.entries(cachedFormState)) {
+      if (Array.isArray(val)) {
+        for (const v of val) params.append(key, v);
+      } else {
+        params.set(key, val);
+      }
+    }
+  }
+
+  // Pastikan field wajib ini ada (form base pasti punya, tapi jaga-jaga)
+  const ensure = (name: string, value: string) => {
+    if (!params.has(name)) params.set(name, value);
   };
+  const idVisit =
+    data.patientInfo.id_visit || new URLSearchParams(location.search).get('id_visit') || '';
+  const idRJ =
+    data.patientInfo.id_rawat_jalan || new URLSearchParams(location.search).get('id') || '';
+  ensure('id_visit', idVisit);
+  ensure('id_rawat_jalan', idRJ);
+  ensure('id_user', '1');
+  ensure('save', 'Simpan');
 
-  const pi = (name: string) =>
-    (data.patientInfo as Record<string, string | undefined>)?.[name] || '';
-  add(
-    'id_visit',
-    pi('id_visit') ||
-      el('id_visit') ||
-      new URLSearchParams(location.search).get('id_visit') ||
-      fs('id_visit'),
-  );
-  add(
-    'id_rawat_jalan',
-    pi('id_rawat_jalan') ||
-      el('id_rawat_jalan') ||
-      new URLSearchParams(location.search).get('id') ||
-      fs('id_rawat_jalan'),
-  );
-  add('id_user', pi('id_user') || el('id_user') || fs('id_user') || '1');
-  add('id_dokter', pi('id_dokter') || el('id_dokter') || fs('id_dokter') || '');
-  add('id_bed', pi('id_bed') || el('id_bed') || fs('id_bed') || '');
-  add('norm', pi('norm') || el('norm') || fs('norm') || '');
-  add('noregis', pi('noregis') || el('noregis') || fs('noregis') || '');
-  add('pasien', pi('pasien') || el('pasien') || fs('pasien') || '');
-  add('nama_dokter', pi('nama_dokter') || el('nama_dokter') || fs('nama_dokter') || '');
+  // ═══════════════════════════════════════════════════════════
+  // 2. Hapus array field dari base — akan di-replace dari React state
+  // ═══════════════════════════════════════════════════════════
+  const arrayFieldsToClear = [
+    'kode10[]',
+    'idicd[]',
+    'nama[]',
+    'keterangan10[]',
+    'kasus_diagnosa[]',
+    'komplikasi[]',
+    'namaTindakan[]',
+    'kode9[]',
+    'idicdTindakan[]',
+    'komorbid[]',
+    'kategoriProsedur[]',
+    'snomedProsedur[]',
+    'codeProsedur[]',
+  ];
+  for (const f of arrayFieldsToClear) params.delete(f);
 
-  add('jenis_kasus', sel('jenis_kasus') || fs('jenis_kasus') || '');
-  add('tindak_lanjut', sel('tindak_lanjut') || fs('tindak_lanjut') || '');
-  add('status_kasus', radioChecked('status_kasus') || fs('status_kasus') || 'BARU');
-  add('rujukan', sel('rujukan') || fs('rujukan') || '83');
-  add('keadaan_keluar', sel('keadaan_keluar') || fs('keadaan_keluar') || '87');
-  add('cara_keluar', sel('cara_keluar') || fs('cara_keluar') || '161');
-  add('pemeriksaan_lanjut', sel('pemeriksaan_lanjut') || fs('pemeriksaan_lanjut') || '88');
-  add('pulang_berkas', el('pulang_berkas') || fs('pulang_berkas') || '');
-  add(
-    'composition_diet',
-    el('composition_diet') ||
-      (document.getElementById('composition_diet') as HTMLTextAreaElement | null)?.value ||
-      fs('composition_diet') ||
-      '',
-  );
-  add('alergiMakananJSON', el('alergiMakananJSON') || fs('alergiMakananJSON') || '[]');
-  add('alergiLingkunganJSON', el('alergiLingkunganJSON') || fs('alergiLingkunganJSON') || '[]');
+  // Hapus juga checkbox ic1, ic2, ... dari base (nanti di-set ulang)
+  for (let i = 1; i <= 50; i++) params.delete(`ic${i}`);
 
-  const now = new Date();
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  add(
-    'waktu',
-    `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
-  );
+  // ═══════════════════════════════════════════════════════════
+  // 3. OVERLAY: notes dari React state (convert newline → <br/>)
+  // ═══════════════════════════════════════════════════════════
+  const toHtml = (val: string) => (val || '').replace(/\n/g, '<br/>');
+  params.set('anamnesa', toHtml(data.clinicalNotes.anamnesa));
+  params.set('pemeriksaan_fisik', toHtml(data.clinicalNotes.pemeriksaan_fisik));
+  params.set('catatan', toHtml(data.clinicalNotes.catatan));
+  params.set('tindakan', toHtml(data.clinicalNotes.tindakan));
+  params.set('terapi_pengobatan', toHtml(data.clinicalNotes.terapi_pengobatan));
 
-  const toHtml = (val: string) => val.replace(/\n/g, '<br/>');
-  add('anamnesa', toHtml(data.clinicalNotes.anamnesa));
-  add('pemeriksaan_fisik', toHtml(data.clinicalNotes.pemeriksaan_fisik));
-  add('catatan', toHtml(data.clinicalNotes.catatan));
-  add('tindakan', toHtml(data.clinicalNotes.tindakan));
-  add('terapi_pengobatan', toHtml(data.clinicalNotes.terapi_pengobatan));
+  // ═══════════════════════════════════════════════════════════
+  // 4. OVERLAY: vital signs dari React state
+  // ═══════════════════════════════════════════════════════════
+  const cleanVital = (val: string): string => (val || '').match(/^([\d/.]+)/)?.[0] || '';
+  params.set('tensi', cleanVital(data.vitalSigns.tensi));
+  params.set('nadi', cleanVital(data.vitalSigns.nadi));
+  params.set('suhu', cleanVital(data.vitalSigns.suhu));
+  params.set('nafas', cleanVital(data.vitalSigns.nafas));
+  params.set('spo2', cleanVital(data.vitalSigns.spo2));
+  params.set('tinggi', cleanVital(data.vitalSigns.tinggi));
+  params.set('berat', cleanVital(data.vitalSigns.berat));
 
-  const cleanVital = (val: string): string => val.match(/^([\d/.]+)/)?.[0] || '';
-  add('tensi', cleanVital(data.vitalSigns.tensi));
-  add('nadi', cleanVital(data.vitalSigns.nadi));
-  add('suhu', cleanVital(data.vitalSigns.suhu));
-  add('nafas', cleanVital(data.vitalSigns.nafas));
-  add('tinggi', cleanVital(data.vitalSigns.tinggi));
-  add('berat', cleanVital(data.vitalSigns.berat));
+  // ═══════════════════════════════════════════════════════════
+  // 5. OVERLAY: diagnosa dari React state
+  // ═══════════════════════════════════════════════════════════
+  const cKode10 = Array.isArray(cachedFormState?.['kode10[]'])
+    ? (cachedFormState!['kode10[]'] as string[])
+    : [];
+  const cIdicd = Array.isArray(cachedFormState?.['idicd[]'])
+    ? (cachedFormState!['idicd[]'] as string[])
+    : [];
 
-  const cachedArr = (name: string): string[] =>
-    Array.isArray(cachedFormState?.[name]) ? (cachedFormState![name] as string[]) : [];
-  const cKode10 = cachedArr('kode10[]');
-  const cIdicd = cachedArr('idicd[]');
-  const cKasus = cachedArr('kasus_diagnosa[]');
-  const cKomplikasi = cachedArr('komplikasi[]');
   const cleanDiagnosa = data.diagnosa
     .filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
     .filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
+
   cleanDiagnosa.forEach((d) => {
     let idicd = d.idicd;
     if (!idicd && d.kode10) {
       const idx = cKode10.indexOf(d.kode10);
       if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
     }
-    add('nama[]', d.namaDiagnosa);
-    add('idicd[]', idicd);
-    add('kode10[]', d.kode10);
-    add('kasus_diagnosa[]', d.kasus || '');
-    add('komplikasi[]', d.komplikasi || '');
+    params.append('nama[]', d.namaDiagnosa);
+    params.append('idicd[]', idicd);
+    params.append('kode10[]', d.kode10);
+    params.append('keterangan10[]', d.keterangan || '');
+    params.append('kasus_diagnosa[]', d.kasus || 'Kasus Lama');
+    params.append('komplikasi[]', d.komplikasi || '');
+    // Server salah baca sebagai scalar `keterangan10` (bug line 326) — kirim juga
+    params.append('keterangan10', d.keterangan || '');
   });
 
+  // Baris hapus diagnosa (server hapus kalau nama kosong)
+  const currentDiagIds = new Set(cleanDiagnosa.map((d) => d.idicd));
+  const origDiagIds = Array.isArray(cachedFormState?.['idicd[]'])
+    ? (cachedFormState!['idicd[]'] as string[]).filter(Boolean)
+    : [];
+  for (const origId of origDiagIds) {
+    if (!currentDiagIds.has(origId)) {
+      params.append('idicd[]', origId);
+      params.append('nama[]', '');
+      params.append('kode10[]', '');
+      params.append('keterangan10[]', '');
+      params.append('kasus_diagnosa[]', '');
+      params.append('komplikasi[]', '');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 6. OVERLAY: tindakan dari React state
+  //    PENTING: JANGAN kirim kategoriProsedur[]/snomedProsedur[]/codeProsedur[]
+  //             — form asli tidak punya & memicu ORA-00936
+  // ═══════════════════════════════════════════════════════════
   const cleanTindakan = data.tindakan
     .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
     .filter(
       (t, i, arr) =>
         arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
     );
-  cleanTindakan.forEach((t) => {
-    add('namaTindakan[]', t.namaTindakan);
-    add('kode9[]', t.kode9);
-    add('idicdTindakan[]', t.idicdTindakan);
-    // Fallback ke default SNOMED CT (410606002) agar server tidak error ORA-00936
-    // saat query WHERE id = '' karena kategoriProsedur kosong
-    add('kategoriProsedur[]', t.kategoriProsedur || '410606002');
-    add('komorbid[]', t.komorbid || '');
-    // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS,
-    // jadi TIDAK dikirim ke server
-    // add('snomedProsedur[]', '');
-    // add('codeProsedur[]', '');
+
+  cleanTindakan.forEach((t, idx) => {
+    params.append('namaTindakan[]', t.namaTindakan);
+    params.append('kode9[]', t.kode9);
+    params.append('idicdTindakan[]', t.idicdTindakan);
+    params.append('komorbid[]', t.komorbid || '');
+    if (t.informedConsent) params.append(`ic${idx + 1}`, '1');
   });
 
-  // Kirim baris penghapusan untuk tindakan yang ada di original tapi tidak di current
-  // Server SIMRS menghapus baris yang idicdTindakan-nya dikirim tapi namaTindakan kosong
-  const currentIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
-  for (const origId of originalTindakanIds) {
-    if (origId && !currentIds.has(origId)) {
-      add('idicdTindakan[]', origId);
-      add('namaTindakan[]', ''); // nama kosong = hapus
-      add('kode9[]', '');
-      // Fallback ke default SNOMED CT agar server tidak error ORA-00936
-      add('kategoriProsedur[]', '410606002');
-      add('komorbid[]', '');
-      // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS
-      // add('snomedProsedur[]', '');
-      // add('codeProsedur[]', '');
+  // Baris hapus tindakan
+  const currentTindakanIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
+  const origTindakanIds = Array.isArray(cachedFormState?.['idicdTindakan[]'])
+    ? (cachedFormState!['idicdTindakan[]'] as string[]).filter(Boolean)
+    : [];
+  for (const origId of origTindakanIds) {
+    if (!currentTindakanIds.has(origId)) {
+      params.append('idicdTindakan[]', origId);
+      params.append('namaTindakan[]', '');
+      params.append('kode9[]', '');
+      params.append('komorbid[]', '');
     }
   }
 
-  // Fallback: jika TIDAK ADA baris sama sekali (cleanTindakan kosong & tidak ada deletion),
-  // server SIMRS TIDAK butuh codeProsedur/snomedProsedur karena form asli tidak pakai
-  // if (cleanTindakan.length === 0 && originalTindakanIds.length === 0) {
-  //   add('snomedProsedur[]', '');
-  //   add('codeProsedur[]', '');
-  // }
+  // ═══════════════════════════════════════════════════════════
+  // 7. DEBUG LOG (bisa dihapus nanti)
+  // ═══════════════════════════════════════════════════════════
+  const debug: Record<string, string> = {};
+  for (const k of [
+    'id_visit',
+    'id_rawat_jalan',
+    'id_kunjungan',
+    'id_user',
+    'ihs_number',
+    'waktu_visit',
+    'nama_pasien',
+    'planning',
+    'jenis_kasus',
+    'save',
+  ]) {
+    debug[k] = params.get(k) || '(missing)';
+  }
+  console.log('[RJ] payload keys:', Array.from(new Set(Array.from(params.keys()))));
+  console.log('[RJ] key values:', debug);
 
-  add('save', 'Simpan');
-  return pairs.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+  return params.toString();
 }
 
 function serializeFormData(data: ResumeData): string {
@@ -758,6 +795,7 @@ function closeOverlay(container: HTMLElement) {
   document.body.classList.remove('ext-resume-open');
   // Reset tracked original tindakan IDs on close
   originalTindakanIds = [];
+  originalDiagnosaIds = [];
   if (overlayBtn) {
     overlayBtn.disabled = false;
     overlayBtn.style.display = '';
@@ -1156,12 +1194,13 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 
 let cachedFormState: Record<string, string | string[]> | null = null;
 let originalTindakanIds: string[] = [];
+let originalDiagnosaIds: string[] = [];
 
 async function fetchFormState(): Promise<Record<string, string | string[]>> {
   const idVisit = new URLSearchParams(location.search).get('id_visit');
   if (!idVisit) return {};
 
-  const url = `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${idVisit}`;
+  const url = `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`;
   try {
     const resp = await fetch(url, { credentials: 'same-origin' });
     const html = await resp.text();
@@ -1276,7 +1315,7 @@ async function fetchAllPrescriptionHistories(): Promise<string | null> {
 }
 
 function setupFloatingButton() {
-  const targetPage = '/v2/m-klaim/detail-v2-refaktor';
+  const targetPage = '/admisi/pelaksanaan_pelayanan/rj';
   if (!location.href.startsWith(location.origin + targetPage)) {
     return;
   }
@@ -1331,6 +1370,8 @@ function setupFloatingButton() {
       // Capture original tindakan IDs for deletion tracking
       const origIds = cachedFormState['idicdTindakan[]'];
       originalTindakanIds = Array.isArray(origIds) ? origIds.filter(Boolean) : [];
+      const origDiagIds = cachedFormState['idicd[]'];
+      originalDiagnosaIds = Array.isArray(origDiagIds) ? origDiagIds.filter(Boolean) : [];
       const prescriptionText = await fetchAllPrescriptionHistories();
       const data = extractFormData();
       if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;
