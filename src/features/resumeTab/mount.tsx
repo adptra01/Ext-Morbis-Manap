@@ -797,13 +797,18 @@ function serializeRawatJalan(data: ResumeData): string {
     return pos >= 0 ? fsVal(`ic${pos + 1}`) : '';
   };
 
-  cleanTindakan.forEach((t) => {
+  cleanTindakan.forEach((t, i) => {
     params.append('namaTindakan[]', t.namaTindakan);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
     params.append('komorbid[]', t.komorbid || '');
+    // `ic{N}` bersifat POSISIONAL di sisi server: ic1 = baris pertama di
+    // payload ini. Nilainya diambil dari baris asal dengan ICD yang sama,
+    // lalu ditempel pada nomor urut BARU. Kalau memakai nomor lama,
+    // reorder akan membuat ic1/ic2 tertukar sehingga persetujuan
+    // menempel ke tindakan yang salah.
     const ic = icFor(t.idicdTindakan);
-    if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
+    if (ic) params.append(`ic${i + 1}`, ic);
   });
 
   // ═══════════════════════════════════════════════════════════

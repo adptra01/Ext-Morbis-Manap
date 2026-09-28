@@ -29056,6 +29056,10 @@ video {
 .p-8 {
   padding: 2rem;
 }
+.px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
+}
 .px-1 {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -31340,6 +31344,10 @@ video {
 }
 .p-8 {
   padding: 2rem;
+}
+.px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
 }
 .px-1 {
   padding-left: 0.25rem;

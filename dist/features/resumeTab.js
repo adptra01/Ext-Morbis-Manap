@@ -26510,6 +26510,14 @@ var __morbis_feature = (() => {
     const abortRef = (0, import_react7.useRef)(null);
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => idx === i ? { ...r2, ...p } : r2));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
+    const moveRow = (i, delta) => {
+      const j = i + delta;
+      if (j < 0 || j >= rows.length) return;
+      const next = rows.slice();
+      const [row] = next.splice(i, 1);
+      next.splice(j, 0, row);
+      onChange(next);
+    };
     const search = (q, rowIdx, el) => {
       setErrMsg("");
       clearTimeout(t.current ?? void 0);
@@ -26639,17 +26647,45 @@ var __morbis_feature = (() => {
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "kasus[]", value: row.kasus }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "komplikasi[]", value: row.komplikasi })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-            Button,
-            {
-              variant: "destructive",
-              size: "default",
-              onClick: () => removeRow(i),
-              className: "w-[76px] shrink-0",
-              "aria-label": `Hapus diagnosa ${no}`,
-              children: "Hapus"
-            }
-          )
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "flex gap-1 shrink-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+              Button,
+              {
+                variant: "outline",
+                size: "default",
+                onClick: () => moveRow(i, -1),
+                disabled: i === 0,
+                className: "w-9 px-0",
+                title: "Naikkan urutan",
+                "aria-label": `Naikkan urutan diagnosa ${no}`,
+                children: "\u2191"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+              Button,
+              {
+                variant: "outline",
+                size: "default",
+                onClick: () => moveRow(i, 1),
+                disabled: i === rows.length - 1,
+                className: "w-9 px-0",
+                title: "Turunkan urutan",
+                "aria-label": `Turunkan urutan diagnosa ${no}`,
+                children: "\u2193"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+              Button,
+              {
+                variant: "destructive",
+                size: "default",
+                onClick: () => removeRow(i),
+                className: "w-[76px]",
+                "aria-label": `Hapus diagnosa ${no}`,
+                children: "Hapus"
+              }
+            )
+          ] })
         ] }, i);
       }) }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -26681,6 +26717,14 @@ var __morbis_feature = (() => {
     const abortRef = (0, import_react8.useRef)(null);
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => idx === i ? { ...r2, ...p } : r2));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
+    const moveRow = (i, delta) => {
+      const j = i + delta;
+      if (j < 0 || j >= rows.length) return;
+      const next = rows.slice();
+      const [row] = next.splice(i, 1);
+      next.splice(j, 0, row);
+      onChange(next);
+    };
     const search = (q, rowIdx, el) => {
       setErrMsg("");
       clearTimeout(t.current ?? void 0);
@@ -26819,17 +26863,45 @@ var __morbis_feature = (() => {
             /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "jenis[]", value: row.jenis || "Primer" }),
             /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "kategoriProsedur[]", value: row.kategoriProsedur })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
-            Button,
-            {
-              variant: "destructive",
-              size: "default",
-              onClick: () => removeRow(i),
-              className: "w-[76px] shrink-0",
-              "aria-label": `Hapus tindakan ${no}`,
-              children: "Hapus"
-            }
-          )
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "flex gap-1 shrink-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+              Button,
+              {
+                variant: "outline",
+                size: "default",
+                onClick: () => moveRow(i, -1),
+                disabled: i === 0,
+                className: "w-9 px-0",
+                title: "Naikkan urutan",
+                "aria-label": `Naikkan urutan tindakan ${no}`,
+                children: "\u2191"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+              Button,
+              {
+                variant: "outline",
+                size: "default",
+                onClick: () => moveRow(i, 1),
+                disabled: i === rows.length - 1,
+                className: "w-9 px-0",
+                title: "Turunkan urutan",
+                "aria-label": `Turunkan urutan tindakan ${no}`,
+                children: "\u2193"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+              Button,
+              {
+                variant: "destructive",
+                size: "default",
+                onClick: () => removeRow(i),
+                className: "w-[76px]",
+                "aria-label": `Hapus tindakan ${no}`,
+                children: "Hapus"
+              }
+            )
+          ] })
         ] }, i);
       }) }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
@@ -27704,13 +27776,13 @@ var __morbis_feature = (() => {
       const pos = cTindIdicd.indexOf(idTindakan);
       return pos >= 0 ? fsVal(`ic${pos + 1}`) : "";
     };
-    cleanTindakan.forEach((t) => {
+    cleanTindakan.forEach((t, i) => {
       params.append("namaTindakan[]", t.namaTindakan);
       params.append("kode9[]", t.kode9);
       params.append("idicdTindakan[]", t.idicdTindakan);
       params.append("komorbid[]", t.komorbid || "");
       const ic = icFor(t.idicdTindakan);
-      if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
+      if (ic) params.append(`ic${i + 1}`, ic);
     });
     const fmt = (pairs) => pairs.map(([v, i]) => `${v}#${i}`).join(" | ") || "(kosong)";
     const diagOrder = cleanDiagnosa.map((d) => `${d.kode10}/${d.idicd}`);
@@ -27725,12 +27797,12 @@ var __morbis_feature = (() => {
       "[RJ] ICD-10 terkirim :",
       fmt(cleanDiagnosa.map((d) => [d.kode10 || "?", d.idicd || "?"]))
     );
-    console.log("[RJ] ICD-9 terkirim  :", fmt(cleanTindakan.map((t) => [t.kode9 || "?", t.idicdTindakan || "?"])));
-    console.log("[RJ] ic{N} terkirim  :", icKirim.join(", ") || "(tidak ada)");
     console.log(
-      "[RJ] asal urutan form:",
-      `kode9[]=${JSON.stringify(cTindIdicd)}`
+      "[RJ] ICD-9 terkirim  :",
+      fmt(cleanTindakan.map((t) => [t.kode9 || "?", t.idicdTindakan || "?"]))
     );
+    console.log("[RJ] ic{N} terkirim  :", icKirim.join(", ") || "(tidak ada)");
+    console.log("[RJ] asal urutan form:", `kode9[]=${JSON.stringify(cTindIdicd)}`);
     void diagOrder;
     void tindOrder;
     const debug = {};
@@ -29297,6 +29369,10 @@ video {
 }
 .p-8 {
   padding: 2rem;
+}
+.px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
 }
 .px-1 {
   padding-left: 0.25rem;
@@ -31582,6 +31658,10 @@ video {
 }
 .p-8 {
   padding: 2rem;
+}
+.px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
 }
 .px-1 {
   padding-left: 0.25rem;

@@ -27,6 +27,16 @@ export function DiagnosaSection({ rows, onChange }: Props) {
     onChange(rows.map((r, idx) => (idx === i ? { ...r, ...p } : r)));
   const removeRow = (i: number) => onChange(rows.filter((_, idx) => idx !== i));
 
+  /** Pindahkan baris ke atas/bawah — urutan di sini = urutan tersimpan. */
+  const moveRow = (i: number, delta: number) => {
+    const j = i + delta;
+    if (j < 0 || j >= rows.length) return;
+    const next = rows.slice();
+    const [row] = next.splice(i, 1);
+    next.splice(j, 0, row);
+    onChange(next);
+  };
+
   const search = (q: string, rowIdx: number, el: HTMLInputElement) => {
     setErrMsg('');
     clearTimeout(t.current ?? undefined);
@@ -174,15 +184,39 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                   <input type="hidden" name="komplikasi[]" value={row.komplikasi} />
                 </div>
 
-                <Button
-                  variant="destructive"
-                  size="default"
-                  onClick={() => removeRow(i)}
-                  className="w-[76px] shrink-0"
-                  aria-label={`Hapus diagnosa ${no}`}
-                >
-                  Hapus
-                </Button>
+                <div className="flex gap-1 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => moveRow(i, -1)}
+                    disabled={i === 0}
+                    className="w-9 px-0"
+                    title="Naikkan urutan"
+                    aria-label={`Naikkan urutan diagnosa ${no}`}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => moveRow(i, 1)}
+                    disabled={i === rows.length - 1}
+                    className="w-9 px-0"
+                    title="Turunkan urutan"
+                    aria-label={`Turunkan urutan diagnosa ${no}`}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="default"
+                    onClick={() => removeRow(i)}
+                    className="w-[76px]"
+                    aria-label={`Hapus diagnosa ${no}`}
+                  >
+                    Hapus
+                  </Button>
+                </div>
               </div>
             );
           })}
