@@ -15,6 +15,7 @@ export interface VitalSigns {
   nadi: string;
   suhu: string;
   nafas: string;
+  spo2: string; // ← tambah (form asli punya <input name="spo2" required>
   tinggi: string;
   berat: string;
 }

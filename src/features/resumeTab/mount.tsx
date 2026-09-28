@@ -120,7 +120,7 @@ const AUTOCOMPLETE_URLS = {
   icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
 };
 
-const ENDPOINT = '/rekam-medik/control/rm-rawat-jalan';
+const ENDPOINT = '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan';
 
 let reactRoot: Root | null = null;
 let overlayBtn: HTMLButtonElement | null = null;
@@ -1077,24 +1077,43 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       credentials: 'same-origin',
     });
     const text = await response.text();
+
     if (!response.ok) {
       console.error('[RJ] save failed:', response.status, text);
       throw new Error('HTTP ' + response.status);
     }
-    const phpPattern =
-      /(?:<b>)?(?:Notice|Warning|Fatal error|Parse error|Catchable fatal error)(?:<\/b>)?\s*:\s*[^<]*/gi;
-    const phpErrors: string[] = [];
-    let m;
-    while ((m = phpPattern.exec(text)) !== null) {
-      let line = m[0].trim().replace(/<[^>]+>/g, '');
-      if (!line) continue;
-      if (/github\.com\/newrelic|newrelic-browser|google-analytics|googletagmanager/i.test(line))
-        continue;
-      phpErrors.push(line);
+
+    // ── Controller refaktor return JSON {status, msg} ──
+    let json: { status?: number; msg?: string } | null = null;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = null;
     }
-    if (phpErrors.length > 0) {
-      console.error('[RJ] PHP errors:', phpErrors);
-      throw new Error(phpErrors.join('\n'));
+
+    if (json) {
+      // Sukses hanya kalau status == 200
+      if (Number(json.status) !== 200) {
+        console.error('[RJ] server reject:', json);
+        throw new Error(json.msg || 'Gagal simpan (status ' + json.status + ')');
+      }
+    } else {
+      // Fallback: cek PHP notice/warning (controller lama)
+      const phpPattern =
+        /(?:<b>)?(?:Notice|Warning|Fatal error|Parse error|Catchable fatal error)(?:<\/b>)?\s*:\s*[^<]*/gi;
+      const phpErrors: string[] = [];
+      let m: RegExpExecArray | null;
+      while ((m = phpPattern.exec(text)) !== null) {
+        const line = m[0].trim().replace(/<[^>]+>/g, '');
+        if (!line) continue;
+        if (/github\.com\/newrelic|newrelic-browser|google-analytics|googletagmanager/i.test(line))
+          continue;
+        phpErrors.push(line);
+      }
+      if (phpErrors.length > 0) {
+        console.error('[RJ] PHP errors:', phpErrors);
+        throw new Error(phpErrors.join('\n'));
+      }
     }
     cachedFormState = null;
 

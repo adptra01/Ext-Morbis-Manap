@@ -1174,9 +1174,15 @@ var __morbis_feature = (() => {
   }
   function isTargetPage() {
     const url = window.location.href;
-    if (!url.includes("/v2/m-klaim/detail-v2-refaktor")) return false;
-    for (const p of ["id_visit", "tanggalAwal", "tanggalAkhir"]) {
-      if (!extractParam2(p)) return false;
+    const pattern1 = url.includes("/v2/m-klaim/detail-v2-refaktor");
+    const pattern2 = url.includes("/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new") || url.includes("/admisi/pelaksanaan_pelayanan/rj");
+    if (!pattern1 && !pattern2) return false;
+    if (pattern1) {
+      for (const p of ["id_visit", "tanggalAwal", "tanggalAkhir"]) {
+        if (!extractParam2(p)) return false;
+      }
+    } else if (pattern2) {
+      if (!extractParam2("id_visit")) return false;
     }
     return true;
   }

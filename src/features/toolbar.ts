@@ -140,9 +140,23 @@ function mklaimBaseUrl(): string {
 
 function isTargetPage(): boolean {
   const url = window.location.href;
-  if (!url.includes('/v2/m-klaim/detail-v2-refaktor')) return false;
-  for (const p of ['id_visit', 'tanggalAwal', 'tanggalAkhir']) {
-    if (!extractParam(p)) return false;
+  // Support both URL patterns:
+  // - /v2/m-klaim/detail-v2-refaktor (casemix API pattern)
+  // - /admisi/pelaksanaan_pelayanan (SIMRS refaktor pattern)
+  const pattern1 = url.includes('/v2/m-klaim/detail-v2-refaktor');
+  const pattern2 =
+    url.includes('/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new') ||
+    url.includes('/admisi/pelaksanaan_pelayanan/rj');
+  if (!pattern1 && !pattern2) return false;
+
+  // Check required params based on pattern
+  if (pattern1) {
+    for (const p of ['id_visit', 'tanggalAwal', 'tanggalAkhir']) {
+      if (!extractParam(p)) return false;
+    }
+  } else if (pattern2) {
+    // For /admisi/pelaksanaan_pelayanan pattern, check id_visit
+    if (!extractParam('id_visit')) return false;
   }
   return true;
 }

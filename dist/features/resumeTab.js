@@ -27295,7 +27295,7 @@ var __morbis_feature = (() => {
     };
   }
   var isRj = location.pathname.includes("rm-rawat-jalan-new");
-  var ENDPOINT = "/rekam-medik/control/rm-rawat-jalan";
+  var ENDPOINT = "/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan";
   var reactRoot = null;
   var overlayBtn = null;
   function parseResumeView() {
@@ -32537,19 +32537,31 @@ video {
         console.error("[RJ] save failed:", response.status, text);
         throw new Error("HTTP " + response.status);
       }
-      const phpPattern = /(?:<b>)?(?:Notice|Warning|Fatal error|Parse error|Catchable fatal error)(?:<\/b>)?\s*:\s*[^<]*/gi;
-      const phpErrors = [];
-      let m;
-      while ((m = phpPattern.exec(text)) !== null) {
-        let line = m[0].trim().replace(/<[^>]+>/g, "");
-        if (!line) continue;
-        if (/github\.com\/newrelic|newrelic-browser|google-analytics|googletagmanager/i.test(line))
-          continue;
-        phpErrors.push(line);
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        json = null;
       }
-      if (phpErrors.length > 0) {
-        console.error("[RJ] PHP errors:", phpErrors);
-        throw new Error(phpErrors.join("\n"));
+      if (json) {
+        if (Number(json.status) !== 200) {
+          console.error("[RJ] server reject:", json);
+          throw new Error(json.msg || "Gagal simpan (status " + json.status + ")");
+        }
+      } else {
+        const phpPattern = /(?:<b>)?(?:Notice|Warning|Fatal error|Parse error|Catchable fatal error)(?:<\/b>)?\s*:\s*[^<]*/gi;
+        const phpErrors = [];
+        let m;
+        while ((m = phpPattern.exec(text)) !== null) {
+          const line = m[0].trim().replace(/<[^>]+>/g, "");
+          if (!line) continue;
+          if (/github\.com\/newrelic|newrelic-browser|google-analytics|googletagmanager/i.test(line)) continue;
+          phpErrors.push(line);
+        }
+        if (phpErrors.length > 0) {
+          console.error("[RJ] PHP errors:", phpErrors);
+          throw new Error(phpErrors.join("\n"));
+        }
       }
       cachedFormState = null;
       const idVisit = resumeData.patientInfo.id_visit || new URLSearchParams(location.search).get("id_visit") || "";
