@@ -22170,7 +22170,12 @@ var __morbis_feature = (() => {
   var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
   var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
   var CASEMIX_HTTPS_REQUIRED = true;
-  var CASEMIX_HTTP_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_HTTP_ALLOWED_HOSTS = [
+    "dev.rsudkotajambi.id",
+    "103.147.236.138",
+    "localhost",
+    "127.0.0.1"
+  ];
   var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
   function casemixTransportBlockReason(baseUrl) {
     if (!CASEMIX_HTTPS_REQUIRED) return null;
@@ -22699,8 +22704,6 @@ var __morbis_feature = (() => {
     snap["namaTindakan[]"] = d.tindakan.map((r2) => r2.namaTindakan);
     snap["komorbid[]"] = d.tindakan.map((r2) => r2.komorbid);
     snap["kategoriProsedur[]"] = d.tindakan.map((r2) => r2.kategoriProsedur);
-    snap["snomedProsedur[]"] = d.tindakan.map((r2) => r2.snomedProsedur);
-    snap["codeProsedur[]"] = d.tindakan.map((r2) => r2.codeProsedur);
     return snap;
   }
   function snapToResumeData(snap, cur) {
@@ -22740,8 +22743,9 @@ var __morbis_feature = (() => {
         namaTindakan,
         komorbid: arr(snap, "komorbid[]")[i] ?? "",
         kategoriProsedur: arr(snap, "kategoriProsedur[]")[i] ?? "",
-        snomedProsedur: arr(snap, "snomedProsedur[]")[i] ?? "",
-        codeProsedur: arr(snap, "codeProsedur[]")[i] ?? ""
+        // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS
+        snomedProsedur: "",
+        codeProsedur: ""
       });
     }
     return {
@@ -27008,9 +27012,6 @@ var __morbis_feature = (() => {
       if (isEmptyish(t.kode9)) return;
       if (isEmptyish(t.namaTindakan))
         errors.push({ section: `Tindakan #${i + 1}`, message: "Nama tindakan kosong" });
-      if (!isEmptyish(t.idicdTindakan) && !isEmptyish(t.kode9) && !isEmptyish(t.namaTindakan) && isEmptyish(t.kategoriProsedur)) {
-        errors.push({ section: `Tindakan #${i + 1}`, message: "Kategori Prosedur belum dipilih" });
-      }
     });
     return errors;
   }
@@ -27022,6 +27023,9 @@ var __morbis_feature = (() => {
     const [warnings, setWarnings] = (0, import_react9.useState)([]);
     const [extraErrors, setExtraErrors] = (0, import_react9.useState)([]);
     const hadDiagnosaInitially = (0, import_react9.useRef)(data.diagnosa.some((d) => d.idicd?.trim()));
+    (0, import_react9.useEffect)(() => {
+      setSaveAttempted(false);
+    }, [data]);
     const validationErrors = saveAttempted ? validate(data) : [];
     const allErrors = [...validationErrors, ...extraErrors];
     const hasBlocking = validationErrors.length > 0;
@@ -27669,9 +27673,25 @@ var __morbis_feature = (() => {
       add("idicdTindakan[]", t.idicdTindakan);
       add("kategoriProsedur[]", t.kategoriProsedur || "");
       add("komorbid[]", t.komorbid || "");
-      add("snomedProsedur[]", t.snomedProsedur || "");
-      add("codeProsedur[]", t.codeProsedur || "");
+      add("snomedProsedur[]", "");
+      add("codeProsedur[]", "");
     });
+    const currentIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
+    for (const origId of originalTindakanIds) {
+      if (origId && !currentIds.has(origId)) {
+        add("idicdTindakan[]", origId);
+        add("namaTindakan[]", "");
+        add("kode9[]", "");
+        add("kategoriProsedur[]", "");
+        add("komorbid[]", "");
+        add("snomedProsedur[]", "");
+        add("codeProsedur[]", "");
+      }
+    }
+    if (cleanTindakan.length === 0 && originalTindakanIds.length === 0) {
+      add("snomedProsedur[]", "");
+      add("codeProsedur[]", "");
+    }
     add("save", "Simpan");
     return pairs.map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
   }
@@ -27699,6 +27719,7 @@ var __morbis_feature = (() => {
       sc.remove();
     }
     document.body.classList.remove("ext-resume-open");
+    originalTindakanIds = [];
     if (overlayBtn) {
       overlayBtn.disabled = false;
       overlayBtn.style.display = "";
@@ -32569,6 +32590,7 @@ video {
     }, 50);
   }
   var cachedFormState = null;
+  var originalTindakanIds = [];
   async function fetchFormState() {
     const idVisit = new URLSearchParams(location.search).get("id_visit");
     if (!idVisit) return {};
@@ -32713,6 +32735,8 @@ video {
         if (!cachedFormState) {
           cachedFormState = await fetchFormState();
         }
+        const origIds = cachedFormState["idicdTindakan[]"];
+        originalTindakanIds = Array.isArray(origIds) ? origIds.filter(Boolean) : [];
         const prescriptionText = await fetchAllPrescriptionHistories();
         const data = extractFormData();
         if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;

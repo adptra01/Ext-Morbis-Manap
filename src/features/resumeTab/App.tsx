@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { ResumeData, ValidationError } from './types';
 import { isEmptyish } from '../shared/resumeValidation.js';
 import { openHistoryModal } from '../shared/resumeHistory.js';
@@ -37,14 +37,6 @@ function validate(data: ResumeData): ValidationError[] {
     if (isEmptyish(t.kode9)) return;
     if (isEmptyish(t.namaTindakan))
       errors.push({ section: `Tindakan #${i + 1}`, message: 'Nama tindakan kosong' });
-    if (
-      !isEmptyish(t.idicdTindakan) &&
-      !isEmptyish(t.kode9) &&
-      !isEmptyish(t.namaTindakan) &&
-      isEmptyish(t.kategoriProsedur)
-    ) {
-      errors.push({ section: `Tindakan #${i + 1}`, message: 'Kategori Prosedur belum dipilih' });
-    }
   });
 
   return errors;
@@ -59,6 +51,12 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const [extraErrors, setExtraErrors] = useState<ValidationError[]>([]);
 
   const hadDiagnosaInitially = useRef(data.diagnosa.some((d) => d.idicd?.trim()));
+
+  // Reset saveAttempted when data changes so validation only blocks
+  // after explicit save attempt; allows button to re-enable after fixes.
+  useEffect(() => {
+    setSaveAttempted(false);
+  }, [data]);
 
   const validationErrors = saveAttempted ? validate(data) : [];
   const allErrors = [...validationErrors, ...extraErrors];

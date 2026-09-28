@@ -698,9 +698,33 @@ function serializeRawatJalan(data: ResumeData): string {
     add('idicdTindakan[]', t.idicdTindakan);
     add('kategoriProsedur[]', t.kategoriProsedur || '');
     add('komorbid[]', t.komorbid || '');
-    add('snomedProsedur[]', t.snomedProsedur || '');
-    add('codeProsedur[]', t.codeProsedur || '');
+    // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS,
+    // tapi server tetap expect array (biar ga error Notice) → kirim string kosong
+    add('snomedProsedur[]', '');
+    add('codeProsedur[]', '');
   });
+
+  // Kirim baris penghapusan untuk tindakan yang ada di original tapi tidak di current
+  // Server SIMRS menghapus baris yang idicdTindakan-nya dikirim tapi namaTindakan kosong
+  const currentIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
+  for (const origId of originalTindakanIds) {
+    if (origId && !currentIds.has(origId)) {
+      add('idicdTindakan[]', origId);
+      add('namaTindakan[]', ''); // nama kosong = hapus
+      add('kode9[]', '');
+      add('kategoriProsedur[]', '');
+      add('komorbid[]', '');
+      add('snomedProsedur[]', '');
+      add('codeProsedur[]', '');
+    }
+  }
+
+  // Fallback: jika TIDAK ADA baris sama sekali (cleanTindakan kosong & tidak ada deletion),
+  // server SIMRS tetap expect array codeProsedur[] & snomedProsedur[] → kirim 1 entry kosong
+  if (cleanTindakan.length === 0 && originalTindakanIds.length === 0) {
+    add('snomedProsedur[]', '');
+    add('codeProsedur[]', '');
+  }
 
   add('save', 'Simpan');
   return pairs.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
@@ -730,6 +754,8 @@ function closeOverlay(container: HTMLElement) {
     sc.remove();
   }
   document.body.classList.remove('ext-resume-open');
+  // Reset tracked original tindakan IDs on close
+  originalTindakanIds = [];
   if (overlayBtn) {
     overlayBtn.disabled = false;
     overlayBtn.style.display = '';
@@ -1108,6 +1134,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 }
 
 let cachedFormState: Record<string, string | string[]> | null = null;
+let originalTindakanIds: string[] = [];
 
 async function fetchFormState(): Promise<Record<string, string | string[]>> {
   const idVisit = new URLSearchParams(location.search).get('id_visit');
@@ -1280,6 +1307,9 @@ function setupFloatingButton() {
       if (!cachedFormState) {
         cachedFormState = await fetchFormState();
       }
+      // Capture original tindakan IDs for deletion tracking
+      const origIds = cachedFormState['idicdTindakan[]'];
+      originalTindakanIds = Array.isArray(origIds) ? origIds.filter(Boolean) : [];
       const prescriptionText = await fetchAllPrescriptionHistories();
       const data = extractFormData();
       if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;

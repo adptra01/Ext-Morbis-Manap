@@ -48,8 +48,10 @@ export function resumeDataToSnap(d: ResumeData): FormSnap {
   snap['namaTindakan[]'] = d.tindakan.map((r) => r.namaTindakan);
   snap['komorbid[]'] = d.tindakan.map((r) => r.komorbid);
   snap['kategoriProsedur[]'] = d.tindakan.map((r) => r.kategoriProsedur);
-  snap['snomedProsedur[]'] = d.tindakan.map((r) => r.snomedProsedur);
-  snap['codeProsedur[]'] = d.tindakan.map((r) => r.codeProsedur);
+  // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS,
+  // jadi jangan dikirim supaya tidak error "Array to string conversion"
+  // snap['snomedProsedur[]'] = d.tindakan.map((r) => r.snomedProsedur);
+  // snap['codeProsedur[]'] = d.tindakan.map((r) => r.codeProsedur);
   return snap;
 }
 
@@ -91,8 +93,9 @@ export function snapToResumeData(snap: FormSnap, cur: ResumeData): ResumeData {
       namaTindakan,
       komorbid: arr(snap, 'komorbid[]')[i] ?? '',
       kategoriProsedur: arr(snap, 'kategoriProsedur[]')[i] ?? '',
-      snomedProsedur: arr(snap, 'snomedProsedur[]')[i] ?? '',
-      codeProsedur: arr(snap, 'codeProsedur[]')[i] ?? '',
+      // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS
+      snomedProsedur: '',
+      codeProsedur: '',
     });
   }
 
