@@ -40,13 +40,13 @@
     "semantic_hash": "4c2f374d8b6f705de3aa685c39b6ac28"
   },
   "manifest.json": {
-    "mtime": 1790615664.7924194,
-    "ast_hash": "7c308074469dea5bd186f15f28c63395",
+    "mtime": 1790616012.8421264,
+    "ast_hash": "5c16e36cd04c8ab33b4029df74a60df3",
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1790615664.7929618,
-    "ast_hash": "d177c4604a4e3d90863b44231956c1f1",
+    "mtime": 1790616012.8425791,
+    "ast_hash": "0d604014ef7d13638fbdaa66e2af93f8",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -1810,13 +1810,13 @@
     "semantic_hash": ""
   },
   "scripts/changelog.mjs": {
-    "mtime": 1790615789.3234136,
-    "ast_hash": "2e990fe4ac075d4b4b566ac86b557b42",
+    "mtime": 1790615847.0770462,
+    "ast_hash": "1822a0fd7a9e8cb29032bbd84854d9de",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1790615762.1447573,
-    "ast_hash": "87d39237859ffe46477895f8eef9ce65",
+    "mtime": 1790615868.5848348,
+    "ast_hash": "f49f4c3376db1b8a2752f372043e1674",
     "semantic_hash": ""
   },
   "docs/ENTERPRISE_DEPLOYMENT_V2.md": {

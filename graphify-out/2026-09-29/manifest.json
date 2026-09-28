@@ -1810,13 +1810,13 @@
     "semantic_hash": ""
   },
   "scripts/changelog.mjs": {
-    "mtime": 1790615700.3454502,
-    "ast_hash": "21fa2b120183c0b11f0aee5f4d87615d",
+    "mtime": 1790615789.3234136,
+    "ast_hash": "2e990fe4ac075d4b4b566ac86b557b42",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1790615711.840227,
-    "ast_hash": "5916e4d2895bd8cd3b6a6df564810bae",
+    "mtime": 1790615762.1447573,
+    "ast_hash": "87d39237859ffe46477895f8eef9ce65",
     "semantic_hash": ""
   },
   "docs/ENTERPRISE_DEPLOYMENT_V2.md": {

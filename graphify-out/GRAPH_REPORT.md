@@ -2,7 +2,7 @@
 
 ## Corpus Check
 
-- 324 files · ~329,008 words
+- 324 files · ~329,042 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -13,7 +13,7 @@
 
 ## Graph Freshness
 
-- Built from commit: `266ccb8d`
+- Built from commit: `92b8a936`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -388,8 +388,8 @@ Nodes (70): fixCurrents(), patchTableCodes(), syncPublicNumbers(), buildPanel(),
 
 ### Community 7 - "resumeValidator.ts"
 
-Cohesion: 0.17
-Nodes (28): advanceMigratedMarker(), centralEntryKey(), centralToResumeEntry(), coerceSnap(), coerceSnapVal(), defaultStore(), diffSnap(), getHistoryKey() (+20 more)
+Cohesion: 0.16
+Nodes (29): fetchResumeCentral(), advanceMigratedMarker(), centralEntryKey(), centralToResumeEntry(), coerceSnap(), coerceSnapVal(), defaultStore(), diffSnap() (+21 more)
 
 ### Community 8 - "legacy.ts"
 
@@ -409,7 +409,7 @@ Nodes (21): App(), DEFAULT_URLS, FALLBACK_FEATURES, ConsultationDetailPanel(), P
 ### Community 11 - "button.tsx"
 
 Cohesion: 0.12
-Nodes (18): DiagnosaSection(), Hit, Footer(), FooterProps, BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, BatchItem (+10 more)
+Nodes (18): Footer(), FooterProps, Hit, TindakanSection(), BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, BatchItem (+10 more)
 
 ### Community 12 - "toolbar.ts"
 
@@ -433,8 +433,8 @@ Nodes (30): 1. URL Builder, 2. Bookmarklet Fix, 3. Testing, 4. Panduan, 5. Morbi
 
 ### Community 16 - "resumeTab/mount.tsx"
 
-Cohesion: 0.09
-Nodes (27): App(), CARA_KELUAR, GCS_HINT, GCS_MAX, Hitt, JENIS_KASUS, KEADAAN_KELUAR, PEMERIKSAAN_LANJUT (+19 more)
+Cohesion: 0.08
+Nodes (30): App(), CARA_KELUAR, GCS_HINT, GCS_MAX, Hitt, JENIS_KASUS, KEADAAN_KELUAR, PEMERIKSAAN_LANJUT (+22 more)
 
 ### Community 17 - "compilerOptions"
 
@@ -454,7 +454,7 @@ Nodes (14): root, App(), loadAll(), reloadActiveTab(), Footer(), FooterProps, RO
 ### Community 20 - "components.json"
 
 Cohesion: 0.03
-Nodes (61): 2026-04-02, 2026-04-09, 2026-04-22, 2026-04-23, 2026-05-07, 2026-05-16, 2026-05-18, 2026-05-25 (+53 more)
+Nodes (61): 2026-04-02, 2026-04-09, 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-07, 2026-05-10, 2026-05-16 (+53 more)
 
 ### Community 21 - "include"
 
@@ -508,8 +508,8 @@ Nodes (33): 1. Akses Fitur, 1. Deteksi dan Parsing URL, 2. Input URL Dokumen, 2.
 
 ### Community 31 - "cookieFilterStorage.ts"
 
-Cohesion: 0.21
-Nodes (12): isPreOp(), KVStore, loadPreOpMap(), minimalPreOpItem(), PreOpItem, purgeExpiredPreOp(), removePreOp(), resolvePreOpMarked() (+4 more)
+Cohesion: 0.20
+Nodes (13): isPreOp(), KVStore, loadPreOpMap(), minimalPreOpItem(), PreOpItem, PreOpMap, purgeExpiredPreOp(), removePreOp() (+5 more)
 
 ### Community 32 - "asset-master.js"
 
@@ -544,7 +544,7 @@ Nodes (17): buildCrx3(), buildId(), channelArg(), crxIdFromSpki(), deployDir, __
 ### Community 38 - "devDependencies"
 
 Cohesion: 0.08
-Nodes (25): autoprefixer, class-variance-authority, clsx, esbuild, eslint, @eslint/js, lint-staged, devDependencies (+17 more)
+Nodes (25): autoprefixer, clsx, esbuild, eslint, @eslint/js, husky, lint-staged, devDependencies (+17 more)
 
 ### Community 39 - "shared/utils.ts"
 
@@ -603,12 +603,12 @@ Nodes (24): BATCH_DELETE_CONFIG, closeBatchDeleteModal(), crawlDokumenPasienDele
 
 ### Community 51 - "clsx"
 
-Cohesion: 0.10
-Nodes (36): buildExportHtml(), collectKlaimRows(), esc(), extractIdVisit(), FILTER_KEYS, g, hideLoading(), initCasemixExport() (+28 more)
+Cohesion: 0.16
+Nodes (20): buildExportHtml(), collectKlaimRows(), esc(), extractIdVisit(), FILTER_KEYS, g, hideLoading(), initCasemixExport() (+12 more)
 
 ### Community 52 - "esbuild"
 
-Cohesion: 0.21
+Cohesion: 0.25
 Nodes (18): collectVisibleIds(), debouncedScan(), effectiveMarked(), ensurePreOpButton(), extractIdVisitFromRow(), extractPatientInfo(), g, initPreOpMarker() (+10 more)
 
 ### Community 53 - "eslint"
@@ -648,8 +648,8 @@ Nodes (15): buildPageUrl(), cleanFilterValue(), cleanup(), fieldName(), init(), 
 
 ### Community 62 - "rimraf"
 
-Cohesion: 0.21
-Nodes (12): BackfillResult, collectPreOpPending(), collectResumePending(), discoverResumeKeys(), initCasemixBackfill(), KVStore, postCentral(), readJson() (+4 more)
+Cohesion: 0.12
+Nodes (25): buildTtsUrl(), CASEMIX_ALLOWED_HOSTS, CASEMIX_HTTP_ALLOWED_HOSTS, casemixTransportBlockReason(), CentralPreOpMark, CentralResumeEntry, CentralRevision, fetchRevisionsBatch() (+17 more)
 
 ### Community 63 - "tailwind-merge"
 
@@ -1019,7 +1019,7 @@ Nodes (3): 9.1 Constraints, 9.2 Insights, 9. Key Constraints & Insights
 ### Community 164 - "toolbar.ts"
 
 Cohesion: 0.11
-Nodes (41): autoInitRevisionPanel(), BACK_DETAIL_BTN, BpjsRevision, bpjsRevisionKey(), bpjsRevisions, centralToBpjsRevision(), ensureRevisionPanel(), extractParam() (+33 more)
+Nodes (42): postRevisionCentral(), autoInitRevisionPanel(), BACK_DETAIL_BTN, BpjsRevision, bpjsRevisionKey(), bpjsRevisions, centralToBpjsRevision(), ensureRevisionPanel() (+34 more)
 
 ### Community 165 - "ConsultationInfoPanel.tsx"
 
@@ -1053,8 +1053,8 @@ Nodes (3): dumpPage(), env, main()
 
 ### Community 171 - "resumeTab/App.tsx"
 
-Cohesion: 0.15
-Nodes (17): App(), validate(), ClinicalNotesSection(), ClinicalNotesSectionProps, snapToResumeData(), ValidationError, ValidationPanel(), ValidationPanelProps (+9 more)
+Cohesion: 0.17
+Nodes (14): App(), validate(), ClinicalNotesSection(), ClinicalNotesSectionProps, snapToResumeData(), ValidationError, ValidationPanel(), ValidationPanelProps (+6 more)
 
 ### Community 172 - "antrianFarmasiDisplayApp.ts"
 
@@ -1079,7 +1079,7 @@ Nodes (3): checkAntrian(), env, main()
 ### Community 179 - "resumeTab/types.ts"
 
 Cohesion: 0.15
-Nodes (14): AppProps, Props, Header(), HeaderProps, Hit, Props, TindakanSection(), ClinicalNotes (+6 more)
+Nodes (14): AppProps, DiagnosaSection(), Hit, Props, Header(), HeaderProps, Props, ClinicalNotes (+6 more)
 
 ### Community 180 - "Role"
 
@@ -1324,7 +1324,7 @@ Nodes (4): 2026-07-16, 🧹 chore, ✨ feat, 📌 misc
 ### Community 286 - "2026-08-07"
 
 Cohesion: 0.50
-Nodes (4): 2026-08-07, 🧹 chore, ✨ feat, 📌 misc
+Nodes (4): 2026-08-10, ✨ feat, 🐛 fix, ♻️ refactor
 
 ### Community 287 - "2026-08-08"
 
@@ -1384,12 +1384,12 @@ Nodes (3): 2026-09-17, ✨ feat, 🐛 fix
 ### Community 298 - "2026-05-01"
 
 Cohesion: 0.67
-Nodes (3): 2026-05-01, ✨ feat, ♻️ refactor
+Nodes (3): 2026-07-13, 🐛 fix, 📌 misc
 
 ### Community 299 - "2026-05-10"
 
 Cohesion: 0.67
-Nodes (3): 2026-05-10, 🐛 fix, 📌 misc
+Nodes (3): 2026-07-23, 🧹 chore, 🐛 fix
 
 ### Community 300 - "2026-06-14"
 
@@ -1419,7 +1419,7 @@ Nodes (3): 2026-07-10, ✨ feat, 📌 misc
 ### Community 305 - "2026-07-11"
 
 Cohesion: 0.67
-Nodes (3): 2026-07-11, ✨ feat, 🐛 fix
+Nodes (3): 2026-09-05, 🧹 chore, ♻️ refactor
 
 ### Community 306 - "2026-07-13"
 

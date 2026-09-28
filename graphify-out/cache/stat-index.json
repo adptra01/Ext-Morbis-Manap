@@ -344,10 +344,10 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/manifest.json": {
     "size": 23907,
-    "mtime_ns": 1790615664792419500,
+    "mtime_ns": 1790616012842126300,
     "word_count": 875,
     "hashes": {
-      "manifest.json": "4b23a86e8ff11d695db4065dca20fd8096e22fd22b0d723ffb441b2f792147a2"
+      "manifest.json": "ef0c565366e09c7482aeda7f24948e285bf94994389b894519833fe570a71642"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/mcp-servers/morbis-devtools/README.md": {
@@ -373,9 +373,9 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/package.json": {
     "size": 2317,
-    "mtime_ns": 1790615664792961800,
+    "mtime_ns": 1790616012842579100,
     "word_count": 190,
-    "hashes": { "package.json": "1099cd0c54ac16e4dbc7ae29f0e27c9807a0a28aa6b53fe1f85c8622f01ebb31" }
+    "hashes": { "package.json": "1933199cb24fd27ef0fc63ec4884012f32f5e2fa54dc3d86f506900412ce621e" }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/popup.js": {
     "size": 12518,
@@ -2357,10 +2357,10 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/CHANGELOG.md": {
-    "size": 73955,
-    "mtime_ns": 1790615762144757300,
-    "word_count": 10557,
-    "hashes": { "changelog.md": "b0b53df7954e1c3ebf2c44b677ebda6aabbd6719218c17ac9d0f479f8eebe8ab" }
+    "size": 74029,
+    "mtime_ns": 1790615868584834700,
+    "word_count": 10566,
+    "hashes": { "changelog.md": "d7d59facc37a581294308eee0e469e598601eda44992c3bcdd0ca8c6dba792eb" }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/docs/ENTERPRISE_DEPLOYMENT_V2.md": {
     "size": 9312,
@@ -2371,8 +2371,8 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/changelog.mjs": {
-    "size": 6763,
-    "mtime_ns": 1790615789323413700,
-    "word_count": 863
+    "size": 6927,
+    "mtime_ns": 1790615847077046100,
+    "word_count": 888
   }
 }
