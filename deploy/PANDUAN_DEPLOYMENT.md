@@ -18,32 +18,61 @@ Anda hanya butuh akses push ke branch `dev` repo
 `github.com/adptra01/Ext-Morbis-Manap`. Semua langkah manual pack/sign
 **TIDAK diperlukan lagi**.
 
-Alur otomatis (`.github/workflows/deploy-to-main.yml`) setiap push ke `dev`:
+### 1.1 Dua channel update (staging vs production)
+
+| Channel    | update.xml (live di Pages)        | Dipicu oleh       | Dipakai oleh        |
+| ---------- | --------------------------------- | ----------------- | ------------------- |
+| STAGING    | `.../channels/staging/update.xml` | **push ke `dev`** | Grup `MORBIS-PILOT` |
+| PRODUCTION | `.../update.xml`                  | **tag `vX.Y.Z`**  | Semua device        |
+
+Alur: `push dev` → CI build + rilis **staging** → pilot verifikasi → QA setuju →
+`git tag vX.Y.Z` + `git push origin vX.Y.Z` → production (update.xml + Edge Store).
+
+> **Cara membuat rilis production:** setelah rilis staging Anda lolos verifikasi,
+> tag COMMIT yang versinya cocok (commit bump `chore: bump version to X.Y.Z`):
+>
+> ```bash
+> git fetch origin dev && git checkout -b rilis origin/dev
+> git tag v1.5.76 && git push origin v1.5.76
+> ```
+>
+> CI guard menolak tag yang tidak cocok dengan versi manifest di commit tersebut
+> (mis. salah tag / tag stale `v1.2.0` — jangan push tag lama).
+> Device production **tidak berubah** hanya karena developer push biasa ke `dev`.
+
+### 1.2 Alur CI (push ke `dev` / tag)
 
 1. **Quality gate** — CI menjalankan `typecheck` → unit test → `lint` (job
    `quality`). Gagal satu saja → deploy berhenti, tidak ada bump/build.
-2. **Bump versi** — CI menaikkan patch `manifest.json` (+1) dan **sinkron
-   `package.json`** (satu source of truth versi), push balik ke `dev` `[skip ci]`.
-3. **Build** — `npm ci` + `npm run build` (vite + `scripts/build.mjs`) → `dist/`;
+2. **Deteksi channel** — tag → production (versi = versi commit yang di-tag);
+   branch dev → staging (dengan bump).
+3. **Bump versi** — (hanya run staging) CI menaikkan patch `manifest.json` (+1)
+   dan **sinkron `package.json`**, push balik ke `dev` `[skip ci]`.
+4. **Build** — `npm ci` + `npm run build` (vite + `scripts/build.mjs`) → `dist/`;
    manifest **produksi** dibersihkan otomatis dari host development
    (localhost/127.0.0.1/ddev) — guard: `tests/unit/manifest-prod.test.ts`.
-4. **Audit fitur** — `npm run audit` (regresi `match/run`) — gagal menghentikan deploy.
-5. **Pack CRX3 signed** — `scripts/pack.mjs` membaca `CRX_SIGNING_KEY`, membuat
+5. **Audit fitur** — `npm run audit` (regresi `match/run`) — gagal menghentikan deploy.
+6. **Pack CRX3 signed** — `scripts/pack.mjs` membaca `CRX_SIGNING_KEY`, membuat
    `deploy/morbis-v<versi>.crx` + release immutable `deploy/releases/v<versi>/`
-   (crx, `metadata.json`, `sha256sums.txt` = integrity record/audit) +
-   `deploy/update.xml` (codebase → `releases/v<versi>/morbis-v<versi>.crx`).
+   (crx, `metadata.json`, `sha256sums.txt` = integrity record/audit) + update.xml
+   **production dan staging** sekaligus (codebase → `releases/v<versi>/morbis-v<versi>.crx`).
    Guard CI memverifikasi EXT_ID di `.bat` sinkron dengan key signing, dan
    versi update.xml = manifest.
-6. **Deploy ke `main`** — orphan commit berisi `dist/` + `docs/` (update.xml,
-   CRX, installer). Release versi lama **dipreservasi** (`docs/releases/`),
-   versi baru ditambahkan; GitHub Pages meng-copy `docs/`.
-7. **update.xml LIVE** — dalam ±1–2 menit setelah push: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`.
+7. **Deploy ke `main`** — orphan commit berisi `dist/` + `docs/` (update.xml,
+   CRX, installer, `policy/`). Release versi lama **dipreservasi**
+   (`docs/releases/`); pointer production lama dipertahankan pada run staging;
+   GitHub Pages meng-copy `docs/`.
+8. **update.xml LIVE** — ±1–2 menit setelah run:
+   - staging: `https://adptra01.github.io/Ext-Morbis-Manap/channels/staging/update.xml`
+   - production: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
 
-Tambahan: job `publish-edge` mengunggah build yang sama ke Microsoft Edge Add-ons.
+Tambahan: job `publish-edge` mengunggah build ke Microsoft Edge Add-ons
+**hanya pada rilis production (tag)**.
 
-**Aturan emas:** push ke `dev` = rilis. Jangan commit `.pem`, jangan edit `update.xml`
-manual, jangan pack manual (risiko ID berubah). Jangan pernah push ke `main` langsung
-(selalu ditimpa oleh deploy CI).
+**Aturan emas:** push ke `dev` = **staging**, tag `vX.Y.Z` = **production**.
+Jangan commit `.pem`, jangan edit `update.xml` manual, jangan pack manual
+(risiko ID berubah), jangan push tag stale. Jangan pernah push ke `main`
+langsung (selalu ditimpa oleh deploy CI).
 
 ---
 
@@ -149,6 +178,8 @@ uninstaller — kalau perlu rollback, backup sudah ada dari langkah install.
 ## Referensi cepat
 
 - EXT_ID: `beljnjfifmncnfnhdkcmjpeonoigdnbl`
-- Update: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
-- Installer: `https://adptra01.github.io/Ext-Morbis-Manap/Install_Morbis_Ext.bat`
-- Repo: `https://github.com/adptra01/Ext-Morbis-Manap` (push ke `dev` = rilis)
+- Update production: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
+- Update staging: `https://adptra01.github.io/Ext-Morbis-Manap/channels/staging/update.xml`
+- Installer (fallback): `https://adptra01.github.io/Ext-Morbis-Manap/Install_Morbis_Ext.bat`
+- Policy GPO/Intune: `https://adptra01.github.io/Ext-Morbis-Manap/policy/` (folder `deploy/policy/`)
+- Repo: `https://github.com/adptra01/Ext-Morbis-Manap` (push `dev` = staging; tag `vX.Y.Z` = production)
