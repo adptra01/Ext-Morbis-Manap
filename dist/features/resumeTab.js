@@ -27605,7 +27605,8 @@ var __morbis_feature = (() => {
       }
     }
     const ensure = (name, value) => {
-      if (!params.has(name)) params.set(name, value);
+      if (!value) return;
+      if (!params.get(name)) params.set(name, value);
     };
     const pi = (name) => data.patientInfo?.[name] || "";
     const domVal = (name) => document.querySelector(`[name="${name}"]`)?.value || "";
@@ -32655,7 +32656,7 @@ video {
       if (name.endsWith("[]")) {
         if (!Array.isArray(state[name])) state[name] = [];
         state[name].push(value);
-      } else if (!(name in state)) {
+      } else {
         state[name] = value;
       }
     };

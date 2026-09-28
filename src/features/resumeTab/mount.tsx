@@ -618,9 +618,12 @@ function serializeRawatJalan(data: ResumeData): string {
     }
   }
 
-  // Pastikan field wajib ini ada (form base pasti punya, tapi jaga-jaga)
+  // Pastikan field wajib ini ada. Timpai juga bila nilainya kosong:
+  // `params.has()` bernilai true untuk string kosong, jadi tanpa
+  // pengecekan nilai, field yang terkirim kosong tidak pernah diperbaiki.
   const ensure = (name: string, value: string) => {
-    if (!params.has(name)) params.set(name, value);
+    if (!value) return;
+    if (!params.get(name)) params.set(name, value);
   };
   // ── Fallback skalar: field yang dibaca controller tapi kadang tidak ada
   //    di form (mis. form dirender ulang, atau fetchFormState gagal).
@@ -1281,8 +1284,14 @@ function parseFormControls(doc: Document): Record<string, string | string[]> {
     if (name.endsWith('[]')) {
       if (!Array.isArray(state[name])) state[name] = [];
       (state[name] as string[]).push(value);
-    } else if (!(name in state)) {
-      // Don't clobber: input pertama menang untuk field skalar
+    } else {
+      // TERAKHIR menang untuk field skalar — sama dengan cara PHP
+      // membaca kunci POST yang duplikat. Ini penting untuk
+      // `id_rawat_jalan`: form asli mengirimkannya DUA kali, pertama
+      // kosong lalu 135682 di akhir. Dengan aturan "pertama menang"
+      // kita menyimpan nilai kosong, lalu ensure() deemang sudah ada
+      // dan tidak menimpanya — sehingga server tidak pernah menerima
+      // id_rawat_jalan dan hapus/tambah ICD tidak berefek.
       state[name] = value;
     }
   };
