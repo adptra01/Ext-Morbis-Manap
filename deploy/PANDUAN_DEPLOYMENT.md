@@ -173,6 +173,19 @@ uninstaller — kalau perlu rollback, backup sudah ada dari langkah install.
 - Rails lain yang wajib: `.pem`/`CRX_SIGNING_KEY` tidak pernah masuk repo
   (guard CI memblokir deploy bila ada `*.pem` di `deploy/` atau `dist/`).
 
+### Register risiko lengkap
+
+Daftar risiko aktif + kontrol kompensasi + keputusan diterima/ditunda
+terdokumentasi di **`docs/ENTERPRISE_DEPLOYMENT_V2.md`** (risk register,
+bukan rencana migrasi HTTPS). Ringkasannya:
+
+- **Risiko diterima (kendala):** endpoint SIMRS tetap HTTP — kontrol
+  kompensasi: ekstensi hanya berjalan di 4 host SIMRS (`runtime_allowed_hosts`),
+  tidak menyimpan kredensial, kill-switch PHI tetap OFF, SIMRS disarankan
+  hanya di jaringan internal/firewall/VPN.
+- **Ditunda (keputusan):** SCA, SAST, KMS/HSM, private hosting, RBAC/MFA,
+  monitoring — revisi berkala per jadwal di dokumen tersebut.
+
 ---
 
 ## 6. Troubleshooting Singkat
