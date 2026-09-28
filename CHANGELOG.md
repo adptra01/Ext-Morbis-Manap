@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-09-29
+
+### 🐛 fix
+
+- **changelog** — saring commit bump CI yang lolos klasifikasi conventional (`007072f`)
+
 ## 2026-09-28
 
 ### ✨ feat
