@@ -79,6 +79,13 @@ Jangan commit `.pem`, jangan edit `update.xml` manual, jangan pack manual
 (risiko ID berubah), jangan push tag stale. Jangan pernah push ke `main`
 langsung (selalu ditimpa oleh deploy CI).
 
+> **PERINGATAN marker-skip:** jangan pernah menulis literal `[skip ci]` (atau
+> `[ci skip]`) di pesan commit, KECUALI memang berniat skip (seperti commit
+> bump otomatis CI). GitHub membaca SELURUH pesan commit (judul + body) —
+> satu kemunculan saja membatalkan SELURUH workflow untuk push itu, termasuk
+> push yang tidak berniat skip. `scripts/release.sh` dibuat justru karena
+> tag yang menunjuk commit bump (ber-marker skip) tidak memicu CI.
+
 ---
 
 ## 2. Install di PC RS (Jalur B — policy CRX)
