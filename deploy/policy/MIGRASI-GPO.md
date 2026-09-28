@@ -107,6 +107,13 @@ menangkap error schema yang akan membuat GPO ditolak diam-diam.
    `chrome://extensions` (Mode developer aktif) → versi naik.
 5. Bersihkan: `sudo rm /etc/opt/chrome/policies/managed/morbis-ext.json`.
 
+> ⚠️ **Siklus hidup `force_installed`:** menghapus file policy akan
+> **melencarkan** ekstensi secara otomatis di browser (sama seperti melepas GPO
+> di PC RS). Policy file = satu-satunya sumber kehidupan ekstensi; uninstall
+> cukup hapus policy + restart browser. Selama policy masih aktif, kartu
+> ekstensi **tidak bisa dihapus dari UI** Chrome — itu memang tujuannya
+> (user/malware tidak bisa melepas proteksi).
+
 > Ekstensi **unpacked** ("Load unpacked") tidak pernah auto-update — selalu
 > uji lewat policy seperti di atas agar mekanismenya sama dengan produksi.
 
