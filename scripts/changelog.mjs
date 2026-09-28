@@ -13,11 +13,12 @@
 // Marker & lag 1 commit (diyakini, bukan bug):
 //   Regenerasi hook pre-commit berjalan SEBELUM commit terbentuk, jadi file
 //   ter-commit tak memuat entri commit itu sendiri. Tiap regenerasi menulis
-//   marker `<!-- changelog-upto: <sha> -->` = HEAD saat regenerasi (= commit
-//   terakhir yang riwayatnya sudah tercermin). --check membandingkan file
-//   dengan buildMd({ upto: marker }), jadi file hasil hook (tinggal commit
+//   marker `<!-- changelog-upto: <sha> -->` = generation point (HEAD saat
+//   regenerasi; atau `upto` saat render state historis). --check membandingkan
+//   file dengan buildMd({ upto: marker }), jadi file hasil hook (tinggal commit
 //   berikutnya + bump CI di atasnya) tetap dianggap valid; file stale/phantom
-//   atau hasil `--no-verify` tetap terdeteksi.
+//   (mis. marker hasil `git commit --amend` yang sha-nya hilang) atau hasil
+//   `--no-verify` tetap terdeteksi dan dituntun ke `npm run changelog`.
 //
 // Pemakaian:
 //   node scripts/changelog.mjs            # tulis CHANGELOG.md (hanya jika berubah)
@@ -156,7 +157,8 @@ export function buildMd({ upto = null } = {}) {
   }
 
   const head = currentHead();
-  const marker = head ? `\n<!-- changelog-upto: ${head} -->\n` : '';
+  const genPoint = upto ?? head;
+  const marker = genPoint ? `\n<!-- changelog-upto: ${genPoint} -->\n` : '';
   return (
     lines
       .join('\n')

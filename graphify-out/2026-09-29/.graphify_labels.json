@@ -319,6 +319,5 @@
   "317": "pre-commit",
   "318": "@radix-ui/react-switch",
   "319": "rimraf",
-  "320": "tailwindcss",
   "321": "@types/react-dom"
 }

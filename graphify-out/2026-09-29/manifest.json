@@ -40,13 +40,13 @@
     "semantic_hash": "4c2f374d8b6f705de3aa685c39b6ac28"
   },
   "manifest.json": {
-    "mtime": 1790615018.7057152,
-    "ast_hash": "043c54536abbf388baf8830212a85061",
+    "mtime": 1790615664.7924194,
+    "ast_hash": "7c308074469dea5bd186f15f28c63395",
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1790615018.7064917,
-    "ast_hash": "babc878d396e1a221f67bbf3138446fc",
+    "mtime": 1790615664.7929618,
+    "ast_hash": "d177c4604a4e3d90863b44231956c1f1",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "deploy/PANDUAN_DEPLOYMENT.md": {
-    "mtime": 1790614774.48507,
-    "ast_hash": "fea6be2a0154a3c9b1e63060bb444309",
+    "mtime": 1790615704.1903937,
+    "ast_hash": "65634c5ad085842ca42b2c921c25d8ca",
     "semantic_hash": ""
   },
   "deploy/PANDUAN_PENGUNAAN.md": {
@@ -1810,13 +1810,13 @@
     "semantic_hash": ""
   },
   "scripts/changelog.mjs": {
-    "mtime": 1790615043.0285223,
-    "ast_hash": "bd62317e6b5644af3ca0ef9bf7ef1b5b",
+    "mtime": 1790615700.3454502,
+    "ast_hash": "21fa2b120183c0b11f0aee5f4d87615d",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1790615052.6632807,
-    "ast_hash": "0d8239f79db6a78dbe8459bf4f5a3fb4",
+    "mtime": 1790615711.840227,
+    "ast_hash": "5916e4d2895bd8cd3b6a6df564810bae",
     "semantic_hash": ""
   },
   "docs/ENTERPRISE_DEPLOYMENT_V2.md": {

@@ -11,6 +11,7 @@
 
 ### 🐛 fix
 
+- **changelog** — marker changelog-upto utk --check akurat (lag-1 + bump CI) (`266ccb8`)
 - **changelog** — saring commit bump CI yang lolos klasifikasi conventional (`007072f`)
 
 ### 🧹 chore
@@ -1613,4 +1614,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 555ef483243f9da6490f0a0a794ca9ce11260fcd -->
+<!-- changelog-upto: 266ccb8dae609414ce228951ee1842ce63a9286f -->
