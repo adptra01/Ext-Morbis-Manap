@@ -784,6 +784,18 @@ function serializeRawatJalan(data: ResumeData): string {
   // ═══════════════════════════════════════════════════════════
   const fmt = (pairs: [string, string][]) =>
     pairs.map(([v, i]) => `${v}#${i}`).join(' | ') || '(kosong)';
+  // Penanda build: kalau baris ini tidak muncul saat Simpan, Chrome masih
+  // memuat bundle LAMA (butuh reload extension + hard refresh halaman).
+  let buildTag = '?';
+  try {
+    buildTag =
+      (
+        globalThis as { chrome?: { runtime?: { getManifest?: () => { version?: string } } } }
+      ).chrome?.runtime?.getManifest?.()?.version ?? 'runtime-tidak-ada';
+  } catch {
+    buildTag = 'gagal-baca';
+  }
+  console.log('[RJ] build:', buildTag, '| ic-N dihapus = ya');
   console.log(
     '[RJ] ICD-10 terkirim :',
     fmt(cleanDiagnosa.map((d) => [d.kode10 || '?', d.idicd || '?'])),

@@ -27318,9 +27318,7 @@ var __morbis_feature = (() => {
   }
   function pickTindakan(rows) {
     return rows.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
-      (t, i, all) => all.findIndex(
-        (x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9
-      ) === i
+      (t, i, all) => all.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i
     ).map((t) => ({
       nama: t.namaTindakan,
       kode9: t.kode9,
@@ -27834,6 +27832,13 @@ var __morbis_feature = (() => {
       params.append("komorbid[]", t.komorbid);
     }
     const fmt = (pairs) => pairs.map(([v, i]) => `${v}#${i}`).join(" | ") || "(kosong)";
+    let buildTag = "?";
+    try {
+      buildTag = globalThis.chrome?.runtime?.getManifest?.()?.version ?? "runtime-tidak-ada";
+    } catch {
+      buildTag = "gagal-baca";
+    }
+    console.log("[RJ] build:", buildTag, "| ic-N dihapus = ya");
     console.log(
       "[RJ] ICD-10 terkirim :",
       fmt(cleanDiagnosa.map((d) => [d.kode10 || "?", d.idicd || "?"]))
