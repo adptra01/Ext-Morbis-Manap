@@ -89,6 +89,9 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
       window.setTimeout(() => window.location.reload(), 900);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      // Cetak stack penuh ke console: tanpa ini kita tidak tahu ReferenceError
+      // datang dari modul mana, karena nama variabelnya sama di beberapa build.
+      console.error('[RJ-SAVE-GAGAL]', msg, '\n', e instanceof Error ? e.stack : '(bukan Error)');
       setExtraErrors([{ section: 'Server', message: msg }]);
     } finally {
       setSaving(false);
