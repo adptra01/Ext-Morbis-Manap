@@ -120,7 +120,13 @@ const AUTOCOMPLETE_URLS = {
   icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
 };
 
-const ENDPOINT = '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan';
+// URL simpan HARUS sama persis dengan yang dipakai form asli SIMRS
+// (lihat inline script halaman rm-rawat-jalan-new):
+//   url: '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan?sub=simpan'
+//   data: $("#formdata").serialize()
+// Mengganti nama controller (mis. -refaktor) membuat payload tidak
+// terbaca => Notice "Undefined index" + ORA-01400 kolom NOT NULL.
+const ENDPOINT = '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan?sub=simpan';
 
 let reactRoot: Root | null = null;
 let overlayBtn: HTMLButtonElement | null = null;
@@ -353,7 +359,12 @@ function extractFormData(): ResumeData {
       const nama =
         row.querySelector<HTMLInputElement>('input[name="namaDiagnosa[]"], input[name="nama[]"]')
           ?.value || '';
-      const kasus = row.querySelector<HTMLSelectElement>('select[name="kasus[]"]')?.value || '';
+      // Form asli memakai `kasus_diagnosa[]` (bukan `kasus[]`) —
+      // tanpa selector ini nilai kasus selalu kosong.
+      const kasus =
+        row.querySelector<HTMLSelectElement>(
+          'select[name="kasus_diagnosa[]"], select[name="kasus[]"]',
+        )?.value || '';
       const komplikasi =
         row.querySelector<HTMLSelectElement>('select[name="komplikasi[]"]')?.value || '';
       if (kode10 || nama) {
@@ -611,25 +622,29 @@ function serializeRawatJalan(data: ResumeData): string {
   const ensure = (name: string, value: string) => {
     if (!params.has(name)) params.set(name, value);
   };
-  const idVisit =
-    data.patientInfo.id_visit || new URLSearchParams(location.search).get('id_visit') || '';
-  const idRJ =
-    data.patientInfo.id_rawat_jalan || new URLSearchParams(location.search).get('id') || '';
-  ensure('id_visit', idVisit);
-  ensure('id_rawat_jalan', idRJ);
-  ensure('id_user', '1');
-  ensure('save', 'Simpan');
-
-  // ── Fallback skalar: field yang dibaca controller rm-rawat-jalan-refaktor
-  //    tapi kadang tidak ada di form (mis. form dirender ulang, atau
-  //    fetchFormState gagal). Tanpa ini → PHP Notice "Undefined index"
-  //    + Oracle INSERT ke kolom NOT NULL kosong.
+  // ── Fallback skalar: field yang dibaca controller tapi kadang tidak ada
+  //    di form (mis. form dirender ulang, atau fetchFormState gagal).
+  //    Tanpa ini → PHP Notice "Undefined index" + Oracle INSERT ke kolom
+  //    NOT NULL kosong.
   const pi = (name: string) =>
     (data.patientInfo as Record<string, string | undefined>)?.[name] || '';
   const domVal = (name: string) =>
     (document.querySelector(`[name="${name}"]`) as HTMLInputElement | null)?.value || '';
   const fsVal = (name: string) =>
     typeof cachedFormState?.[name] === 'string' ? (cachedFormState![name] as string) : '';
+
+  const idVisit =
+    data.patientInfo.id_visit || new URLSearchParams(location.search).get('id_visit') || '';
+  const idRJ =
+    data.patientInfo.id_rawat_jalan || new URLSearchParams(location.search).get('id') || '';
+  ensure('id_visit', idVisit);
+  ensure('id_rawat_jalan', idRJ);
+  // id_user: pakai nilai form asli. Fallback terakhir tetap '1' (superadmin)
+  // agar $_POST['id_user'] tidak undefined.
+  ensure('id_user', fsVal('id_user') || '1');
+  // Catatan: `save` SENGAJA tidak dikirim. Tombol submit form asli
+  // (<button id="save">Ubah</button>) tidak punya atribut name, jadi
+  // $("#formdata").serialize() juga tidak mengirimnya.
 
   // id_kunjungan: kolom NOT NULL di tabel OBSERVATION → ORA-01400.
   if (!params.get('id_kunjungan')) {
@@ -735,10 +750,12 @@ function serializeRawatJalan(data: ResumeData): string {
     params.append('idicd[]', idicd);
     params.append('kode10[]', d.kode10);
     params.append('keterangan10[]', d.keterangan || '');
-    params.append('kasus_diagnosa[]', d.kasus || 'Kasus Lama');
+    // JANGAN kirim `keterangan10` skalar: form asli hanya punya
+    // `keterangan10[]`. Mengirim skalar(string) menimpa array di
+    // $_POST lalu controller mengindeks $x[0]/$x[1] =>
+    // "Uninitialized string offset: 0/1".
+    params.append('kasus_diagnosa[]', d.kasus || '');
     params.append('komplikasi[]', d.komplikasi || '');
-    // Server salah baca sebagai scalar `keterangan10` (bug line 326) — kirim juga
-    params.append('keterangan10', d.keterangan || '');
   });
 
   // Baris hapus diagnosa (server hapus kalau nama kosong)
@@ -769,13 +786,20 @@ function serializeRawatJalan(data: ResumeData): string {
         arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
     );
 
-  cleanTindakan.forEach((t, idx) => {
+  cleanTindakan.forEach((t) => {
     params.append('namaTindakan[]', t.namaTindakan);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
     params.append('komorbid[]', t.komorbid || '');
-    if (t.informedConsent) params.append(`ic${idx + 1}`, '1');
   });
+
+  // `ic1`, `ic2`, ... = checkbox persetujuan tindakan per baris. Form asli
+  // hanya mengirimnya kalau tercentang, jadi ikutkan apa adanya dari
+  // state form (TindakanRow tidak punya field informedConsent).
+  for (let i = 1; i <= 50; i++) {
+    const v = fsVal(`ic${i}`);
+    if (v) params.append(`ic${i}`, v);
+  }
 
   // Baris hapus tindakan
   const currentTindakanIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));

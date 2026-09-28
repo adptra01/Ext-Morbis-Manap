@@ -27295,7 +27295,7 @@ var __morbis_feature = (() => {
     };
   }
   var isRj = location.pathname.includes("rm-rawat-jalan-new");
-  var ENDPOINT = "/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan";
+  var ENDPOINT = "/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan?sub=simpan";
   var reactRoot = null;
   var overlayBtn = null;
   function parseResumeView() {
@@ -27477,7 +27477,7 @@ var __morbis_feature = (() => {
         const idicd = row.querySelector('input[name="idicd[]"], input[name="idicd"]')?.value || "";
         const kode10 = inp.value || "";
         const nama = row.querySelector('input[name="namaDiagnosa[]"], input[name="nama[]"]')?.value || "";
-        const kasus = row.querySelector('select[name="kasus[]"]')?.value || "";
+        const kasus = row.querySelector('select[name="kasus_diagnosa[]"], select[name="kasus[]"]')?.value || "";
         const komplikasi = row.querySelector('select[name="komplikasi[]"]')?.value || "";
         if (kode10 || nama) {
           diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus, komplikasi });
@@ -27605,20 +27605,16 @@ var __morbis_feature = (() => {
     const ensure = (name, value) => {
       if (!params.has(name)) params.set(name, value);
     };
+    const pi = (name) => data.patientInfo?.[name] || "";
+    const domVal = (name) => document.querySelector(`[name="${name}"]`)?.value || "";
+    const fsVal = (name) => typeof cachedFormState?.[name] === "string" ? cachedFormState[name] : "";
     const idVisit = data.patientInfo.id_visit || new URLSearchParams(location.search).get("id_visit") || "";
     const idRJ = data.patientInfo.id_rawat_jalan || new URLSearchParams(location.search).get("id") || "";
     ensure("id_visit", idVisit);
     ensure("id_rawat_jalan", idRJ);
-    ensure("id_user", "1");
-    ensure("save", "Simpan");
-    const pi = (name) => data.patientInfo?.[name] || "";
-    const domVal = (name) => document.querySelector(`[name="${name}"]`)?.value || "";
-    const fsVal = (name) => typeof cachedFormState?.[name] === "string" ? cachedFormState[name] : "";
+    ensure("id_user", fsVal("id_user") || "1");
     if (!params.get("id_kunjungan")) {
-      params.set(
-        "id_kunjungan",
-        domVal("id_kunjungan") || fsVal("id_kunjungan") || idRJ || idVisit
-      );
+      params.set("id_kunjungan", domVal("id_kunjungan") || fsVal("id_kunjungan") || idRJ || idVisit);
     }
     for (const f of [
       "norm",
@@ -27692,9 +27688,8 @@ var __morbis_feature = (() => {
       params.append("idicd[]", idicd);
       params.append("kode10[]", d.kode10);
       params.append("keterangan10[]", d.keterangan || "");
-      params.append("kasus_diagnosa[]", d.kasus || "Kasus Lama");
+      params.append("kasus_diagnosa[]", d.kasus || "");
       params.append("komplikasi[]", d.komplikasi || "");
-      params.append("keterangan10", d.keterangan || "");
     });
     const currentDiagIds = new Set(cleanDiagnosa.map((d) => d.idicd));
     const origDiagIds = Array.isArray(cachedFormState?.["idicd[]"]) ? cachedFormState["idicd[]"].filter(Boolean) : [];
@@ -27711,13 +27706,16 @@ var __morbis_feature = (() => {
     const cleanTindakan = data.tindakan.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
       (t, i, arr2) => arr2.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i
     );
-    cleanTindakan.forEach((t, idx) => {
+    cleanTindakan.forEach((t) => {
       params.append("namaTindakan[]", t.namaTindakan);
       params.append("kode9[]", t.kode9);
       params.append("idicdTindakan[]", t.idicdTindakan);
       params.append("komorbid[]", t.komorbid || "");
-      if (t.informedConsent) params.append(`ic${idx + 1}`, "1");
     });
+    for (let i = 1; i <= 50; i++) {
+      const v = fsVal(`ic${i}`);
+      if (v) params.append(`ic${i}`, v);
+    }
     const currentTindakanIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
     const origTindakanIds = Array.isArray(cachedFormState?.["idicdTindakan[]"]) ? cachedFormState["idicdTindakan[]"].filter(Boolean) : [];
     for (const origId of origTindakanIds) {
