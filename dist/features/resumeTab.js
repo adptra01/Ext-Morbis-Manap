@@ -27611,6 +27611,43 @@ var __morbis_feature = (() => {
     ensure("id_rawat_jalan", idRJ);
     ensure("id_user", "1");
     ensure("save", "Simpan");
+    const pi = (name) => data.patientInfo?.[name] || "";
+    const domVal = (name) => document.querySelector(`[name="${name}"]`)?.value || "";
+    const fsVal = (name) => typeof cachedFormState?.[name] === "string" ? cachedFormState[name] : "";
+    if (!params.get("id_kunjungan")) {
+      params.set(
+        "id_kunjungan",
+        domVal("id_kunjungan") || fsVal("id_kunjungan") || idRJ || idVisit
+      );
+    }
+    for (const f of [
+      "norm",
+      "ihs_number",
+      "ihs_number_dokter",
+      "waktu_visit",
+      "nama_pasien",
+      "id_bed",
+      "id_dokter",
+      "nama_dokter",
+      "planning",
+      "pasien",
+      "noregis"
+    ]) {
+      if (params.get(f)) continue;
+      const v = pi(f) || domVal(f) || fsVal(f);
+      if (v) params.set(f, v);
+    }
+    if (!params.get("waktu")) {
+      const n = /* @__PURE__ */ new Date();
+      const p2 = (x) => String(x).padStart(2, "0");
+      params.set(
+        "waktu",
+        `${p2(n.getDate())}/${p2(n.getMonth() + 1)}/${n.getFullYear()} ${p2(n.getHours())}:${p2(n.getMinutes())}:${p2(n.getSeconds())}`
+      );
+    }
+    for (const f of ["nama_pasien", "planning", "waktu_visit"]) {
+      if (!params.has(f)) params.set(f, pi(f) || fsVal(f) || "");
+    }
     const arrayFieldsToClear = [
       "kode10[]",
       "idicd[]",
@@ -27697,17 +27734,27 @@ var __morbis_feature = (() => {
       "id_rawat_jalan",
       "id_kunjungan",
       "id_user",
+      "norm",
       "ihs_number",
+      "ihs_number_dokter",
       "waktu_visit",
       "nama_pasien",
+      "waktu",
+      "id_bed",
+      "id_dokter",
+      "nama_dokter",
       "planning",
       "jenis_kasus",
       "save"
     ]) {
       debug[k] = params.get(k) || "(missing)";
     }
-    console.log("[RJ] payload keys:", Array.from(new Set(Array.from(params.keys()))));
-    console.log("[RJ] key values:", debug);
+    const missing = Object.entries(debug).filter(([, v]) => v === "(missing)").map(([k]) => k);
+    console.log(
+      `[RJ] payload: ${params.size} key, ${cachedFormKeys.length} dari form,`,
+      missing.length ? `MISSING: ${missing.join(", ")}` : "semua field wajib ada"
+    );
+    console.debug("[RJ] key values:", debug);
     return params.toString();
   }
   function serializeFormData(data) {
@@ -32621,51 +32668,60 @@ video {
   var cachedFormState = null;
   var originalTindakanIds = [];
   var originalDiagnosaIds = [];
+  function parseFormControls(doc) {
+    const state = {};
+    const put = (name, value) => {
+      if (!name) return;
+      if (name.endsWith("[]")) {
+        if (!Array.isArray(state[name])) state[name] = [];
+        state[name].push(value);
+      } else if (!(name in state)) {
+        state[name] = value;
+      }
+    };
+    doc.querySelectorAll("input[name]").forEach((el) => {
+      const type = (el.getAttribute("type") || "text").toLowerCase();
+      if ((type === "radio" || type === "checkbox") && !el.checked) return;
+      if (type === "submit" || type === "button" || type === "file" || type === "image") return;
+      put(el.name, el.value ?? "");
+    });
+    doc.querySelectorAll("textarea[name]").forEach((el) => {
+      put(el.name, el.value ?? "");
+    });
+    doc.querySelectorAll("select").forEach((el) => {
+      if (el.id) state[el.id] = el.value ?? "";
+      if (el.name) put(el.name, el.value ?? "");
+    });
+    return state;
+  }
+  var cachedFormKeys = [];
   async function fetchFormState() {
     const idVisit = new URLSearchParams(location.search).get("id_visit");
     if (!idVisit) return {};
-    const url = `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`;
-    try {
-      const resp = await fetch(url, { credentials: "same-origin" });
-      const html = await resp.text();
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      const state = {};
-      doc.querySelectorAll('input[type="hidden"], input[type="text"]').forEach((el) => {
-        if (el.name && !el.name.endsWith("[]")) state[el.name] = el.value;
-      });
-      doc.querySelectorAll("textarea").forEach((el) => {
-        if (el.name) state[el.name] = el.value;
-      });
-      doc.querySelectorAll("select").forEach((el) => {
-        if (el.id) state[el.id] = el.value;
-        if (el.name) {
-          if (el.name.endsWith("[]")) {
-            if (!Array.isArray(state[el.name])) state[el.name] = [];
-            state[el.name].push(el.value);
-          } else {
-            state[el.name] = el.value;
-          }
+    const urls = [
+      `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}&page=6`,
+      `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}`,
+      `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`
+    ];
+    for (const url of urls) {
+      try {
+        const resp = await fetch(url, { credentials: "same-origin" });
+        if (!resp.ok) continue;
+        const html = await resp.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const hasForm = doc.querySelector('form, input[name="id_kunjungan"]') !== null;
+        if (!hasForm) continue;
+        const state = parseFormControls(doc);
+        if (state.id_kunjungan) {
+          cachedFormKeys = Object.keys(state);
+          return state;
         }
-      });
-      doc.querySelectorAll('input[type="radio"]:checked').forEach((el) => {
-        if (el.name) state[el.name] = el.value;
-      });
-      const arrayNames = /* @__PURE__ */ new Set();
-      doc.querySelectorAll('input[name$="[]"]').forEach((el) => {
-        if (el.name) arrayNames.add(el.name);
-      });
-      for (const name of arrayNames) {
-        const values = [];
-        doc.querySelectorAll(`input[name="${name}"]`).forEach((el) => {
-          if (el.value) values.push(el.value);
-        });
-        if (values.length > 0) state[name] = values;
+      } catch (e) {
+        console.warn("[RJ] fetchFormState gagal untuk", url, e);
       }
-      return state;
-    } catch (e) {
-      console.error("[RJ] failed to fetch form state:", e);
-      return {};
     }
+    console.warn("[RJ] fetchFormState: tidak menemukan form RJ untuk id_visit", idVisit);
+    return {};
   }
   function findAllResepIdsFromPage() {
     const ids = [];

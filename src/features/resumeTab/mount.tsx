@@ -620,6 +620,52 @@ function serializeRawatJalan(data: ResumeData): string {
   ensure('id_user', '1');
   ensure('save', 'Simpan');
 
+  // ── Fallback skalar: field yang dibaca controller rm-rawat-jalan-refaktor
+  //    tapi kadang tidak ada di form (mis. form dirender ulang, atau
+  //    fetchFormState gagal). Tanpa ini → PHP Notice "Undefined index"
+  //    + Oracle INSERT ke kolom NOT NULL kosong.
+  const pi = (name: string) =>
+    (data.patientInfo as Record<string, string | undefined>)?.[name] || '';
+  const domVal = (name: string) =>
+    (document.querySelector(`[name="${name}"]`) as HTMLInputElement | null)?.value || '';
+  const fsVal = (name: string) =>
+    typeof cachedFormState?.[name] === 'string' ? (cachedFormState![name] as string) : '';
+
+  // id_kunjungan: kolom NOT NULL di tabel OBSERVATION → ORA-01400.
+  if (!params.get('id_kunjungan')) {
+    params.set('id_kunjungan', domVal('id_kunjungan') || fsVal('id_kunjungan') || idRJ || idVisit);
+  }
+  for (const f of [
+    'norm',
+    'ihs_number',
+    'ihs_number_dokter',
+    'waktu_visit',
+    'nama_pasien',
+    'id_bed',
+    'id_dokter',
+    'nama_dokter',
+    'planning',
+    'pasien',
+    'noregis',
+  ] as const) {
+    if (params.get(f)) continue;
+    const v = pi(f) || domVal(f) || fsVal(f);
+    if (v) params.set(f, v);
+  }
+  // `waktu` = stempel waktu simpan (server pakai buat CREATED_AT).
+  if (!params.get('waktu')) {
+    const n = new Date();
+    const p2 = (x: number) => String(x).padStart(2, '0');
+    params.set(
+      'waktu',
+      `${p2(n.getDate())}/${p2(n.getMonth() + 1)}/${n.getFullYear()} ${p2(n.getHours())}:${p2(n.getMinutes())}:${p2(n.getSeconds())}`,
+    );
+  }
+  // Field yang wajib ADA walau kosong — server tetap membacanya di $_POST.
+  for (const f of ['nama_pasien', 'planning', 'waktu_visit'] as const) {
+    if (!params.has(f)) params.set(f, pi(f) || fsVal(f) || '');
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 2. Hapus array field dari base — akan di-replace dari React state
   // ═══════════════════════════════════════════════════════════
@@ -754,17 +800,29 @@ function serializeRawatJalan(data: ResumeData): string {
     'id_rawat_jalan',
     'id_kunjungan',
     'id_user',
+    'norm',
     'ihs_number',
+    'ihs_number_dokter',
     'waktu_visit',
     'nama_pasien',
+    'waktu',
+    'id_bed',
+    'id_dokter',
+    'nama_dokter',
     'planning',
     'jenis_kasus',
     'save',
   ]) {
     debug[k] = params.get(k) || '(missing)';
   }
-  console.log('[RJ] payload keys:', Array.from(new Set(Array.from(params.keys()))));
-  console.log('[RJ] key values:', debug);
+  const missing = Object.entries(debug)
+    .filter(([, v]) => v === '(missing)')
+    .map(([k]) => k);
+  console.log(
+    `[RJ] payload: ${params.size} key, ${cachedFormKeys.length} dari form,`,
+    missing.length ? `MISSING: ${missing.join(', ')}` : 'semua field wajib ada',
+  );
+  console.debug('[RJ] key values:', debug);
 
   return params.toString();
 }
@@ -1196,61 +1254,91 @@ let cachedFormState: Record<string, string | string[]> | null = null;
 let originalTindakanIds: string[] = [];
 let originalDiagnosaIds: string[] = [];
 
+/**
+ * Parse seluruh kontrol form dari HTML halaman RJ jadi peta
+ * name → value (atau string[] untuk name ber-`[]`).
+ *
+ * Menangkap SEMUA <input> (bukan cuma hidden/text) + <textarea> +
+ * <select>, karena controller `rm-rawatjalan-refaktor` membaca banyak
+ * field non-hidden (norm, id_bed, id_dokter, nama_dokter, waktu, …)
+ * yang bila hilang memunculkan "Undefined index" di PHP Notice.
+ */
+function parseFormControls(doc: Document): Record<string, string | string[]> {
+  const state: Record<string, string | string[]> = {};
+
+  const put = (name: string, value: string) => {
+    if (!name) return;
+    if (name.endsWith('[]')) {
+      if (!Array.isArray(state[name])) state[name] = [];
+      (state[name] as string[]).push(value);
+    } else if (!(name in state)) {
+      // Don't clobber: input pertama menang untuk field skalar
+      state[name] = value;
+    }
+  };
+
+  // ── <input> — semua type, skip yang tidak tercentang ──────────
+  doc.querySelectorAll<HTMLInputElement>('input[name]').forEach((el) => {
+    const type = (el.getAttribute('type') || 'text').toLowerCase();
+    // Radio/checkbox yang tidak dicentang TIDAK dikirim browser.
+    if ((type === 'radio' || type === 'checkbox') && !el.checked) return;
+    if (type === 'submit' || type === 'button' || type === 'file' || type === 'image') return;
+    put(el.name, el.value ?? '');
+  });
+
+  // ── <textarea> ───────────────────────────────────────────────
+  doc.querySelectorAll<HTMLTextAreaElement>('textarea[name]').forEach((el) => {
+    put(el.name, el.value ?? '');
+  });
+
+  // ── <select> — simpan juga by id (form lama pakai id) ───────
+  doc.querySelectorAll<HTMLSelectElement>('select').forEach((el) => {
+    if (el.id) state[el.id] = el.value ?? '';
+    if (el.name) put(el.name, el.value ?? '');
+  });
+
+  return state;
+}
+
+/** Nama-nama key yang berhasil di-capture — untuk log diagnostik. */
+let cachedFormKeys: string[] = [];
+
 async function fetchFormState(): Promise<Record<string, string | string[]>> {
   const idVisit = new URLSearchParams(location.search).get('id_visit');
   if (!idVisit) return {};
 
-  const url = `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`;
-  try {
-    const resp = await fetch(url, { credentials: 'same-origin' });
-    const html = await resp.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+  // Halaman form RJ (BUKAN halaman daftar `rj` — `rj` tidak punya
+  // <form>, sehingga id_kunjungan/ihs_number/norm dst. hilang semua).
+  const urls = [
+    `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}&page=6`,
+    `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}`,
+    `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`,
+  ];
 
-    const state: Record<string, string | string[]> = {};
+  for (const url of urls) {
+    try {
+      const resp = await fetch(url, { credentials: 'same-origin' });
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
 
-    doc
-      .querySelectorAll<HTMLInputElement>('input[type="hidden"], input[type="text"]')
-      .forEach((el) => {
-        if (el.name && !el.name.endsWith('[]')) state[el.name] = el.value;
-      });
+      // Sanity check: form RJ harus punya id_kunjungan. Kalau tidak,
+      // halaman ini bukan form RJ — coba URL berikutnya.
+      const hasForm = doc.querySelector('form, input[name="id_kunjungan"]') !== null;
+      if (!hasForm) continue;
 
-    doc.querySelectorAll<HTMLTextAreaElement>('textarea').forEach((el) => {
-      if (el.name) state[el.name] = el.value;
-    });
-
-    doc.querySelectorAll<HTMLSelectElement>('select').forEach((el) => {
-      if (el.id) state[el.id] = el.value;
-      if (el.name) {
-        if (el.name.endsWith('[]')) {
-          if (!Array.isArray(state[el.name])) state[el.name] = [];
-          (state[el.name] as string[]).push(el.value);
-        } else {
-          state[el.name] = el.value;
-        }
+      const state = parseFormControls(doc);
+      if (state.id_kunjungan) {
+        cachedFormKeys = Object.keys(state);
+        return state;
       }
-    });
-
-    doc.querySelectorAll<HTMLInputElement>('input[type="radio"]:checked').forEach((el) => {
-      if (el.name) state[el.name] = el.value;
-    });
-
-    const arrayNames = new Set<string>();
-    doc.querySelectorAll<HTMLInputElement>('input[name$="[]"]').forEach((el) => {
-      if (el.name) arrayNames.add(el.name);
-    });
-    for (const name of arrayNames) {
-      const values: string[] = [];
-      doc.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((el) => {
-        if (el.value) values.push(el.value);
-      });
-      if (values.length > 0) state[name] = values;
+    } catch (e) {
+      console.warn('[RJ] fetchFormState gagal untuk', url, e);
     }
-
-    return state;
-  } catch (e) {
-    console.error('[RJ] failed to fetch form state:', e);
-    return {};
   }
+
+  console.warn('[RJ] fetchFormState: tidak menemukan form RJ untuk id_visit', idVisit);
+  return {};
 }
 
 function findAllResepIdsFromPage(): string[] {
