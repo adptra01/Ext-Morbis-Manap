@@ -127,7 +127,7 @@ for %%P in (
 )
 
 echo.
-echo [4/6] Verifikasi policy yang tertulis...
+echo [4/6] Verifikasi lengkap (registry + update.xml + versi terpasang)...
 call :VerifyPolicy
 
 echo.
@@ -138,18 +138,24 @@ echo.
 echo [6/6] Selesai.
 echo.
 echo ===================================================
-echo  INSTALASI SELESAI DAN SUKSES!
+echo  INSTALASI SELESAI
 echo ===================================================
 echo Silakan BUKA KEMBALI browser Anda. Ekstensi MORBIS akan
 echo terinstal OTOMATIS via policy (ID: beljnjfifmncnfnhdkcmjpeonoigdnbl).
+echo Installer sudah memverifikasi registry di atas. Tersisa 1 cek visual:
 echo.
-echo ===== VERIFIKASI =====
-echo - chrome://extensions : kartu MORBIS TANPA label "unpacked"
-echo - chrome://policy     : ExtensionInstallForcelist status OK, ID 32 char
-echo - edge://policy       : idem untuk Edge
-echo - brave://policy      : idem untuk Brave
-echo - Update berikutnya OTOMATIS (update.xml di GitHub Pages),
-echo   tanpa perlu klik refresh / menjalankan apa pun lagi.
+echo ===== VERIFIKASI WAJIB (1 menit) =====
+echo 1. chrome://policy  (atau edge://policy)
+echo    - baris ExtensionSettings ADA
+echo    - kolom "Error" KOSONG  <-- WAJIB. Kalau ada error, policy ditolak
+echo      browser dan ekstensi TIDAK akan ter-install.
+echo 2. chrome://extensions
+echo    - kartu MORBIS muncul, TANPA label "unpacked"
+echo    - klik "Detail" - pastikan ID = beljnjfifmncnfnhdkcmjpeonoigdnbl
+echo 3. Buka http://103.147.236.140 - ekstensi aktif di halaman SIMRS.
+echo.
+echo Update berikutnya OTOMATIS dari update.xml (GitHub Pages) - tanpa
+echo perlu mengunduh atau memasang ulang apa pun.
 echo.
 pause
 exit /B 0
@@ -184,9 +190,18 @@ taskkill /IM chromium.exe /F >nul 2>&1
 exit /B
 
 REM ============================================================
-REM  SUBROUTINE: verifikasi Forcelist tertulis per browser
+REM  SUBROUTINE: verifikasi_policy
+REM  - ExtensionInstallForcelist (nilai "1" = EXT_ID;UPDATE_URL)
+REM  - ExtensionSettings: installation_mode, update_url,
+REM    override_update_url, AutoplayAllowed
+REM  - runtime_allowed_hosts: 4 host WAJIB tanpa path - path membuat
+REM    Chrome membatalkan SELURUH entri ExtensionSettings (regresi dicek).
+REM  Browser tidak terpasang tetap dihitung OK (policy sah, siap
+REM  bila browser di-install belakangan).
 REM ============================================================
 :VerifyPolicy
+set "V_OK=0"
+set "V_FAIL=0"
 for %%P in (
     "Google\Chrome"
     "Microsoft\Edge"
@@ -195,11 +210,87 @@ for %%P in (
     "Opera Software\Opera"
     "Chromium"
 ) do (
-    reg query "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" /reg:64 2>nul | findstr /C:"beljnjfifmncnfnhdkcmjpeonoigdnbl" >nul
-    if !errorlevel! == 0 (
-        echo   [OK]   %%~P
-    ) else (
-        echo   [FAIL] %%~P - policy tidak tertulis, ulangi sebagai Administrator.
+    set "PB=HKLM\SOFTWARE\Policies\%%~P"
+    set "BSTAT=OK"
+    set "BDETAIL="
+
+    reg query "!PB!\ExtensionInstallForcelist" /v "1" /reg:64 2>nul | findstr /C:"!EXT_ID!" >nul
+    if errorlevel 1 (
+        set "BSTAT=FAIL"
+        set "BDETAIL=!BDETAIL! Forcelist "
     )
+    reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /reg:64 2>nul | findstr /C:"force_installed" >nul
+    if errorlevel 1 (
+        set "BSTAT=FAIL"
+        set "BDETAIL=!BDETAIL! installation_mode "
+    )
+    reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "update_url" /reg:64 2>nul | findstr /C:"adptra01.github.io" >nul
+    if errorlevel 1 (
+        set "BSTAT=FAIL"
+        set "BDETAIL=!BDETAIL! update_url "
+    )
+    reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /reg:64 2>nul | findstr /C:"0x1" >nul
+    if errorlevel 1 (
+        set "BSTAT=FAIL"
+        set "BDETAIL=!BDETAIL! override_update_url "
+    )
+    REM Count host yang tertulis (nilai 1-4). Query /s lalu cocokkan host,
+    REM bukan nama value, supaya aman terhadap urutan penulisan.
+    set "HCNT=0"
+    for %%H in (103.147.236.140 103.147.236.138 192.168.8.4 dev.rsudkotajambi.id) do (
+        reg query "!PB!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /s /reg:64 2>nul | findstr /C:"%%~H" >nul
+        if not errorlevel 1 set /a "HCNT+=1"
+    )
+    if !HCNT! LSS 4 (
+        set "BSTAT=FAIL"
+        set "BDETAIL=!BDETAIL! runtime_allowed_hosts=!HCNT!/4 "
+    )
+    REM Regresi: pola berpath "/*" PENOLAK seluruh ExtensionSettings.
+    reg query "!PB!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /s /reg:64 2>nul | findstr /C:"/*" >nul
+    if not errorlevel 1 (
+        set "BSTAT=FAIL"
+        set "BDETAIL=!BDETAIL! POLA-PATH(tolak) "
+    )
+
+    if "!BSTAT!"=="OK" (
+        set /a "V_OK+=1"
+        echo    [OK]   %%~P
+    ) else (
+        set /a "V_FAIL+=1"
+        echo    [FAIL] %%~P - !BDETAIL!
+    )
+)
+
+REM --- Cek update.xml (butuh internet) -------------------------------------
+REM update.xml di-generate CI dengan format tetap:
+REM   <updatecheck codebase='<url>' version='<X.Y.Z>' />
+REM Dibaca per-token; bila format berubah, cek ini degrade jadi WARN
+REM (bukan error - hanya tidak bisa dibandingkan).
+set "LIVE="
+curl -s --max-time 15 -o "%TEMP%\morbis-update-check.xml" "!UPDATE_URL!" 2>nul
+if exist "%TEMP%\morbis-update-check.xml" (
+    REM delims hanya apos (tanpa spasi - spasi akan merusak parsing batch).
+    REM Kutip apos membagi: 1="<updatecheck codebase=", 2=URL, 3=" version=",
+    REM 4=versi. tokens=4 = versi.
+    for /f "tokens=4 delims='" %%V in ('findstr updatecheck "%TEMP%\morbis-update-check.xml"') do (
+        if not defined LIVE set "LIVE=%%V"
+    )
+)
+del /q "%TEMP%\morbis-update-check.xml" 2>nul
+if defined LIVE (
+    echo    [OK]   update.xml hidup, versi live: !LIVE!
+    echo    Perbandingan: versi live harus ^>= versi yang terinstall.
+) else (
+    echo    [WARN] update.xml tidak terbaca - cek internet/proxy PC ini.
+    echo           Update OTOMATIS tidak jalan tanpa akses URL di atas.
+)
+
+echo.
+echo -- Ringkasan: !V_OK! lolos, !V_FAIL! gagal.
+if not "!V_FAIL!"=="0" (
+    echo    [PERINGATAN] Ada policy gagal. Ekstensi TIDAK ter-install di browser itu.
+    echo    Buka chrome://policy - kolom "Error" akan memberi petunjuk.
+) else (
+    echo    Semua policy valid. Tutup jendela CMD ini.
 )
 exit /B
