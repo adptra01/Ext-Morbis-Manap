@@ -218,6 +218,10 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         saving={saving}
         hasErrors={hasBlocking}
         lastSaved={lastSaved}
+        orderSummary={[
+          { label: 'ICD-10', codes: data.diagnosa.map((d) => d.kode10).filter(Boolean) },
+          { label: 'ICD-9', codes: data.tindakan.map((t) => t.kode9).filter(Boolean) },
+        ]}
         onSave={handleSaveWrapped}
         onCancel={onClose}
         onRefresh={handleRefresh}

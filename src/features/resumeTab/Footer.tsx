@@ -12,6 +12,11 @@ interface FooterProps {
   saving?: boolean;
   hasErrors?: boolean;
   lastSaved?: string | null;
+  /** Ringkasan urutan yang AKAN dikirim ke server, supaya dokter bisa
+   *  memverifikasi urutan tanpa harus membuka DevTools. Urutan di server
+   *  mengikuti urutan baris di payload (delete-all-then-insert), jadi
+   *  urutan di layar = urutan yang akan tersimpan. */
+  orderSummary?: { label: string; codes: string[] }[];
 }
 
 export function Footer({
@@ -23,11 +28,12 @@ export function Footer({
   saving,
   hasErrors,
   lastSaved,
+  orderSummary,
 }: FooterProps) {
   const handleReset = onReset ?? onRefresh;
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t-2 border-border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 shrink-0 sticky bottom-0 z-[1]">
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-3 min-w-0 flex-wrap">
         {hasErrors && (
           <Badge variant="danger" icon>
             Validasi gagal
@@ -41,6 +47,11 @@ export function Footer({
             Menyimpan...
           </Badge>
         )}
+        {orderSummary?.map((o) => (
+          <span key={o.label} className="text-base text-muted-foreground truncate">
+            {o.label}: {o.codes.length ? o.codes.join(' → ') : '(kosong)'}
+          </span>
+        ))}
       </div>
       <div className="flex items-center gap-3">
         {onHistory && (

@@ -701,7 +701,18 @@ function serializeRawatJalan(data: ResumeData): string {
   ];
   for (const f of arrayFieldsToClear) params.delete(f);
 
-  // Hapus juga checkbox ic1, ic2, ... dari base (nanti di-set ulang)
+  // Buang `ic1`..`ic50` dari base dan JANGAN pernah mengirimnya.
+  //
+  // Alasannya bukan sekadar "tidak dipakai": nama `ic{N}` terikat ke
+  // POSISI baris di form asal. Begitu dokter reorder / hapus-tambah di
+  // overlay, nomor itu tidak lagi cocok dengan baris yang dikirim, dan
+  // checkbox persetujuan bisa menempel ke tindakan yang salah.
+  //
+  // Verifikasi: payload form asli SIMRS tidak mengandung satu pun
+  // `ic{N}` dan baris ICD-9 tetap tersimpan normal. Kalau suatu saat
+  // SIMRS benar-benar memerlukan `ic{N}`, implementasinya harus lewat
+  // checkbox sendiri di UI (source of truth tunggal), bukan dengan
+  // memetakan ulang posisi form lama.
   for (let i = 1; i <= 50; i++) params.delete(`ic${i}`);
 
   // ═══════════════════════════════════════════════════════════
@@ -777,56 +788,30 @@ function serializeRawatJalan(data: ResumeData): string {
   //             — form asli tidak punya & memicu ORA-00936
   //    Sama seperti diagnosa: hapus = delete-all-then-insert, tanpa penanda.
   // ═══════════════════════════════════════════════════════════
-  const cTindIdicd = Array.isArray(cachedFormState?.['idicdTindakan[]'])
-    ? (cachedFormState!['idicdTindakan[]'] as string[])
-    : [];
-
-  const cleanTindakan = data.tindakan
-    .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
-    .filter(
-      (t, i, arr) =>
-        arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
-    );
-
-  // `ic1`, `ic2`, ... = checkbox persetujuan per baris, terikat ke POSISI
-  // baris di form asli. `deleteElements()` hanya menomori ulang atribut
-  // `id`, bukan `name` — jadi baris yang tersisa tetap memakai nama ic
-  // sesuai posisinya yang lama.
-  const icFor = (idTindakan: string): string => {
-    const pos = cTindIdicd.indexOf(idTindakan);
-    return pos >= 0 ? fsVal(`ic${pos + 1}`) : '';
-  };
-
-  cleanTindakan.forEach((t, i) => {
+  // `ic1`/`ic2`/... SENGAJA TIDAK DIKIRIM.
+  //
+  // Bukti dari payload form asli SIMRS (klik Simpan lalu tangkap
+  // request): tidak ada satu pun `ic{N}` di payload, dan baris ICD-9
+  // tetap tersimpan normal. Checkbox itu hanya terkirim bila
+  // tercentang, dan di data uji tidak pernah tercentang. Mengirimnya
+  // dari cache lama hanya menghasilkan indeks basi yang menggeser
+  // urutan, jadi seluruh mekanismenya dibuang total.
+  cleanTindakan.forEach((t) => {
     params.append('namaTindakan[]', t.namaTindakan);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
     params.append('komorbid[]', t.komorbid || '');
-    // `ic{N}` bersifat POSISIONAL di sisi server: ic1 = baris pertama di
-    // payload ini. Nilainya diambil dari baris asal dengan ICD yang sama,
-    // lalu ditempel pada nomor urut BARU. Kalau memakai nomor lama,
-    // reorder akan membuat ic1/ic2 tertukar sehingga persetujuan
-    // menempel ke tindakan yang salah.
-    const ic = icFor(t.idicdTindakan);
-    if (ic) params.append(`ic${i + 1}`, ic);
   });
 
   // ═══════════════════════════════════════════════════════════
   // 7. DEBUG LOG
-  //    besides the number of keys, also print the ORDER of ICD rows
-  //    being sent + the ic{N} checkbox attached to each row — this is
-  //    the most common source of "order doesn't match" reports.
+  //    besides the number of keys, print the ORDER of ICD rows actually
+  //    being sent plus the state/payload comparison — this is what tells
+  //    us whether an order problem lives in the React state, in
+  //    cleanTindakan, or only in the rendering.
   // ═══════════════════════════════════════════════════════════
   const fmt = (pairs: [string, string][]) =>
     pairs.map(([v, i]) => `${v}#${i}`).join(' | ') || '(kosong)';
-  const diagOrder = cleanDiagnosa.map((d) => `${d.kode10}/${d.idicd}`);
-  const tindOrder = cleanTindakan.map(
-    (t) => `${t.kode9}/${t.idicdTindakan}${icFor(t.idicdTindakan) ? '+ic' : ''}`,
-  );
-  const icKirim: string[] = [];
-  params.forEach((v, k) => {
-    if (/^ic\d+$/.test(k)) icKirim.push(`${k}=${v}`);
-  });
   console.log(
     '[RJ] ICD-10 terkirim :',
     fmt(cleanDiagnosa.map((d) => [d.kode10 || '?', d.idicd || '?'])),
@@ -835,10 +820,12 @@ function serializeRawatJalan(data: ResumeData): string {
     '[RJ] ICD-9 terkirim  :',
     fmt(cleanTindakan.map((t) => [t.kode9 || '?', t.idicdTindakan || '?'])),
   );
-  console.log('[RJ] ic{N} terkirim  :', icKirim.join(', ') || '(tidak ada)');
-  console.log('[RJ] asal urutan form:', `kode9[]=${JSON.stringify(cTindIdicd)}`);
-  void diagOrder;
-  void tindOrder;
+  console.log(
+    '[RJ] state vs payload:',
+    'state=' + JSON.stringify(data.tindakan.map((t) => t.kode9)),
+    '| clean=' + JSON.stringify(cleanTindakan.map((t) => t.kode9)),
+    '| cache=' + JSON.stringify(cachedFormState?.['kode9[]'] ?? null),
+  );
   const debug: Record<string, string> = {};
   for (const k of [
     'id_visit',

@@ -122,6 +122,12 @@ export function DiagnosaSection({ rows, onChange }: Props) {
             const no = i + 1;
             return (
               <div key={i} className="flex gap-2 items-center">
+                <span
+                  className="w-6 shrink-0 text-center font-mono text-base text-muted-foreground"
+                  aria-label={`Urutan ${no}`}
+                >
+                  #{no}
+                </span>
                 <div className="flex-1 min-w-0 relative">
                   <Input
                     id={`rj-nama${no}`}
