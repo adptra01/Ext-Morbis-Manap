@@ -27295,7 +27295,7 @@ var __morbis_feature = (() => {
     };
   }
   var isRj = location.pathname.includes("rm-rawat-jalan-new");
-  var ENDPOINT = "/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan?sub=simpan";
+  var ENDPOINT = "/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan";
   var reactRoot = null;
   var overlayBtn = null;
   function parseResumeView() {
@@ -27477,7 +27477,9 @@ var __morbis_feature = (() => {
         const idicd = row.querySelector('input[name="idicd[]"], input[name="idicd"]')?.value || "";
         const kode10 = inp.value || "";
         const nama = row.querySelector('input[name="namaDiagnosa[]"], input[name="nama[]"]')?.value || "";
-        const kasus = row.querySelector('select[name="kasus_diagnosa[]"], select[name="kasus[]"]')?.value || "";
+        const kasus = row.querySelector(
+          'select[name="kasus_diagnosa[]"], select[name="kasus[]"]'
+        )?.value || "";
         const komplikasi = row.querySelector('select[name="komplikasi[]"]')?.value || "";
         if (kode10 || nama) {
           diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus, komplikasi });
@@ -27677,6 +27679,7 @@ var __morbis_feature = (() => {
     params.set("berat", cleanVital(data.vitalSigns.berat));
     const cKode10 = Array.isArray(cachedFormState?.["kode10[]"]) ? cachedFormState["kode10[]"] : [];
     const cIdicd = Array.isArray(cachedFormState?.["idicd[]"]) ? cachedFormState["idicd[]"] : [];
+    const cKeterangan = Array.isArray(cachedFormState?.["keterangan10[]"]) ? cachedFormState["keterangan10[]"] : [];
     const cleanDiagnosa = data.diagnosa.filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, arr2) => arr2.findIndex((x) => x.idicd === d.idicd) === i);
     cleanDiagnosa.forEach((d) => {
       let idicd = d.idicd;
@@ -27684,48 +27687,31 @@ var __morbis_feature = (() => {
         const idx = cKode10.indexOf(d.kode10);
         if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
       }
+      const pos = cIdicd.indexOf(idicd);
+      const ket = pos >= 0 ? cKeterangan[pos] || "" : "";
       params.append("nama[]", d.namaDiagnosa);
       params.append("idicd[]", idicd);
       params.append("kode10[]", d.kode10);
-      params.append("keterangan10[]", d.keterangan || "");
+      params.append("keterangan10[]", ket);
       params.append("kasus_diagnosa[]", d.kasus || "");
       params.append("komplikasi[]", d.komplikasi || "");
     });
-    const currentDiagIds = new Set(cleanDiagnosa.map((d) => d.idicd));
-    const origDiagIds = Array.isArray(cachedFormState?.["idicd[]"]) ? cachedFormState["idicd[]"].filter(Boolean) : [];
-    for (const origId of origDiagIds) {
-      if (!currentDiagIds.has(origId)) {
-        params.append("idicd[]", origId);
-        params.append("nama[]", "");
-        params.append("kode10[]", "");
-        params.append("keterangan10[]", "");
-        params.append("kasus_diagnosa[]", "");
-        params.append("komplikasi[]", "");
-      }
-    }
+    const cTindIdicd = Array.isArray(cachedFormState?.["idicdTindakan[]"]) ? cachedFormState["idicdTindakan[]"] : [];
     const cleanTindakan = data.tindakan.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
       (t, i, arr2) => arr2.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i
     );
+    const icFor = (idTindakan) => {
+      const pos = cTindIdicd.indexOf(idTindakan);
+      return pos >= 0 ? fsVal(`ic${pos + 1}`) : "";
+    };
     cleanTindakan.forEach((t) => {
       params.append("namaTindakan[]", t.namaTindakan);
       params.append("kode9[]", t.kode9);
       params.append("idicdTindakan[]", t.idicdTindakan);
       params.append("komorbid[]", t.komorbid || "");
+      const ic = icFor(t.idicdTindakan);
+      if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
     });
-    for (let i = 1; i <= 50; i++) {
-      const v = fsVal(`ic${i}`);
-      if (v) params.append(`ic${i}`, v);
-    }
-    const currentTindakanIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
-    const origTindakanIds = Array.isArray(cachedFormState?.["idicdTindakan[]"]) ? cachedFormState["idicdTindakan[]"].filter(Boolean) : [];
-    for (const origId of origTindakanIds) {
-      if (!currentTindakanIds.has(origId)) {
-        params.append("idicdTindakan[]", origId);
-        params.append("namaTindakan[]", "");
-        params.append("kode9[]", "");
-        params.append("komorbid[]", "");
-      }
-    }
     const debug = {};
     for (const k of [
       "id_visit",
@@ -27779,8 +27765,6 @@ var __morbis_feature = (() => {
       sc.remove();
     }
     document.body.classList.remove("ext-resume-open");
-    originalTindakanIds = [];
-    originalDiagnosaIds = [];
     if (overlayBtn) {
       overlayBtn.disabled = false;
       overlayBtn.style.display = "";
@@ -32664,8 +32648,6 @@ video {
     }, 50);
   }
   var cachedFormState = null;
-  var originalTindakanIds = [];
-  var originalDiagnosaIds = [];
   function parseFormControls(doc) {
     const state = {};
     const put = (name, value) => {
@@ -32702,20 +32684,27 @@ video {
       `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`
     ];
     for (const url of urls) {
-      try {
-        const resp = await fetch(url, { credentials: "same-origin" });
-        if (!resp.ok) continue;
-        const html = await resp.text();
-        const doc = new DOMParser().parseFromString(html, "text/html");
-        const hasForm = doc.querySelector('form, input[name="id_kunjungan"]') !== null;
-        if (!hasForm) continue;
-        const state = parseFormControls(doc);
-        if (state.id_kunjungan) {
-          cachedFormKeys = Object.keys(state);
-          return state;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await new Promise((r2) => setTimeout(r2, 350));
+        try {
+          const resp = await fetch(url, {
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: { Referer: location.origin + "/admisi/pelaksanaan_pelayanan/" }
+          });
+          if (!resp.ok) continue;
+          const html = await resp.text();
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          if (doc.querySelector('form, input[name="id_kunjungan"]') === null) break;
+          const state = parseFormControls(doc);
+          if (state.id_kunjungan) {
+            cachedFormKeys = Object.keys(state);
+            return state;
+          }
+          break;
+        } catch (e) {
+          console.warn("[RJ] fetchFormState gagal untuk", url, e);
         }
-      } catch (e) {
-        console.warn("[RJ] fetchFormState gagal untuk", url, e);
       }
     }
     console.warn("[RJ] fetchFormState: tidak menemukan form RJ untuk id_visit", idVisit);
@@ -32819,10 +32808,6 @@ video {
         if (!cachedFormState) {
           cachedFormState = await fetchFormState();
         }
-        const origIds = cachedFormState["idicdTindakan[]"];
-        originalTindakanIds = Array.isArray(origIds) ? origIds.filter(Boolean) : [];
-        const origDiagIds = cachedFormState["idicd[]"];
-        originalDiagnosaIds = Array.isArray(origDiagIds) ? origDiagIds.filter(Boolean) : [];
         const prescriptionText = await fetchAllPrescriptionHistories();
         const data = extractFormData();
         if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;

@@ -120,13 +120,13 @@ const AUTOCOMPLETE_URLS = {
   icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
 };
 
-// URL simpan HARUS sama persis dengan yang dipakai form asli SIMRS
-// (lihat inline script halaman rm-rawat-jalan-new):
-//   url: '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan?sub=simpan'
+// Endpoint WAJIB sama dengan yang dipakai form asli SIMRS. Verified live
+// against the page's own handler `simpan()` (tombol #save):
+//   url: '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan'
 //   data: $("#formdata").serialize()
-// Mengganti nama controller (mis. -refaktor) membuat payload tidak
-// terbaca => Notice "Undefined index" + ORA-01400 kolom NOT NULL.
-const ENDPOINT = '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan?sub=simpan';
+// Jangan pakai `rm-rawat-jalan` (tanpa -refaktor) — itu handler
+// `simpan_then_wa()` yang tidak terikat ke tombol, sisa kode lama.
+const ENDPOINT = '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan';
 
 let reactRoot: Root | null = null;
 let overlayBtn: HTMLButtonElement | null = null;
@@ -728,12 +728,23 @@ function serializeRawatJalan(data: ResumeData): string {
 
   // ═══════════════════════════════════════════════════════════
   // 5. OVERLAY: diagnosa dari React state
+  //
+  // Mekanisme server = DELETE-ALL-THEN-INSERT (verified live: handler
+  // `deleteElement()` form asli hanya removeChild baris dari DOM, tanpa
+  // penanda; payload hasil simpan hanya berisi baris yang tersisa).
+  // Jadi JANGAN pernah mengirim baris "dummy" kosong sebagai penanda
+  // hapus — hanya akan membuat baris kosong tersimpan / tidak terhapus.
   // ═══════════════════════════════════════════════════════════
   const cKode10 = Array.isArray(cachedFormState?.['kode10[]'])
     ? (cachedFormState!['kode10[]'] as string[])
     : [];
   const cIdicd = Array.isArray(cachedFormState?.['idicd[]'])
     ? (cachedFormState!['idicd[]'] as string[])
+    : [];
+  // `keterangan10[]` sejajar dengan `idicd[]` di form asli. DiagnosaRow
+  // tidak punya field ini, jadi ambil dari cache berdasarkan posisi.
+  const cKeterangan = Array.isArray(cachedFormState?.['keterangan10[]'])
+    ? (cachedFormState!['keterangan10[]'] as string[])
     : [];
 
   const cleanDiagnosa = data.diagnosa
@@ -746,39 +757,30 @@ function serializeRawatJalan(data: ResumeData): string {
       const idx = cKode10.indexOf(d.kode10);
       if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
     }
+    // keterangan10 baris ini = nilai pada posisi yang sama di form asli
+    const pos = cIdicd.indexOf(idicd);
+    const ket = pos >= 0 ? cKeterangan[pos] || '' : '';
     params.append('nama[]', d.namaDiagnosa);
     params.append('idicd[]', idicd);
     params.append('kode10[]', d.kode10);
-    params.append('keterangan10[]', d.keterangan || '');
+    params.append('keterangan10[]', ket);
     // JANGAN kirim `keterangan10` skalar: form asli hanya punya
-    // `keterangan10[]`. Mengirim skalar(string) menimpa array di
-    // $_POST lalu controller mengindeks $x[0]/$x[1] =>
-    // "Uninitialized string offset: 0/1".
+    // `keterangan10[]`. Skalar menimpa array di $_POST lalu controller
+    // mengindeks $x[0]/$x[1] => "Uninitialized string offset: 0/1".
     params.append('kasus_diagnosa[]', d.kasus || '');
     params.append('komplikasi[]', d.komplikasi || '');
   });
-
-  // Baris hapus diagnosa (server hapus kalau nama kosong)
-  const currentDiagIds = new Set(cleanDiagnosa.map((d) => d.idicd));
-  const origDiagIds = Array.isArray(cachedFormState?.['idicd[]'])
-    ? (cachedFormState!['idicd[]'] as string[]).filter(Boolean)
-    : [];
-  for (const origId of origDiagIds) {
-    if (!currentDiagIds.has(origId)) {
-      params.append('idicd[]', origId);
-      params.append('nama[]', '');
-      params.append('kode10[]', '');
-      params.append('keterangan10[]', '');
-      params.append('kasus_diagnosa[]', '');
-      params.append('komplikasi[]', '');
-    }
-  }
 
   // ═══════════════════════════════════════════════════════════
   // 6. OVERLAY: tindakan dari React state
   //    PENTING: JANGAN kirim kategoriProsedur[]/snomedProsedur[]/codeProsedur[]
   //             — form asli tidak punya & memicu ORA-00936
+  //    Sama seperti diagnosa: hapus = delete-all-then-insert, tanpa penanda.
   // ═══════════════════════════════════════════════════════════
+  const cTindIdicd = Array.isArray(cachedFormState?.['idicdTindakan[]'])
+    ? (cachedFormState!['idicdTindakan[]'] as string[])
+    : [];
+
   const cleanTindakan = data.tindakan
     .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
     .filter(
@@ -786,34 +788,23 @@ function serializeRawatJalan(data: ResumeData): string {
         arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
     );
 
+  // `ic1`, `ic2`, ... = checkbox persetujuan per baris, terikat ke POSISI
+  // baris di form asli. `deleteElements()` hanya menomori ulang atribut
+  // `id`, bukan `name` — jadi baris yang tersisa tetap memakai nama ic
+  // sesuai posisinya yang lama.
+  const icFor = (idTindakan: string): string => {
+    const pos = cTindIdicd.indexOf(idTindakan);
+    return pos >= 0 ? fsVal(`ic${pos + 1}`) : '';
+  };
+
   cleanTindakan.forEach((t) => {
     params.append('namaTindakan[]', t.namaTindakan);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
     params.append('komorbid[]', t.komorbid || '');
+    const ic = icFor(t.idicdTindakan);
+    if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
   });
-
-  // `ic1`, `ic2`, ... = checkbox persetujuan tindakan per baris. Form asli
-  // hanya mengirimnya kalau tercentang, jadi ikutkan apa adanya dari
-  // state form (TindakanRow tidak punya field informedConsent).
-  for (let i = 1; i <= 50; i++) {
-    const v = fsVal(`ic${i}`);
-    if (v) params.append(`ic${i}`, v);
-  }
-
-  // Baris hapus tindakan
-  const currentTindakanIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
-  const origTindakanIds = Array.isArray(cachedFormState?.['idicdTindakan[]'])
-    ? (cachedFormState!['idicdTindakan[]'] as string[]).filter(Boolean)
-    : [];
-  for (const origId of origTindakanIds) {
-    if (!currentTindakanIds.has(origId)) {
-      params.append('idicdTindakan[]', origId);
-      params.append('namaTindakan[]', '');
-      params.append('kode9[]', '');
-      params.append('komorbid[]', '');
-    }
-  }
 
   // ═══════════════════════════════════════════════════════════
   // 7. DEBUG LOG (bisa dihapus nanti)
@@ -875,9 +866,6 @@ function closeOverlay(container: HTMLElement) {
     sc.remove();
   }
   document.body.classList.remove('ext-resume-open');
-  // Reset tracked original tindakan IDs on close
-  originalTindakanIds = [];
-  originalDiagnosaIds = [];
   if (overlayBtn) {
     overlayBtn.disabled = false;
     overlayBtn.style.display = '';
@@ -1275,8 +1263,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 }
 
 let cachedFormState: Record<string, string | string[]> | null = null;
-let originalTindakanIds: string[] = [];
-let originalDiagnosaIds: string[] = [];
 
 /**
  * Parse seluruh kontrol form dari HTML halaman RJ jadi peta
@@ -1340,24 +1326,37 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   ];
 
   for (const url of urls) {
-    try {
-      const resp = await fetch(url, { credentials: 'same-origin' });
-      if (!resp.ok) continue;
-      const html = await resp.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
+    // Server SIMRS sesekali membalas 404 sesaat untuk halaman RJ yang
+    // sebenarnya valid (terverifikasi di produksi: 3x berturut-turut
+    // 404 lalu 200 pada URL identik). Tanpa retry, satu jendela 404
+    // membuat cachedFormState = {} → payload simpan kosong → data
+    // dokter tidak tersimpan. Coba ulang beberapa kali.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise((r) => setTimeout(r, 350));
+      try {
+        // `cache: 'no-store'` WAJIB supaya browser tidak menyajikan
+        // respons 404 lama yang ter-cache untuk URL yang sama.
+        const resp = await fetch(url, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Referer: location.origin + '/admisi/pelaksanaan_pelayanan/' },
+        });
+        if (!resp.ok) continue;
+        const html = await resp.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
 
-      // Sanity check: form RJ harus punya id_kunjungan. Kalau tidak,
-      // halaman ini bukan form RJ — coba URL berikutnya.
-      const hasForm = doc.querySelector('form, input[name="id_kunjungan"]') !== null;
-      if (!hasForm) continue;
-
-      const state = parseFormControls(doc);
-      if (state.id_kunjungan) {
-        cachedFormKeys = Object.keys(state);
-        return state;
+        // Form RJ harus punya id_kunjungan; kalau tidak, halaman ini
+        // bukan form RJ — coba URL berikutnya.
+        if (doc.querySelector('form, input[name="id_kunjungan"]') === null) break;
+        const state = parseFormControls(doc);
+        if (state.id_kunjungan) {
+          cachedFormKeys = Object.keys(state);
+          return state;
+        }
+        break;
+      } catch (e) {
+        console.warn('[RJ] fetchFormState gagal untuk', url, e);
       }
-    } catch (e) {
-      console.warn('[RJ] fetchFormState gagal untuk', url, e);
     }
   }
 
@@ -1479,11 +1478,6 @@ function setupFloatingButton() {
       if (!cachedFormState) {
         cachedFormState = await fetchFormState();
       }
-      // Capture original tindakan IDs for deletion tracking
-      const origIds = cachedFormState['idicdTindakan[]'];
-      originalTindakanIds = Array.isArray(origIds) ? origIds.filter(Boolean) : [];
-      const origDiagIds = cachedFormState['idicd[]'];
-      originalDiagnosaIds = Array.isArray(origDiagIds) ? origDiagIds.filter(Boolean) : [];
       const prescriptionText = await fetchAllPrescriptionHistories();
       const data = extractFormData();
       if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;

@@ -1,0 +1,832 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "label": "morbis_scraper.py",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "label": "get_session()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L23",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "label": "save_cookies()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L35",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "label": "load_cookies()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L43",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "label": "cmd_login()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L51",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "label": "cmd_scrape()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L76",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "label": "cmd_surat_pengantar()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L105",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L147",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_24",
+      "label": "Import FetcherSession from scrapling.",
+      "file_type": "rationale",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L24"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_36",
+      "label": "Save session cookie to file.",
+      "file_type": "rationale",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L36"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_44",
+      "label": "Load session cookie from file.",
+      "file_type": "rationale",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L44"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_52",
+      "label": "Login ke Morbis dan simpan session.",
+      "file_type": "rationale",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L52"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_77",
+      "label": "Scrape halaman Morbis.",
+      "file_type": "rationale",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L77"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_106",
+      "label": "Scrape halaman surat pengantar rawat inap.",
+      "file_type": "rationale",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L106"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "argparse",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_36",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_44",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_52",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_77",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_rationale_106",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L106",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "callee": "FetcherSession",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "return",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L27"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_get_session",
+      "callee": "exit",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L32",
+      "receiver": "sys"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "callee": "COOKIE_FILE",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L38"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "callee": "dump",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L39",
+      "receiver": "json"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_save_cookies",
+      "callee": "f",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "callee": "exists",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L45",
+      "receiver": "COOKIE_FILE"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "callee": "COOKIE_FILE",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L46"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "callee": "load",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L47",
+      "receiver": "json"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_load_cookies",
+      "callee": "f",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L47"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "callee": "FetcherSession",
+      "is_member_call": false,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L55",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "callee": "post",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L56",
+      "receiver": "session"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "callee": "lower",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L61",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "callee": "exit",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L63",
+      "receiver": "sys"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "callee": "get_cookies",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L65",
+      "receiver": "session"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_login",
+      "callee": "get",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L67",
+      "receiver": "cookie"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "exit",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L83",
+      "receiver": "sys"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "get",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L85",
+      "receiver": "cookies"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "FetcherSession",
+      "is_member_call": false,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L87",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "get",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L88",
+      "receiver": "session"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "css",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L91",
+      "receiver": "response"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "get_text",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L92",
+      "receiver": "el"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "join",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L93",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "get_text",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L95",
+      "receiver": "response"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_scrape",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L99",
+      "receiver": "f"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "exit",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L112",
+      "receiver": "sys"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "get",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L114",
+      "receiver": "cookies"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "FetcherSession",
+      "is_member_call": false,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L122",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "join",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L123",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "items",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L123",
+      "receiver": "params"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "get",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L124",
+      "receiver": "session"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "lower",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L126",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "exit",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L128",
+      "receiver": "sys"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "css",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L130",
+      "receiver": "response"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "css",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L134",
+      "receiver": "row"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "append",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L135",
+      "receiver": "data"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "get_text",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L135",
+      "receiver": "cell"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "dumps",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L137",
+      "receiver": "json"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "get_text",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L139",
+      "receiver": "response"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_cmd_surat_pengantar",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L143",
+      "receiver": "f"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "ArgumentParser",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L148",
+      "receiver": "argparse"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_subparsers",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L149",
+      "receiver": "parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_parser",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L152",
+      "receiver": "subparsers"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L153",
+      "receiver": "login_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L154",
+      "receiver": "login_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_parser",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L157",
+      "receiver": "subparsers"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L158",
+      "receiver": "scrape_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L159",
+      "receiver": "scrape_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L160",
+      "receiver": "scrape_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L161",
+      "receiver": "scrape_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_parser",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L164",
+      "receiver": "subparsers"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L167",
+      "receiver": "surat_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L168",
+      "receiver": "surat_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "int",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L168"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L169",
+      "receiver": "surat_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "add_argument",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L170",
+      "receiver": "surat_parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "parse_args",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L172",
+      "receiver": "parser"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_dev_tool_morbis_scraper_main",
+      "callee": "print_help",
+      "is_member_call": true,
+      "source_file": "dev/tool/morbis_scraper.py",
+      "source_location": "L181",
+      "receiver": "parser"
+    }
+  ]
+}

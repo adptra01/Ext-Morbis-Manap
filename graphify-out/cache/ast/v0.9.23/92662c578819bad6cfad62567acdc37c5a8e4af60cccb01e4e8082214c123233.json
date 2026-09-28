@@ -1,0 +1,495 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_md",
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "label": "M-KLAIM Extension Helper Tool",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "label": "\ud83d\udccb Daftar Fitur",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_1_url_builder",
+      "label": "1. URL Builder",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_5_morbis_scraper_cli",
+      "label": "5. Morbis Scraper (CLI)",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_2_bookmarklet_fix",
+      "label": "2. Bookmarklet Fix",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_3_testing",
+      "label": "3. Testing",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_4_panduan",
+      "label": "4. Panduan",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L81"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_cara_penggunaan",
+      "label": "\ud83d\ude80 Cara Penggunaan",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L93"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_menggunakan_tool_ini",
+      "label": "Menggunakan Tool Ini",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L95"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_cara_kerja_bookmarklet",
+      "label": "Cara Kerja Bookmarklet",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L100"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_struktur_file",
+      "label": "\ud83d\udcc1 Struktur File",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L121"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_teknis",
+      "label": "\ud83d\udd27 Teknis",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_stack_yang_digunakan",
+      "label": "Stack yang Digunakan",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L135"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_browser_support",
+      "label": "Browser Support",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L142"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_use_case",
+      "label": "\ud83c\udfaf Use Case",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L149"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_scenario_1_tidak_bisa_kembali_dengan_filter_terjaga",
+      "label": "Scenario 1: Tidak Bisa Kembali dengan Filter Terjaga",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L151"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_scenario_2_url_builder_untuk_navigasi_manual",
+      "label": "Scenario 2: URL Builder untuk Navigasi Manual",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L163"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_scenario_3_test_extension_yang_tidak_berfungsi",
+      "label": "Scenario 3: Test Extension yang Tidak Berfungsi",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L175"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_security_notes",
+      "label": "\ud83d\udd12 Security Notes",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L186"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_bookmarklet_security",
+      "label": "Bookmarklet Security",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L188"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_best_practice",
+      "label": "Best Practice",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L197"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_troubleshooting",
+      "label": "\ud83d\udc1b Troubleshooting",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L203"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_bookmarklet_tidak_bisa_didrag",
+      "label": "Bookmarklet Tidak Bisa Didrag",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L205"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_extension_tidak_terdeteksi",
+      "label": "Extension Tidak Terdeteksi",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L216"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_url_error_setelah_generate",
+      "label": "URL Error Setelah Generate",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L225"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_changelog",
+      "label": "\ud83d\udcdd Changelog",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L233"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_version_1_0_0_2026_04_06",
+      "label": "Version 1.0.0 (2026-04-06)",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L235"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_kontribusi",
+      "label": "\ud83e\udd1d Kontribusi",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L243"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_lisensi",
+      "label": "\ud83d\udcc4 Lisensi",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L253"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_support",
+      "label": "\ud83d\udcde Support",
+      "file_type": "document",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L257"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_1_url_builder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_5_morbis_scraper_cli",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_2_bookmarklet_fix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_3_testing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_daftar_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_4_panduan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_cara_penggunaan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_cara_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_menggunakan_tool_ini",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_cara_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_cara_kerja_bookmarklet",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_struktur_file",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_stack_yang_digunakan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_browser_support",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L142",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_use_case",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_use_case",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_scenario_1_tidak_bisa_kembali_dengan_filter_terjaga",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_use_case",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_scenario_2_url_builder_untuk_navigasi_manual",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_use_case",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_scenario_3_test_extension_yang_tidak_berfungsi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_security_notes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L186",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_security_notes",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_bookmarklet_security",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L188",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_security_notes",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_best_practice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_troubleshooting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_bookmarklet_tidak_bisa_didrag",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_extension_tidak_terdeteksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_url_error_setelah_generate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L225",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_changelog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_changelog",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_version_1_0_0_2026_04_06",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_kontribusi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L243",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_lisensi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L253",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_m_klaim_extension_helper_tool",
+      "target": "mnt_diskd_projects_ext_morbis_manap_dev_tool_readme_support",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dev/tool/README.md",
+      "source_location": "L257",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
