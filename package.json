@@ -13,6 +13,7 @@
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json,html,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json,html,css}\"",
+    "changelog": "node scripts/changelog.mjs",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "audit": "node scripts/audit-features.mjs",

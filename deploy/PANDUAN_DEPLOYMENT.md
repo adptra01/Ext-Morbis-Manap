@@ -201,6 +201,20 @@ bukan rencana migrasi HTTPS). Ringkasannya:
 
 ---
 
+## 7. Changelog Harian (Riwayat Perubahan Kode)
+
+- Riwayat perubahan kode harian ada di **`CHANGELOG.md`** (root repo), dikelompokkan
+  per **tanggal** (terbaru di atas) lalu per tipe perubahan (feat/fix/refactor/dll).
+- **Di-generate otomatis** dari git history oleh `scripts/changelog.mjs`:
+  - Saat commit lokal (hook `pre-commit` husky) → selalu sinkron, tidak perlu manual.
+  - Manual kapan saja: `npm run changelog`; verifikasi CI: `npm run changelog -- --check`.
+- Agar kelompok/ruang lingkup akurat, tulis pesan commit **conventional**:
+  `tipe(scope): deskripsi` — contoh `fix(resumeTab): id_rawat_jalan terkirim kosong`.
+- Commit yang **disembunyikan** dari changelog: bump versi otomatis CI, commit
+  deploy orphan (`deploy: vX`), dan merge — riwayat aslinya tetap ada di git.
+
+---
+
 ## Referensi cepat
 
 - EXT_ID: `beljnjfifmncnfnhdkcmjpeonoigdnbl`
