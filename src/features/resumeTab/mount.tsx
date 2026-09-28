@@ -397,18 +397,16 @@ function extractFormData(): ResumeData {
     const komorbid = row.querySelector<HTMLSelectElement>('select[name="komorbid[]"]')?.value || '';
     const kategori =
       row.querySelector<HTMLSelectElement>('select[name="kategoriProsedur[]"]')?.value || '';
-    const snomed =
-      row.querySelector<HTMLInputElement>('input[name="snomedProsedur[]"]')?.value || '';
-    const codeProsedur =
-      row.querySelector<HTMLInputElement>('input[name="codeProsedur[]"]')?.value || kode9;
+    // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS,
+    // jadi tidak dibaca dari DOM
     tindakan.push({
       idicdTindakan: idicd,
       kode9,
       namaTindakan: nama,
       komorbid,
       kategoriProsedur: kategori,
-      snomedProsedur: snomed,
-      codeProsedur,
+      snomedProsedur: '',
+      codeProsedur: '',
     });
   });
   if (tindakan.length === 0 && cachedFormState) {
@@ -696,12 +694,14 @@ function serializeRawatJalan(data: ResumeData): string {
     add('namaTindakan[]', t.namaTindakan);
     add('kode9[]', t.kode9);
     add('idicdTindakan[]', t.idicdTindakan);
-    add('kategoriProsedur[]', t.kategoriProsedur || '');
+    // Fallback ke default SNOMED CT (410606002) agar server tidak error ORA-00936
+    // saat query WHERE id = '' karena kategoriProsedur kosong
+    add('kategoriProsedur[]', t.kategoriProsedur || '410606002');
     add('komorbid[]', t.komorbid || '');
     // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS,
-    // tapi server tetap expect array (biar ga error Notice) → kirim string kosong
-    add('snomedProsedur[]', '');
-    add('codeProsedur[]', '');
+    // jadi TIDAK dikirim ke server
+    // add('snomedProsedur[]', '');
+    // add('codeProsedur[]', '');
   });
 
   // Kirim baris penghapusan untuk tindakan yang ada di original tapi tidak di current
@@ -712,19 +712,21 @@ function serializeRawatJalan(data: ResumeData): string {
       add('idicdTindakan[]', origId);
       add('namaTindakan[]', ''); // nama kosong = hapus
       add('kode9[]', '');
-      add('kategoriProsedur[]', '');
+      // Fallback ke default SNOMED CT agar server tidak error ORA-00936
+      add('kategoriProsedur[]', '410606002');
       add('komorbid[]', '');
-      add('snomedProsedur[]', '');
-      add('codeProsedur[]', '');
+      // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS
+      // add('snomedProsedur[]', '');
+      // add('codeProsedur[]', '');
     }
   }
 
   // Fallback: jika TIDAK ADA baris sama sekali (cleanTindakan kosong & tidak ada deletion),
-  // server SIMRS tetap expect array codeProsedur[] & snomedProsedur[] → kirim 1 entry kosong
-  if (cleanTindakan.length === 0 && originalTindakanIds.length === 0) {
-    add('snomedProsedur[]', '');
-    add('codeProsedur[]', '');
-  }
+  // server SIMRS TIDAK butuh codeProsedur/snomedProsedur karena form asli tidak pakai
+  // if (cleanTindakan.length === 0 && originalTindakanIds.length === 0) {
+  //   add('snomedProsedur[]', '');
+  //   add('codeProsedur[]', '');
+  // }
 
   add('save', 'Simpan');
   return pairs.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');

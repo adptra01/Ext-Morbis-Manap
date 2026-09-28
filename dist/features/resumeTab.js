@@ -27513,16 +27513,14 @@ var __morbis_feature = (() => {
       const nama = row.querySelector('input[name="namaTindakan[]"]')?.value || "";
       const komorbid = row.querySelector('select[name="komorbid[]"]')?.value || "";
       const kategori = row.querySelector('select[name="kategoriProsedur[]"]')?.value || "";
-      const snomed = row.querySelector('input[name="snomedProsedur[]"]')?.value || "";
-      const codeProsedur = row.querySelector('input[name="codeProsedur[]"]')?.value || kode9;
       tindakan.push({
         idicdTindakan: idicd,
         kode9,
         namaTindakan: nama,
         komorbid,
         kategoriProsedur: kategori,
-        snomedProsedur: snomed,
-        codeProsedur
+        snomedProsedur: "",
+        codeProsedur: ""
       });
     });
     if (tindakan.length === 0 && cachedFormState) {
@@ -27671,10 +27669,8 @@ var __morbis_feature = (() => {
       add("namaTindakan[]", t.namaTindakan);
       add("kode9[]", t.kode9);
       add("idicdTindakan[]", t.idicdTindakan);
-      add("kategoriProsedur[]", t.kategoriProsedur || "");
+      add("kategoriProsedur[]", t.kategoriProsedur || "410606002");
       add("komorbid[]", t.komorbid || "");
-      add("snomedProsedur[]", "");
-      add("codeProsedur[]", "");
     });
     const currentIds = new Set(cleanTindakan.map((t) => t.idicdTindakan));
     for (const origId of originalTindakanIds) {
@@ -27682,15 +27678,9 @@ var __morbis_feature = (() => {
         add("idicdTindakan[]", origId);
         add("namaTindakan[]", "");
         add("kode9[]", "");
-        add("kategoriProsedur[]", "");
+        add("kategoriProsedur[]", "410606002");
         add("komorbid[]", "");
-        add("snomedProsedur[]", "");
-        add("codeProsedur[]", "");
       }
-    }
-    if (cleanTindakan.length === 0 && originalTindakanIds.length === 0) {
-      add("snomedProsedur[]", "");
-      add("codeProsedur[]", "");
     }
     add("save", "Simpan");
     return pairs.map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
