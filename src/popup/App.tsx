@@ -7,6 +7,7 @@ import { FeaturesPanel } from './FeaturesPanel';
 import { DomainPanel } from './DomainPanel';
 import { Footer } from './Footer';
 import { UsageLogPanel } from './UsageLogPanel';
+import { getVersionBadge } from '../shared/version';
 
 async function loadAll(): Promise<{ config: ExtensionConfig | null; urls: CustomUrl[] }> {
   try {
@@ -197,7 +198,14 @@ export function App() {
               <span className="text-white text-[10px] font-bold">M</span>
             </div>
             <div>
-              <h1 className="text-md-sm font-semibold text-foreground">MORBIS Ext</h1>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-md-sm font-semibold text-foreground">MORBIS Ext</h1>
+                {getVersionBadge() && (
+                  <span className="text-[9px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1 py-0.5 rounded-full">
+                    {getVersionBadge()}
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-muted-foreground">Produktivitas SIMRS</p>
             </div>
           </div>

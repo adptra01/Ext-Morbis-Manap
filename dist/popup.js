@@ -1,4 +1,4 @@
-import { _ as MessageTypes, a as SelectItem, b as require_react, c as X, d as Plus, g as require_jsx_runtime, h as ErrorBoundary, i as SelectContent, l as RotateCcw, n as Input, o as SelectTrigger, p as Switch, r as Select, s as SelectValue, t as Button, u as RefreshCw, v as sendMessage, x as __toESM, y as require_client } from "./chunks/button-BKplxy_V.js";
+import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, i as Select, l as X, m as Switch, n as Button, o as SelectItem, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-CsqZrFO4.js";
 //#region src/popup/StatusCard.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_client = require_client();
@@ -539,9 +539,15 @@ function App() {
 							className: "text-white text-[10px] font-bold",
 							children: "M"
 						})
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-						className: "text-md-sm font-semibold text-foreground",
-						children: "MORBIS Ext"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "flex items-center gap-1.5",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
+							className: "text-md-sm font-semibold text-foreground",
+							children: "MORBIS Ext"
+						}), getVersionBadge() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "text-[9px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1 py-0.5 rounded-full",
+							children: getVersionBadge()
+						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 						className: "text-[10px] text-muted-foreground",
 						children: "Produktivitas SIMRS"

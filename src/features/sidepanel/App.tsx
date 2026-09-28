@@ -10,6 +10,7 @@ import { BatchDeletePanel } from './BatchDeletePanel';
 import { ConsultationDetailPanel } from './ConsultationDetailPanel';
 import { ConsultationInfoPanel } from './ConsultationInfoPanel';
 import { Footer } from './Footer';
+import { getVersionBadge } from '../../shared/version';
 import { configToFeatureList, configToToggles } from './utils';
 import type { FeatureConfig, Role, CustomUrl } from './types';
 
@@ -377,9 +378,11 @@ export function App() {
               <span className="text-white text-md-xs font-bold">M</span>
             </div>
             <span className="text-md-sm font-semibold text-foreground">MORBIS Ext</span>
-            <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
-              v1.2
-            </span>
+            {getVersionBadge() && (
+              <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
+                {getVersionBadge()}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <button
