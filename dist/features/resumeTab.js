@@ -32726,7 +32726,7 @@ video {
     return allLines.length ? allLines.join("\n") : null;
   }
   function setupFloatingButton() {
-    const targetPage = "/admisi/pelaksanaan_pelayanan/rj";
+    const targetPage = "/v2/m-klaim/detail-v2-refaktor";
     if (!location.href.startsWith(location.origin + targetPage)) {
       return;
     }
