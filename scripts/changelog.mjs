@@ -12,7 +12,14 @@
 //
 // Pemakaian:
 //   node scripts/changelog.mjs            # tulis CHANGELOG.md (hanya jika berubah)
-//   node scripts/changelog.mjs --check    # exit 1 bila file belum sinkron (CI)
+//   node scripts/changelog.mjs --check    # exit 1 bila file tidak sinkron (CI)
+//
+// Lag 1 commit (diyakini, bukan bug): regenerasi hook pre-commit berjalan
+// SEBELUM commit terbentuk, jadi file ter-commit tak memuat entri commit itu
+// sendiri — entrinya masuk pada regenerasi commit berikutnya. --check menerima
+// dua state kanonik (full history | history minus commit terakhir) sehingga
+// tidak false-positive setelah commit normal, tapi tetap menangkap drift
+// (`--no-verify` / push tanpa regenerasi).
 // =============================================================================
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -83,9 +90,11 @@ function classify(subject) {
   return { type: 'misc', scope: null, text: subject };
 }
 
-export function buildMd() {
+export function buildMd({ dropLast = false } = {}) {
   const byDay = new Map(); // date -> Map<type, entries[]>
-  for (const c of gitLog()) {
+  const commits = gitLog();
+  const src = dropLast && commits.length > 1 ? commits.slice(0, -1) : commits;
+  for (const c of src) {
     const cls = classify(c.subject);
     if (!cls) continue;
     if (!byDay.has(c.date)) byDay.set(c.date, new Map());
@@ -132,12 +141,13 @@ export function buildMd() {
 }
 
 const md = buildMd();
+const mdMinusLast = buildMd({ dropLast: true }); // state kanonik hasil hook (lag 1 commit)
 const check = process.argv.includes('--check');
 
 if (existsSync(OUT)) {
   const old = readFileSync(OUT, 'utf8');
-  if (old === md) {
-    console.log('[changelog] CHANGELOG.md sudah sinkron');
+  if (old === md || old === mdMinusLast) {
+    console.log('[changelog] CHANGELOG.md sudah sinkron (state kanonik full/lag-1)');
     process.exit(0);
   }
   if (check) {

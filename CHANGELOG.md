@@ -13,6 +13,10 @@
 
 - **changelog** — saring commit bump CI yang lolos klasifikasi conventional (`007072f`)
 
+### 🧹 chore
+
+- update knowledge graph (scripts/changelog.mjs + filter bump) (`5446a93`)
+
 ## 2026-09-28
 
 ### ✨ feat

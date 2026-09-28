@@ -206,8 +206,13 @@ bukan rencana migrasi HTTPS). Ringkasannya:
 - Riwayat perubahan kode harian ada di **`CHANGELOG.md`** (root repo), dikelompokkan
   per **tanggal** (terbaru di atas) lalu per tipe perubahan (feat/fix/refactor/dll).
 - **Di-generate otomatis** dari git history oleh `scripts/changelog.mjs`:
-  - Saat commit lokal (hook `pre-commit` husky) → selalu sinkron, tidak perlu manual.
-  - Manual kapan saja: `npm run changelog`; verifikasi CI: `npm run changelog -- --check`.
+  - Saat commit lokal (hook `pre-commit` husky) → regenerasi + `git add` otomatis.
+  - Manual kapan saja: `npm run changelog`; cek sinkron: `npm run changelog -- --check`.
+- **Lag 1 commit (diyakini, bukan bug):** regenerasi hook berjalan sebelum commit
+  terbentuk, jadi entri commit terbaru muncul pada regenerasi **commit berikutnya**
+  (pola standar generator changelog). `--check` menerima dua state kanonik
+  (full / minus-commit-terakhir) agar tidak false-positive, tapi tetap menangkap
+  drift akibat `--no-verify` atau push tanpa regenerasi.
 - Agar kelompok/ruang lingkup akurat, tulis pesan commit **conventional**:
   `tipe(scope): deskripsi` — contoh `fix(resumeTab): id_rawat_jalan terkirim kosong`.
 - Commit yang **disembunyikan** dari changelog: bump versi otomatis CI, commit
