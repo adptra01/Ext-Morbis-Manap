@@ -22302,8 +22302,8 @@ var __morbis_feature = (() => {
     return s.length > 60 ? s.slice(0, 60) + "\u2026" : s;
   }
   function loadHistory(idVisit, tipe, store = defaultStore()) {
-    const arr2 = readJson(store, getHistoryKey(idVisit, tipe));
-    const list = Array.isArray(arr2) ? arr2 : [];
+    const arr3 = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr3) ? arr3 : [];
     if (tipe === "ranap") {
       const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
       if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
@@ -27293,6 +27293,42 @@ var __morbis_feature = (() => {
     ] });
   }
 
+  // src/features/resumeTab/serializeIcd.ts
+  var arr2 = (s, k) => Array.isArray(s?.[k]) ? s[k] : [];
+  function pickDiagnosa(rows, orig) {
+    const cIdicd = arr2(orig, "idicd[]");
+    const cKode10 = arr2(orig, "kode10[]");
+    const cKet = arr2(orig, "keterangan10[]");
+    return rows.filter((d) => d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, all) => all.findIndex((x) => x.idicd === d.idicd) === i).map((d) => {
+      let idicd = d.idicd;
+      if (!idicd && d.kode10) {
+        const at = cKode10.indexOf(d.kode10);
+        if (at >= 0 && cIdicd[at]) idicd = cIdicd[at];
+      }
+      const pos = cIdicd.indexOf(idicd);
+      return {
+        nama: d.namaDiagnosa,
+        idicd,
+        kode10: d.kode10,
+        ket: pos >= 0 ? cKet[pos] || "" : "",
+        kasus: d.kasus || "",
+        komp: d.komplikasi || ""
+      };
+    }).filter((d) => d.idicd.trim().length > 0);
+  }
+  function pickTindakan(rows) {
+    return rows.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
+      (t, i, all) => all.findIndex(
+        (x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9
+      ) === i
+    ).map((t) => ({
+      nama: t.namaTindakan,
+      kode9: t.kode9,
+      idicdTindakan: t.idicdTindakan,
+      komorbid: t.komorbid || ""
+    }));
+  }
+
   // src/features/resumeTab/ErrorBoundary.tsx
   var import_react10 = __toESM(require_react(), 1);
   var ErrorBoundary = class extends import_react10.Component {
@@ -27781,31 +27817,22 @@ var __morbis_feature = (() => {
     params.set("spo2", cleanVital(data.vitalSigns.spo2));
     params.set("tinggi", cleanVital(data.vitalSigns.tinggi));
     params.set("berat", cleanVital(data.vitalSigns.berat));
-    const cKode10 = Array.isArray(cachedFormState?.["kode10[]"]) ? cachedFormState["kode10[]"] : [];
-    const cIdicd = Array.isArray(cachedFormState?.["idicd[]"]) ? cachedFormState["idicd[]"] : [];
-    const cKeterangan = Array.isArray(cachedFormState?.["keterangan10[]"]) ? cachedFormState["keterangan10[]"] : [];
-    const cleanDiagnosa = data.diagnosa.filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, arr2) => arr2.findIndex((x) => x.idicd === d.idicd) === i);
-    cleanDiagnosa.forEach((d) => {
-      let idicd = d.idicd;
-      if (!idicd && d.kode10) {
-        const idx = cKode10.indexOf(d.kode10);
-        if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
-      }
-      const pos = cIdicd.indexOf(idicd);
-      const ket = pos >= 0 ? cKeterangan[pos] || "" : "";
-      params.append("nama[]", d.namaDiagnosa);
-      params.append("idicd[]", idicd);
+    const cleanDiagnosa = pickDiagnosa(data.diagnosa, cachedFormState);
+    for (const d of cleanDiagnosa) {
+      params.append("nama[]", d.nama);
+      params.append("idicd[]", d.idicd);
       params.append("kode10[]", d.kode10);
-      params.append("keterangan10[]", ket);
-      params.append("kasus_diagnosa[]", d.kasus || "");
-      params.append("komplikasi[]", d.komplikasi || "");
-    });
-    cleanTindakan.forEach((t) => {
-      params.append("namaTindakan[]", t.namaTindakan);
+      params.append("keterangan10[]", d.ket);
+      params.append("kasus_diagnosa[]", d.kasus);
+      params.append("komplikasi[]", d.komp);
+    }
+    const cleanTindakan = pickTindakan(data.tindakan);
+    for (const t of cleanTindicated) {
+      params.append("namaTindakan[]", t.nama);
       params.append("kode9[]", t.kode9);
       params.append("idicdTindakan[]", t.idicdTindakan);
-      params.append("komorbid[]", t.komorbid || "");
-    });
+      params.append("komorbid[]", t.komorbid);
+    }
     const fmt = (pairs) => pairs.map(([v, i]) => `${v}#${i}`).join(" | ") || "(kosong)";
     console.log(
       "[RJ] ICD-10 terkirim :",

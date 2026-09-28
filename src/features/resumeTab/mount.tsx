@@ -108,6 +108,7 @@ function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string }
 
 import { createRoot, type Root } from 'react-dom/client';
 import { App } from './App';
+import { pickDiagnosa, pickTindakan } from './serializeIcd.js';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types';
 import { logResumeHistory, loadLast } from '../shared/resumeHistory.js';
@@ -740,68 +741,39 @@ function serializeRawatJalan(data: ResumeData): string {
   // ═══════════════════════════════════════════════════════════
   // 5. OVERLAY: diagnosa dari React state
   //
-  // Mekanisme server = DELETE-ALL-THEN-INSERT (verified live: handler
-  // `deleteElement()` form asli hanya removeChild baris dari DOM, tanpa
-  // penanda; payload hasil simpan hanya berisi baris yang tersisa).
-  // Jadi JANGAN pernah mengirim baris "dummy" kosong sebagai penanda
-  // hapus — hanya akan membuat baris kosong tersimpan / tidak terhapus.
+  // Mekanisme server = DELETE-ALL-THEN-INSERT (terverifikasi live:
+  // handler `deleteElement()` form asli hanya removeChild baris dari
+  // DOM tanpa penanda; payload simpan hanya berisi baris tersisa).
+  // Baris yang dihapus dokter cukup TIDAK ikut dikirim.
+  // Logikanya ada di serializeIcd.ts (pure, teruji unit).
   // ═══════════════════════════════════════════════════════════
-  const cKode10 = Array.isArray(cachedFormState?.['kode10[]'])
-    ? (cachedFormState!['kode10[]'] as string[])
-    : [];
-  const cIdicd = Array.isArray(cachedFormState?.['idicd[]'])
-    ? (cachedFormState!['idicd[]'] as string[])
-    : [];
-  // `keterangan10[]` sejajar dengan `idicd[]` di form asli. DiagnosaRow
-  // tidak punya field ini, jadi ambil dari cache berdasarkan posisi.
-  const cKeterangan = Array.isArray(cachedFormState?.['keterangan10[]'])
-    ? (cachedFormState!['keterangan10[]'] as string[])
-    : [];
-
-  const cleanDiagnosa = data.diagnosa
-    .filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
-    .filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
-
-  cleanDiagnosa.forEach((d) => {
-    let idicd = d.idicd;
-    if (!idicd && d.kode10) {
-      const idx = cKode10.indexOf(d.kode10);
-      if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
-    }
-    // keterangan10 baris ini = nilai pada posisi yang sama di form asli
-    const pos = cIdicd.indexOf(idicd);
-    const ket = pos >= 0 ? cKeterangan[pos] || '' : '';
-    params.append('nama[]', d.namaDiagnosa);
-    params.append('idicd[]', idicd);
+  const cleanDiagnosa = pickDiagnosa(data.diagnosa, cachedFormState);
+  for (const d of cleanDiagnosa) {
+    params.append('nama[]', d.nama);
+    params.append('idicd[]', d.idicd);
     params.append('kode10[]', d.kode10);
-    params.append('keterangan10[]', ket);
+    params.append('keterangan10[]', d.ket);
     // JANGAN kirim `keterangan10` skalar: form asli hanya punya
     // `keterangan10[]`. Skalar menimpa array di $_POST lalu controller
     // mengindeks $x[0]/$x[1] => "Uninitialized string offset: 0/1".
-    params.append('kasus_diagnosa[]', d.kasus || '');
-    params.append('komplikasi[]', d.komplikasi || '');
-  });
+    params.append('kasus_diagnosa[]', d.kasus);
+    params.append('komplikasi[]', d.komp);
+  }
 
   // ═══════════════════════════════════════════════════════════
   // 6. OVERLAY: tindakan dari React state
   //    PENTING: JANGAN kirim kategoriProsedur[]/snomedProsedur[]/codeProsedur[]
   //             — form asli tidak punya & memicu ORA-00936
   //    Sama seperti diagnosa: hapus = delete-all-then-insert, tanpa penanda.
+  //    `ic1`/`ic2`/... SENGAJA TIDAK DIKIRIM — lihat catatan di serializeIcd.ts.
   // ═══════════════════════════════════════════════════════════
-  // `ic1`/`ic2`/... SENGAJA TIDAK DIKIRIM.
-  //
-  // Bukti dari payload form asli SIMRS (klik Simpan lalu tangkap
-  // request): tidak ada satu pun `ic{N}` di payload, dan baris ICD-9
-  // tetap tersimpan normal. Checkbox itu hanya terkirim bila
-  // tercentang, dan di data uji tidak pernah tercentang. Mengirimnya
-  // dari cache lama hanya menghasilkan indeks basi yang menggeser
-  // urutan, jadi seluruh mekanismenya dibuang total.
-  cleanTindakan.forEach((t) => {
-    params.append('namaTindakan[]', t.namaTindakan);
+  const cleanTindakan = pickTindakan(data.tindakan);
+  for (const t of cleanTindicated) {
+    params.append('namaTindakan[]', t.nama);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
-    params.append('komorbid[]', t.komorbid || '');
-  });
+    params.append('komorbid[]', t.komorbid);
+  }
 
   // ═══════════════════════════════════════════════════════════
   // 7. DEBUG LOG
