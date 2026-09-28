@@ -48,7 +48,7 @@ L = likelihood (Rendah/Sedang/Tinggi), I = impact (R/L/M/H).
 
 1. **Quality gate CI** (`.github/workflows/deploy-to-main.yml`): typecheck → unit test → lint; runner ter-pin `ubuntu-24.04`.
 2. **Manifest hygiene (Phase D)**: build production me-strip host dev (localhost/127.0.0.1/ddev) dari `host_permissions`; guard `tests/unit/manifest-prod.test.ts`.
-3. **Immutability & audit (Phase B)**: tiap rilis = `docs/releases/vX.Y.Z/` berisi `morbis-vX.Y.Z.crx`, `metadata.json` (channel, build_id, git_commit, sha256), `sha256sums.txt`; versi lama dipreservasi (tidak di-wipe).
+3. **Immutability & audit (Phase B)**: tiap rilis = `docs/releases/vX.Y.Z/` berisi `morbis-vX.Y.Z.crx`, `metadata.json` (channel, build_id, git_commit, sha256), `sha256sums.txt`; versi lama dipreservasi (tidak di-wipe). **Sejak v1.5.91** folder rilis juga memuat `.zip` agar `sha256sum -c sha256sums.txt` lolos (CI punya guard ini). Rilis **< v1.5.91**: `sha256sums.txt` masih mencantumkan `.zip` yang tidak pernah dipublish — verifikasi/release yang valid untuk rilis lama adalah **baris `.crx`** (nilainya sama dengan `metadata.sha256`); artefak yang dipakai browser tetap `.crx`.
 4. **Signing & identitas**: CRX3 signed dari `CRX_SIGNING_KEY` (secret); EXT_ID `beljnjfifmncnfnhdkcmjpeonoigdnbl` = hash public key; CI guard `.bat`/update.xml sinkron dengan key; `*.pem` diblokir dari deploy.
 5. **Host restriction**: `runtime_allowed_hosts` (4 host SIMRS) di policy + `.bat`; lihat `deploy/policy/`.
 6. **Two-channel**: staging `channels/staging/update.xml` hanya untuk pilot; production hanya via tag; publish Edge hanya pada tag.
