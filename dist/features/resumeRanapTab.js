@@ -29207,6 +29207,10 @@ video {
   font-size: 0.75rem;
   line-height: 1rem;
 }
+.text-xxl {
+  font-size: 22px;
+  line-height: 28px;
+}
 .font-bold {
   font-weight: 700;
 }
@@ -31500,6 +31504,10 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+.text-xxl {
+  font-size: 22px;
+  line-height: 28px;
 }
 .font-bold {
   font-weight: 700;

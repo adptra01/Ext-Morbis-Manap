@@ -1072,6 +1072,29 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
         font-size: 16px !important;
       }
+
+      /* ── Dropdown autocomplete ICD ──
+         Aturan .resume-modal *:not(.font-mono) di atas memaksa
+         font-size 16px !important untuk SELURUH isi modal, sehingga
+         class Tailwind apa pun (text-lg/text-xl/text-xxl) ikut
+         tertimpa. Baris nama & kode pada dropdown dikecualikan lalu
+         diberi ukuran eksplisit di sini, setelah aturan itu, dengan
+         !important yang sama supaya benar-benar menang.
+         Kode sengaja TANPA font-mono: JetBrains Mono punya x-height
+         jauh lebih rendah sehingga kode terlihat kecil dibanding nama.
+         Catatan: jangan pakai backtick di dalam template literal ini. */
+      .resume-modal .rj-icd-hit-nama,
+      .resume-modal .rj-icd-hit-kode {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+      }
+      .resume-modal .rj-icd-hit-nama {
+        font-size: 18px !important;
+        line-height: 1.4 !important;
+      }
+      .resume-modal .rj-icd-hit-kode {
+        font-size: 22px !important;
+        line-height: 1.25 !important;
+      }
       .resume-modal .resume-modal *,
       .resume-modal .resume-modal *::before,
       .resume-modal .resume-modal *::after {

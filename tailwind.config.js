@@ -126,6 +126,11 @@ export default {
         'md-lg': ['15px', '24px'],
         'md-xl': ['16px', '26px'],
         'md-2xl': ['18px', '28px'],
+        // Ukuran besar untuk kode ICD di dropdown autocomplete.
+        // Dipakai tanpa font-mono: JetBrains Mono punya x-height jauh
+        // lebih rendah sehingga kode terlihat kecil dibanding nama.
+        xxl: ['22px', '28px'],
+        xxxl: ['26px', '32px'],
       },
       borderRadius: {
         md: '6px',

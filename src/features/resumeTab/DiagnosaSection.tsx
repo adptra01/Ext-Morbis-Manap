@@ -141,10 +141,10 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                           role="option"
                           className="px-4 py-4 cursor-pointer text-lg border-b border-border hover:bg-accent transition-colors"
                         >
-                          <div className="font-semibold text-foreground leading-snug">
+                          <div className="rj-icd-hit-nama font-semibold text-foreground leading-snug">
                             {item.NAMA}
                           </div>
-                          <div className="text-muted-foreground text-xl font-mono leading-tight">
+                          <div className="rj-icd-hit-kode text-muted-foreground text-xxl leading-tight">
                             {item.KODE}
                           </div>
                         </div>
