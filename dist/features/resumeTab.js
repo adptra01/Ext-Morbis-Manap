@@ -22302,8 +22302,8 @@ var __morbis_feature = (() => {
     return s.length > 60 ? s.slice(0, 60) + "\u2026" : s;
   }
   function loadHistory(idVisit, tipe, store = defaultStore()) {
-    const arr3 = readJson(store, getHistoryKey(idVisit, tipe));
-    const list = Array.isArray(arr3) ? arr3 : [];
+    const arr2 = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr2) ? arr2 : [];
     if (tipe === "ranap") {
       const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
       if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
@@ -26510,14 +26510,6 @@ var __morbis_feature = (() => {
     const abortRef = (0, import_react7.useRef)(null);
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => idx === i ? { ...r2, ...p } : r2));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
-    const moveRow = (i, delta) => {
-      const j = i + delta;
-      if (j < 0 || j >= rows.length) return;
-      const next = rows.slice();
-      const [row] = next.splice(i, 1);
-      next.splice(j, 0, row);
-      onChange(next);
-    };
     const search = (q, rowIdx, el) => {
       setErrMsg("");
       clearTimeout(t.current ?? void 0);
@@ -26583,17 +26575,6 @@ var __morbis_feature = (() => {
       rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "border-2 border-dashed border-border rounded-xl py-6 text-center bg-background", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("p", { className: "text-base text-muted-foreground", children: "Belum ada diagnosa" }) }) : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "space-y-2", children: rows.map((row, i) => {
         const no = i + 1;
         return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "flex gap-2 items-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
-            "span",
-            {
-              className: "w-6 shrink-0 text-center font-mono text-base text-muted-foreground",
-              "aria-label": `Urutan ${no}`,
-              children: [
-                "#",
-                no
-              ]
-            }
-          ),
           /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "flex-1 min-w-0 relative", children: [
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
               Input,
@@ -26658,45 +26639,17 @@ var __morbis_feature = (() => {
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "kasus[]", value: row.kasus }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "komplikasi[]", value: row.komplikasi })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("div", { className: "flex gap-1 shrink-0", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-              Button,
-              {
-                variant: "outline",
-                size: "default",
-                onClick: () => moveRow(i, -1),
-                disabled: i === 0,
-                className: "w-9 px-0",
-                title: "Naikkan urutan",
-                "aria-label": `Naikkan urutan diagnosa ${no}`,
-                children: "\u2191"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-              Button,
-              {
-                variant: "outline",
-                size: "default",
-                onClick: () => moveRow(i, 1),
-                disabled: i === rows.length - 1,
-                className: "w-9 px-0",
-                title: "Turunkan urutan",
-                "aria-label": `Turunkan urutan diagnosa ${no}`,
-                children: "\u2193"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-              Button,
-              {
-                variant: "destructive",
-                size: "default",
-                onClick: () => removeRow(i),
-                className: "w-[76px]",
-                "aria-label": `Hapus diagnosa ${no}`,
-                children: "Hapus"
-              }
-            )
-          ] })
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+            Button,
+            {
+              variant: "destructive",
+              size: "default",
+              onClick: () => removeRow(i),
+              className: "w-[76px] shrink-0",
+              "aria-label": `Hapus diagnosa ${no}`,
+              children: "Hapus"
+            }
+          )
         ] }, i);
       }) }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -26728,14 +26681,6 @@ var __morbis_feature = (() => {
     const abortRef = (0, import_react8.useRef)(null);
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => idx === i ? { ...r2, ...p } : r2));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
-    const moveRow = (i, delta) => {
-      const j = i + delta;
-      if (j < 0 || j >= rows.length) return;
-      const next = rows.slice();
-      const [row] = next.splice(i, 1);
-      next.splice(j, 0, row);
-      onChange(next);
-    };
     const search = (q, rowIdx, el) => {
       setErrMsg("");
       clearTimeout(t.current ?? void 0);
@@ -26801,17 +26746,6 @@ var __morbis_feature = (() => {
       rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "border-2 border-dashed border-border rounded-xl py-6 text-center bg-background", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-base text-muted-foreground", children: "Belum ada tindakan" }) }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "space-y-2", children: rows.map((row, i) => {
         const no = i + 1;
         return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "flex gap-2 items-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
-            "span",
-            {
-              className: "w-6 shrink-0 text-center font-mono text-base text-muted-foreground",
-              "aria-label": `Urutan ${no}`,
-              children: [
-                "#",
-                no
-              ]
-            }
-          ),
           /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "flex-1 min-w-0 relative", children: [
             /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
               Input,
@@ -26885,45 +26819,17 @@ var __morbis_feature = (() => {
             /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "jenis[]", value: row.jenis || "Primer" }),
             /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "kategoriProsedur[]", value: row.kategoriProsedur })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "flex gap-1 shrink-0", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
-              Button,
-              {
-                variant: "outline",
-                size: "default",
-                onClick: () => moveRow(i, -1),
-                disabled: i === 0,
-                className: "w-9 px-0",
-                title: "Naikkan urutan",
-                "aria-label": `Naikkan urutan tindakan ${no}`,
-                children: "\u2191"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
-              Button,
-              {
-                variant: "outline",
-                size: "default",
-                onClick: () => moveRow(i, 1),
-                disabled: i === rows.length - 1,
-                className: "w-9 px-0",
-                title: "Turunkan urutan",
-                "aria-label": `Turunkan urutan tindakan ${no}`,
-                children: "\u2193"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
-              Button,
-              {
-                variant: "destructive",
-                size: "default",
-                onClick: () => removeRow(i),
-                className: "w-[76px]",
-                "aria-label": `Hapus tindakan ${no}`,
-                children: "Hapus"
-              }
-            )
-          ] })
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+            Button,
+            {
+              variant: "destructive",
+              size: "default",
+              onClick: () => removeRow(i),
+              className: "w-[76px] shrink-0",
+              "aria-label": `Hapus tindakan ${no}`,
+              children: "Hapus"
+            }
+          )
         ] }, i);
       }) }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
@@ -27036,23 +26942,17 @@ var __morbis_feature = (() => {
     onHistory,
     saving,
     hasErrors,
-    lastSaved,
-    orderSummary
+    lastSaved
   }) {
     const handleReset = onReset ?? onRefresh;
     return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "flex items-center justify-between px-6 py-4 border-t-2 border-border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 shrink-0 sticky bottom-0 z-[1]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "flex items-center gap-3 min-w-0 flex-wrap", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "flex items-center gap-3 min-w-0", children: [
         hasErrors && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Badge, { variant: "danger", icon: true, children: "Validasi gagal" }),
         lastSaved && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { className: "text-base text-muted-foreground truncate", children: [
           "Tersimpan ",
           lastSaved
         ] }),
-        saving && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Badge, { variant: "default", icon: true, children: "Menyimpan..." }),
-        orderSummary?.map((o) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { className: "text-base text-muted-foreground truncate", children: [
-          o.label,
-          ": ",
-          o.codes.length ? o.codes.join(" \u2192 ") : "(kosong)"
-        ] }, o.label))
+        saving && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Badge, { variant: "default", icon: true, children: "Menyimpan..." })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "flex items-center gap-3", children: [
         onHistory && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
@@ -27153,7 +27053,6 @@ var __morbis_feature = (() => {
         window.setTimeout(() => window.location.reload(), 900);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        console.error("[RJ-SAVE-GAGAL]", msg, "\n", e instanceof Error ? e.stack : "(bukan Error)");
         setExtraErrors([{ section: "Server", message: msg }]);
       } finally {
         setSaving(false);
@@ -27281,10 +27180,6 @@ var __morbis_feature = (() => {
           saving,
           hasErrors: hasBlocking,
           lastSaved,
-          orderSummary: [
-            { label: "ICD-10", codes: data.diagnosa.map((d) => d.kode10).filter(Boolean) },
-            { label: "ICD-9", codes: data.tindakan.map((t) => t.kode9).filter(Boolean) }
-          ],
           onSave: handleSaveWrapped,
           onCancel: onClose,
           onRefresh: handleRefresh,
@@ -27292,40 +27187,6 @@ var __morbis_feature = (() => {
         }
       )
     ] });
-  }
-
-  // src/features/resumeTab/serializeIcd.ts
-  var arr2 = (s, k) => Array.isArray(s?.[k]) ? s[k] : [];
-  function pickDiagnosa(rows, orig) {
-    const cIdicd = arr2(orig, "idicd[]");
-    const cKode10 = arr2(orig, "kode10[]");
-    const cKet = arr2(orig, "keterangan10[]");
-    return rows.filter((d) => d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, all) => all.findIndex((x) => x.idicd === d.idicd) === i).map((d) => {
-      let idicd = d.idicd;
-      if (!idicd && d.kode10) {
-        const at = cKode10.indexOf(d.kode10);
-        if (at >= 0 && cIdicd[at]) idicd = cIdicd[at];
-      }
-      const pos = cIdicd.indexOf(idicd);
-      return {
-        nama: d.namaDiagnosa,
-        idicd,
-        kode10: d.kode10,
-        ket: pos >= 0 ? cKet[pos] || "" : "",
-        kasus: d.kasus || "",
-        komp: d.komplikasi || ""
-      };
-    }).filter((d) => d.idicd.trim().length > 0);
-  }
-  function pickTindakan(rows) {
-    return rows.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
-      (t, i, all) => all.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i
-    ).map((t) => ({
-      nama: t.namaTindakan,
-      kode9: t.kode9,
-      idicdTindakan: t.idicdTindakan,
-      komorbid: t.komorbid || ""
-    }));
   }
 
   // src/features/resumeTab/ErrorBoundary.tsx
@@ -27816,44 +27677,41 @@ var __morbis_feature = (() => {
     params.set("spo2", cleanVital(data.vitalSigns.spo2));
     params.set("tinggi", cleanVital(data.vitalSigns.tinggi));
     params.set("berat", cleanVital(data.vitalSigns.berat));
-    const cleanDiagnosa = pickDiagnosa(data.diagnosa, cachedFormState);
-    for (const d of cleanDiagnosa) {
-      params.append("nama[]", d.nama);
-      params.append("idicd[]", d.idicd);
+    const cKode10 = Array.isArray(cachedFormState?.["kode10[]"]) ? cachedFormState["kode10[]"] : [];
+    const cIdicd = Array.isArray(cachedFormState?.["idicd[]"]) ? cachedFormState["idicd[]"] : [];
+    const cKeterangan = Array.isArray(cachedFormState?.["keterangan10[]"]) ? cachedFormState["keterangan10[]"] : [];
+    const cleanDiagnosa = data.diagnosa.filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, arr2) => arr2.findIndex((x) => x.idicd === d.idicd) === i);
+    cleanDiagnosa.forEach((d) => {
+      let idicd = d.idicd;
+      if (!idicd && d.kode10) {
+        const idx = cKode10.indexOf(d.kode10);
+        if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
+      }
+      const pos = cIdicd.indexOf(idicd);
+      const ket = pos >= 0 ? cKeterangan[pos] || "" : "";
+      params.append("nama[]", d.namaDiagnosa);
+      params.append("idicd[]", idicd);
       params.append("kode10[]", d.kode10);
-      params.append("keterangan10[]", d.ket);
-      params.append("kasus_diagnosa[]", d.kasus);
-      params.append("komplikasi[]", d.komp);
-    }
-    const cleanTindakan = pickTindakan(data.tindakan);
-    for (const t of cleanTindicated) {
-      params.append("namaTindakan[]", t.nama);
+      params.append("keterangan10[]", ket);
+      params.append("kasus_diagnosa[]", d.kasus || "");
+      params.append("komplikasi[]", d.komplikasi || "");
+    });
+    const cTindIdicd = Array.isArray(cachedFormState?.["idicdTindakan[]"]) ? cachedFormState["idicdTindakan[]"] : [];
+    const cleanTindakan = data.tindakan.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
+      (t, i, arr2) => arr2.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i
+    );
+    const icFor = (idTindakan) => {
+      const pos = cTindIdicd.indexOf(idTindakan);
+      return pos >= 0 ? fsVal(`ic${pos + 1}`) : "";
+    };
+    cleanTindakan.forEach((t) => {
+      params.append("namaTindakan[]", t.namaTindakan);
       params.append("kode9[]", t.kode9);
       params.append("idicdTindakan[]", t.idicdTindakan);
-      params.append("komorbid[]", t.komorbid);
-    }
-    const fmt = (pairs) => pairs.map(([v, i]) => `${v}#${i}`).join(" | ") || "(kosong)";
-    let buildTag = "?";
-    try {
-      buildTag = globalThis.chrome?.runtime?.getManifest?.()?.version ?? "runtime-tidak-ada";
-    } catch {
-      buildTag = "gagal-baca";
-    }
-    console.log("[RJ] build:", buildTag, "| ic-N dihapus = ya");
-    console.log(
-      "[RJ] ICD-10 terkirim :",
-      fmt(cleanDiagnosa.map((d) => [d.kode10 || "?", d.idicd || "?"]))
-    );
-    console.log(
-      "[RJ] ICD-9 terkirim  :",
-      fmt(cleanTindakan.map((t) => [t.kode9 || "?", t.idicdTindakan || "?"]))
-    );
-    console.log(
-      "[RJ] state vs payload:",
-      "state=" + JSON.stringify(data.tindakan.map((t) => t.kode9)),
-      "| clean=" + JSON.stringify(cleanTindakan.map((t) => t.kode9)),
-      "| cache=" + JSON.stringify(cachedFormState?.["kode9[]"] ?? null)
-    );
+      params.append("komorbid[]", t.komorbid || "");
+      const ic = icFor(t.idicdTindakan);
+      if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
+    });
     const debug = {};
     for (const k of [
       "id_visit",
@@ -29418,10 +29276,6 @@ video {
 }
 .p-8 {
   padding: 2rem;
-}
-.px-0 {
-  padding-left: 0px;
-  padding-right: 0px;
 }
 .px-1 {
   padding-left: 0.25rem;
@@ -31708,10 +31562,6 @@ video {
 .p-8 {
   padding: 2rem;
 }
-.px-0 {
-  padding-left: 0px;
-  padding-right: 0px;
-}
 .px-1 {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -32918,17 +32768,7 @@ video {
     }
     return allLines.length ? allLines.join("\n") : null;
   }
-  function logBuildTag(stage) {
-    let v = "?";
-    try {
-      v = globalThis.chrome?.runtime?.getManifest?.()?.version ?? "runtime-tidak-ada";
-    } catch {
-      v = "gagal-baca";
-    }
-    console.log(`[RJ-BUILD ${stage}] versi=${v} ic-N dihapus=ya tanpa-baris-dummy=ya`);
-  }
   function setupFloatingButton() {
-    logBuildTag("load");
     const targetPage = "/v2/m-klaim/detail-v2-refaktor";
     if (!location.href.startsWith(location.origin + targetPage)) {
       return;

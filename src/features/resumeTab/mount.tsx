@@ -108,7 +108,6 @@ function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string }
 
 import { createRoot, type Root } from 'react-dom/client';
 import { App } from './App';
-import { pickDiagnosa, pickTindakan } from './serializeIcd.js';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types';
 import { logResumeHistory, loadLast } from '../shared/resumeHistory.js';
@@ -702,18 +701,7 @@ function serializeRawatJalan(data: ResumeData): string {
   ];
   for (const f of arrayFieldsToClear) params.delete(f);
 
-  // Buang `ic1`..`ic50` dari base dan JANGAN pernah mengirimnya.
-  //
-  // Alasannya bukan sekadar "tidak dipakai": nama `ic{N}` terikat ke
-  // POSISI baris di form asal. Begitu dokter reorder / hapus-tambah di
-  // overlay, nomor itu tidak lagi cocok dengan baris yang dikirim, dan
-  // checkbox persetujuan bisa menempel ke tindakan yang salah.
-  //
-  // Verifikasi: payload form asli SIMRS tidak mengandung satu pun
-  // `ic{N}` dan baris ICD-9 tetap tersimpan normal. Kalau suatu saat
-  // SIMRS benar-benar memerlukan `ic{N}`, implementasinya harus lewat
-  // checkbox sendiri di UI (source of truth tunggal), bukan dengan
-  // memetakan ulang posisi form lama.
+  // Hapus juga checkbox ic1, ic2, ... dari base (nanti di-set ulang)
   for (let i = 1; i <= 50; i++) params.delete(`ic${i}`);
 
   // ═══════════════════════════════════════════════════════════
@@ -741,75 +729,86 @@ function serializeRawatJalan(data: ResumeData): string {
   // ═══════════════════════════════════════════════════════════
   // 5. OVERLAY: diagnosa dari React state
   //
-  // Mekanisme server = DELETE-ALL-THEN-INSERT (terverifikasi live:
-  // handler `deleteElement()` form asli hanya removeChild baris dari
-  // DOM tanpa penanda; payload simpan hanya berisi baris tersisa).
-  // Baris yang dihapus dokter cukup TIDAK ikut dikirim.
-  // Logikanya ada di serializeIcd.ts (pure, teruji unit).
+  // Mekanisme server = DELETE-ALL-THEN-INSERT (verified live: handler
+  // `deleteElement()` form asli hanya removeChild baris dari DOM, tanpa
+  // penanda; payload hasil simpan hanya berisi baris yang tersisa).
+  // Jadi JANGAN pernah mengirim baris "dummy" kosong sebagai penanda
+  // hapus — hanya akan membuat baris kosong tersimpan / tidak terhapus.
   // ═══════════════════════════════════════════════════════════
-  const cleanDiagnosa = pickDiagnosa(data.diagnosa, cachedFormState);
-  for (const d of cleanDiagnosa) {
-    params.append('nama[]', d.nama);
-    params.append('idicd[]', d.idicd);
+  const cKode10 = Array.isArray(cachedFormState?.['kode10[]'])
+    ? (cachedFormState!['kode10[]'] as string[])
+    : [];
+  const cIdicd = Array.isArray(cachedFormState?.['idicd[]'])
+    ? (cachedFormState!['idicd[]'] as string[])
+    : [];
+  // `keterangan10[]` sejajar dengan `idicd[]` di form asli. DiagnosaRow
+  // tidak punya field ini, jadi ambil dari cache berdasarkan posisi.
+  const cKeterangan = Array.isArray(cachedFormState?.['keterangan10[]'])
+    ? (cachedFormState!['keterangan10[]'] as string[])
+    : [];
+
+  const cleanDiagnosa = data.diagnosa
+    .filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
+    .filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
+
+  cleanDiagnosa.forEach((d) => {
+    let idicd = d.idicd;
+    if (!idicd && d.kode10) {
+      const idx = cKode10.indexOf(d.kode10);
+      if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
+    }
+    // keterangan10 baris ini = nilai pada posisi yang sama di form asli
+    const pos = cIdicd.indexOf(idicd);
+    const ket = pos >= 0 ? cKeterangan[pos] || '' : '';
+    params.append('nama[]', d.namaDiagnosa);
+    params.append('idicd[]', idicd);
     params.append('kode10[]', d.kode10);
-    params.append('keterangan10[]', d.ket);
+    params.append('keterangan10[]', ket);
     // JANGAN kirim `keterangan10` skalar: form asli hanya punya
     // `keterangan10[]`. Skalar menimpa array di $_POST lalu controller
     // mengindeks $x[0]/$x[1] => "Uninitialized string offset: 0/1".
-    params.append('kasus_diagnosa[]', d.kasus);
-    params.append('komplikasi[]', d.komp);
-  }
+    params.append('kasus_diagnosa[]', d.kasus || '');
+    params.append('komplikasi[]', d.komplikasi || '');
+  });
 
   // ═══════════════════════════════════════════════════════════
   // 6. OVERLAY: tindakan dari React state
   //    PENTING: JANGAN kirim kategoriProsedur[]/snomedProsedur[]/codeProsedur[]
   //             — form asli tidak punya & memicu ORA-00936
   //    Sama seperti diagnosa: hapus = delete-all-then-insert, tanpa penanda.
-  //    `ic1`/`ic2`/... SENGAJA TIDAK DIKIRIM — lihat catatan di serializeIcd.ts.
   // ═══════════════════════════════════════════════════════════
-  const cleanTindakan = pickTindakan(data.tindakan);
-  for (const t of cleanTindicated) {
-    params.append('namaTindakan[]', t.nama);
+  const cTindIdicd = Array.isArray(cachedFormState?.['idicdTindakan[]'])
+    ? (cachedFormState!['idicdTindakan[]'] as string[])
+    : [];
+
+  const cleanTindakan = data.tindakan
+    .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
+    .filter(
+      (t, i, arr) =>
+        arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
+    );
+
+  // `ic1`, `ic2`, ... = checkbox persetujuan per baris, terikat ke POSISI
+  // baris di form asli. `deleteElements()` hanya menomori ulang atribut
+  // `id`, bukan `name` — jadi baris yang tersisa tetap memakai nama ic
+  // sesuai posisinya yang lama.
+  const icFor = (idTindakan: string): string => {
+    const pos = cTindIdicd.indexOf(idTindakan);
+    return pos >= 0 ? fsVal(`ic${pos + 1}`) : '';
+  };
+
+  cleanTindakan.forEach((t) => {
+    params.append('namaTindakan[]', t.namaTindakan);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
-    params.append('komorbid[]', t.komorbid);
-  }
+    params.append('komorbid[]', t.komorbid || '');
+    const ic = icFor(t.idicdTindakan);
+    if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
+  });
 
   // ═══════════════════════════════════════════════════════════
-  // 7. DEBUG LOG
-  //    besides the number of keys, print the ORDER of ICD rows actually
-  //    being sent plus the state/payload comparison — this is what tells
-  //    us whether an order problem lives in the React state, in
-  //    cleanTindakan, or only in the rendering.
+  // 7. DEBUG LOG (bisa dihapus nanti)
   // ═══════════════════════════════════════════════════════════
-  const fmt = (pairs: [string, string][]) =>
-    pairs.map(([v, i]) => `${v}#${i}`).join(' | ') || '(kosong)';
-  // Penanda build: kalau baris ini tidak muncul saat Simpan, Chrome masih
-  // memuat bundle LAMA (butuh reload extension + hard refresh halaman).
-  let buildTag = '?';
-  try {
-    buildTag =
-      (
-        globalThis as { chrome?: { runtime?: { getManifest?: () => { version?: string } } } }
-      ).chrome?.runtime?.getManifest?.()?.version ?? 'runtime-tidak-ada';
-  } catch {
-    buildTag = 'gagal-baca';
-  }
-  console.log('[RJ] build:', buildTag, '| ic-N dihapus = ya');
-  console.log(
-    '[RJ] ICD-10 terkirim :',
-    fmt(cleanDiagnosa.map((d) => [d.kode10 || '?', d.idicd || '?'])),
-  );
-  console.log(
-    '[RJ] ICD-9 terkirim  :',
-    fmt(cleanTindakan.map((t) => [t.kode9 || '?', t.idicdTindakan || '?'])),
-  );
-  console.log(
-    '[RJ] state vs payload:',
-    'state=' + JSON.stringify(data.tindakan.map((t) => t.kode9)),
-    '| clean=' + JSON.stringify(cleanTindakan.map((t) => t.kode9)),
-    '| cache=' + JSON.stringify(cachedFormState?.['kode9[]'] ?? null),
-  );
   const debug: Record<string, string> = {};
   for (const k of [
     'id_visit',
@@ -1426,31 +1425,7 @@ async function fetchAllPrescriptionHistories(): Promise<string | null> {
   return allLines.length ? allLines.join('\n') : null;
 }
 
-/**
- * Penanda build. Dicetak saat modul dimuat (bukan saat Simpan) supaya
- * versi yang benar-benar jalan di browser bisa langsung terlihat di
- * console tanpa harus melakukan apa pun. Kalau baris ini tidak muncul
- * di halaman RJ, berarti content script yang aktif masih versi lama —
- * reload extension saja tidak cukup, halaman harus di-reload penuh
- * (atau dibuka di tab/incognito baru).
- */
-function logBuildTag(stage: string): void {
-  let v = '?';
-  try {
-    v =
-      (
-        globalThis as {
-          chrome?: { runtime?: { getManifest?: () => { version?: string } } };
-        }
-      ).chrome?.runtime?.getManifest?.()?.version ?? 'runtime-tidak-ada';
-  } catch {
-    v = 'gagal-baca';
-  }
-  console.log(`[RJ-BUILD ${stage}] versi=${v} ic-N dihapus=ya tanpa-baris-dummy=ya`);
-}
-
 function setupFloatingButton() {
-  logBuildTag('load');
   const targetPage = '/v2/m-klaim/detail-v2-refaktor';
   if (!location.href.startsWith(location.origin + targetPage)) {
     return;

@@ -89,9 +89,6 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
       window.setTimeout(() => window.location.reload(), 900);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      // Cetak stack penuh ke console: tanpa ini kita tidak tahu ReferenceError
-      // datang dari modul mana, karena nama variabelnya sama di beberapa build.
-      console.error('[RJ-SAVE-GAGAL]', msg, '\n', e instanceof Error ? e.stack : '(bukan Error)');
       setExtraErrors([{ section: 'Server', message: msg }]);
     } finally {
       setSaving(false);
@@ -221,10 +218,6 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         saving={saving}
         hasErrors={hasBlocking}
         lastSaved={lastSaved}
-        orderSummary={[
-          { label: 'ICD-10', codes: data.diagnosa.map((d) => d.kode10).filter(Boolean) },
-          { label: 'ICD-9', codes: data.tindakan.map((t) => t.kode9).filter(Boolean) },
-        ]}
         onSave={handleSaveWrapped}
         onCancel={onClose}
         onRefresh={handleRefresh}

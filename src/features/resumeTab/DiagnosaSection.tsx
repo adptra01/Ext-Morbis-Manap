@@ -27,16 +27,6 @@ export function DiagnosaSection({ rows, onChange }: Props) {
     onChange(rows.map((r, idx) => (idx === i ? { ...r, ...p } : r)));
   const removeRow = (i: number) => onChange(rows.filter((_, idx) => idx !== i));
 
-  /** Pindahkan baris ke atas/bawah — urutan di sini = urutan tersimpan. */
-  const moveRow = (i: number, delta: number) => {
-    const j = i + delta;
-    if (j < 0 || j >= rows.length) return;
-    const next = rows.slice();
-    const [row] = next.splice(i, 1);
-    next.splice(j, 0, row);
-    onChange(next);
-  };
-
   const search = (q: string, rowIdx: number, el: HTMLInputElement) => {
     setErrMsg('');
     clearTimeout(t.current ?? undefined);
@@ -122,12 +112,6 @@ export function DiagnosaSection({ rows, onChange }: Props) {
             const no = i + 1;
             return (
               <div key={i} className="flex gap-2 items-center">
-                <span
-                  className="w-6 shrink-0 text-center font-mono text-base text-muted-foreground"
-                  aria-label={`Urutan ${no}`}
-                >
-                  #{no}
-                </span>
                 <div className="flex-1 min-w-0 relative">
                   <Input
                     id={`rj-nama${no}`}
@@ -190,39 +174,15 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                   <input type="hidden" name="komplikasi[]" value={row.komplikasi} />
                 </div>
 
-                <div className="flex gap-1 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="default"
-                    onClick={() => moveRow(i, -1)}
-                    disabled={i === 0}
-                    className="w-9 px-0"
-                    title="Naikkan urutan"
-                    aria-label={`Naikkan urutan diagnosa ${no}`}
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="default"
-                    onClick={() => moveRow(i, 1)}
-                    disabled={i === rows.length - 1}
-                    className="w-9 px-0"
-                    title="Turunkan urutan"
-                    aria-label={`Turunkan urutan diagnosa ${no}`}
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="default"
-                    onClick={() => removeRow(i)}
-                    className="w-[76px]"
-                    aria-label={`Hapus diagnosa ${no}`}
-                  >
-                    Hapus
-                  </Button>
-                </div>
+                <Button
+                  variant="destructive"
+                  size="default"
+                  onClick={() => removeRow(i)}
+                  className="w-[76px] shrink-0"
+                  aria-label={`Hapus diagnosa ${no}`}
+                >
+                  Hapus
+                </Button>
               </div>
             );
           })}
