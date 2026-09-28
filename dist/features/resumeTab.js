@@ -27712,6 +27712,27 @@ var __morbis_feature = (() => {
       const ic = icFor(t.idicdTindakan);
       if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
     });
+    const fmt = (pairs) => pairs.map(([v, i]) => `${v}#${i}`).join(" | ") || "(kosong)";
+    const diagOrder = cleanDiagnosa.map((d) => `${d.kode10}/${d.idicd}`);
+    const tindOrder = cleanTindakan.map(
+      (t) => `${t.kode9}/${t.idicdTindakan}${icFor(t.idicdTindakan) ? "+ic" : ""}`
+    );
+    const icKirim = [];
+    params.forEach((v, k) => {
+      if (/^ic\d+$/.test(k)) icKirim.push(`${k}=${v}`);
+    });
+    console.log(
+      "[RJ] ICD-10 terkirim :",
+      fmt(cleanDiagnosa.map((d) => [d.kode10 || "?", d.idicd || "?"]))
+    );
+    console.log("[RJ] ICD-9 terkirim  :", fmt(cleanTindakan.map((t) => [t.kode9 || "?", t.idicdTindakan || "?"])));
+    console.log("[RJ] ic{N} terkirim  :", icKirim.join(", ") || "(tidak ada)");
+    console.log(
+      "[RJ] asal urutan form:",
+      `kode9[]=${JSON.stringify(cTindIdicd)}`
+    );
+    void diagOrder;
+    void tindOrder;
     const debug = {};
     for (const k of [
       "id_visit",

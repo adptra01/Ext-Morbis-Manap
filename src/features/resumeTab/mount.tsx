@@ -807,8 +807,33 @@ function serializeRawatJalan(data: ResumeData): string {
   });
 
   // ═══════════════════════════════════════════════════════════
-  // 7. DEBUG LOG (bisa dihapus nanti)
+  // 7. DEBUG LOG
+  //    besides the number of keys, also print the ORDER of ICD rows
+  //    being sent + the ic{N} checkbox attached to each row — this is
+  //    the most common source of "order doesn't match" reports.
   // ═══════════════════════════════════════════════════════════
+  const fmt = (pairs: [string, string][]) =>
+    pairs.map(([v, i]) => `${v}#${i}`).join(' | ') || '(kosong)';
+  const diagOrder = cleanDiagnosa.map((d) => `${d.kode10}/${d.idicd}`);
+  const tindOrder = cleanTindakan.map(
+    (t) => `${t.kode9}/${t.idicdTindakan}${icFor(t.idicdTindakan) ? '+ic' : ''}`,
+  );
+  const icKirim: string[] = [];
+  params.forEach((v, k) => {
+    if (/^ic\d+$/.test(k)) icKirim.push(`${k}=${v}`);
+  });
+  console.log(
+    '[RJ] ICD-10 terkirim :',
+    fmt(cleanDiagnosa.map((d) => [d.kode10 || '?', d.idicd || '?'])),
+  );
+  console.log(
+    '[RJ] ICD-9 terkirim  :',
+    fmt(cleanTindakan.map((t) => [t.kode9 || '?', t.idicdTindakan || '?'])),
+  );
+  console.log('[RJ] ic{N} terkirim  :', icKirim.join(', ') || '(tidak ada)');
+  console.log('[RJ] asal urutan form:', `kode9[]=${JSON.stringify(cTindIdicd)}`);
+  void diagOrder;
+  void tindOrder;
   const debug: Record<string, string> = {};
   for (const k of [
     'id_visit',
