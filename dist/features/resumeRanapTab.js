@@ -28509,6 +28509,9 @@ video {
 .max-h-\\[360px\\] {
   max-height: 360px;
 }
+.max-h-\\[420px\\] {
+  max-height: 420px;
+}
 .max-h-\\[600px\\] {
   max-height: 600px;
 }
@@ -29233,6 +29236,12 @@ video {
 }
 .leading-relaxed {
   line-height: 1.625;
+}
+.leading-snug {
+  line-height: 1.375;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .tracking-\\[0\\.03em\\] {
   letter-spacing: 0.03em;
@@ -30794,6 +30803,9 @@ video {
 .max-h-\\[360px\\] {
   max-height: 360px;
 }
+.max-h-\\[420px\\] {
+  max-height: 420px;
+}
 .max-h-\\[600px\\] {
   max-height: 600px;
 }
@@ -31518,6 +31530,12 @@ video {
 }
 .leading-relaxed {
   line-height: 1.625;
+}
+.leading-snug {
+  line-height: 1.375;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .tracking-\\[0\\.03em\\] {
   letter-spacing: 0.03em;

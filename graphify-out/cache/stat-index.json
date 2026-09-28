@@ -343,11 +343,11 @@
     "word_count": 227
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/manifest.json": {
-    "size": 23907,
-    "mtime_ns": 1790586288822614000,
-    "word_count": 875,
+    "size": 23239,
+    "mtime_ns": 1790589819027052900,
+    "word_count": 807,
     "hashes": {
-      "manifest.json": "89de258366b405a3d687fd09c61b3b05d885ddbe63ba173e8dcc8bbf573717f5"
+      "manifest.json": "c93ad40e27d9863a371210d39bc0ef782283e9576be15523cfb30c9fda55bad9"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/mcp-servers/morbis-devtools/README.md": {
@@ -584,9 +584,9 @@
     "word_count": 164
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/App.tsx": {
-    "size": 8039,
-    "mtime_ns": 1790586288949154200,
-    "word_count": 732
+    "size": 7826,
+    "mtime_ns": 1790589305483358800,
+    "word_count": 714
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/ClinicalNotesSection.tsx": {
     "size": 1357,
@@ -594,9 +594,9 @@
     "word_count": 103
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/DiagnosaSection.tsx": {
-    "size": 8899,
-    "mtime_ns": 1790586288949844800,
-    "word_count": 730
+    "size": 7429,
+    "mtime_ns": 1790589305483717300,
+    "word_count": 619
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/ErrorBoundary.tsx": {
     "size": 471,
@@ -604,9 +604,9 @@
     "word_count": 60
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/Footer.tsx": {
-    "size": 2933,
-    "mtime_ns": 1790586288950471600,
-    "word_count": 272
+    "size": 2354,
+    "mtime_ns": 1790589305483972900,
+    "word_count": 206
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/Header.tsx": {
     "size": 2247,
@@ -619,9 +619,9 @@
     "word_count": 144
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/TindakanSection.tsx": {
-    "size": 9472,
-    "mtime_ns": 1790586288950893000,
-    "word_count": 760
+    "size": 7895,
+    "mtime_ns": 1790589305484248600,
+    "word_count": 636
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/ValidationPanel.tsx": {
     "size": 1980,
@@ -634,9 +634,9 @@
     "word_count": 164
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/mount.tsx": {
-    "size": 60846,
-    "mtime_ns": 1790586288951969600,
-    "word_count": 5828
+    "size": 60431,
+    "mtime_ns": 1790589819028435400,
+    "word_count": 5752
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/resumeTab/types.ts": {
     "size": 1254,

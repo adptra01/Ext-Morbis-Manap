@@ -26594,7 +26594,7 @@ var __morbis_feature = (() => {
             hits.length > 0 && hitRow === i && /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
               "div",
               {
-                className: "fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto",
+                className: "fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[420px] overflow-auto",
                 style: { top: hitPos.top, left: hitPos.left, width: hitPos.width },
                 role: "listbox",
                 "aria-label": "Hasil pencarian ICD-10",
@@ -26603,10 +26603,10 @@ var __morbis_feature = (() => {
                   {
                     onClick: () => pick(i, item),
                     role: "option",
-                    className: "px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors",
+                    className: "px-4 py-4 cursor-pointer text-lg border-b border-border hover:bg-accent transition-colors",
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "font-medium text-foreground", children: item.NAMA }),
-                      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "text-muted-foreground text-base font-mono", children: item.KODE })
+                      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "font-semibold text-foreground leading-snug", children: item.NAMA }),
+                      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "text-muted-foreground text-xl font-mono leading-tight", children: item.KODE })
                     ]
                   },
                   item.ID || ri
@@ -26774,7 +26774,7 @@ var __morbis_feature = (() => {
             hits.length > 0 && hitRow === i && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
               "div",
               {
-                className: "fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto",
+                className: "fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[420px] overflow-auto",
                 style: { top: hitPos.top, left: hitPos.left, width: hitPos.width },
                 role: "listbox",
                 "aria-label": "Hasil pencarian ICD-9",
@@ -26783,10 +26783,10 @@ var __morbis_feature = (() => {
                   {
                     onClick: () => pick(i, item),
                     role: "option",
-                    className: "px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors",
+                    className: "px-4 py-4 cursor-pointer text-lg border-b border-border hover:bg-accent transition-colors",
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "font-medium text-foreground", children: item.NAMA }),
-                      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "text-muted-foreground text-base font-mono", children: item.KODE })
+                      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "font-semibold text-foreground leading-snug", children: item.NAMA }),
+                      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "text-muted-foreground text-xl font-mono leading-tight", children: item.KODE })
                     ]
                   },
                   item.ID || ri
@@ -28731,6 +28731,9 @@ video {
 .max-h-\\[360px\\] {
   max-height: 360px;
 }
+.max-h-\\[420px\\] {
+  max-height: 420px;
+}
 .max-h-\\[600px\\] {
   max-height: 600px;
 }
@@ -29455,6 +29458,12 @@ video {
 }
 .leading-relaxed {
   line-height: 1.625;
+}
+.leading-snug {
+  line-height: 1.375;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .tracking-\\[0\\.03em\\] {
   letter-spacing: 0.03em;
@@ -31016,6 +31025,9 @@ video {
 .max-h-\\[360px\\] {
   max-height: 360px;
 }
+.max-h-\\[420px\\] {
+  max-height: 420px;
+}
 .max-h-\\[600px\\] {
   max-height: 600px;
 }
@@ -31740,6 +31752,12 @@ video {
 }
 .leading-relaxed {
   line-height: 1.625;
+}
+.leading-snug {
+  line-height: 1.375;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .tracking-\\[0\\.03em\\] {
   letter-spacing: 0.03em;

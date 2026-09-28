@@ -1651,9 +1651,6 @@ video {
 .leading-snug {
   line-height: 1.375;
 }
-.leading-tight {
-  line-height: 1.25;
-}
 .tracking-\[0\.03em\] {
   letter-spacing: 0.03em;
 }

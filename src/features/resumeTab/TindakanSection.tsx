@@ -135,7 +135,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                   />
                   {hits.length > 0 && hitRow === i && (
                     <div
-                      className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto"
+                      className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[420px] overflow-auto"
                       style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
                       role="listbox"
                       aria-label="Hasil pencarian ICD-9"
@@ -145,10 +145,12 @@ export function TindakanSection({ rows, onChange }: Props) {
                           key={item.ID || ri}
                           onClick={() => pick(i, item)}
                           role="option"
-                          className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
+                          className="px-4 py-4 cursor-pointer text-lg border-b border-border hover:bg-accent transition-colors"
                         >
-                          <div className="font-medium text-foreground">{item.NAMA}</div>
-                          <div className="text-muted-foreground text-base font-mono">
+                          <div className="font-semibold text-foreground leading-snug">
+                            {item.NAMA}
+                          </div>
+                          <div className="text-muted-foreground text-xl font-mono leading-tight">
                             {item.KODE}
                           </div>
                         </div>
