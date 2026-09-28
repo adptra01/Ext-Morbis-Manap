@@ -16,8 +16,6 @@ concurrency:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   # Quality gate: tanpa ini tidak ada bump/build/deploy.
@@ -201,6 +199,9 @@ jobs:
           fi
           # Script update satu-klik ikut ke main (branch main = dist siap pakai)
           cp scripts/morbis-update-main.bat "$ORPHAN/morbis-update-main.bat"
+          # Workflow Pages ikut ke main: push ke main memicu pages.yml (deploy
+          # GitHub Pages dari ref main — environment github-pages menolak tag).
+          cp -r .github "$ORPHAN/.github"
 
           cat > "$ORPHAN/.gitignore" << 'EOF'
           # main branch — extension files at root + docs for GitHub Pages
@@ -231,6 +232,8 @@ jobs:
           !docs/
           !docs/**
           !morbis-update-main.bat
+          !.github/
+          !.github/**
           EOF
 
           cd "$ORPHAN"
@@ -241,27 +244,12 @@ jobs:
           git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push origin HEAD:main --force
 
-  # Pages tayang dari bit main yang BARU di-push di atas (bukan dari dev) —
-  # jadi privacy.html dkk selalu mencerminkan hasil deploy.
-  pages:
-    needs: [deploy]
-    environment:
-      name: github-pages
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: main
-          fetch-depth: 1
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
-
-      - id: deployment
-        uses: actions/deploy-pages@v4
+  # Pages dideploy oleh workflow TERPISAH (pages.yml) yang terpicu push ke main
+  # (bukan job di run ini). Alasan: environment github-pages menolak deploy dari
+  # ref tag (environment protection rules) — run tag vX.Y.Z tidak bisa deploy
+  # Pages langsung. Dengan pages.yml, deploy Pages selalu berjalan dari branch
+  # main (allowlist env: main/dev/master/v*), konten = orphan commit yang baru
+  # di-push job deploy di atas.
 
   # Store Edge: HANYA rilis production (tag vX.Y.Z) yang diunggah — bukan tiap
   # push dev (sebelumnya tiap deploy staging ikut di-publish ke Store).

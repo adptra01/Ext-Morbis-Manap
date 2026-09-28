@@ -178,6 +178,7 @@
   "176": "casemixApi.ts",
   "177": "ConsultationInfoPanel.tsx",
   "178": "telaahResepPrint.ts",
+  "179": "resumeTab/types.ts",
   "180": "Role",
   "181": "cancelButton.ts",
   "182": "ConsInfoTabs.tsx",
@@ -252,5 +253,6 @@
   "251": "injectCSS",
   "252": "investigate-pages.mjs",
   "253": "ErrorBoundary",
-  "254": "storage.ts"
+  "254": "storage.ts",
+  "255": "ExtBtn"
 }

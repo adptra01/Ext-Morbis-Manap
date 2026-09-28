@@ -1,0 +1,223 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_md",
+      "label": "MIGRASI-GPO.md",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "label": "Migrasi dari Installer .bat ke Control Plane Terpusat (GPO / Intune)",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_1_mengapa_perlu_control_plane",
+      "label": "1. Mengapa perlu control plane?",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_2_dua_channel_update_konsep",
+      "label": "2. Dua channel update (konsep)",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L34"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_3_isi_policy_extensionsettings_file_siap_pakai",
+      "label": "3. Isi policy (ExtensionSettings) \u2014 file siap pakai",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_jalur_a_ad_gpo_on_premise_komputer_domain",
+      "label": "4. Jalur A \u2014 AD GPO (on-premise, komputer domain)",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L86"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_1_prasyarat",
+      "label": "4.1 Prasyarat",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L88"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_2_setup_policy_dua_cara",
+      "label": "4.2 Setup policy (dua cara)",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L96"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_3_catatan_environment",
+      "label": "4.3 Catatan environment",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L124"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_5_jalur_b_intune_entra_microsoft_365",
+      "label": "5. Jalur B \u2014 Intune (Entra/Microsoft 365)",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L132"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_6_verifikasi_operasional",
+      "label": "6. Verifikasi & operasional",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_rollback_roll_forward",
+      "label": "Rollback / roll-forward",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L149"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_keamanan_catatan_penting",
+      "label": "Keamanan (catatan penting)",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L159"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_7_checklist_migrasi",
+      "label": "7. Checklist migrasi",
+      "file_type": "document",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L173"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_1_mengapa_perlu_control_plane",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_2_dua_channel_update_konsep",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_3_isi_policy_extensionsettings_file_siap_pakai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_jalur_a_ad_gpo_on_premise_komputer_domain",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_jalur_a_ad_gpo_on_premise_komputer_domain",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_1_prasyarat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_jalur_a_ad_gpo_on_premise_komputer_domain",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_2_setup_policy_dua_cara",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_jalur_a_ad_gpo_on_premise_komputer_domain",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_4_3_catatan_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_5_jalur_b_intune_entra_microsoft_365",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_6_verifikasi_operasional",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_6_verifikasi_operasional",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_rollback_roll_forward",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_6_verifikasi_operasional",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_keamanan_catatan_penting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_migrasi_dari_installer_bat_ke_control_plane_terpusat_gpo_intune",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_migrasi_gpo_7_checklist_migrasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/MIGRASI-GPO.md",
+      "source_location": "L173",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,46 @@
+# Deploy GitHub Pages dari branch main.
+#
+# Mengapa terpisah dari deploy-to-main.yml: environment github-pages menolak
+# deploy dari ref tag (environment protection rules) — run tag vX.Y.Z tidak
+# bisa deploy Pages langsung dari workflow yang berjalan di tag. Workflow ini
+# terpicu oleh push ke main (orphan commit hasil deploy job), jadi ref run
+# selalu branch main yang ada di allowlist environment github-pages.
+#
+# Konten yang di-deploy = docs/ pada orphan commit (update.xml production +
+# staging, releases/, installer, policy/, dsb). Setiap deploy ke main memicu
+# refresh Pages secara berurutan (concurrency group pages).
+
+name: Deploy Pages (from main)
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  pages:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

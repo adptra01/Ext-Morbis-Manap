@@ -40,13 +40,13 @@
     "semantic_hash": "4c2f374d8b6f705de3aa685c39b6ac28"
   },
   "manifest.json": {
-    "mtime": 1790610914.6274667,
-    "ast_hash": "02334225d84593f83f6dd74ec3b0bdcc",
+    "mtime": 1790611838.8377843,
+    "ast_hash": "774ff726324808e26e5d97375dd40cec",
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1790610914.6296494,
-    "ast_hash": "cf53f3e9e3feac9d5c239fc2dfb395b1",
+    "mtime": 1790611838.8389473,
+    "ast_hash": "f5518629ee90775f5970faab7e031869",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": "6c80f38f98496820e1e7ad86a8c79a28"
   },
   "scripts/pack.mjs": {
-    "mtime": 1790610719.4038262,
-    "ast_hash": "c2657ef463738aff1c44eeceda28f7b8",
+    "mtime": 1790611550.2715197,
+    "ast_hash": "4e13a597a91182fb97094981ead3aaec",
     "semantic_hash": ""
   },
   "src/background.ts": {
@@ -560,8 +560,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/deploy-to-main.yml": {
-    "mtime": 1790610719.3954656,
-    "ast_hash": "dff8f54eed509d4dc18b3ead61c47139",
+    "mtime": 1790612229.6702456,
+    "ast_hash": "d2e17be8555fbb1e2172202ddfadae57",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "deploy/PANDUAN_DEPLOYMENT.md": {
-    "mtime": 1790610719.3988867,
-    "ast_hash": "10227751d823b4e0ba02df6749ecdf0b",
+    "mtime": 1790612266.6600337,
+    "ast_hash": "8623321d453dc56fccb3a6178d4ab768",
     "semantic_hash": ""
   },
   "deploy/PANDUAN_PENGUNAAN.md": {
@@ -1777,6 +1777,36 @@
   "tests/unit/manifest-prod.test.ts": {
     "mtime": 1790610719.4046211,
     "ast_hash": "e53cc0f322847032eea9a72b3cd4c887",
+    "semantic_hash": ""
+  },
+  "deploy/policy/ExtensionSettings-production.json": {
+    "mtime": 1790611696.903785,
+    "ast_hash": "9737389bb370f5508cafc754c43cf031",
+    "semantic_hash": ""
+  },
+  "deploy/policy/ExtensionSettings-staging.json": {
+    "mtime": 1790611696.919539,
+    "ast_hash": "4aefefaa489998238135a049e2e582b4",
+    "semantic_hash": ""
+  },
+  "scripts/release.sh": {
+    "mtime": 1790612252.4680214,
+    "ast_hash": "3f10bd55ef0a19a5e23607f431ae9680",
+    "semantic_hash": ""
+  },
+  ".github/workflows/pages.yml": {
+    "mtime": 1790612233.9405453,
+    "ast_hash": "0216e9c0e53663bdb348dc5993d19288",
+    "semantic_hash": ""
+  },
+  "deploy/policy/INTUNE-OMA-URI.md": {
+    "mtime": 1790611696.9857216,
+    "ast_hash": "7dec5a0e42a132bab0ddda56759f199b",
+    "semantic_hash": ""
+  },
+  "deploy/policy/MIGRASI-GPO.md": {
+    "mtime": 1790611697.0915391,
+    "ast_hash": "8da29efbf323c9cbca78b443dee809c5",
     "semantic_hash": ""
   }
 }

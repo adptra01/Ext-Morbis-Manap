@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_md",
+      "label": "INTUNE-OMA-URI.md",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_intune_deploy_morbis_extension_chrome_edge",
+      "label": "Intune \u2014 Deploy MORBIS Extension (Chrome & Edge)",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_1_settings_catalog_cara_paling_mudah",
+      "label": "1. Settings Catalog (cara paling mudah)",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_2_custom_oma_uri_alternatif_windows_devices",
+      "label": "2. Custom OMA-URI (alternatif, Windows Devices)",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_chrome",
+      "label": "Chrome",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_edge",
+      "label": "Edge",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_3_verifikasi_di_pc",
+      "label": "3. Verifikasi di PC",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L72"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_4_rollback_uninstall_terpusat",
+      "label": "4. Rollback / uninstall terpusat",
+      "file_type": "document",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L88"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_intune_deploy_morbis_extension_chrome_edge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_intune_deploy_morbis_extension_chrome_edge",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_1_settings_catalog_cara_paling_mudah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_intune_deploy_morbis_extension_chrome_edge",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_2_custom_oma_uri_alternatif_windows_devices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_2_custom_oma_uri_alternatif_windows_devices",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_chrome",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_2_custom_oma_uri_alternatif_windows_devices",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_edge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_intune_deploy_morbis_extension_chrome_edge",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_3_verifikasi_di_pc",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_intune_deploy_morbis_extension_chrome_edge",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_policy_intune_oma_uri_4_rollback_uninstall_terpusat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/policy/INTUNE-OMA-URI.md",
+      "source_location": "L88",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

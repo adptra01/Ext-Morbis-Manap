@@ -28,16 +28,19 @@ Anda hanya butuh akses push ke branch `dev` repo
 Alur: `push dev` → CI build + rilis **staging** → pilot verifikasi → QA setuju →
 `git tag vX.Y.Z` + `git push origin vX.Y.Z` → production (update.xml + Edge Store).
 
-> **Cara membuat rilis production:** setelah rilis staging Anda lolos verifikasi,
-> tag COMMIT yang versinya cocok (commit bump `chore: bump version to X.Y.Z`):
+> **Cara membuat rilis production:** setelah rilis staging lolos verifikasi,
+> jalankan script rilis (membuat "release-marker commit" kosong di atas commit
+> bump — commit bump memakai `[skip ci]` sehingga tag yang menunjuknya TIDAK
+> memicu CI; marker commit menghindari itu):
 >
 > ```bash
-> git fetch origin dev && git checkout -b rilis origin/dev
-> git tag v1.5.76 && git push origin v1.5.76
+> bash scripts/release.sh v1.5.76      # (argumen opsional, default = versi origin/dev)
 > ```
 >
-> CI guard menolak tag yang tidak cocok dengan versi manifest di commit tersebut
-> (mis. salah tag / tag stale `v1.2.0` — jangan push tag lama).
+> Script menolak: versi yang tidak cocok dengan manifest origin/dev, format
+> selain `vX.Y.Z`, dan tag yang sudah ada. CI guard menolak tag yang tidak
+> cocok dengan versi manifest di commit yang di-tag (mis. tag stale `v1.2.0` —
+> jangan push tag lama).
 > Device production **tidak berubah** hanya karena developer push biasa ke `dev`.
 
 ### 1.2 Alur CI (push ke `dev` / tag)
@@ -59,10 +62,12 @@ Alur: `push dev` → CI build + rilis **staging** → pilot verifikasi → QA se
    Guard CI memverifikasi EXT_ID di `.bat` sinkron dengan key signing, dan
    versi update.xml = manifest.
 7. **Deploy ke `main`** — orphan commit berisi `dist/` + `docs/` (update.xml,
-   CRX, installer, `policy/`). Release versi lama **dipreservasi**
-   (`docs/releases/`); pointer production lama dipertahankan pada run staging;
-   GitHub Pages meng-copy `docs/`.
-8. **update.xml LIVE** — ±1–2 menit setelah run:
+   CRX, installer, `policy/`) + `.github/workflows/pages.yml`. Release versi
+   lama **dipreservasi** (`docs/releases/`); pointer production lama
+   dipertahankan pada run staging.\n8. **update.xml LIVE** — push ke `main` memicu workflow `pages.yml` yang
+   mendeploy GitHub Pages (Pages tidak bisa dideploy langsung dari ref tag —
+   environment github-pages menolak; makanya pakai workflow terpisah dari main):
+   ±1–2 menit setelah run:
    - staging: `https://adptra01.github.io/Ext-Morbis-Manap/channels/staging/update.xml`
    - production: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
 
