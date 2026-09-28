@@ -2,18 +2,18 @@
 
 ## Corpus Check
 
-- 313 files · ~313,092 words
+- 313 files · ~312,629 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 2710 nodes · 4489 edges · 255 communities (185 shown, 70 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 133 edges (avg confidence: 0.58)
+- 2710 nodes · 4487 edges · 254 communities (184 shown, 70 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 131 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `ca9325c5`
+- Built from commit: `0f08258e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -184,7 +184,6 @@
 - resumeValidation.ts
 - casemixApi.ts
 - ConsultationInfoPanel.tsx
-- antrianFarmasiDisplayApp.ts
 - Role
 - cancelButton.ts
 - ConsInfoTabs.tsx
@@ -269,16 +268,16 @@
   src/features/antrianFarmasiDisplay.ts → tests/unit/farmasiQueue.test.ts
 - `seedLastByJenis()` --indirect_call--> `row()` [INFERRED]
   src/features/antrianFarmasiDisplay.ts → tests/unit/farmasiQueue.test.ts
-- `DiagnosaSection()` --indirect_call--> `row()` [INFERRED]
-  src/features/resumeTab/DiagnosaSection.tsx → tests/unit/farmasiQueue.test.ts
-- `TindakanSection()` --indirect_call--> `row()` [INFERRED]
-  src/features/resumeTab/TindakanSection.tsx → tests/unit/farmasiQueue.test.ts
+- `renumberFarmasi()` --indirect_call--> `row()` [INFERRED]
+  src/features/shared/farmasiRenumber.ts → tests/unit/farmasiQueue.test.ts
+- `openHistoryModal()` --indirect_call--> `row()` [INFERRED]
+  src/features/shared/resumeHistory.ts → tests/unit/farmasiQueue.test.ts
 
 ## Import Cycles
 
 - None detected.
 
-## Communities (255 total, 70 thin omitted)
+## Communities (254 total, 70 thin omitted)
 
 ### Community 0 - "cpptSearchFilter.ts"
 
@@ -992,18 +991,13 @@ Nodes (8): FeaturesPanel(), FeaturesPanelProps, FeaturesPanel(), FeaturesPanelPr
 
 ### Community 174 - "openDetail.ts"
 
-Cohesion: 0.08
-Nodes (45): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+37 more)
+Cohesion: 0.06
+Nodes (58): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+50 more)
 
 ### Community 175 - "resumeValidation.ts"
 
 Cohesion: 0.67
 Nodes (3): checkAntrian(), env, main()
-
-### Community 179 - "antrianFarmasiDisplayApp.ts"
-
-Cohesion: 0.25
-Nodes (13): attachFilterListeners(), clearFilter(), FEATURE_MATCHES, featureMeta, g, getContext(), getFilterScope(), LEGACY_STORAGE_KEYS (+5 more)
 
 ### Community 180 - "Role"
 
@@ -1085,7 +1079,7 @@ Nodes (3): ErrorBoundary, Props, State
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `getMorbisGlobals()` connect `openDetail.ts` to `batchUploadUrl.ts`, `toolbar.ts`, `background.js`, `features/shared/types.ts`, `ExtBtn`, `ErrorBoundary`, `class-variance-authority`, `antrianFarmasiDisplayApp.ts`, `esbuild`, `popup.js`, `popup/App.tsx`, `rimraf`?**
+- **Why does `getMorbisGlobals()` connect `openDetail.ts` to `batchUploadUrl.ts`, `toolbar.ts`, `background.js`, `features/shared/types.ts`, `ExtBtn`, `ErrorBoundary`, `class-variance-authority`, `esbuild`, `popup.js`, `popup/App.tsx`, `rimraf`?**
   _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **Why does `confirmLegacy()` connect `husky` to `batchUploadUrl.ts`, `penerimaanAntrolCetak.ts`, `antrianFarmasiDisplayApp.ts`, `class-variance-authority`, `Role`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._

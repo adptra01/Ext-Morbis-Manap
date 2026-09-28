@@ -40,13 +40,13 @@
     "semantic_hash": "4c2f374d8b6f705de3aa685c39b6ac28"
   },
   "manifest.json": {
-    "mtime": 1790589819.0270529,
-    "ast_hash": "2f7447533e281110ad09aeea5e5d1e5c",
+    "mtime": 1790610914.6274667,
+    "ast_hash": "02334225d84593f83f6dd74ec3b0bdcc",
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1789961050.8458643,
-    "ast_hash": "0b47a352813e2ab478096fbdc02131cf",
+    "mtime": 1790610914.6296494,
+    "ast_hash": "cf53f3e9e3feac9d5c239fc2dfb395b1",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -70,8 +70,8 @@
     "semantic_hash": "e45b4be960a63be199fb42618445aa07"
   },
   "scripts/build.mjs": {
-    "mtime": 1790271918.9626424,
-    "ast_hash": "3db1027b0a397b168a9b9fa5deb3f7a2",
+    "mtime": 1790610719.402349,
+    "ast_hash": "3d07ee6587c635420a82c19cedd61808",
     "semantic_hash": ""
   },
   "scripts/deploy.mjs": {
@@ -95,8 +95,8 @@
     "semantic_hash": "6c80f38f98496820e1e7ad86a8c79a28"
   },
   "scripts/pack.mjs": {
-    "mtime": 1790225511.6317756,
-    "ast_hash": "4f26ba8abe928b25113d980f879b9afa",
+    "mtime": 1790610719.4038262,
+    "ast_hash": "c2657ef463738aff1c44eeceda28f7b8",
     "semantic_hash": ""
   },
   "src/background.ts": {
@@ -240,8 +240,8 @@
     "semantic_hash": ""
   },
   "src/features/resumeTab/DiagnosaSection.tsx": {
-    "mtime": 1790589305.4837172,
-    "ast_hash": "9e2d7eeeed337b703d7f0a231fa18aa9",
+    "mtime": 1790590350.574691,
+    "ast_hash": "cadffecaa7c32ddfeae071644864d89c",
     "semantic_hash": ""
   },
   "src/features/resumeTab/ErrorBoundary.tsx": {
@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "src/features/resumeTab/TindakanSection.tsx": {
-    "mtime": 1790589305.4842486,
-    "ast_hash": "603fa62f7908c32fc00d14246df69983",
+    "mtime": 1790590350.5753663,
+    "ast_hash": "f7b019dab8670b6f3e1c81e52a55f92c",
     "semantic_hash": ""
   },
   "src/features/resumeTab/ValidationPanel.tsx": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "src/features/resumeTab/mount.tsx": {
-    "mtime": 1790589819.0284355,
-    "ast_hash": "d5a8262aeb7919bd8c3c2da91ba3ca9c",
+    "mtime": 1790590350.576772,
+    "ast_hash": "a20a9cf53ecf85ec032b39fba01b5b44",
     "semantic_hash": ""
   },
   "src/features/resumeTab/types.ts": {
@@ -515,9 +515,9 @@
     "semantic_hash": "9a4cc6f9f3155ffdc1fa7c2c097f6429"
   },
   "tailwind.config.js": {
-    "mtime": 1789957010.1057663,
-    "ast_hash": "83471bde2d8e481b25328b2afe943e8b",
-    "semantic_hash": "83471bde2d8e481b25328b2afe943e8b"
+    "mtime": 1790590350.5783727,
+    "ast_hash": "af4db3db2cefe681f30de0e4b968fb2d",
+    "semantic_hash": ""
   },
   "tsconfig.json": {
     "mtime": 1789957010.1391594,
@@ -560,8 +560,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/deploy-to-main.yml": {
-    "mtime": 1790271951.7239637,
-    "ast_hash": "b859897678ee330af512751d96d249e3",
+    "mtime": 1790610719.3954656,
+    "ast_hash": "dff8f54eed509d4dc18b3ead61c47139",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -570,18 +570,18 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790319519.649208,
-    "ast_hash": "80899d5e5b5a7a80f49037c5e8d3aeb7",
+    "mtime": 1790610719.39694,
+    "ast_hash": "4db7872e020cc05062579e19645bf5f6",
     "semantic_hash": ""
   },
   "deploy/PANDUAN_DEPLOYMENT.md": {
-    "mtime": 1790271951.862545,
-    "ast_hash": "553c7ec060f1b3842d8abc3b02669de7",
+    "mtime": 1790610719.3988867,
+    "ast_hash": "10227751d823b4e0ba02df6749ecdf0b",
     "semantic_hash": ""
   },
   "deploy/PANDUAN_PENGUNAAN.md": {
-    "mtime": 1789957009.1537013,
-    "ast_hash": "89a10f42cda12613519786f82eb5abed",
+    "mtime": 1790610719.4008715,
+    "ast_hash": "04a5f1b8b27dcb9729114850803a76be",
     "semantic_hash": ""
   },
   "icons/README.md": {
@@ -960,8 +960,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/publish-edge.yml": {
-    "mtime": 1790194569.41014,
-    "ast_hash": "5cde76826925c929f3710c08835a7536",
+    "mtime": 1790610719.3961396,
+    "ast_hash": "837bfb25e8a9d576084b85437005386e",
     "semantic_hash": ""
   },
   "docs/index.html": {
@@ -1767,6 +1767,16 @@
   "tests/fixtures/pa-print.html": {
     "mtime": 1790319166.2257686,
     "ast_hash": "7f33afe3417fc2acfb1115874612471a",
+    "semantic_hash": ""
+  },
+  "scripts/manifest-transform.mjs": {
+    "mtime": 1790610719.4029877,
+    "ast_hash": "f47ef8246a6e6d2d33bfcb2a38a89bbb",
+    "semantic_hash": ""
+  },
+  "tests/unit/manifest-prod.test.ts": {
+    "mtime": 1790610719.4046211,
+    "ast_hash": "e53cc0f322847032eea9a72b3cd4c887",
     "semantic_hash": ""
   }
 }
