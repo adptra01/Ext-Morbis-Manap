@@ -183,10 +183,18 @@ jobs:
             cp deploy/update.xml "$ORPHAN/docs/update.xml"
           fi
           # Release versi ini (immutable path — update.xml menunjuk ke sini).
+          # Semua artefak yang tercatat di sha256sums.txt WAJIB ikut, kalau
+          # tidak sha256sum -c akan gagal (regresi: .zip tercatat tapi tak
+          # pernah dipublish di 17 rilis sebelumnya).
           mkdir -p "$ORPHAN/docs/releases/v${VERSION}"
           cp deploy/releases/v${VERSION}/morbis-v${VERSION}.crx "$ORPHAN/docs/releases/v${VERSION}/"
+          cp deploy/releases/v${VERSION}/morbis-v${VERSION}.zip "$ORPHAN/docs/releases/v${VERSION}/"
           cp deploy/releases/v${VERSION}/metadata.json "$ORPHAN/docs/releases/v${VERSION}/" 2>/dev/null || true
           cp deploy/releases/v${VERSION}/sha256sums.txt "$ORPHAN/docs/releases/v${VERSION}/" 2>/dev/null || true
+          # Guard: sha256sums.txt harus cocok dengan file yang benar-benar
+          # dipublish. Regresi .zip (tercatat tapi 404) ditemukan 2026-09-29 —
+          # guard ini menutup kelas bug tersebut ke depan.
+          ( cd "$ORPHAN/docs/releases/v${VERSION}" && sha256sum -c sha256sums.txt )
           # Compat: salinan flat versi TERBARU (URL morbis-v<ver>.crx lama tetap
           # hidup) untuk device yang masih menunjuk update.xml versi sebelumnya.
           cp "deploy/morbis-v${VERSION}.crx" "$ORPHAN/docs/morbis-v${VERSION}.crx"
