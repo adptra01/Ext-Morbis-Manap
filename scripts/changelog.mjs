@@ -51,7 +51,7 @@ const LABEL = {
 };
 const TYPE_RE =
   /^(feat|fix|revert|refactor|perf|test|docs|style|build|chore)(\(([^)]+)\))?:\s+(.+)$/;
-// Noise yang tidak pernah masuk changelog.
+// Noise yang tidak pernah masuk changelog (fallback untuk subject non-conventional).
 const SKIP_RE = /^(bump version to \d+\.\d+\.\d+(\[.*\])?$|deploy: v\d+|Merge .*)/i;
 
 function gitLog() {
@@ -70,9 +70,16 @@ function gitLog() {
 }
 
 function classify(subject) {
-  if (SKIP_RE.test(subject)) return null;
   const m = subject.match(TYPE_RE);
-  if (m) return { type: m[1], scope: m[3] ?? null, text: m[4] };
+  if (m) {
+    const text = m[4];
+    // Commit bump versi CI ("chore: bump version to X [skip ci]") dan commit
+    // deploy orphan ("deploy: vX") disembunyikan dari changelog.
+    if (m[1] === 'chore' && /^bump version to \d+\.\d+\.\d+/.test(text)) return null;
+    if (/^deploy: v\d+/.test(text)) return null;
+    return { type: m[1], scope: m[3] ?? null, text };
+  }
+  if (SKIP_RE.test(subject)) return null;
   return { type: 'misc', scope: null, text: subject };
 }
 

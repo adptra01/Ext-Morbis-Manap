@@ -41,43 +41,18 @@
 
 ### 📝 docs
 
+- **changelog** — changelog harian dari git history + auto-refresh hook husky (`eac007a`)
 - **security** — tutup item audit world MAIN di risk register (`8bdec23`)
 - **security** — risk register enterprise (HTTP accepted-risk) + link di PANDUAN (`1702d04`)
 - **deploy** — peringatan marker-skip di aturan emas PANDUAN (`dc8044f`)
 
 ### 🧹 chore
 
-- bump version to 1.5.81 [skip ci] (`73ee64c`)
-- bump version to 1.5.80 [skip ci] (`92378c3`)
-- bump version to 1.5.79 [skip ci] (`a678dee`)
-- bump version to 1.5.78 [skip ci] (`d63a32a`)
-- bump version to 1.5.77 [skip ci] (`a785bd5`)
-- bump version to 1.5.76 [skip ci] (`43ecdd3`)
 - **graphify** — update knowledge graph (enterprise distro Phase A-B-D-F) (`1031bb2`)
-- bump version to 1.5.75 [skip ci] (`c63e48f`)
 - **ci** — quality gate + version sync + immutable releases (enterprise distro Phase A-B-D-F) (`35dc7d3`)
-- bump version to 1.5.74 [skip ci] (`160d972`)
-- bump version to 1.5.73 [skip ci] (`2ea8526`)
-- bump version to 1.5.72 [skip ci] (`c9d1a43`)
-- bump version to 1.5.71 [skip ci] (`d3646e7`)
-- bump version to 1.5.70 [skip ci] (`53592a6`)
-- bump version to 1.5.69 [skip ci] (`785d79c`)
 - **resumeTab** — penanda build saat modul dimuat (bukan saat Simpan) (`976f95a`)
-- bump version to 1.5.68 [skip ci] (`7fe54c2`)
 - **resumeTab** — penanda build di log + bump versi 1.5.67 (`78afc30`)
-- bump version to 1.5.67 [skip ci] (`b12c013`)
-- bump version to 1.5.66 [skip ci] (`7a79e39`)
-- bump version to 1.5.65 [skip ci] (`8df8a4a`)
-- bump version to 1.5.64 [skip ci] (`ab6856a`)
 - **resumeTab** — log urutan ICD-9 & ic{N} per baris di payload (`23f022a`)
-- bump version to 1.5.63 [skip ci] (`37ba2b2`)
-- bump version to 1.5.62 [skip ci] (`9621375`)
-- bump version to 1.5.61 [skip ci] (`cf1684e`)
-- bump version to 1.5.60 [skip ci] (`f650e7f`)
-- bump version to 1.5.59 [skip ci] (`e0e8063`)
-- bump version to 1.5.58 [skip ci] (`7da3fa3`)
-- bump version to 1.5.57 [skip ci] (`092b259`)
-- bump version to 1.5.56 [skip ci] (`1ed5e5f`)
 
 ### 📌 misc
 
@@ -88,10 +63,6 @@
 ### ✨ feat
 
 - **casemix** — allow HTTP to trusted Reports server (dev/localhost) (`475b9a5`)
-
-### 🧹 chore
-
-- bump version to 1.5.55 [skip ci] (`3bb51af`)
 
 ### 📌 misc
 
@@ -121,31 +92,15 @@
 
 ### 🧹 chore
 
-- bump version to 1.5.54 [skip ci] (`05c5668`)
 - **repo** — kelompokkan perkakas dev ke dev/, buang sisa era webpack (`e221adb`)
-- bump version to 1.5.53 [skip ci] (`0ac02c1`)
 - **repo** — rapikan file — tests/ keluar dari .gitignore, docs/sirs lokal, buang junk (`a464a02`)
-- bump version to 1.5.52 [skip ci] (`2a04f31`)
-- bump version to 1.5.51 [skip ci] (`511cef6`)
-- bump version to 1.5.50 [skip ci] (`e717c03`)
-- bump version to 1.5.49 [skip ci] (`1cad1a7`)
-- bump version to 1.5.48 [skip ci] (`482959f`)
-- bump version to 1.5.47 [skip ci] (`12eab66`)
-- bump version to 1.5.46 [skip ci] (`28d8a3d`)
 - sync dist manifest (`86962fb`)
-- bump version to 1.5.45 [skip ci] (`f9c6c1c`)
 - sync dist manifest to v1.5.44 (`1cef923`)
-- bump version to 1.5.44 [skip ci] (`1aaf3ac`)
 - sync dist manifest to v1.5.43 (`d471f3e`)
-- bump version to 1.5.43 [skip ci] (`a12e66a`)
 - sync dist manifest to v1.5.42 (`6756f58`)
-- bump version to 1.5.42 [skip ci] (`113c999`)
 - sync dist manifest to v1.5.41 (`8072fba`)
 - sync dist manifest to v1.5.40 (`a7cc2f7`)
-- bump version to 1.5.41 [skip ci] (`b775655`)
-- bump version to 1.5.40 [skip ci] (`5e77e56`)
 - sync dist manifest to v1.5.39 (`29bca84`)
-- bump version to 1.5.39 [skip ci] (`d7aa4c6`)
 - sync dist manifest to v1.5.38 (rebuild produksi pasca CI writeback) (`9d85791`)
 
 ## 2026-09-24
@@ -190,33 +145,10 @@
 
 ### 🧹 chore
 
-- bump version to 1.5.38 [skip ci] (`6f6d844`)
-- bump version to 1.5.37 [skip ci] (`b62aa4f`)
 - **graphify** — update knowledge graph (batch-upload konversi ke PDF) (`eb68f47`)
-- bump version to 1.5.36 [skip ci] (`b781756`)
-- bump version to 1.5.35 [skip ci] (`e581420`)
 - **dist** — rebuild dist production (minified) — pulihkan konvensi (`d9a4e44`)
-- bump version to 1.5.34 [skip ci] (`1b93bd7`)
-- bump version to 1.5.33 [skip ci] (`f9b58e9`)
-- bump version to 1.5.32 [skip ci] (`661b638`)
-- bump version to 1.5.31 [skip ci] (`c48844d`)
-- bump version to 1.5.30 [skip ci] (`2102752`)
-- bump version to 1.5.29 [skip ci] (`26965f3`)
-- bump version to 1.5.28 [skip ci] (`784822d`)
-- bump version to 1.5.27 [skip ci] (`4ce77ed`)
-- bump version to 1.5.26 [skip ci] (`a5af356`)
-- bump version to 1.5.25 [skip ci] (`bac933e`)
 - **build** — rebuild produksi bersih + buang 46 sourcemap dari dist (`64b0f19`)
-- bump version to 1.5.24 [skip ci] (`a79b3bb`)
-- bump version to 1.5.23 [skip ci] (`ecfb8c8`)
-- bump version to 1.5.22 [skip ci] (`8cf244d`)
-- bump version to 1.5.21 [skip ci] (`fe54103`)
-- bump version to 1.5.20 [skip ci] (`75adc97`)
-- bump version to 1.5.19 [skip ci] (`4a270c5`)
-- bump version to 1.5.18 [skip ci] (`95e71ba`)
-- bump version to 1.5.17 [skip ci] (`5e89b23`)
 - **dist** — rebuild penuh + hapus deploy-pages (rantai via reusable) (`8d34d48`)
-- bump version to 1.5.16 [skip ci] (`d144b20`)
 - **dist** — rebuild penuh dari src (esbuild 0.28.2) (`4971307`)
 
 ### 📌 misc
@@ -244,22 +176,6 @@
 ### 📝 docs
 
 - **casemix** — catat keputusan tetap HTTP (https ditunda) (`060ba6c`)
-
-### 🧹 chore
-
-- bump version to 1.5.15 [skip ci] (`f4d2648`)
-- bump version to 1.5.14 [skip ci] (`34f8768`)
-- bump version to 1.5.13 [skip ci] (`5e52be1`)
-- bump version to 1.5.12 [skip ci] (`9ec73f4`)
-- bump version to 1.5.11 [skip ci] (`6d76b75`)
-- bump version to 1.5.10 [skip ci] (`4a5291f`)
-- bump version to 1.5.9 [skip ci] (`422b877`)
-- bump version to 1.5.8 [skip ci] (`cae7bf8`)
-- bump version to 1.5.7 [skip ci] (`04eb257`)
-- bump version to 1.5.6 [skip ci] (`a7b3d1b`)
-- bump version to 1.5.5 [skip ci] (`175862c`)
-- bump version to 1.5.4 [skip ci] (`cf1a477`)
-- bump version to 1.5.3 [skip ci] (`2a23ecb`)
 
 ### 📌 misc
 
