@@ -62,12 +62,13 @@ Alur: `push dev` → CI build + rilis **staging** → pilot verifikasi → QA se
    Guard CI memverifikasi EXT_ID di `.bat` sinkron dengan key signing, dan
    versi update.xml = manifest.
 7. **Deploy ke `main`** — orphan commit berisi `dist/` + `docs/` (update.xml,
-   CRX, installer, `policy/`) + `.github/workflows/pages.yml`. Release versi
-   lama **dipreservasi** (`docs/releases/`); pointer production lama
-   dipertahankan pada run staging.\n8. **update.xml LIVE** — push ke `main` memicu workflow `pages.yml` yang
-   mendeploy GitHub Pages (Pages tidak bisa dideploy langsung dari ref tag —
-   environment github-pages menolak; makanya pakai workflow terpisah dari main):
-   ±1–2 menit setelah run:
+   CRX, installer, `policy/`) + `.github/`. Release versi lama **dipreservasi**
+   (`docs/releases/`); pointer production lama dipertahankan pada run staging.
+8. **update.xml LIVE** — GitHub Pages dalam mode **"Deploy from a branch:
+   main, folder /docs"**: setiap push ke `main` (termasuk push GITHUB_TOKEN
+   dari CI) otomatis di-build + di-deploy Pages oleh GitHub — tanpa workflow
+   terpisah, tanpa environment protection (ini juga yang membuat rilis tag
+   vX.Y.Z bisa tayang). ±1–3 menit setelah run:
    - staging: `https://adptra01.github.io/Ext-Morbis-Manap/channels/staging/update.xml`
    - production: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
 
