@@ -10,16 +10,18 @@
 //   to X"), commit deploy orphan ("deploy: vX"), dan merge.
 // - Commit tanpa format conventional masuk grup "misc".
 //
+// Marker & lag 1 commit (diyakini, bukan bug):
+//   Regenerasi hook pre-commit berjalan SEBELUM commit terbentuk, jadi file
+//   ter-commit tak memuat entri commit itu sendiri. Tiap regenerasi menulis
+//   marker `<!-- changelog-upto: <sha> -->` = HEAD saat regenerasi (= commit
+//   terakhir yang riwayatnya sudah tercermin). --check membandingkan file
+//   dengan buildMd({ upto: marker }), jadi file hasil hook (tinggal commit
+//   berikutnya + bump CI di atasnya) tetap dianggap valid; file stale/phantom
+//   atau hasil `--no-verify` tetap terdeteksi.
+//
 // Pemakaian:
 //   node scripts/changelog.mjs            # tulis CHANGELOG.md (hanya jika berubah)
 //   node scripts/changelog.mjs --check    # exit 1 bila file tidak sinkron (CI)
-//
-// Lag 1 commit (diyakini, bukan bug): regenerasi hook pre-commit berjalan
-// SEBELUM commit terbentuk, jadi file ter-commit tak memuat entri commit itu
-// sendiri — entrinya masuk pada regenerasi commit berikutnya. --check menerima
-// dua state kanonik (full history | history minus commit terakhir) sehingga
-// tidak false-positive setelah commit normal, tapi tetap menangkap drift
-// (`--no-verify` / push tanpa regenerasi).
 // =============================================================================
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -60,6 +62,7 @@ const TYPE_RE =
   /^(feat|fix|revert|refactor|perf|test|docs|style|build|chore)(\(([^)]+)\))?:\s+(.+)$/;
 // Noise yang tidak pernah masuk changelog (fallback untuk subject non-conventional).
 const SKIP_RE = /^(bump version to \d+\.\d+\.\d+(\[.*\])?$|deploy: v\d+|Merge .*)/i;
+const MARKER_RE = /<!-- changelog-upto: ([0-9a-f]{7,40}) -->/;
 
 function gitLog() {
   const out = execFileSync(
@@ -72,7 +75,7 @@ function gitLog() {
     .filter(Boolean)
     .map((line) => {
       const [hash, date, ...rest] = line.split('|');
-      return { hash: hash.slice(0, 7), date, subject: rest.join('|') };
+      return { hash, hash7: hash.slice(0, 7), date, subject: rest.join('|') };
     });
 }
 
@@ -90,17 +93,37 @@ function classify(subject) {
   return { type: 'misc', scope: null, text: subject };
 }
 
-export function buildMd({ dropLast = false } = {}) {
-  const byDay = new Map(); // date -> Map<type, entries[]>
+function currentHead() {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  } catch {
+    return null; // repo tanpa commit (initial state)
+  }
+}
+
+/**
+ * Render Markdown changelog dari git history.
+ * @param {{ upto?: string|null }} opts — `upto`: hanya riwayat hingga commit
+ *   dengan hash tersebut (inklusif). Mengembalikan null bila `upto` tidak
+ *   ditemukan di history (marker phantom/stale).
+ */
+export function buildMd({ upto = null } = {}) {
   const commits = gitLog();
-  const src = dropLast && commits.length > 1 ? commits.slice(0, -1) : commits;
+  let src = commits;
+  if (upto) {
+    const idx = commits.findIndex((c) => c.hash === upto || c.hash7 === upto);
+    if (idx === -1) return null;
+    src = commits.slice(0, idx + 1);
+  }
+
+  const byDay = new Map(); // date -> Map<type, entries[]>
   for (const c of src) {
     const cls = classify(c.subject);
     if (!cls) continue;
     if (!byDay.has(c.date)) byDay.set(c.date, new Map());
     const day = byDay.get(c.date);
     if (!day.has(cls.type)) day.set(cls.type, []);
-    day.get(cls.type).push({ scope: cls.scope, text: cls.text, hash: c.hash });
+    day.get(cls.type).push({ scope: cls.scope, text: cls.text, hash: c.hash7 });
   }
 
   const days = [...byDay.keys()].sort().reverse();
@@ -132,22 +155,28 @@ export function buildMd({ dropLast = false } = {}) {
     }
   }
 
+  const head = currentHead();
+  const marker = head ? `\n<!-- changelog-upto: ${head} -->\n` : '';
   return (
     lines
       .join('\n')
       .replace(/\n{3,}/g, '\n\n')
-      .trimEnd() + '\n'
+      .trimEnd() + `\n${marker}`
   );
 }
 
-const md = buildMd();
-const mdMinusLast = buildMd({ dropLast: true }); // state kanonik hasil hook (lag 1 commit)
 const check = process.argv.includes('--check');
 
 if (existsSync(OUT)) {
   const old = readFileSync(OUT, 'utf8');
-  if (old === md || old === mdMinusLast) {
-    console.log('[changelog] CHANGELOG.md sudah sinkron (state kanonik full/lag-1)');
+  const md = buildMd();
+  const markerMatch = old.match(MARKER_RE);
+  let ok = old === md;
+  if (!ok && markerMatch) {
+    ok = old === buildMd({ upto: markerMatch[1] });
+  }
+  if (ok) {
+    console.log('[changelog] CHANGELOG.md sudah sinkron (state sesuai marker)');
     process.exit(0);
   }
   if (check) {
@@ -160,6 +189,7 @@ if (check && !existsSync(OUT)) {
   process.exit(1);
 }
 
+const md = buildMd();
 writeFileSync(OUT, md);
 const n = (md.match(/^## /gm) ?? []).length;
 const c = (md.match(/^- /gm) ?? []).length;

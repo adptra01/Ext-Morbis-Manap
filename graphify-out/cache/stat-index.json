@@ -61,11 +61,11 @@
     "word_count": 302
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/deploy/PANDUAN_DEPLOYMENT.md": {
-    "size": 13381,
-    "mtime_ns": 1790614774485070000,
-    "word_count": 1580,
+    "size": 13850,
+    "mtime_ns": 1790615704190393800,
+    "word_count": 1642,
     "hashes": {
-      "deploy/panduan_deployment.md": "833ee60dc11c17cb91ec5e8f264a7afd7eb362d4bec58404f3dbbcf540da6505"
+      "deploy/panduan_deployment.md": "95b5be8a8e0efa9b933dd551a02ac566aa2cd1033e83bdc1eb55e337728dd3d2"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/deploy/PANDUAN_PENGUNAAN.md": {
@@ -344,10 +344,10 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/manifest.json": {
     "size": 23907,
-    "mtime_ns": 1790615018705715100,
+    "mtime_ns": 1790615664792419500,
     "word_count": 875,
     "hashes": {
-      "manifest.json": "9152c10703291a47e224ee6b755168c7649c2bfe196edd0c093d1e20ef0037fa"
+      "manifest.json": "4b23a86e8ff11d695db4065dca20fd8096e22fd22b0d723ffb441b2f792147a2"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/mcp-servers/morbis-devtools/README.md": {
@@ -373,9 +373,9 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/package.json": {
     "size": 2317,
-    "mtime_ns": 1790615018706491800,
+    "mtime_ns": 1790615664792961800,
     "word_count": 190,
-    "hashes": { "package.json": "bef4557a5d1fc721b6833dc8dd93c16614bdfbf0cbb2abbd476b8477079832b6" }
+    "hashes": { "package.json": "1099cd0c54ac16e4dbc7ae29f0e27c9807a0a28aa6b53fe1f85c8622f01ebb31" }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/popup.js": {
     "size": 12518,
@@ -2357,10 +2357,10 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/CHANGELOG.md": {
-    "size": 73506,
-    "mtime_ns": 1790615052663280700,
-    "word_count": 10501,
-    "hashes": { "changelog.md": "8cd6d3f0cc2e3261bcf70a18834648ef2e27f135b8bfdacb0a759010bb1e6b03" }
+    "size": 73864,
+    "mtime_ns": 1790615711840226800,
+    "word_count": 10544,
+    "hashes": { "changelog.md": "a83d68b9c4c6a7a847e3744afd931e9fdb5e8b20f4414b24256c5c0385bf6add" }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/docs/ENTERPRISE_DEPLOYMENT_V2.md": {
     "size": 9312,
@@ -2371,8 +2371,8 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/changelog.mjs": {
-    "size": 4991,
-    "mtime_ns": 1790615043028522300,
-    "word_count": 598
+    "size": 6612,
+    "mtime_ns": 1790615700345450200,
+    "word_count": 840
   }
 }

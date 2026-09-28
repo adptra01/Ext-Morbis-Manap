@@ -2,18 +2,18 @@
 
 ## Corpus Check
 
-- 324 files · ~328,625 words
+- 324 files · ~328,972 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 3078 nodes · 4859 edges · 322 communities (248 shown, 74 thin omitted)
+- 3082 nodes · 4864 edges · 321 communities (250 shown, 71 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 131 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `007072f8`
+- Built from commit: `555ef483`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -312,12 +312,11 @@
 - pre-commit
 - @radix-ui/react-switch
 - rimraf
-- tailwindcss
 - @types/react-dom
 
 ## God Nodes (most connected - your core abstractions)
 
-1. `Changelog — MORBIS Ext Unofficial` - 86 edges
+1. `Changelog — MORBIS Ext Unofficial` - 87 edges
 2. `compilerOptions` - 23 edges
 3. `Role` - 22 edges
 4. `scripts` - 20 edges
@@ -330,12 +329,12 @@
 
 ## Surprising Connections (you probably didn't know these)
 
+- `rowsWith()` --indirect_call--> `toRowState()` [INFERRED]
+  tests/unit/farmasiEvent.test.ts → src/features/shared/farmasiEvent.ts
 - `wireRowRecall()` --indirect_call--> `row()` [INFERRED]
   src/features/antrianFarmasiDisplay.ts → tests/unit/farmasiQueue.test.ts
 - `seedLastByJenis()` --indirect_call--> `row()` [INFERRED]
   src/features/antrianFarmasiDisplay.ts → tests/unit/farmasiQueue.test.ts
-- `rowsWith()` --indirect_call--> `toRowState()` [INFERRED]
-  tests/unit/farmasiEvent.test.ts → src/features/shared/farmasiEvent.ts
 - `renumberFarmasi()` --indirect_call--> `row()` [INFERRED]
   src/features/shared/farmasiRenumber.ts → tests/unit/farmasiQueue.test.ts
 - `openHistoryModal()` --indirect_call--> `row()` [INFERRED]
@@ -345,17 +344,17 @@
 
 - None detected.
 
-## Communities (322 total, 74 thin omitted)
+## Communities (321 total, 71 thin omitted)
 
 ### Community 0 - "cpptSearchFilter.ts"
 
 Cohesion: 0.06
-Nodes (65): aliases, components, hooks, lib, ui, utils, rsc, $schema (+57 more)
+Nodes (64): aliases, components, hooks, lib, ui, utils, rsc, $schema (+56 more)
 
 ### Community 1 - "batchUploadUrl.ts"
 
-Cohesion: 0.17
-Nodes (20): BATCH_UPLOAD_URL_CONFIG, BatchItem, batchQueue, convertFileToPdf(), crawlDokumenPasienToSidepanel(), extractUrls(), formatDateYMD(), g (+12 more)
+Cohesion: 0.16
+Nodes (26): BATCH_UPLOAD_URL_CONFIG, BatchItem, batchQueue, crawlDokumenPasienToSidepanel(), escHtml(), extractUrls(), fetchFileFromUrl(), fetchWithRetry() (+18 more)
 
 ### Community 2 - "resumeRanapTab/App.tsx"
 
@@ -385,17 +384,17 @@ Nodes (20): scripts, audit, build, build:prod, changelog, clean, deploy, dev (+1
 ### Community 6 - "filterPersistence.ts"
 
 Cohesion: 0.06
-Nodes (71): fixCurrents(), patchTableCodes(), syncPublicNumbers(), buildPanel(), buildToggle(), callRow(), ensureRecallDelegation(), esc() (+63 more)
+Nodes (70): fixCurrents(), patchTableCodes(), syncPublicNumbers(), buildPanel(), buildToggle(), callRow(), ensureRecallDelegation(), esc() (+62 more)
 
 ### Community 7 - "resumeValidator.ts"
 
-Cohesion: 0.11
-Nodes (39): attachVerifListeners(), detectTipeResume(), extractIdVisit(), extractResumeSnapshotFromPage(), g, handleVerifClick(), initMklaimVerifLog(), isNavTab() (+31 more)
+Cohesion: 0.17
+Nodes (28): advanceMigratedMarker(), centralEntryKey(), centralToResumeEntry(), coerceSnap(), coerceSnapVal(), defaultStore(), diffSnap(), getHistoryKey() (+20 more)
 
 ### Community 8 - "legacy.ts"
 
-Cohesion: 0.19
-Nodes (16): check, g, addSearchFilter(), buildCustomTables(), CPPT_PEGAWAI_KW, CPPT_WAKTU_KW, enhanceTables(), esc() (+8 more)
+Cohesion: 0.18
+Nodes (17): check, ConsInfoTabs(), g, addSearchFilter(), buildCustomTables(), CPPT_PEGAWAI_KW, CPPT_WAKTU_KW, enhanceTables() (+9 more)
 
 ### Community 9 - "MorbisSession"
 
@@ -405,12 +404,12 @@ Nodes (17): Client, analyze_feature(), diff_dom(), get_feature_source(), MorbisS
 ### Community 10 - "sidepanel/App.tsx"
 
 Cohesion: 0.11
-Nodes (20): App(), DEFAULT_URLS, FALLBACK_FEATURES, ConsultationDetailPanel(), Props, DomainPanel(), DomainPanelProps, isValidUrl() (+12 more)
+Nodes (21): App(), DEFAULT_URLS, FALLBACK_FEATURES, ConsultationDetailPanel(), Props, DomainPanel(), DomainPanelProps, isValidUrl() (+13 more)
 
 ### Community 11 - "button.tsx"
 
-Cohesion: 0.15
-Nodes (13): VitalSignsSection(), VitalSignsSectionProps, BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, BatchItem, BatchUploadPanel(), BatchUploadPanelProps (+5 more)
+Cohesion: 0.12
+Nodes (18): Footer(), FooterProps, Hit, TindakanSection(), BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, BatchItem (+10 more)
 
 ### Community 12 - "toolbar.ts"
 
@@ -434,8 +433,8 @@ Nodes (30): 1. URL Builder, 2. Bookmarklet Fix, 3. Testing, 4. Panduan, 5. Morbi
 
 ### Community 16 - "resumeTab/mount.tsx"
 
-Cohesion: 0.13
-Nodes (19): App(), CARA_KELUAR, GCS_HINT, GCS_MAX, Hitt, JENIS_KASUS, KEADAAN_KELUAR, PEMERIKSAAN_LANJUT (+11 more)
+Cohesion: 0.08
+Nodes (30): App(), CARA_KELUAR, GCS_HINT, GCS_MAX, Hitt, JENIS_KASUS, KEADAAN_KELUAR, PEMERIKSAAN_LANJUT (+22 more)
 
 ### Community 17 - "compilerOptions"
 
@@ -449,13 +448,13 @@ Nodes (18): build(), buildTailwindCSS(), buildWithReact(), commonOptions, compil
 
 ### Community 19 - "popup/StatusCard.tsx"
 
-Cohesion: 0.16
-Nodes (13): root, App(), loadAll(), reloadActiveTab(), DomainPanel(), DomainPanelProps, ROLE_LABELS, ROLES (+5 more)
+Cohesion: 0.11
+Nodes (14): root, App(), loadAll(), reloadActiveTab(), Footer(), FooterProps, ROLE_LABELS, ROLES (+6 more)
 
 ### Community 20 - "components.json"
 
 Cohesion: 0.03
-Nodes (57): 2026-04-02, 2026-04-06, 2026-04-09, 2026-04-22, 2026-04-23, 2026-05-07, 2026-05-16, 2026-05-18 (+49 more)
+Nodes (61): 2026-04-02, 2026-04-09, 2026-04-22, 2026-04-23, 2026-04-24, 2026-05-07, 2026-05-16, 2026-05-18 (+53 more)
 
 ### Community 21 - "include"
 
@@ -509,8 +508,8 @@ Nodes (33): 1. Akses Fitur, 1. Deteksi dan Parsing URL, 2. Input URL Dokumen, 2.
 
 ### Community 31 - "cookieFilterStorage.ts"
 
-Cohesion: 0.12
-Nodes (31): collectVisibleIds(), debouncedScan(), effectiveMarked(), ensurePreOpButton(), extractIdVisitFromRow(), extractPatientInfo(), g, initPreOpMarker() (+23 more)
+Cohesion: 0.13
+Nodes (29): collectVisibleIds(), debouncedScan(), effectiveMarked(), ensurePreOpButton(), extractIdVisitFromRow(), extractPatientInfo(), g, initPreOpMarker() (+21 more)
 
 ### Community 32 - "asset-master.js"
 
@@ -545,12 +544,12 @@ Nodes (17): buildCrx3(), buildId(), channelArg(), crxIdFromSpki(), deployDir, __
 ### Community 38 - "devDependencies"
 
 Cohesion: 0.08
-Nodes (25): autoprefixer, class-variance-authority, clsx, esbuild, eslint, @eslint/js, lint-staged, devDependencies (+17 more)
+Nodes (25): autoprefixer, class-variance-authority, clsx, esbuild, @eslint/js, husky, lint-staged, devDependencies (+17 more)
 
 ### Community 39 - "shared/utils.ts"
 
 Cohesion: 0.06
-Nodes (80): announce(), AntrianFarmasiDebugState, cardSection(), clearCallState(), currentPatientName(), domSignal(), ensureControlsHost(), ensureStatusBadge() (+72 more)
+Nodes (81): announce(), AntrianFarmasiDebugState, cardSection(), clearCallState(), currentPatientName(), domSignal(), ensureControlsHost(), ensureStatusBadge() (+73 more)
 
 ### Community 40 - "background.js"
 
@@ -575,7 +574,7 @@ Nodes (21): applyFilters(), CpptFilterState, CpptPageType, findCpptTables(), g, 
 ### Community 44 - "TindakanSection.tsx"
 
 Cohesion: 0.14
-Nodes (33): act(), actCooldown, activeCard(), buildPanel(), CAT_META, catOf(), column(), deleteAllQueue() (+25 more)
+Nodes (31): act(), actCooldown, activeCard(), buildPanel(), CAT_META, catOf(), column(), deleteAllQueue() (+23 more)
 
 ### Community 45 - "audit.mjs"
 
@@ -604,8 +603,8 @@ Nodes (24): BATCH_DELETE_CONFIG, closeBatchDeleteModal(), crawlDokumenPasienDele
 
 ### Community 51 - "clsx"
 
-Cohesion: 0.09
-Nodes (28): buildTtsUrl(), CASEMIX_ALLOWED_HOSTS, CASEMIX_HTTP_ALLOWED_HOSTS, casemixTransportBlockReason(), CentralPreOpMark, CentralResumeEntry, CentralRevision, fetchResumeCentral() (+20 more)
+Cohesion: 0.20
+Nodes (17): buildTtsUrl(), CASEMIX_ALLOWED_HOSTS, CASEMIX_HTTP_ALLOWED_HOSTS, casemixTransportBlockReason(), CentralResumeEntry, CentralRevision, fetchPreOpBatch(), fetchResumeCentral() (+9 more)
 
 ### Community 52 - "esbuild"
 
@@ -629,8 +628,8 @@ Nodes (7): fetchFileFromUrl(), safeFetch(), SATUAN, showInlinePreview(), showInl
 
 ### Community 56 - "husky"
 
-Cohesion: 0.25
-Nodes (20): analyzeUrls(), cancelBatchUpload(), closeBatchModal(), crawlDokumenPasien(), escHtml(), fetchFileFromUrl(), fetchWithRetry(), fetchWithTimeout() (+12 more)
+Cohesion: 0.31
+Nodes (11): analyzeUrls(), cancelBatchUpload(), closeBatchModal(), crawlDokumenPasien(), showBatchUploadModal(), startBatchUpload(), testSingleUpload(), updatePreview() (+3 more)
 
 ### Community 57 - "lint-staged"
 
@@ -639,8 +638,8 @@ Nodes (4): Catatan penting, Daftar pencatat, Kriteria lulus, Verifikasi End-to-E
 
 ### Community 58 - "lucide-react"
 
-Cohesion: 0.32
-Nodes (8): mountConsultationEnhancer(), ConfirmOptions, ExtBadge, adoptTokens(), attachShadowWithTokens(), ensureFont(), getTokenSheet(), injectGlobalTokens()
+Cohesion: 0.22
+Nodes (9): mountConsultationEnhancer(), ConfirmOptions, ExtBadge, ExtBtn, adoptTokens(), attachShadowWithTokens(), ensureFont(), getTokenSheet() (+1 more)
 
 ### Community 60 - "@radix-ui/react-select"
 
@@ -649,18 +648,18 @@ Nodes (15): buildPageUrl(), cleanFilterValue(), cleanup(), fieldName(), init(), 
 
 ### Community 62 - "rimraf"
 
-Cohesion: 0.17
-Nodes (11): Hit, Props, TindakanSection(), TindakanRow, Footer(), FooterProps, Footer(), FooterProps (+3 more)
+Cohesion: 0.21
+Nodes (12): BackfillResult, collectPreOpPending(), collectResumePending(), discoverResumeKeys(), initCasemixBackfill(), KVStore, postCentral(), readJson() (+4 more)
 
 ### Community 63 - "tailwind-merge"
 
-Cohesion: 0.18
-Nodes (7): colors, appendAll(), BtnVariant, createButton(), createFloatingButton(), div(), injectedSheets
+Cohesion: 0.13
+Nodes (13): injectStyles(), addTogglePanel(), init(), makeEditable(), validateField(), colors, appendAll(), BtnVariant (+5 more)
 
 ### Community 64 - "tailwindcss"
 
-Cohesion: 0.20
-Nodes (10): ConsInfoTabs(), Props, TABS, Props, ServerTabRenderer(), sanitizeHtml(), ConsultationInfoPanel(), Props (+2 more)
+Cohesion: 0.22
+Nodes (9): Props, TABS, Props, ServerTabRenderer(), sanitizeHtml(), ConsultationInfoPanel(), Props, TAB_EP (+1 more)
 
 ### Community 68 - "@types/react-dom"
 
@@ -824,8 +823,8 @@ Nodes (7): 15. Final Recommendation, Alignment with Constraints, Execution Phase
 
 ### Community 113 - "cancelButton.ts"
 
-Cohesion: 0.25
-Nodes (3): ErrorBoundary, Props, State
+Cohesion: 0.23
+Nodes (12): attachVerifListeners(), detectTipeResume(), extractIdVisit(), extractResumeSnapshotFromPage(), g, handleVerifClick(), initMklaimVerifLog(), isNavTab() (+4 more)
 
 ### Community 114 - "Batch Features Refactor"
 
@@ -1020,12 +1019,12 @@ Nodes (3): 9.1 Constraints, 9.2 Insights, 9. Key Constraints & Insights
 ### Community 164 - "toolbar.ts"
 
 Cohesion: 0.11
-Nodes (42): postRevisionCentral(), autoInitRevisionPanel(), BACK_DETAIL_BTN, BpjsRevision, bpjsRevisionKey(), bpjsRevisions, centralToBpjsRevision(), ensureRevisionPanel() (+34 more)
+Nodes (41): autoInitRevisionPanel(), BACK_DETAIL_BTN, BpjsRevision, bpjsRevisionKey(), bpjsRevisions, centralToBpjsRevision(), ensureRevisionPanel(), extractParam() (+33 more)
 
 ### Community 165 - "ConsultationInfoPanel.tsx"
 
 Cohesion: 0.24
-Nodes (9): buildMd(), check, classify(), gitLog(), LABEL, md, OUT, ROOT (+1 more)
+Nodes (10): buildMd(), check, classify(), currentHead(), gitLog(), LABEL, md, OUT (+2 more)
 
 ### Community 166 - "penerimaanAntrolCetak.ts"
 
@@ -1035,7 +1034,7 @@ Nodes (16): esc(), extractNamaPasienFromRow(), extractNativeNumber(), extractShi
 ### Community 167 - "farmasiQueueSync.ts"
 
 Cohesion: 0.17
-Nodes (18): FALLBACK_CANDIDATES, FARMASI_ALLOWED_HOSTS, FARMASI_ALLOWED_SUFFIXES, farmasiAppBase(), flushRetryQueue(), getRetryQueue(), isAllowedFarmasiBase(), isFarmasiAppReachable() (+10 more)
+Nodes (20): lookupAntrianBatch(), FALLBACK_CANDIDATES, FARMASI_ALLOWED_HOSTS, FARMASI_ALLOWED_SUFFIXES, farmasiAppBase(), flushRetryQueue(), getRetryQueue(), isAllowedFarmasiBase() (+12 more)
 
 ### Community 168 - "sidepanel/DomainPanel.tsx"
 
@@ -1054,8 +1053,8 @@ Nodes (3): dumpPage(), env, main()
 
 ### Community 171 - "resumeTab/App.tsx"
 
-Cohesion: 0.14
-Nodes (15): ClinicalNotesSection(), ClinicalNotesSectionProps, Card(), CardProps, Full(), Grid(), GridProps, Label() (+7 more)
+Cohesion: 0.17
+Nodes (14): App(), validate(), ClinicalNotesSection(), ClinicalNotesSectionProps, snapToResumeData(), ValidationError, ValidationPanel(), ValidationPanelProps (+6 more)
 
 ### Community 172 - "antrianFarmasiDisplayApp.ts"
 
@@ -1064,13 +1063,13 @@ Nodes (8): CookieFilterStorage, CookieFilterStorageAPI, initClearAllFilterButton
 
 ### Community 173 - "injectCSS"
 
-Cohesion: 0.24
-Nodes (7): FeaturesPanel(), FeaturesPanelProps, FeaturesPanel(), FeaturesPanelProps, SelectContent, SelectItem, SelectTrigger
+Cohesion: 0.16
+Nodes (11): FeaturesPanel(), FeaturesPanelProps, DomainPanel(), DomainPanelProps, FeaturesPanel(), FeaturesPanelProps, SelectContent, SelectItem (+3 more)
 
 ### Community 174 - "openDetail.ts"
 
-Cohesion: 0.08
-Nodes (45): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+37 more)
+Cohesion: 0.18
+Nodes (25): _cleanupHandledEvents(), _cleanupOpenDetail(), extractIdFromAttr(), extractIdFromDataset(), extractIdFromElement(), findDetailTrigger(), formatDateOpenDetail(), g (+17 more)
 
 ### Community 175 - "resumeValidation.ts"
 
@@ -1079,13 +1078,13 @@ Nodes (3): checkAntrian(), env, main()
 
 ### Community 179 - "resumeTab/types.ts"
 
-Cohesion: 0.12
-Nodes (22): App(), AppProps, validate(), DiagnosaSection(), Hit, Props, Footer(), FooterProps (+14 more)
+Cohesion: 0.15
+Nodes (14): AppProps, DiagnosaSection(), Hit, Props, Header(), HeaderProps, Props, ClinicalNotes (+6 more)
 
 ### Community 180 - "Role"
 
-Cohesion: 0.23
-Nodes (9): pindahOperasi(), ConfirmLegacyOptions, injectSharedCSS(), registerGlobalBatchUtils(), safeFetch(), showErrorToast(), showInlinePreview(), showInlinePreviewSafe() (+1 more)
+Cohesion: 0.39
+Nodes (8): ConfirmLegacyOptions, injectSharedCSS(), registerGlobalBatchUtils(), safeFetch(), showErrorToast(), showInlinePreview(), showInlinePreviewSafe(), toggleProcessingState()
 
 ### Community 182 - "ConsInfoTabs.tsx"
 
@@ -1104,8 +1103,8 @@ Nodes (5): dependencies, react, react-dom, react, react-dom
 
 ### Community 186 - "ExtBtn"
 
-Cohesion: 0.20
-Nodes (3): ExtensionConfig, FeatureConfig, getEnabledFeatures()
+Cohesion: 0.12
+Nodes (6): KeyStore, MockStore, ExtensionConfig, FeatureConfig, getEnabledFeatures(), mockStorage()
 
 ### Community 188 - "class-variance-authority"
 
@@ -1119,8 +1118,13 @@ Nodes (9): confirmBatal(), getIdFromOnclick(), injectLab(), injectRadio(), injec
 
 ### Community 192 - "pdfWriter.ts"
 
-Cohesion: 0.33
-Nodes (6): buildSingleJpegPdf(), getJpegExifOrientation(), orientationCm(), readJpegSof(), SniffedKind, FAKE_JPEG
+Cohesion: 0.23
+Nodes (10): convertFileToPdf(), getImageDimensions(), rasterizeToJpeg(), buildSingleJpegPdf(), getJpegExifOrientation(), orientationCm(), readJpegSof(), SniffedKind (+2 more)
+
+### Community 194 - "ExtModal"
+
+Cohesion: 0.16
+Nodes (3): Props, ConsEnhancerApp(), ExtModal
 
 ### Community 199 - "ConsDetailModal.tsx"
 
@@ -1162,6 +1166,16 @@ Nodes (13): attachFilterListeners(), clearFilter(), FEATURE_MATCHES, featureMeta
 Cohesion: 0.40
 Nodes (7): UsageLogEntry, clearUsageLog(), getUsageLog(), logUsage(), injectAntrianToolsToMainWorld(), fmtTime(), UsageLogPanel()
 
+### Community 254 - "storage.ts"
+
+Cohesion: 0.27
+Nodes (10): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+2 more)
+
+### Community 255 - "ExtBtn"
+
+Cohesion: 0.35
+Nodes (10): attachFilterListeners(), clearFilter(), DOCTOR_FILTER_CONFIGS, DoctorFilterConfig, DoctorFilterConfigs, g, getCurrentPageConfig(), restoreFilter() (+2 more)
+
 ### Community 256 - "2026-08-14"
 
 Cohesion: 0.29
@@ -1174,8 +1188,8 @@ Nodes (6): 1. Ringkasan keputusan, 2. Register risiko aktif (dengan kontrol), 3.
 
 ### Community 258 - "injectCSS"
 
-Cohesion: 0.43
-Nodes (6): injectStyles(), addTogglePanel(), init(), makeEditable(), validateField(), injectCSS()
+Cohesion: 0.67
+Nodes (3): 2026-04-06, 📝 docs, ✨ feat
 
 ### Community 259 - "2026-05-21"
 
@@ -1319,8 +1333,8 @@ Nodes (4): 2026-08-08, 📝 docs, ✨ feat, 🧪 test
 
 ### Community 288 - "2026-08-10"
 
-Cohesion: 0.50
-Nodes (4): 2026-08-10, ✨ feat, 🐛 fix, ♻️ refactor
+Cohesion: 0.67
+Nodes (3): 2026-06-27, ✨ feat, 🐛 fix
 
 ### Community 289 - "2026-08-15"
 
@@ -1365,7 +1379,7 @@ Nodes (3): 2026-04-07, ✨ feat, ♻️ refactor
 ### Community 297 - "2026-04-24"
 
 Cohesion: 0.67
-Nodes (3): 2026-04-24, ✨ feat, 📌 misc
+Nodes (3): 2026-09-17, ✨ feat, 🐛 fix
 
 ### Community 298 - "2026-05-01"
 
@@ -1410,12 +1424,12 @@ Nodes (3): 2026-07-11, ✨ feat, 🐛 fix
 ### Community 306 - "2026-07-13"
 
 Cohesion: 0.67
-Nodes (3): 2026-07-13, 🐛 fix, 📌 misc
+Nodes (3): 2026-09-19, ✨ feat, 🐛 fix
 
 ### Community 307 - "2026-07-23"
 
 Cohesion: 0.67
-Nodes (3): 2026-07-23, 🧹 chore, 🐛 fix
+Nodes (3): 2026-09-29, 🧹 chore, 🐛 fix
 
 ### Community 308 - "2026-08-20"
 
@@ -1452,31 +1466,26 @@ Nodes (3): 2026-09-14, 🧹 chore, ✨ feat
 Cohesion: 0.67
 Nodes (3): 2026-09-20, ✨ feat, 🐛 fix
 
-### Community 315 - "2026-09-26"
-
-Cohesion: 0.67
-Nodes (3): 2026-09-26, ✨ feat, 📌 misc
-
 ## Knowledge Gaps
 
-- **1292 isolated node(s):** `$schema`, `sessionName`, `profile`, `headed`, `hideScrollbars` (+1287 more)
+- **1294 isolated node(s):** `$schema`, `sessionName`, `profile`, `headed`, `hideScrollbars` (+1289 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **74 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `getMorbisGlobals()` connect `openDetail.ts` to `batchUploadUrl.ts`, `toolbar.ts`, `typescript`, `resumeValidator.ts`, `features/shared/types.ts`, `ErrorBoundary`, `class-variance-authority`, `esbuild`, `popup.js`, `popup/App.tsx`, `investigate-pages.mjs`, `cookieFilterStorage.ts`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
-- **Why does `Changelog — MORBIS Ext Unofficial` connect `components.json` to `2026-08-14`, `2026-05-21`, `2026-05-30`, `2026-08-11`, `2026-08-18`, `2026-08-19`, `2026-09-01`, `2026-09-03`, `2026-09-22`, `2026-09-24`, `2026-06-17`, `2026-06-23`, `2026-08-12`, `2026-08-22`, `2026-08-28`, `2026-08-29`, `2026-08-30`, `2026-09-21`, `2026-09-23`, `2026-09-25`, `2026-04-05`, `2026-04-08`, `2026-05-06`, `2026-05-20`, `2026-06-16`, `2026-06-19`, `2026-07-16`, `2026-08-07`, `2026-08-08`, `2026-08-10`, `2026-08-15`, `2026-08-24`, `2026-08-31`, `2026-09-04`, `2026-09-15`, `2026-09-16`, `2026-04-01`, `2026-04-07`, `2026-04-24`, `2026-05-01`, `2026-05-10`, `2026-06-14`, `2026-06-24`, `2026-06-25`, `2026-07-09`, `2026-07-10`, `2026-07-11`, `2026-07-13`, `2026-07-23`, `2026-08-20`, `2026-08-21`, `2026-09-05`, `2026-09-10`, `2026-09-11`, `2026-09-14`, `2026-09-20`, `2026-09-26`, `husky`, `eslint`?**
+- **Why does `getMorbisGlobals()` connect `storage.ts` to `batchUploadUrl.ts`, `toolbar.ts`, `typescript`, `features/shared/types.ts`, `ErrorBoundary`, `cookieFilterStorage.ts`, `openDetail.ts`, `cancelButton.ts`, `class-variance-authority`, `esbuild`, `popup.js`, `popup/App.tsx`, `investigate-pages.mjs`, `ExtBtn`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `Changelog — MORBIS Ext Unofficial` connect `components.json` to `2026-08-14`, `injectCSS`, `2026-05-21`, `2026-05-30`, `2026-08-11`, `2026-08-18`, `2026-08-19`, `2026-09-01`, `2026-09-03`, `2026-09-22`, `2026-09-24`, `2026-06-17`, `2026-06-23`, `2026-08-12`, `2026-08-22`, `2026-08-28`, `2026-08-29`, `2026-08-30`, `2026-09-21`, `2026-09-23`, `2026-09-25`, `2026-04-05`, `2026-04-08`, `2026-05-06`, `2026-05-20`, `2026-06-16`, `2026-06-19`, `2026-07-16`, `2026-08-07`, `2026-08-08`, `2026-08-10`, `2026-08-15`, `2026-08-24`, `2026-08-31`, `2026-09-04`, `2026-09-15`, `2026-09-16`, `2026-04-01`, `2026-04-07`, `2026-04-24`, `2026-05-01`, `2026-05-10`, `2026-06-14`, `2026-06-24`, `2026-06-25`, `2026-07-09`, `2026-07-10`, `2026-07-11`, `2026-07-13`, `2026-07-23`, `2026-08-20`, `2026-08-21`, `2026-09-05`, `2026-09-10`, `2026-09-11`, `2026-09-14`, `2026-09-20`, `husky`, `eslint`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Why does `loket()` connect `shared/utils.ts` to `antrianTools.ts`?**
   _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **What connects `$schema`, `sessionName`, `profile` to the rest of the system?**
-  _1292 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1294 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `cpptSearchFilter.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06265984654731457 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0636523266022827 - nodes in this community are weakly interconnected._
 - **Should `resumeRanapTab/App.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.1471861471861472 - nodes in this community are weakly interconnected._
 - **Should `ponytail-activate.js` be split into smaller, more focused modules?**

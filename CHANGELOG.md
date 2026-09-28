@@ -15,6 +15,7 @@
 
 ### 🧹 chore
 
+- **changelog** — --check toleran lag-1-commit + dokumentasi lag (`fd145fc`)
 - update knowledge graph (scripts/changelog.mjs + filter bump) (`5446a93`)
 
 ## 2026-09-28
@@ -1611,3 +1612,5 @@
 ### 📌 misc
 
 - first commit (`a943d05`)
+
+<!-- changelog-upto: 555ef483243f9da6490f0a0a794ca9ce11260fcd -->

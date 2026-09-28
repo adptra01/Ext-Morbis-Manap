@@ -210,9 +210,10 @@ bukan rencana migrasi HTTPS). Ringkasannya:
   - Manual kapan saja: `npm run changelog`; cek sinkron: `npm run changelog -- --check`.
 - **Lag 1 commit (diyakini, bukan bug):** regenerasi hook berjalan sebelum commit
   terbentuk, jadi entri commit terbaru muncul pada regenerasi **commit berikutnya**
-  (pola standar generator changelog). `--check` menerima dua state kanonik
-  (full / minus-commit-terakhir) agar tidak false-positive, tapi tetap menangkap
-  drift akibat `--no-verify` atau push tanpa regenerasi.
+  (pola standar generator changelog). Tiap regenerasi menulis marker
+  `<!-- changelog-upto: <sha> -->` = commit terakhir yang riwayatnya tercermin;
+  `--check` memvalidasi file terhadap state marker tsb (tahan terhadap bump CI
+  di atasnya), tapi tetap menangkap drift akibat `--no-verify` atau file stale.
 - Agar kelompok/ruang lingkup akurat, tulis pesan commit **conventional**:
   `tipe(scope): deskripsi` — contoh `fix(resumeTab): id_rawat_jalan terkirim kosong`.
 - Commit yang **disembunyikan** dari changelog: bump versi otomatis CI, commit

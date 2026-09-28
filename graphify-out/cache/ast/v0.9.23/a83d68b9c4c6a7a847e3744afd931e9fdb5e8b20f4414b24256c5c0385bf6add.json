@@ -1,0 +1,5023 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_md",
+      "label": "CHANGELOG.md",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "label": "Changelog \u2014 MORBIS Ext Unofficial",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_29",
+      "label": "2026-09-29",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L12"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "label": "2026-09-28",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L21"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L23"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_30",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_revert",
+      "label": "\ud83d\udd19 revert",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_60",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L60"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L68"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_26",
+      "label": "2026-09-26",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L72"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_74",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_78",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_25",
+      "label": "2026-09-25",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L82"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_84",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L84"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_88",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L88"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_97",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_104",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L104"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "label": "2026-09-24",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L117"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_119",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_125",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L125"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_153",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L153"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_157",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_165",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_23",
+      "label": "2026-09-23",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L173"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_175",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L175"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_179",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L179"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_187",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L187"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_191",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L191"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "label": "2026-09-22",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L196"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_198",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L198"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_215",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L215"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_perf",
+      "label": "\u26a1 perf",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L250"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_style",
+      "label": "\ud83c\udfa8 style",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L255"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_259",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L259"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_21",
+      "label": "2026-09-21",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L264"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_266",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L266"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_271",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L271"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_279",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L279"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_283",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L283"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_20",
+      "label": "2026-09-20",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L287"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_289",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L289"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_293",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L293"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_19",
+      "label": "2026-09-19",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L297"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_299",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L299"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_304",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L304"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_17",
+      "label": "2026-09-17",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L308"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_310",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L310"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_315",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L315"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_16",
+      "label": "2026-09-16",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L321"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_323",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L323"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_style_332",
+      "label": "\ud83c\udfa8 style",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L332"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_336",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L336"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_15",
+      "label": "2026-09-15",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L340"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_342",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L342"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_348",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L348"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_356",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L356"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_14",
+      "label": "2026-09-14",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L360"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_362",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L362"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_366",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L366"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_11",
+      "label": "2026-09-11",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L370"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_372",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L372"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_377",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L377"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_10",
+      "label": "2026-09-10",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L381"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_383",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L383"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_388",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L388"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_09",
+      "label": "2026-09-09",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L392"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_394",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L394"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_08",
+      "label": "2026-09-08",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L398"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_400",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L400"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_05",
+      "label": "2026-09-05",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L404"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_406",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L406"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_411",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L411"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_04",
+      "label": "2026-09-04",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L417"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_419",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L419"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_423",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L423"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L428"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "label": "2026-09-03",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L432"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_434",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L434"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_442",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L442"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_448",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L448"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_452",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L452"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_456",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L456"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_02",
+      "label": "2026-09-02",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L460"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_462",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L462"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "label": "2026-09-01",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L467"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_469",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L469"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_474",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L474"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_revert_514",
+      "label": "\ud83d\udd19 revert",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L514"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_518",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L518"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_522",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L522"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_31",
+      "label": "2026-08-31",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L529"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_531",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L531"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_537",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L537"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_544",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L544"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_30",
+      "label": "2026-08-30",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L548"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_550",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L550"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_558",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L558"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_563",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L563"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_567",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L567"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_29",
+      "label": "2026-08-29",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L574"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_576",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L576"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_583",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L583"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_598",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L598"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_603",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L603"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_28",
+      "label": "2026-08-28",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L615"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_617",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L617"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_621",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L621"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_perf_627",
+      "label": "\u26a1 perf",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L627"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_631",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L631"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_24",
+      "label": "2026-08-24",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L635"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_637",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L637"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_643",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L643"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_649",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L649"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_23",
+      "label": "2026-08-23",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L655"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_657",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L657"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_22",
+      "label": "2026-08-22",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L664"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_666",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L666"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_671",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L671"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_681",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L681"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_685",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L685"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_21",
+      "label": "2026-08-21",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L695"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_697",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L697"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_701",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L701"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_20",
+      "label": "2026-08-20",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L705"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_707",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L707"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_715",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L715"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "label": "2026-08-19",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L729"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_731",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L731"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_743",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L743"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_758",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L758"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_762",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L762"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_767",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L767"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "label": "2026-08-18",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L780"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_782",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L782"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_787",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L787"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_perf_793",
+      "label": "\u26a1 perf",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L793"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_798",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L798"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_802",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L802"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_15",
+      "label": "2026-08-15",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L807"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_809",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L809"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_814",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L814"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_822",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L822"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "label": "2026-08-14",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L826"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_828",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L828"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_841",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L841"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_revert_852",
+      "label": "\ud83d\udd19 revert",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L852"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_test",
+      "label": "\ud83e\uddea test",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L856"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_861",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L861"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_866",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L866"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "label": "2026-08-13",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L872"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_874",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L874"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_891",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L891"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_908",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L908"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_perf_912",
+      "label": "\u26a1 perf",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L912"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_916",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L916"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_920",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L920"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_12",
+      "label": "2026-08-12",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L924"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_926",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L926"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_934",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L934"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_940",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L940"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_944",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L944"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "label": "2026-08-11",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L949"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_951",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L951"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_975",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L975"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_992",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L992"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_style_996",
+      "label": "\ud83c\udfa8 style",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L996"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1009",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1009"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_10",
+      "label": "2026-08-10",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1015"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1017",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1017"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1024",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1024"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1032",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1032"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_08",
+      "label": "2026-08-08",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1036"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1038",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1038"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_test_1044",
+      "label": "\ud83e\uddea test",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1044"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_1048",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1048"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_07",
+      "label": "2026-08-07",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1052"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1054",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1054"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1064",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1064"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1069",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1069"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_23",
+      "label": "2026-07-23",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1073"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1075",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1075"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1079",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1079"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_22",
+      "label": "2026-07-22",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1083"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1085",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1085"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_17",
+      "label": "2026-07-17",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1089"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1091",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1091"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_16",
+      "label": "2026-07-16",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1105"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1107",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1107"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1111",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1111"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1115",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1115"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_13",
+      "label": "2026-07-13",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1121"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1123",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1123"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1127",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1127"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_11",
+      "label": "2026-07-11",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1131"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1133",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1138",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1138"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_10",
+      "label": "2026-07-10",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1142"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1144",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1144"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1149",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1149"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_09",
+      "label": "2026-07-09",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1153"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1155",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1155"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1159",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1159"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_29",
+      "label": "2026-06-29",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1163"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1165",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1165"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_27",
+      "label": "2026-06-27",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1169"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1171",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1171"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1175",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1175"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_25",
+      "label": "2026-06-25",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1179"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1181",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1181"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1187",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1187"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_24",
+      "label": "2026-06-24",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1194"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1196",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1196"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_test_1202",
+      "label": "\ud83e\uddea test",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1202"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_23",
+      "label": "2026-06-23",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1206"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1208",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1208"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1213",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1213"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_build_1218",
+      "label": "\ud83d\udce6 build",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1218"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1223",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1223"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_21",
+      "label": "2026-06-21",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1232"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1234",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1234"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_20",
+      "label": "2026-06-20",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1239"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1241",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1241"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_19",
+      "label": "2026-06-19",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1246"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1248",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1248"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1253",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1253"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1258",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1258"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_18",
+      "label": "2026-06-18",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1264"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1266",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1266"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_17",
+      "label": "2026-06-17",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1270"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1272",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1272"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1280",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1280"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1284",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1284"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1289",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1289"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_16",
+      "label": "2026-06-16",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1295"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1297",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1297"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1305",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1305"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1310",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1310"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_14",
+      "label": "2026-06-14",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1314"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1316",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1316"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1321",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1321"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_11",
+      "label": "2026-06-11",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1325"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1327",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1327"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_08",
+      "label": "2026-06-08",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1331"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1333",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1333"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_04",
+      "label": "2026-06-04",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1337"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1339",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1339"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_03",
+      "label": "2026-06-03",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1344"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1346",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1346"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "label": "2026-05-30",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1351"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1353",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1353"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1360",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1360"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1370",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1370"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1374",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1374"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1382",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1382"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_25",
+      "label": "2026-05-25",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1386"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1388",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1388"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "label": "2026-05-21",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1392"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1394",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1394"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1398",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1398"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1402",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1402"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1406",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1406"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1411",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1411"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_20",
+      "label": "2026-05-20",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1415"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1417",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1417"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1421",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1421"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1427",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1427"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_18",
+      "label": "2026-05-18",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1431"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1433",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1433"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_16",
+      "label": "2026-05-16",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1438"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1440",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1440"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_10",
+      "label": "2026-05-10",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1447"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1449",
+      "label": "\ud83d\udc1b fix",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1449"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1453",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1453"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_07",
+      "label": "2026-05-07",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1457"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_1459",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1459"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_06",
+      "label": "2026-05-06",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1463"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1465",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1465"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1469",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1469"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1473",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1473"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_01",
+      "label": "2026-05-01",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1480"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1482",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1482"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1486",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1486"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_24",
+      "label": "2026-04-24",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1490"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1492",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1492"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1498",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1498"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_23",
+      "label": "2026-04-23",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1503"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1505",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1505"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_22",
+      "label": "2026-04-22",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1512"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1514",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1514"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_09",
+      "label": "2026-04-09",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1519"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1521",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1521"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_08",
+      "label": "2026-04-08",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1525"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1527",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1527"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1536",
+      "label": "\ud83e\uddf9 chore",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1536"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1540",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1540"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_07",
+      "label": "2026-04-07",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1544"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1546",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1546"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1551",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1551"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_06",
+      "label": "2026-04-06",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1555"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1557",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1557"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_1572",
+      "label": "\ud83d\udcdd docs",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1572"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_05",
+      "label": "2026-04-05",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1576"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1578",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1578"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1588",
+      "label": "\u267b\ufe0f refactor",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1588"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1595",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1595"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_02",
+      "label": "2026-04-02",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1599"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1601",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1601"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_01",
+      "label": "2026-04-01",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1605"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1607",
+      "label": "\u2728 feat",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1607"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1612",
+      "label": "\ud83d\udccc misc",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1612"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_29",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_30",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_revert",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_60",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_26",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_26",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_74",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_26",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_78",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_25",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_84",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_88",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_97",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_104",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_119",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_125",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_153",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_157",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_165",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_23",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L173",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_175",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_179",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_187",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L187",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_191",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L196",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_198",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_215",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L215",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_perf",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L250",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_style",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L255",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_259",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L259",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_21",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L264",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_266",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_271",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L271",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_279",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L279",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_283",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L283",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_20",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L287",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_289",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L289",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_293",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L293",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_19",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L297",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_299",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L299",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_304",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L304",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_17",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L308",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_310",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L310",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_315",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L315",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_323",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L323",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_style_332",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L332",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_336",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L336",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_15",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L340",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_15",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_342",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L342",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_15",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_348",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L348",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_15",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_356",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L356",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_14",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L360",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_362",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L362",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_366",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L366",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_11",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L370",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_372",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L372",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_377",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L377",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_10",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L381",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_383",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L383",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_388",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L388",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_09",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L392",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_09",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_394",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L394",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_08",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L398",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_400",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L400",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_05",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L404",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_05",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_406",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L406",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_05",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_411",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L411",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_04",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L417",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_04",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_419",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L419",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_04",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_423",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L423",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_04",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L428",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L432",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_434",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L434",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_442",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L442",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_448",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L448",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_452",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L452",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_03",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_456",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L456",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_02",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L460",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_02",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_462",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L462",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L467",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_469",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L469",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_474",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L474",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_revert_514",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L514",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_518",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L518",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_09_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_522",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L522",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_31",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L529",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_31",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_531",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L531",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_31",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_537",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L537",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_31",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_544",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L544",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_30",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L548",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_550",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L550",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_558",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L558",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_563",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L563",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_567",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L567",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_29",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L574",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_576",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L576",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_583",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L583",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_598",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L598",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_603",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L603",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_28",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L615",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_617",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L617",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_621",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L621",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_perf_627",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L627",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_28",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_631",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L631",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_24",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L635",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_637",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L637",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_643",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L643",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_649",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L649",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_23",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L655",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_657",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L657",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_22",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L664",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_666",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L666",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_671",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L671",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_681",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L681",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_685",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L685",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_21",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L695",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_697",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L697",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_701",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L701",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_20",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L705",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_707",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L707",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_715",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L715",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L729",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_731",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L731",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_743",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L743",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_758",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L758",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_762",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L762",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_767",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L767",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L780",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_782",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L782",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_787",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L787",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_perf_793",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L793",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_798",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L798",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_802",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L802",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_15",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L807",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_15",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_809",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L809",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_15",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_814",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L814",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_15",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_822",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L822",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L826",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_828",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L828",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_841",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L841",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_revert_852",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L852",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_test",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L856",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_861",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L861",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_866",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L866",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L872",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_874",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L874",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_891",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L891",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_908",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L908",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_perf_912",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L912",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_916",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L916",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_920",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L920",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_12",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L924",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_12",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_926",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L926",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_12",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_934",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L934",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_12",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_940",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L940",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_12",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_944",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L944",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L949",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_951",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L951",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_975",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L975",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_992",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L992",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_style_996",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L996",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1009",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1009",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_10",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1015",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1017",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1017",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1024",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1024",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1032",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1032",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_08",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1036",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1038",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1038",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_test_1044",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1044",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_1048",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1048",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_07",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1052",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_07",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1054",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1054",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_07",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1064",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1064",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_08_07",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1069",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1069",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_23",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1073",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1075",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1075",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1079",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1079",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_22",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1083",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1085",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1085",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_17",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1089",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1091",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1091",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1105",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1107",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1107",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1111",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1111",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1115",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1115",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_13",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1121",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1123",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1123",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_13",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1127",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1127",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_11",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1131",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1133",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1138",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1138",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_10",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1142",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1144",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1144",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1149",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1149",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_09",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1153",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_09",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1155",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1155",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_07_09",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1159",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1159",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_29",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1163",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_29",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1165",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1165",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_27",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1169",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_27",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1171",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1171",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_27",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1175",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1175",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_25",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1179",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1181",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1181",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1187",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1187",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_24",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1194",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1196",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1196",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_test_1202",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1202",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_23",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1206",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1208",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1208",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1213",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1213",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_build_1218",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1218",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1223",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1223",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_21",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1232",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1234",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1234",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_20",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1239",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1241",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1241",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_19",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1246",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1248",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1248",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1253",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1253",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_19",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1258",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1258",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_18",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1264",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1266",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1266",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_17",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1270",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1272",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1272",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1280",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1280",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1284",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1284",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_17",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1289",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1289",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1295",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1297",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1297",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1305",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1305",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1310",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1310",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_14",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1314",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1316",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1316",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_14",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1321",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1321",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_11",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1325",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_11",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1327",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1327",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_08",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1331",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1333",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1333",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_04",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1337",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_04",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1339",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1339",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_03",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1344",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_06_03",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1346",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1346",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1351",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1353",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1353",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1360",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1360",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1370",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1370",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1374",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1374",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_30",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1382",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1382",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_25",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1386",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_25",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1388",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1388",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1392",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1394",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1394",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1398",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1398",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1402",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1402",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1406",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1406",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_21",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1411",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1411",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_20",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1415",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1417",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1417",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1421",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1421",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_20",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1427",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1427",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_18",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1431",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_18",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1433",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1433",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1438",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_16",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1440",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1440",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_10",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1447",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_fix_1449",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1449",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_10",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1453",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1453",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_07",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1457",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_07",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_1459",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1459",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_06",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1463",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_06",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1465",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1465",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_06",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1469",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1469",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_06",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1473",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1473",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_01",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1480",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1482",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1482",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_05_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1486",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1486",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_24",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1490",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1492",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1492",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_24",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1498",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1498",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_23",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1503",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_23",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1505",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1505",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_22",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1512",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_22",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1514",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1514",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_09",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1519",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_09",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1521",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1521",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_08",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1525",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1527",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1527",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_chore_1536",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1536",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_08",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1540",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1540",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_07",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1544",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_07",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1546",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1546",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_07",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1551",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1551",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_06",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1555",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_06",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1557",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1557",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_06",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_docs_1572",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1572",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_05",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1576",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_05",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1578",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1578",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_05",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_refactor_1588",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1588",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_05",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1595",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1595",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_02",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1599",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_02",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1601",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1601",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_changelog_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_01",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1605",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_feat_1607",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1607",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_changelog_2026_04_01",
+      "target": "mnt_diskd_projects_ext_morbis_manap_changelog_misc_1612",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1612",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
