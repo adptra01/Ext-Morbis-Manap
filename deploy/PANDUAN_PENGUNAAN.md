@@ -117,12 +117,14 @@ Ketika Anda klik file `.reg`, inilah yang terjadi "di belakang layar":
 
 Buka browser dan masuk ke halaman extensions:
 
-| Browser     | Alamat                 |
-| ----------- | ---------------------- |
-| **Edge**    | `edge://extensions/`   |
-| **Chrome**  | `chrome://extensions/` |
-| **Firefox** | `about:addons`         |
-| **Brave**   | `brave://extensions/`  |
+| Browser    | Alamat                 |
+| ---------- | ---------------------- |
+| **Edge**   | `edge://extensions/`   |
+| **Chrome** | `chrome://extensions/` |
+| **Brave**  | `brave://extensions/`  |
+
+> **Firefox tidak didukung** — ekstensi untuk mesin farmasi Windows
+> (Chrome/Edge/Brave, policy enterprise). XPI lama sudah dihapus.
 
 Cari ekstensi bernama: **MORBIS Ext Unofficial**
 

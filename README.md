@@ -66,12 +66,14 @@ Windows akan menampilkan dua dialog — klik **Yes** lalu **OK**:
 
 Buka halaman extensions browser Anda:
 
-| Browser     | Buka alamat ini        |
-| ----------- | ---------------------- |
-| **Edge**    | `edge://extensions/`   |
-| **Chrome**  | `chrome://extensions/` |
-| **Firefox** | `about:addons`         |
-| **Brave**   | `brave://extensions/`  |
+| Browser    | Buka alamat ini        |
+| ---------- | ---------------------- |
+| **Edge**   | `edge://extensions/`   |
+| **Chrome** | `chrome://extensions/` |
+| **Brave**  | `brave://extensions/`  |
+
+> **Firefox tidak didukung** — ekstensi disain untuk mesin farmasi Windows
+> (Chrome/Edge/Brave, policy enterprise). XPI lama sudah dihapus.
 
 Cari **MORBIS Ext Unofficial** di daftar:
 
@@ -104,9 +106,12 @@ Cari **MORBIS Ext Unofficial** di daftar:
 
 ## Browser Didukung
 
-| Microsoft Edge | Google Chrome | Mozilla Firefox | Brave |
-| :------------: | :-----------: | :-------------: | :---: |
-|       ✅       |      ✅       |       ✅        |  ✅   |
+| Microsoft Edge | Google Chrome | Brave |
+| :------------: | :-----------: | :---: |
+|       ✅       |      ✅       |  ✅   |
+
+> **Mozilla Firefox tidak didukung** (XPI lama dihapus; fitur enterprise
+> Chrome/Edge/Brave saja — lihat catatan di bagian Cek Instalasi).
 
 ---
 

@@ -20,15 +20,24 @@ Anda hanya butuh akses push ke branch `dev` repo
 
 Alur otomatis (`.github/workflows/deploy-to-main.yml`) setiap push ke `dev`:
 
-1. **Bump versi** — CI menaikkan patch `manifest.json` (+1) dan push balik ke `dev` dengan `[skip ci]`.
-2. **Build** — `npm ci` + `npm run build` (vite + `scripts/build.mjs`) → `dist/`.
-3. **Audit fitur** — `npm run audit` (regresi `match/run`) — gagal menghentikan deploy.
-4. **Pack CRX3 signed** — `scripts/pack.mjs` membaca `CRX_SIGNING_KEY`, membuat
-   `deploy/morbis-v<versi>.crx` + `deploy/update.xml`. Guard CI memverifikasi
-   EXT_ID di `.bat` sinkron dengan key signing, dan versi update.xml = manifest.
-5. **Deploy ke `main`** — orphan commit berisi `dist/` + `docs/` (update.xml, CRX,
-   installer) di-push **force** ke `main`; GitHub Pages meng-copy `docs/`.
-6. **update.xml LIVE** — dalam ±1–2 menit setelah push: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`.
+1. **Quality gate** — CI menjalankan `typecheck` → unit test → `lint` (job
+   `quality`). Gagal satu saja → deploy berhenti, tidak ada bump/build.
+2. **Bump versi** — CI menaikkan patch `manifest.json` (+1) dan **sinkron
+   `package.json`** (satu source of truth versi), push balik ke `dev` `[skip ci]`.
+3. **Build** — `npm ci` + `npm run build` (vite + `scripts/build.mjs`) → `dist/`;
+   manifest **produksi** dibersihkan otomatis dari host development
+   (localhost/127.0.0.1/ddev) — guard: `tests/unit/manifest-prod.test.ts`.
+4. **Audit fitur** — `npm run audit` (regresi `match/run`) — gagal menghentikan deploy.
+5. **Pack CRX3 signed** — `scripts/pack.mjs` membaca `CRX_SIGNING_KEY`, membuat
+   `deploy/morbis-v<versi>.crx` + release immutable `deploy/releases/v<versi>/`
+   (crx, `metadata.json`, `sha256sums.txt` = integrity record/audit) +
+   `deploy/update.xml` (codebase → `releases/v<versi>/morbis-v<versi>.crx`).
+   Guard CI memverifikasi EXT_ID di `.bat` sinkron dengan key signing, dan
+   versi update.xml = manifest.
+6. **Deploy ke `main`** — orphan commit berisi `dist/` + `docs/` (update.xml,
+   CRX, installer). Release versi lama **dipreservasi** (`docs/releases/`),
+   versi baru ditambahkan; GitHub Pages meng-copy `docs/`.
+7. **update.xml LIVE** — dalam ±1–2 menit setelah push: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`.
 
 Tambahan: job `publish-edge` mengunggah build yang sama ke Microsoft Edge Add-ons.
 
@@ -76,8 +85,9 @@ Sebelum menulis, installer membuat backup registry per browser di
   (`installation_mode=force_installed`, `update_url`, `override_update_url=1`).
 - Chrome/Edge **mengecek update.xml** secara berkala (umumnya tiap ±5 jam saat browser
   hidup, dengan jitter acak; lebih cepat setelah restart browser / tombol Update).
-- Jika versi di update.xml > versi terpasang → browser mengunduh `morbis-v<versi>.crx`
-  dari Pages dan menggantikan ekstensi **tanpa intervensi user**.
+- Jika versi di update.xml > versi terpasang → browser mengunduh
+  `releases/v<versi>/morbis-v<versi>.crx` dari Pages dan menggantikan ekstensi
+  **tanpa intervensi user**.
 - **Offline**: browser gagal menjangkau update.xml → coba lagi saat online. Ekstensi lama
   tetap jalan; tidak ada "brick".
 - **Cek versi terpasang**: `chrome://extensions` → kartu MORBIS → Detail →
@@ -128,7 +138,7 @@ uninstaller — kalau perlu rollback, backup sudah ada dari langkah install.
 | Gejala                                   | Cek / solusi                                                                                                                                                                                                                   |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Update tidak jalan                       | Cek update.xml live (versi antara telat) → PS: `(Invoke-WebRequest https://adptra01.github.io/Ext-Morbis-Manap/update.xml).Content`; bandingkan dengan versi di `chrome://extensions` → Detail; klik tombol **Update** manual. |
-| CRX gagal load / "invalid"               | Pastikan versi CRX di Pages benar-benar ada (`morbis-v<versi>.crx` → 404 berarti versi di update.xml ≠ CRX yang ada; jangan pernah edit update.xml manual).                                                                    |
+| CRX gagal load / "invalid"               | Pastikan versi CRX di Pages benar-benar ada (`releases/v<versi>/morbis-v<versi>.crx` → 404 berarti versi di update.xml ≠ CRX yang ada; jangan pernah edit update.xml manual).                                                  |
 | ID di policy ≠ ID ekstensi               | EXT_ID di `Install_Morbis_Ext.bat` salah vs key signing → jalankan ulang installer (CI guard menolak deploy kalau tidak sinkron; jangan ubah EXT_ID manual).                                                                   |
 | Ekstensi hilang setelah reinstall Chrome | Reinstall Chrome menghapus profil/ekstensi → jalankan ulang `Install_Morbis_Ext.bat` (policy tetap ada, ekstensi akan terpasang lagi otomatis).                                                                                |
 | PC offline saat 05:00 (jalur A)          | Task terjadwal terlewat → jalankan `morbis-update-main.bat` manual, atau dokumentasi `/RU SYSTEM` di Setup_Update_Terjadwal.bat (hanya untuk admin, non-interaktif).                                                           |

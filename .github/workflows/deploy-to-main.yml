@@ -15,8 +15,33 @@ permissions:
   id-token: write
 
 jobs:
+  # Quality gate: tanpa ini tidak ada bump/build/deploy.
+  # Dulu tes hanya jalan lokal (husky pre-commit); sekarang CI wajib lolos
+  # typecheck → unit test → lint sebelum artifact production dibuat.
+  quality:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
   deploy:
-    runs-on: ubuntu-latest
+    needs: [quality]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
@@ -34,7 +59,10 @@ jobs:
             OLD=$(jq -r .version manifest.json)
             NEW=$(node -e "const p=process.argv[1].split('.').map(Number);console.log(p[0]+'.'+p[1]+'.'+(p[2]+1))" "$OLD")
             jq --arg v "$NEW" '.version=$v' manifest.json > manifest.json.tmp && mv manifest.json.tmp manifest.json
-            git add manifest.json
+            # Satu source of truth versi: package.json ikut sinkron (sebelumnya
+            # melenceng: manifest 1.5.x vs package.json 1.4.x).
+            jq --arg v "$NEW" '.version=$v' package.json > package.json.tmp && mv package.json.tmp package.json
+            git add manifest.json package.json
             git commit -m "chore: bump version to $NEW [skip ci]" || break
             if git push origin HEAD:dev; then
               echo "VERSION=$NEW" >> $GITHUB_ENV
@@ -102,9 +130,21 @@ jobs:
           cp -r dist/* "$ORPHAN/"
           cp README.md "$ORPHAN/README.md"
           cp -r docs "$ORPHAN/docs"
+          # Preserve release immutabel dari main sebelumnya — jangan orphan-wipe
+          # artifact lama (dulu docs/releases hilang → 404 di Pages tiap deploy).
+          if git fetch origin main --depth=1 2>/dev/null && git ls-tree -r --name-only FETCH_HEAD 2>/dev/null | grep -q '^docs/releases/'; then
+            git archive FETCH_HEAD docs/releases | tar -x -C "$ORPHAN" 2>/dev/null || true
+          fi
           # Auto-update enterprise → Pages: update.xml + CRX signed di docs/
           # (docs/ = akar situs Pages sehingga URL persis seperti di .bat).
           cp deploy/update.xml "$ORPHAN/docs/update.xml"
+          # Release versi ini (immutable path — update.xml menunjuk ke sini).
+          mkdir -p "$ORPHAN/docs/releases/v${VERSION}"
+          cp deploy/releases/v${VERSION}/morbis-v${VERSION}.crx "$ORPHAN/docs/releases/v${VERSION}/"
+          cp deploy/releases/v${VERSION}/metadata.json "$ORPHAN/docs/releases/v${VERSION}/" 2>/dev/null || true
+          cp deploy/releases/v${VERSION}/sha256sums.txt "$ORPHAN/docs/releases/v${VERSION}/" 2>/dev/null || true
+          # Compat: salinan flat versi TERBARU (URL morbis-v<ver>.crx lama tetap
+          # hidup) untuk device yang masih menunjuk update.xml versi sebelumnya.
           cp "deploy/morbis-v${VERSION}.crx" "$ORPHAN/docs/morbis-v${VERSION}.crx"
           # Installer siap pakai ikut ke main (1 domain Pages) — sinkron
           # EXT_ID sudah dijaga step Pack di atas, tanpa inject/sed.
@@ -157,7 +197,7 @@ jobs:
     needs: [deploy]
     environment:
       name: github-pages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:

@@ -14,7 +14,7 @@ jobs:
   publish:
     # Tanpa job-if: dipanggil dari deploy-to-main (event push) atau manual
     # (dispatch). Gerbang skip ada di step preflight (secrets) + guard (versi).
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
       EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}

@@ -5,6 +5,7 @@ import autoprefixer from 'autoprefixer';
 import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { dirname, join, resolve, extname } from 'path';
 import { fileURLToPath } from 'url';
+import { stripDevHosts } from './manifest-transform.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, '..');
@@ -175,7 +176,10 @@ function generateManifest() {
   const manifestPath = join(rootDir, 'manifest.json');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
 
-  writeFileSync(join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+  // Produksi TIDAK mengangkut host development (localhost/127.0.0.1/ddev) di
+  // host_permissions — least-privilege. Guard: tests/unit/manifest-prod.test.ts
+  const out = isProduction ? stripDevHosts(manifest) : manifest;
+  writeFileSync(join(distDir, 'manifest.json'), JSON.stringify(out, null, 2));
 }
 
 async function buildTailwindCSS() {
