@@ -548,11 +548,7 @@ var __morbis_feature = (() => {
     th.dataset.extBvHeader = "1";
   }
   function renderAll() {
-    TABLES.forEach((t) => {
-      if (!getTableEl(t)) return;
-      renderHeaderCheckbox(t);
-      syncRows(t);
-    });
+    TABLES.forEach(initTabel);
     updateBar();
   }
   function getBar() {
@@ -702,14 +698,87 @@ var __morbis_feature = (() => {
       cek();
     });
   }
+  var syncing = false;
+  var observers = [];
+  var teramati = /* @__PURE__ */ new Map();
+  function buangObserver() {
+    observers.forEach((o) => o.disconnect());
+    observers.length = 0;
+    teramati.clear();
+  }
+  function safeSync(target) {
+    if (syncing) return;
+    syncing = true;
+    try {
+      syncRows(target);
+      updateBar();
+    } finally {
+      syncing = false;
+    }
+  }
+  function kolomKonsisten(table) {
+    const tr = table.querySelectorAll("tbody tr").length;
+    return tr === 0 || table.querySelectorAll("tbody td.bv-sel").length === tr;
+  }
+  function amatiTabel(t, el) {
+    const mo = new MutationObserver(() => {
+      if (syncing) return;
+      const kini = getTableEl(t);
+      if (!kini) return;
+      if (kini !== el) {
+        initTabel(t);
+        return;
+      }
+      if (!kolomKonsisten(kini)) safeSync(t);
+    });
+    mo.observe(el, { childList: true, subtree: true });
+    observers.push(mo);
+    const parent = el.parentElement;
+    if (parent) {
+      const pm = new MutationObserver(() => {
+        const kini = getTableEl(t);
+        if (kini && kini !== el) initTabel(t);
+      });
+      pm.observe(parent, { childList: true });
+      observers.push(pm);
+    }
+  }
+  function initTabel(t) {
+    const el = getTableEl(t);
+    if (!el) return;
+    renderHeaderCheckbox(t);
+    if (teramati.get(t.sel) === el) {
+      safeSync(t);
+      return;
+    }
+    teramati.set(t.sel, el);
+    safeSync(t);
+    amatiTabel(t, el);
+  }
+  function jagaHidup() {
+    setInterval(() => {
+      if (syncing) return;
+      TABLES.forEach((t) => {
+        const el = teramati.get(t.sel);
+        const kini = getTableEl(t);
+        if (kini && (!el || !document.contains(el) || kini !== el)) {
+          initTabel(t);
+        } else if (kini && !kolomKonsisten(kini)) {
+          safeSync(t);
+        }
+      });
+    }, Math.max(1e3, CONFIG.readyPollMs * 4));
+  }
   function bindDataTablesRedraw() {
     const jq = window.jQuery;
     if (!jq) return;
     TABLES.forEach((t) => {
-      if (!getTableEl(t)) return;
+      const el = getTableEl(t);
+      if (!el || el.dataset.extBvBound === "1") return;
+      el.dataset.extBvBound = "1";
       try {
         jq(t.sel).off("draw.dt.extBv").on("draw.dt.extBv", () => {
-          if (sedangProses) return;
+          if (sedangProses || syncing) return;
           syncRows(t);
           updateBar();
         });
@@ -721,9 +790,11 @@ var __morbis_feature = (() => {
     try {
       injectCSS();
       void waitForTables().then(() => {
+        buangObserver();
         buildBar();
         renderAll();
         bindDataTablesRedraw();
+        jagaHidup();
         document.documentElement.setAttribute("data-ext-bulk-verif", "1");
         const ringkas = TABLES.map((t) => {
           const tbl = getTableEl(t);

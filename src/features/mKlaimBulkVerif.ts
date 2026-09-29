@@ -486,11 +486,7 @@ function renderHeaderCheckbox(target: TableTarget): void {
 }
 
 function renderAll(): void {
-  TABLES.forEach((t) => {
-    if (!getTableEl(t)) return;
-    renderHeaderCheckbox(t);
-    syncRows(t);
-  });
+  TABLES.forEach(initTabel);
   updateBar();
 }
 
@@ -697,23 +693,124 @@ function waitForTables(): Promise<void> {
   });
 }
 
+// --- Reaksi render ulang DataTables ------------------------------------------
+// Gejala di lapangan: kolom MUNCUL saat refresh, lalu HILANG begitu data
+// ditampilkan. Sebab: tbody digambar ulang oleh DataTables (atau elemen
+// tabel diganti halaman / kontainer ikut di-render ulang); sel kolom kita
+// ikut terhapus dan event draw.dt tidak selalu sempat menambahkan lagi.
+// Solusi: MutationObserver di tabel + parent, plus pemeriksaan berkala,
+// dengan pelindung rekursi supaya mutasi kita sendiri tidak memicu daur
+// sinkronisasi tak berujung.
+
+let syncing = false;
+const observers: MutationObserver[] = [];
+const teramati = new Map<string, HTMLElement>(); // sel tabel -> elemen diamati
+
+function buangObserver(): void {
+  observers.forEach((o) => o.disconnect());
+  observers.length = 0;
+  teramati.clear();
+}
+
+/** Sinkronisasi dengan pelindung rekursi (mutasi kita sendiri diabaikan). */
+function safeSync(target: TableTarget): void {
+  if (syncing) return;
+  syncing = true;
+  try {
+    syncRows(target);
+    updateBar();
+  } finally {
+    syncing = false;
+  }
+}
+
+/** True kalau SEMUA baris tbody sudah punya sel kolom (atau tbody kosong). */
+function kolomKonsisten(table: HTMLElement): boolean {
+  const tr = table.querySelectorAll('tbody tr').length;
+  return tr === 0 || table.querySelectorAll('tbody td.bv-sel').length === tr;
+}
+
+/** Pasang observer untuk satu tabel: baris berubah / elemen tabel diganti. */
+function amatiTabel(t: TableTarget, el: HTMLElement): void {
+  const mo = new MutationObserver(() => {
+    if (syncing) return;
+    const kini = getTableEl(t);
+    if (!kini) return;
+    if (kini !== el) {
+      initTabel(t); // elemen tabel diganti halaman -> ikat ulang
+      return;
+    }
+    if (!kolomKonsisten(kini)) safeSync(t);
+  });
+  mo.observe(el, { childList: true, subtree: true });
+  observers.push(mo);
+
+  const parent = el.parentElement;
+  if (parent) {
+    const pm = new MutationObserver(() => {
+      const kini = getTableEl(t);
+      if (kini && kini !== el) initTabel(t);
+    });
+    pm.observe(parent, { childList: true });
+    observers.push(pm);
+  }
+}
+
+/** Sinkronkan + amati SATU tabel. Aman dipanggil ulang (elemen yang sama
+ *  tidak akan di-observe dua kali). */
+function initTabel(t: TableTarget): void {
+  const el = getTableEl(t);
+  if (!el) return;
+  renderHeaderCheckbox(t);
+  if (teramati.get(t.sel) === el) {
+    safeSync(t);
+    return;
+  }
+  teramati.set(t.sel, el);
+  safeSync(t);
+  amatiTabel(t, el);
+}
+
+/** Jaring pengaman: kontainer lebih dalam ikut di-render ulang sehingga
+ *  elemen tabel lama terlepas dari DOM. Observer induk tidak menangkapnya,
+ *  pemeriksaan berkala ini mengikat ulang. */
+function jagaHidup(): void {
+  setInterval(
+    () => {
+      if (syncing) return;
+      TABLES.forEach((t) => {
+        const el = teramati.get(t.sel);
+        const kini = getTableEl(t);
+        if (kini && (!el || !document.contains(el) || kini !== el)) {
+          initTabel(t); // elemen tabel diganti / terlepas dari DOM
+        } else if (kini && !kolomKonsisten(kini)) {
+          safeSync(t); // baris ada tapi kolom hilang (mis. restore cache)
+        }
+      });
+    },
+    Math.max(1000, CONFIG.readyPollMs * 4),
+  );
+}
+
+/** Cadangan: event draw.dt DataTables (observer sudah cukup, ini ekstra). */
 function bindDataTablesRedraw(): void {
   const jq = (window as unknown as { jQuery?: (s: string) => any }).jQuery;
   if (!jq) return;
 
   TABLES.forEach((t) => {
-    if (!getTableEl(t)) return;
+    const el = getTableEl(t);
+    if (!el || el.dataset.extBvBound === '1') return;
+    el.dataset.extBvBound = '1';
     try {
-      // off dulu supaya tidak terikat dua kali kalau init berjalan ulang
       jq(t.sel)
         .off('draw.dt.extBv')
         .on('draw.dt.extBv', () => {
-          if (sedangProses) return;
+          if (sedangProses || syncing) return;
           syncRows(t);
           updateBar();
         });
     } catch {
-      /* abaikan - render awal tetap jalan */
+      /* abaikan - observer tetap menjaga kolom */
     }
   });
 }
@@ -723,9 +820,11 @@ export function initMKlaimBulkVerifFeature(): void {
     injectCSS();
 
     void waitForTables().then(() => {
+      buangObserver();
       buildBar();
       renderAll();
       bindDataTablesRedraw();
+      jagaHidup();
       document.documentElement.setAttribute('data-ext-bulk-verif', '1');
       const ringkas = TABLES.map((t) => {
         const tbl = getTableEl(t);
