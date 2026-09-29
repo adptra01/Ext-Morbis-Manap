@@ -12,7 +12,10 @@ export default defineConfig({
   ],
   build: {
     outDir: 'dist',
-    emptyOutDir: false,
+    // Kosongkan dist dulu sebelum build: mencegah artefak basi (chunk/assets
+    // dari build lama, sourcemap dev) ikut ter-zip ke release. dulu false →
+    // 5× button-*.js @ 803KB + 7.8MB .map ter-commit bertahan di CRX.
+    emptyOutDir: true,
     // ponytail: oxc-minify rolldown segfault di Node 26 (SIGSEGV) → matikan
     // minify. Popup/sidepanel kecil, tidak esensial utk extension internal.
     minify: false,

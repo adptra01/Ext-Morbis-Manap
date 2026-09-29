@@ -32,11 +32,21 @@
  *              + shd + zip). Tanpa konteks ini Chrome menolak:
  *  CRX_SIGNATURE_VERIFICATION_FAILED / CRX_REQUIRED_PROOF_MISSING.
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+  copyFileSync,
+  rmSync,
+  cpSync,
+  readdirSync,
+} from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { createHash, createSign, createPrivateKey, createPublicKey } from 'node:crypto';
+import { transform } from 'esbuild';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, '..');
@@ -153,7 +163,97 @@ function buildCrx3(zipData, spkiDer, privateKey) {
   return Buffer.concat([Buffer.from('Cr24', 'ascii'), u32(3), u32(header.length), header, zipData]);
 }
 
-function packChrome(requireKey) {
+/* ---------- staging: bersih + minify sebelum zip ----------
+ * dist/ di repo sengaja dev-build (unminified + sourcemap, mudah di-debug &
+ * di-review). Yang DIKIRIM adalah salinan bersih: .map dibuang, file yatim &
+ * chunk/assets basi dipangkas, dan SEMUA .js terminify via esbuild.transform
+ * (aman — tidak menyentuh modul graph; popup/sidepanel/chunks vite yang
+ * minify-nya dimatikan karena segfault rolldown/oxc di Node 26 ikut kecil).
+ */
+const DEAD_RELEASE_FILES = [
+  'features/billingFilterPersistence.js',
+  'features/shared/batchUtils.js',
+  'features/shared/utils.js',
+  'features/shared/types.js',
+  'features/antrianFarmasiDisplay.js',
+];
+
+function stripMaps(dir) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) stripMaps(p);
+    else if (e.name.endsWith('.map')) rmSync(p, { force: true });
+  }
+}
+
+function pruneDeadFiles(staging) {
+  for (const rel of DEAD_RELEASE_FILES) {
+    const p = join(staging, rel);
+    if (existsSync(p)) {
+      rmSync(p, { force: true });
+      console.log(`[pack] dead pruned: ${rel}`);
+    }
+  }
+}
+
+function pruneUnreferencedChunks(staging) {
+  const refs = new Set();
+  const scanRefs = (rel) => {
+    const p = join(staging, rel);
+    if (!existsSync(p)) return;
+    const content = readFileSync(p, 'utf-8');
+    for (const m of content.matchAll(/(?:chunks|assets)\/([A-Za-z0-9_-]+\.(?:js|css))/g)) {
+      refs.add(m[0]);
+    }
+  };
+  // Referensi chunk/assets hanya muncul di HTML entry + JS vite (import dinamis).
+  ['popup/index.html', 'sidepanel.html', 'popup.js', 'sidepanel.js'].forEach(scanRefs);
+  for (const dir of ['chunks', 'assets']) {
+    const full = join(staging, dir);
+    if (!existsSync(full)) continue;
+    for (const f of readdirSync(full)) {
+      const rel = `${dir}/${f}`;
+      if (!refs.has(rel)) {
+        rmSync(join(full, f), { force: true });
+        console.log(`[pack] stale pruned: ${rel}`);
+      }
+    }
+  }
+}
+
+async function minifyJsTree(dir) {
+  const targets = [];
+  (function walk(d) {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (e.name.endsWith('.js')) targets.push(p);
+    }
+  })(dir);
+  await Promise.all(
+    targets.map(async (p) => {
+      const out = await transform(readFileSync(p, 'utf-8'), {
+        minify: true,
+        target: 'es2020',
+      });
+      writeFileSync(p, out.code);
+    }),
+  );
+  console.log(`[pack] minified ${targets.length} js files`);
+}
+
+async function stageReleaseBundle() {
+  const staging = join(deployDir, `.stage-${buildId()}`);
+  rmSync(staging, { recursive: true, force: true });
+  cpSync(distDir, staging, { recursive: true });
+  stripMaps(staging);
+  pruneDeadFiles(staging);
+  pruneUnreferencedChunks(staging);
+  await minifyJsTree(staging);
+  return staging;
+}
+
+async function packChrome(requireKey) {
   mkdirSync(deployDir, { recursive: true });
   const manifest = getManifest();
   const version = manifest.version;
@@ -162,8 +262,14 @@ function packChrome(requireKey) {
   const keyPath = resolveKey(requireKey);
   const channel = channelArg();
 
-  // ZIP selalu diproduksi (fallback load-unpacked / arsip).
-  execSync(`cd "${distDir}" && zip -q -rX "${zipPath}" .`, { stdio: 'inherit' });
+  // ZIP selalu diproduksi (fallback load-unpacked / arsip) — dari staging
+  // yang sudah dibersihkan (tanpa .map / file yatim / chunk basi) + terminify.
+  const staging = await stageReleaseBundle();
+  try {
+    execSync(`cd "${staging}" && zip -q -rX "${zipPath}" .`, { stdio: 'inherit' });
+  } finally {
+    rmSync(staging, { recursive: true, force: true });
+  }
   const zipData = readFileSync(zipPath);
   console.log(`[pack] ZIP v${version} → ${zipPath}`);
 
@@ -208,7 +314,10 @@ function packChrome(requireKey) {
   const releaseDir = join(deployDir, 'releases', `v${version}`);
   mkdirSync(releaseDir, { recursive: true });
   copyFileSync(zipPath, join(releaseDir, `morbis-v${version}.zip`));
-  copyFileSync(crxPath, join(releaseDir, `morbis-v${version}.crx`));
+  // crxPath hanya ada bila key tersedia (zip-only lokal / fallback).
+  if (existsSync(crxPath)) {
+    copyFileSync(crxPath, join(releaseDir, `morbis-v${version}.crx`));
+  }
 
   const primaryArtifact = crxSha ? `morbis-v${version}.crx` : `morbis-v${version}.zip`;
   const metadata = {
@@ -234,7 +343,7 @@ function packChrome(requireKey) {
 const requireKey = process.argv.slice(2).includes('--require-key');
 try {
   console.log('[pack] Starting pack process...');
-  packChrome(requireKey);
+  await packChrome(requireKey);
   console.log('[pack] Pack complete!');
 } catch (e) {
   console.error('[pack] Error:', e.message || e);

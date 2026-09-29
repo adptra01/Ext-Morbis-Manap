@@ -55,13 +55,9 @@ test.describe('Build Output Validity', () => {
 
   test('all compiled feature files should exist', () => {
     const features = [
-      'features/shared/types.js',
       'features/shared/cookieFilterStorage.js',
-      'features/shared/utils.js',
-      'features/shared/batchUtils.js',
       'features/fixJasaPelayanan.js',
       'features/filterPersistence.js',
-      'features/billingFilterPersistence.js',
       'features/doctorFilterPersistence.js',
       'features/scrollButtons.js',
       'features/openDetail.js',

@@ -18,7 +18,10 @@ const FEATURE_FILES = [
   'src/features/consultationEnhancer.ts',
   'src/features/penerimaan_resep/main.ts',
   'src/features/doctorFilterPersistence.ts',
-  'src/features/billingFilterPersistence.ts',
+  // NOTE: billingFilterPersistence.ts sumber dipertahankan (arsip/selarasan),
+  // tapi TIDAK lagi di-build/load. Id 'billingFilterPersistence' pada
+  // billing-verifikasi kini didaftarkan oleh filterPersistence.ts UNIVERSAL
+  // (FEATURE_MATCHES) — divalidasi via jalur dynamic di bawah.
   'src/features/filterPersistence.ts',
 ];
 

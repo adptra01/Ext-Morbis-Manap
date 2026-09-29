@@ -51,12 +51,8 @@ async function compileFeatureFiles() {
 
   const tsFiles = [
     'fixJasaPelayanan.ts',
-    'shared/types.ts',
     'shared/cookieFilterStorage.ts',
-    'shared/utils.ts',
-    'shared/batchUtils.ts',
     'filterPersistence.ts',
-    'billingFilterPersistence.ts',
     'doctorFilterPersistence.ts',
     'scrollButtons.ts',
     'consultationEnhancer.ts',
@@ -73,7 +69,6 @@ async function compileFeatureFiles() {
     'antrianTools.ts',
     'antrianLoader.ts',
 
-    'antrianFarmasiDisplay.ts',
     'antrianFarmasiDisplayApp.ts',
     'antrianFarmasiOperator.ts',
 

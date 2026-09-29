@@ -111,7 +111,7 @@ jobs:
       - name: Build extension (production)
         env:
           NODE_ENV: production
-        run: npm run build
+        run: npm run clean && npm run build
 
       # Feature audit: pastikan registrasi fitur (id/match/run) sinkron dengan
       # matrix regresi - gagalkan job bila meleset (scripts/audit-features.mjs).
