@@ -30,7 +30,7 @@ var __morbis_feature = (() => {
     },
     billingFilterPersistence: {
       pattern: "/billing/pembayaran-new/billing-verifikasi",
-      storageKey: "billing_filter",
+      storageKey: "billing_verifikasi_filter",
       scopeField: "awal",
       fields: [
         "awal",
@@ -40,7 +40,6 @@ var __morbis_feature = (() => {
         "pasien",
         "sep",
         "status",
-        "statuspasien",
         "jenisPasien",
         "statusPeriksa",
         "dokter",
@@ -49,28 +48,28 @@ var __morbis_feature = (() => {
         "idUnit",
         "kategori"
       ],
-      cariButtonSelectors: ['input[id="cari"]', 'input.tombol[value="Cari"]'],
-      batalButtonSelectors: ['input.tombol[value="Cancel"]']
-    },
-    doctorFilterPersistence: {
-      pattern: "__PLACEHOLDER__",
-      storageKey: "doctor_filter",
-      fields: [],
-      cariButtonSelectors: [],
-      batalButtonSelectors: []
+      radioGroups: ["statuspasien"],
+      cariButtonSelectors: [
+        "#cari",
+        'input[value="Cari"]',
+        'button.btn-info[onclick*="cari"]',
+        'input.tombol[value="Cari"]'
+      ],
+      batalButtonSelectors: ['input[value="Cancel"]', 'input.tombol[value="Cancel"]']
     }
   };
   var LEGACY_STORAGE_KEYS = {
     filterPersistence: "mklaim_filter",
-    billingFilterPersistence: "billing_filter",
-    doctorFilterPersistence: "doctor_filter"
+    billingFilterPersistence: "billing_verifikasi_filter"
   };
   function getContext() {
     const path = window.location.pathname;
     for (const key of Object.keys(PERSISTENCE_MAP)) {
       const ctx = PERSISTENCE_MAP[key];
       if (path !== ctx.pattern && path !== ctx.pattern + "/") continue;
+      if (ctx.excludePattern && path.includes(ctx.excludePattern)) continue;
       if (!g.currentConfig?.features?.[key]?.enabled) return null;
+      if (!g.ExtensionCore?.isFeatureAllowed) return null;
       if (!g.ExtensionCore.isFeatureAllowed(key)) return null;
       return ctx;
     }
@@ -85,6 +84,12 @@ var __morbis_feature = (() => {
       if (el) {
         filterState[fieldId] = el.value;
       }
+    });
+    ctx.radioGroups?.forEach(function(groupName) {
+      const checked = document.querySelector(
+        `input[name="${groupName}"]:checked`
+      );
+      if (checked) filterState[groupName] = checked.value;
     });
     g.CookieFilterStorage.set(ctx.storageKey, filterState);
     console.log("Filter saved:", ctx.storageKey, filterState);
@@ -108,6 +113,17 @@ var __morbis_feature = (() => {
         }
       }
     });
+    ctx.radioGroups?.forEach(function(groupName) {
+      if (filterState[groupName] !== void 0) {
+        const radio = document.querySelector(
+          `input[name="${groupName}"][value="${filterState[groupName]}"]`
+        );
+        if (radio) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+    });
     console.log("Filter restored:", ctx.storageKey, filterState);
   }
   function clearFilter() {
@@ -119,6 +135,10 @@ var __morbis_feature = (() => {
       if (el) {
         el.value = "";
       }
+    });
+    ctx.radioGroups?.forEach(function(groupName) {
+      const firstRadio = document.querySelector(`input[name="${groupName}"]`);
+      if (firstRadio) firstRadio.checked = true;
     });
     console.log("Filter cleared:", ctx.storageKey);
   }
@@ -157,6 +177,10 @@ var __morbis_feature = (() => {
   function runFilterPersistenceFeature() {
     const ctx = getContext();
     if (!ctx) return;
+    if (!g.CookieFilterStorage || !g.setupFilterLogoutWatcher || !g.initClearAllFilterButton) {
+      console.warn("[FilterPersistence] shared API tidak tersedia, fitur dilewati");
+      return;
+    }
     let legacyKey = null;
     for (const mapKey in PERSISTENCE_MAP) {
       if (PERSISTENCE_MAP[mapKey] === ctx && LEGACY_STORAGE_KEYS[mapKey]) {
@@ -185,22 +209,11 @@ var __morbis_feature = (() => {
     billingFilterPersistence: {
       name: "Billing Filter Persistence",
       description: "Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang"
-    },
-    doctorFilterPersistence: {
-      name: "Doctor Filter Persistence",
-      description: "Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang"
     }
   };
   var FEATURE_MATCHES = {
     filterPersistence: { pathname: "/v2/m-klaim" },
-    billingFilterPersistence: { pathname: "/billing/pembayaran-new/billing-verifikasi" },
-    doctorFilterPersistence: {
-      oneOf: [
-        { pathname: "/admisi/pelaksanaan_pelayanan" },
-        { pathname: "/admisi/pelaksanaan-operasi" },
-        { pathname: "/admisi/detail-rawat-inap" }
-      ]
-    }
+    billingFilterPersistence: { pathname: "/billing/pembayaran-new/billing-verifikasi" }
   };
   if (typeof g.featureModules !== "undefined") {
     Object.keys(PERSISTENCE_MAP).forEach(function(key) {

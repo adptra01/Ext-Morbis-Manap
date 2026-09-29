@@ -2,7 +2,8 @@
  * FEATURE: Filter Persistence State (Universal)
  * Menyimpan data input filter ke cookies (via CookieFilterStorage)
  * berdasarkan konteks halaman. Cookie otomatis expired setiap tengah malam.
- * Mendukung: M-Klaim (casemix), Billing Verifikasi (kasir), Dokter.
+ * Mendukung: M-Klaim (casemix), Billing Verifikasi (kasir).
+ * (Fitur doctor ditangani file terpisah doctorFilterPersistence.js.)
  *
  * Dependencies: CookieFilterStorage (features/shared/cookieFilterStorage.js)
  */
@@ -18,6 +19,7 @@ interface PersistenceContext {
   storageKey: string;
   scopeField?: string;
   fields: string[];
+  radioGroups?: string[];
   cariButtonSelectors: string[];
   batalButtonSelectors: string[];
 }
@@ -45,7 +47,7 @@ const PERSISTENCE_MAP: Record<string, PersistenceContext> = {
   },
   billingFilterPersistence: {
     pattern: '/billing/pembayaran-new/billing-verifikasi',
-    storageKey: 'billing_filter',
+    storageKey: 'billing_verifikasi_filter',
     scopeField: 'awal',
     fields: [
       'awal',
@@ -55,7 +57,6 @@ const PERSISTENCE_MAP: Record<string, PersistenceContext> = {
       'pasien',
       'sep',
       'status',
-      'statuspasien',
       'jenisPasien',
       'statusPeriksa',
       'dokter',
@@ -64,22 +65,20 @@ const PERSISTENCE_MAP: Record<string, PersistenceContext> = {
       'idUnit',
       'kategori',
     ],
-    cariButtonSelectors: ['input[id="cari"]', 'input.tombol[value="Cari"]'],
-    batalButtonSelectors: ['input.tombol[value="Cancel"]'],
-  },
-  doctorFilterPersistence: {
-    pattern: '__PLACEHOLDER__',
-    storageKey: 'doctor_filter',
-    fields: [],
-    cariButtonSelectors: [],
-    batalButtonSelectors: [],
+    radioGroups: ['statuspasien'],
+    cariButtonSelectors: [
+      '#cari',
+      'input[value="Cari"]',
+      'button.btn-info[onclick*="cari"]',
+      'input.tombol[value="Cari"]',
+    ],
+    batalButtonSelectors: ['input[value="Cancel"]', 'input.tombol[value="Cancel"]'],
   },
 };
 
 const LEGACY_STORAGE_KEYS: Record<string, string> = {
   filterPersistence: 'mklaim_filter',
-  billingFilterPersistence: 'billing_filter',
-  doctorFilterPersistence: 'doctor_filter',
+  billingFilterPersistence: 'billing_verifikasi_filter',
 };
 
 function getContext(): PersistenceContext | null {
@@ -87,8 +86,11 @@ function getContext(): PersistenceContext | null {
   for (const key of Object.keys(PERSISTENCE_MAP)) {
     const ctx = PERSISTENCE_MAP[key];
     if (path !== ctx.pattern && path !== ctx.pattern + '/') continue;
+    // Cegah konteks ikut aktif di halaman anak (mis. /v2/m-klaim/detail).
+    if (ctx.excludePattern && path.includes(ctx.excludePattern)) continue;
 
     if (!g.currentConfig?.features?.[key]?.enabled) return null;
+    if (!g.ExtensionCore?.isFeatureAllowed) return null;
     if (!g.ExtensionCore.isFeatureAllowed(key)) return null;
 
     return ctx;
@@ -106,6 +108,12 @@ function saveFilter(): void {
     if (el) {
       filterState[fieldId] = (el as HTMLInputElement).value;
     }
+  });
+
+  // Radio grup (mis. status pasien di billing): simpan nilai yang tercentang.
+  ctx.radioGroups?.forEach(function (groupName) {
+    const checked = document.querySelector<HTMLInputElement>(`input[name="${groupName}"]:checked`);
+    if (checked) filterState[groupName] = checked.value;
   });
 
   g.CookieFilterStorage.set(ctx.storageKey, filterState);
@@ -141,6 +149,19 @@ function restoreFilter(): void {
     }
   });
 
+  // Pulihkan radio grup yang tersimpan (billing: status pasien).
+  ctx.radioGroups?.forEach(function (groupName) {
+    if (filterState[groupName] !== undefined) {
+      const radio = document.querySelector<HTMLInputElement>(
+        `input[name="${groupName}"][value="${filterState[groupName]}"]`,
+      );
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  });
+
   console.log('Filter restored:', ctx.storageKey, filterState);
 }
 
@@ -155,6 +176,12 @@ function clearFilter(): void {
     if (el) {
       (el as HTMLInputElement).value = '';
     }
+  });
+
+  // Reset radio grup ke pilihan pertama (default halaman).
+  ctx.radioGroups?.forEach(function (groupName) {
+    const firstRadio = document.querySelector<HTMLInputElement>(`input[name="${groupName}"]`);
+    if (firstRadio) firstRadio.checked = true;
   });
 
   console.log('Filter cleared:', ctx.storageKey);
@@ -203,6 +230,13 @@ function runFilterPersistenceFeature(): void {
   const ctx = getContext();
   if (!ctx) return;
 
+  // API bersama (core.js / cookieFilterStorage.js) wajib ada. Kalau tidak,
+  // fitur dilewati diam-diam supaya halaman tidak error.
+  if (!g.CookieFilterStorage || !g.setupFilterLogoutWatcher || !g.initClearAllFilterButton) {
+    console.warn('[FilterPersistence] shared API tidak tersedia, fitur dilewati');
+    return;
+  }
+
   let legacyKey: string | null = null;
   for (const mapKey in PERSISTENCE_MAP) {
     if (PERSISTENCE_MAP[mapKey] === ctx && LEGACY_STORAGE_KEYS[mapKey]) {
@@ -230,6 +264,9 @@ function runFilterPersistenceFeature(): void {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+// Catatan: fitur doctor (pelaksanaan operasi / rawat jalan / rawat inap)
+// di-handle oleh file terpisah doctorFilterPersistence.js yang memang hanya
+// dimuat di halaman-halaman tersebut. Daftar ini sengaja TIDAK memuatnya.
 const featureMeta: Record<string, { name: string; description: string }> = {
   filterPersistence: {
     name: 'Filter Persistence State',
@@ -239,22 +276,11 @@ const featureMeta: Record<string, { name: string; description: string }> = {
     name: 'Billing Filter Persistence',
     description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang',
   },
-  doctorFilterPersistence: {
-    name: 'Doctor Filter Persistence',
-    description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang',
-  },
 };
 
 const FEATURE_MATCHES: Record<string, FeatureMatch> = {
   filterPersistence: { pathname: '/v2/m-klaim' },
   billingFilterPersistence: { pathname: '/billing/pembayaran-new/billing-verifikasi' },
-  doctorFilterPersistence: {
-    oneOf: [
-      { pathname: '/admisi/pelaksanaan_pelayanan' },
-      { pathname: '/admisi/pelaksanaan-operasi' },
-      { pathname: '/admisi/detail-rawat-inap' },
-    ],
-  },
 };
 
 if (typeof g.featureModules !== 'undefined') {
