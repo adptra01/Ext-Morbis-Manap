@@ -365,6 +365,21 @@ var __morbis_feature = (() => {
     #${CONFIG.barId} .bv-reset:hover { background: #475569; }
     #${CONFIG.barId} button:disabled { opacity: .55; cursor: not-allowed; }
 
+    /* Status + progress saat proses massal berjalan */
+    #${CONFIG.barId} .bv-status { color: #f8fafc; font-weight: 700; min-width: 150px; }
+    #${CONFIG.barId} .bv-progress {
+      position: relative; width: 220px; height: 9px; border-radius: 999px;
+      background: #1e293b; overflow: hidden; flex: 0 0 auto;
+    }
+    #${CONFIG.barId} .bv-progress > i {
+      position: absolute; top: 0; left: 0; bottom: 0; width: 0%;
+      border-radius: 999px; background: linear-gradient(90deg, #2563eb, #38bdf8);
+      transition: width .25s ease;
+    }
+    #${CONFIG.barId} .bv-progress.done > i {
+      background: linear-gradient(90deg, #16a34a, #4ade80);
+    }
+
     .bv-check {
       display: inline-flex; align-items: center; justify-content: center;
       margin-right: 6px; vertical-align: middle; cursor: pointer;
@@ -486,8 +501,8 @@ var __morbis_feature = (() => {
       cb.disabled = true;
       cb.title = "Mode uji - belum bisa dipilih";
     } else {
-      cb.disabled = !sel;
-      cb.title = sel ? "Pilih baris ini" : "Baris tidak memenuhi syarat aksi ini";
+      cb.disabled = sedangProses || !sel;
+      cb.title = sedangProses ? "Sedang diproses..." : sel ? "Pilih baris ini" : "Baris tidak memenuhi syarat aksi ini";
       cb.addEventListener("change", () => {
         if (cb.checked) dipilih[target.kind].add(id);
         else dipilih[target.kind].delete(id);
@@ -575,14 +590,41 @@ var __morbis_feature = (() => {
   function getBar() {
     return document.getElementById(CONFIG.barId);
   }
+  function renderProgres(target, selesai, total, sukses, gagal, final = false) {
+    const bar = getBar();
+    if (!bar) return;
+    const pct = total > 0 ? Math.min(100, Math.round(selesai / total * 100)) : 0;
+    bar.innerHTML = "";
+    const item = document.createElement("div");
+    item.className = "bv-item";
+    const status = document.createElement("span");
+    status.className = "bv-status";
+    status.textContent = final ? `Selesai - ${target.nama}` : `${target.nama}: ${selesai}/${total}`;
+    const prog = document.createElement("div");
+    prog.className = final ? "bv-progress done" : "bv-progress";
+    const fill = document.createElement("i");
+    fill.style.width = `${pct}%`;
+    prog.appendChild(fill);
+    const ringkas = document.createElement("span");
+    ringkas.className = "bv-label";
+    if (final) {
+      ringkas.textContent = gagal > 0 ? `OK ${sukses} \xB7 Gagal ${gagal}` : `OK ${sukses} dari ${total}`;
+    } else {
+      ringkas.textContent = gagal > 0 ? `OK ${sukses} \xB7 Gagal ${gagal}` : `OK ${sukses}`;
+    }
+    item.append(status, prog, ringkas);
+    bar.appendChild(item);
+    bar.style.display = "flex";
+  }
   function updateBar() {
     const bar = getBar();
     if (!bar) return;
     const isi = TABLES.map((t) => [t, dipilih[t.kind].size]).filter(([, n]) => n > 0);
-    if (CONFIG.UJI_SAJA || isi.length === 0 || sedangProses) {
+    if (CONFIG.UJI_SAJA || isi.length === 0) {
       bar.style.display = "none";
       return;
     }
+    if (sedangProses) return;
     bar.innerHTML = "";
     isi.forEach(([t, n]) => {
       const item = document.createElement("div");
@@ -676,27 +718,28 @@ var __morbis_feature = (() => {
     if (!konfirmasi) return;
     sedangProses = true;
     TABLES.forEach((t) => syncHeaderState(t));
-    updateBar();
+    renderProgres(target, 0, valid.length, 0, 0);
     const gagal = [];
     let sukses = 0;
     for (let i = 0; i < valid.length; i += 1) {
       const hasil = await kirimSatu(target.endpoint, valid[i]);
       if (hasil.ok) sukses += 1;
       else gagal.push(hasil);
-      const bar = getBar();
-      const label = bar?.querySelector(".bv-label");
-      if (label) label.textContent = `${target.nama} (${i + 1}/${valid.length}): `;
+      renderProgres(target, i + 1, valid.length, sukses, gagal.length);
       if (i < valid.length - 1) await new Promise((r) => setTimeout(r, CONFIG.delayMs));
     }
     sedangProses = false;
     clearSelection(target.kind);
-    renderAll();
+    renderProgres(target, valid.length, valid.length, sukses, gagal.length, true);
+    await new Promise((r) => setTimeout(r, 700));
     const laporan = [`${target.aksi} selesai.`, `Berhasil: ${sukses} dari ${valid.length}`];
     if (gagal.length > 0) {
       laporan.push("", `Gagal: ${gagal.length}`);
       gagal.slice(0, 10).forEach((h) => laporan.push(`#${h.id} - ${h.pesan}`));
       if (gagal.length > 10) laporan.push(`... dan ${gagal.length - 10} lainnya`);
     }
+    const barSelesai = getBar();
+    if (barSelesai) barSelesai.style.display = "none";
     await confirmLegacy({
       title: "Hasil",
       message: laporan.join("\n"),
