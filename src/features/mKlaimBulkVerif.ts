@@ -58,6 +58,11 @@ const CONFIG = {
   readyPollMs: 250,
   // Di atas ambang ini, petugas diberi tahu soal waktu proses.
   warnIfMoreThan: 100,
+  // MODE UJI: kolom checkbox ditampilkan tapi SEMUA checkbox nonaktif dan
+  // tombol aksi tidak muncul. Dipakai untuk memastikan kolom termuat di
+  // browser petugas sebelum mengaktifkan proses massal. Ubah ke false
+  // setelah kolom terlihat benar.
+  UJI_SAJA: true,
 } as const;
 
 type TableKind = 'main' | 'verif';
@@ -218,6 +223,17 @@ function injectCSS(): void {
     .bv-check input { width: 14px; height: 14px; cursor: pointer; margin: 0; }
     .bv-check input:disabled { cursor: not-allowed; }
     th.bv-th-head { width: 26px; }
+    /* Kolom khusus checkbox - sel tersendiri di awal baris. Header native
+       TIDAK disentuh supaya indeks sorting bawaan tidak bergeser. */
+    td.bv-sel {
+      width: 30px; text-align: center; vertical-align: middle;
+      padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    td.bv-sel input { width: 15px; height: 15px; cursor: pointer; margin: 0; }
+    td.bv-sel input:disabled { cursor: not-allowed; }
+    /* Penanda fitur aktif - memudahkan diagnosis di console */
+    html[data-ext-bulk-verif='1'] td.bv-sel { background: #eff6ff; }
   `;
 
   document.head.appendChild(style);
@@ -338,34 +354,44 @@ function getSemuaBaris(target: TableTarget): HTMLElement[] {
  */
 function renderCheckbox(target: TableTarget, row: HTMLElement): void {
   const id = getIdVisit(row);
-  const firstCell = row.querySelector('td');
-  if (!id || !firstCell) return;
+  if (!id) return;
 
   const sel = bolehPilih(target, row);
-  const wrap = document.createElement('span');
-  wrap.className = 'bv-check';
+
+  // Kolom khusus: sel <td> tersendiri di AWAL baris.
+  // Header native TIDAK ditambah kolom baru - bila ditambah, indeks sorting
+  // bawaan DataTables bergeser dan sorting DataTables ikut salah kolom.
+  // Checkbox "pilih semua" tetap di th kolom "No".
+  const cell = document.createElement('td');
+  cell.className = 'bv-sel';
 
   const cb = document.createElement('input');
   cb.type = 'checkbox';
   cb.dataset.extBvId = id;
-  cb.disabled = !sel;
   cb.checked = dipilih[target.kind].has(id); // Set = sumber kebenaran
-  cb.title = sel ? 'Pilih baris ini' : 'Baris tidak memenuhi syarat aksi ini';
-  if (!sel) wrap.title = cb.title;
-  cb.addEventListener('change', () => {
-    if (cb.checked) dipilih[target.kind].add(id);
-    else dipilih[target.kind].delete(id);
-    updateBar();
-    syncHeaderState(target);
-  });
 
-  wrap.appendChild(cb);
-  firstCell.insertBefore(wrap, firstCell.firstChild);
+  if (CONFIG.UJI_SAJA) {
+    // Mode uji: kolom tampil, checkbox nonaktif, tidak ada proses.
+    cb.disabled = true;
+    cb.title = 'Mode uji - belum bisa dipilih';
+  } else {
+    cb.disabled = !sel;
+    cb.title = sel ? 'Pilih baris ini' : 'Baris tidak memenuhi syarat aksi ini';
+    cb.addEventListener('change', () => {
+      if (cb.checked) dipilih[target.kind].add(id);
+      else dipilih[target.kind].delete(id);
+      updateBar();
+      syncHeaderState(target);
+    });
+  }
+
+  cell.appendChild(cb);
+  row.insertBefore(cell, row.firstChild);
 }
 
-/** Buang checkbox di tbody (header di thead tidak disentuh). */
+/** Buang kolom checkbox di tbody (header di thead tidak disentuh). */
 function stripRowCheckboxes(table: HTMLElement): void {
-  table.querySelectorAll('tbody .bv-check').forEach((el) => el.remove());
+  table.querySelectorAll('tbody td.bv-sel').forEach((el) => el.remove());
 }
 
 /**
@@ -395,7 +421,7 @@ function syncHeaderState(target: TableTarget): void {
     return !!id && dipilih[target.kind].has(id);
   }).length;
 
-  cb.disabled = sedangProses || total === 0;
+  cb.disabled = CONFIG.UJI_SAJA || sedangProses || total === 0;
   cb.checked = total > 0 && tercentang === total;
   cb.indeterminate = tercentang > 0 && tercentang < total;
 }
@@ -418,6 +444,14 @@ function renderHeaderCheckbox(target: TableTarget): void {
   const cb = document.createElement('input');
   cb.type = 'checkbox';
   cb.dataset.extBvHeader = '1';
+  if (CONFIG.UJI_SAJA) {
+    cb.disabled = true;
+    cb.title = 'Mode uji - belum bisa dipilih';
+    wrap.appendChild(cb);
+    th.insertBefore(wrap, th.firstChild);
+    th.dataset.extBvHeader = '1';
+    return;
+  }
   cb.addEventListener('change', () => {
     // Hanya baris hasil filter pencarian - persis yang dilihat petugas.
     const baris = getBarisTersaring(target).map((tr) => toBarisInfo(target, tr));
@@ -454,7 +488,7 @@ function updateBar(): void {
 
   const isi = TABLES.map((t) => [t, dipilih[t.kind].size] as const).filter(([, n]) => n > 0);
 
-  if (isi.length === 0 || sedangProses) {
+  if (CONFIG.UJI_SAJA || isi.length === 0 || sedangProses) {
     bar.style.display = 'none';
     return;
   }
@@ -672,7 +706,12 @@ export function initMKlaimBulkVerifFeature(): void {
       buildBar();
       renderAll();
       bindDataTablesRedraw();
-      console.log('[BulkVerif] Init complete - tabel:', TABLES.map((t) => t.sel).join(', '));
+      document.documentElement.setAttribute('data-ext-bulk-verif', '1');
+      console.log(
+        '[BulkVerif] Init complete - tabel:',
+        TABLES.map((t) => t.sel).join(', '),
+        CONFIG.UJI_SAJA ? '(MODE UJI: checkbox nonaktif)' : '',
+      );
     });
   } catch (err) {
     console.error('[BulkVerif] Init error:', err);
