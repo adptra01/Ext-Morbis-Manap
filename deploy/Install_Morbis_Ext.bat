@@ -102,26 +102,23 @@ if not "!EXT_ID_LEN!"=="32" (
 echo [OK] EXT_ID valid: 32 karakter.
 echo.
 
-REM Deteksi OS 32-bit. Semua policy ditulis dengan /reg:64 (view 64-bit);
-REM di OS 32-bit switch itu tidak berlaku sehingga SETIAP reg add gagal
-REM secara diam-diam. Lebih baik berhenti dengan pesan jelas.
+REM Deteksi OS 32-bit. Semua policy ditulis dengan /reg:64 (view 64-bit).
+REM Di OS 32-bit switch itu TIDAK berlaku - semua reg add akan gagal diam-diam.
+REM Jadi di sini kita TIDAK membatalkan instalasi, hanya Dontah view mana yang
+REM benar (lihat variabel RV di bawah).
 set "OS32="
 if /i "%PROCESSOR_ARCHITEW6432%"=="" if /i "%PROCESSOR_ARCHITECTURE%"=="x86" set "OS32=1"
+
+set "RV=/reg:64"
 if defined OS32 (
-    echo ==========================================================
-    echo  ERROR: OS 32-bit terdeteksi.
-    echo  Script ini butuh Windows 64-bit karena policy ditulis ke
-    echo  registry 64-bit ^(/reg:64^). Di OS 32-bit semua policy akan
-    echo  gagal ditulis tanpa pesan - itu sebabnya ekstensi tidak muncul.
-    echo  Hubungi admin: gunakan PC 64-bit atau pasang lewat GPO.
-    echo ==========================================================
-    pause
-    exit /B 1
+    set "RV="
+    echo PERINGATAN: OS 32-bit terdeteksi - policy ditulis ke view 32-bit.
+    echo Chrome 32-bit akan membaca policy dari view yang sama.
 )
 
-REM Pastikan script dijalankan di 64-bit context kalau OS 64-bit
+REM CMD 32-bit di OS 64-bit: /reg:64 tetap dipakai agar tidak salah view.
 if "%PROCESSOR_ARCHITECTURE%"=="x86" if not defined PROCESSOR_ARCHITEW6432 (
-    echo WARNING: CMD 32-bit di OS 64-bit. /reg:64 akan memaksa tulis ke native view.
+    echo INFO: CMD 32-bit di OS 64-bit. /reg:64 memaksa tulis ke view 64-bit.
 )
 
 echo ===== PENTING SEBELUM INSTALL =====
@@ -164,6 +161,9 @@ for %%P in (
 )
 
 echo [3/6] Menulis policy ke semua browser Chromium...
+REM Rantai fallback: kalau satu cara gagal, coba cara berikutnya. Tiap cara
+REM diverifikasi dengan reg query sehingga "sukses" berarti benar-benar ada.
+set "GLOBAL_OK=1"
 for %%P in (
     "Google\Chrome"
     "Microsoft\Edge"
@@ -172,53 +172,54 @@ for %%P in (
     "Opera Software\Opera"
     "Chromium"
 ) do (
-    set "BASE=HKLM\SOFTWARE\Policies\%%~P"
     echo   - %%~P
-    REM Forcelist: auto-install + auto-update dari update.xml.
-    reg add "!BASE!\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f /reg:64 >nul 2>&1
-    REM ExtensionSettings: kunci update_url agar tidak balik ke Store.
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /t REG_SZ /d "force_installed" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /t REG_DWORD /d "1" /f /reg:64 >nul 2>&1
-    REM Host restriction (least-privilege): runtime_allowed_hosts membatasi
-    REM SITE tempat extension boleh berjalan/menyuntik content script - hanya
-    REM host SIMRS produksi. List = array string (value "1","2",...).
-    REM PENTING: Chrome MEMBUKA entri policy ExtensionSettings bila satu nilai
-    REM tidak valid. Pola runtime_allowed_hosts WAJIB scheme://host TANPA path
-    REM (tanpa "/*") - kalau ada path, seluruh ExtensionSettings (termasuk
-    REM force_installed) ditolak. Diverifikasi di chrome://policy (Linux).
-    REM Catatan: ini pelengkap host_permissions; fetch jaringan tetap diatur
-    REM manifest (Phase D menghapus host dev dari build produksi).
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "1" /t REG_SZ /d "http://103.147.236.140" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "2" /t REG_SZ /d "http://103.147.236.138" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "3" /t REG_SZ /d "http://192.168.8.4" /f /reg:64 >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "4" /t REG_SZ /d "http://dev.rsudkotajambi.id" /f /reg:64 >nul 2>&1
-    REM Autoplay: izinkan suara TTS antrian tanpa klik (value di root key).
-    reg add "!BASE!" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f /reg:64 >nul 2>&1
+    REM Cara 1: HKLM dengan view yang benar untuk OS ini.
+    call :WritePolicy "HKLM\SOFTWARE\Policies\%%~P"
+    if errorlevel 1 (
+        REM Cara 2: HKLM tanpa switch view (kalau /reg:64 bermasalah).
+        if not defined OS32 (
+            call :WritePolicy "HKLM\SOFTWARE\Policies\%%~P" force32
+        )
+        if errorlevel 1 (
+            REM Cara 3: HKCU - dipakai kalau HKLM dikunci (antivirus/EDR/GPO).
+            echo       HKLM gagal, mencoba HKCU...
+            call :WritePolicy "HKCU\SOFTWARE\Policies\%%~P"
+            if errorlevel 1 (
+                REM Cara 4: PowerShell - kalau reg.exe diblokir software keamanan.
+                echo       HKCU gagal, mencoba PowerShell...
+                call :WritePolicyPS "%%~P"
+                if errorlevel 1 set "GLOBAL_OK=0"
+            )
+        )
+    )
 )
 
 echo.
-echo [DIAGNOSIS] Memeriksa hasil penulisan (Chrome)...
-reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /v "1" /reg:64 >nul 2>&1
-if errorlevel 1 (
+echo [DIAGNOSIS] Memeriksa hasil penulisan...
+if not "!GLOBAL_OK!"=="1" (
     echo.
     echo ==========================================================
-    echo  PENULISAN POLICY GAGAL - ini penyebabnya:
+    echo  SEMUA CARA PENULISAN GAGAL - ini penyebabnya:
     echo ==========================================================
-    echo Chrome_forced = registry tidak berubah setelah ditulis.
+    echo Registry tidak menerima perubahan dari script ini, padahal
+    echo sudah dicoba: HKLM view 64-bit, HKLM view 32-bit, HKCU,
+    echo dan PowerShell. Biasanya salah satu dari:
     echo.
-    echo 1^) Ulangi skrip ini dengan KLIK KANAN -^> "Run as administrator".
-    echo 2^) Pastikan tidak ada antivirus/security software yang
-    echo    memblokir perubahan registry.
-    echo 3^) Lihat pesan error asli dari Windows di bawah ini:
+    echo 1^) Tidak berjalan sebagai Administrator ^(ulangi: klik kanan
+    echo    -^> "Run as administrator"^).
+    echo 2^) Antivirus/EDR memblokir perubahan registry.
+    echo 3^) PC-nya terkunci kebijakan sehingga registry tidak boleh diubah.
     echo.
-    reg add "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f /reg:64
+    echo 4^) Lihat pesan error asli dari Windows di bawah ini:
+    echo.
+    reg add "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f %RV%
     echo.
     echo Screenshot pesan di atas kirim ke admin.
     echo.
     pause
     goto :FINISH_FAIL
 )
+echo   [OK] Policy tercatat di: !WRITTEN_ROOT!
 echo.
 echo [4/6] Verifikasi lengkap (registry + update.xml + versi terpasang)...
 call :VerifyPolicy
@@ -342,6 +343,107 @@ pause
 exit /B 0
 
 REM ============================================================
+REM  SUBROUTINE: ProbeBrowser <nama>
+REM  Memeriksa policy pada root yang sedang diset di !PB!. Set BSTAT
+REM  =OK/FAIL dan BDETAIL berisi daftar yang hilang.
+REM ============================================================
+:ProbeBrowser
+set "BSTAT=OK"
+set "BDETAIL="
+reg query "!PB!\ExtensionInstallForcelist" /v "1" !RV! 2>nul | findstr /C:"!EXT_ID!" >nul
+if errorlevel 1 (
+    set "BSTAT=FAIL"
+    set "BDETAIL=!BDETAIL! Forcelist "
+)
+reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "installation_mode" !RV! 2>nul | findstr /C:"force_installed" >nul
+if errorlevel 1 (
+    set "BSTAT=FAIL"
+    set "BDETAIL=!BDETAIL! installation_mode "
+)
+reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "update_url" !RV! 2>nul | findstr /C:"adptra01.github.io" >nul
+if errorlevel 1 (
+    set "BSTAT=FAIL"
+    set "BDETAIL=!BDETAIL! update_url "
+)
+reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "override_update_url" !RV! 2>nul | findstr /C:"0x1" >nul
+if errorlevel 1 (
+    set "BSTAT=FAIL"
+    set "BDETAIL=!BDETAIL! override_update_url "
+)
+REM Count host yang tertulis (nilai 1-4). Query /s lalu cocokkan host,
+REM bukan nama value, supaya aman terhadap urutan penulisan.
+set "HCNT=0"
+for %%H in (103.147.236.140 103.147.236.138 192.168.8.4 dev.rsudkotajambi.id) do (
+    reg query "!PB!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /s !RV! 2>nul | findstr /C:"%%~H" >nul
+    if not errorlevel 1 set /a "HCNT+=1"
+)
+if !HCNT! LSS 4 (
+    set "BSTAT=FAIL"
+    set "BDETAIL=!BDETAIL! runtime_allowed_hosts=!HCNT!/4 "
+)
+REM Regresi: pola berpath "/*" PENOLAK seluruh ExtensionSettings.
+reg query "!PB!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /s !RV! 2>nul | findstr /C:"/*" >nul
+if not errorlevel 1 (
+    set "BSTAT=FAIL"
+    set "BDETAIL=!BDETAIL! POLA-PATH(tolak) "
+)
+exit /B
+
+REM ============================================================
+REM  SUBROUTINE: WritePolicy <root> [force32]
+REM  Menulis seluruh policy MORBIS ke satu root, lalu MEMERIKSA hasilnya
+REM  dengan reg query. Exit 0 = benar-benar tertulis, 1 = gagal.
+REM  force32 = paksa view 32-bit (dipakai bila /reg:64 bermasalah).
+REM ============================================================
+:WritePolicy
+set "WV=!RV!"
+if /i "%~2"=="force32" set "WV="
+set "B=%~1"
+REM Forcelist: auto-install + auto-update dari update.xml.
+reg add "!B!\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f !WV! >nul 2>&1
+REM ExtensionSettings: kunci update_url agar tidak balik ke Store.
+reg add "!B!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /t REG_SZ /d "force_installed" /f !WV! >nul 2>&1
+reg add "!B!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f !WV! >nul 2>&1
+reg add "!B!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /t REG_DWORD /d "1" /f !WV! >nul 2>&1
+REM Host restriction (least-privilege): runtime_allowed_hosts membatasi
+REM SITE tempat extension boleh berjalan/menyuntik content script - hanya
+REM host SIMRS produksi. List = array string (value "1","2",...).
+REM PENTING: Chrome MEMBUKA entri policy ExtensionSettings bila satu nilai
+REM tidak valid. Pola runtime_allowed_hosts WAJIB scheme://host TANPA path
+REM (tanpa "/*") - kalau ada path, seluruh ExtensionSettings (termasuk
+REM force_installed) ditolak. Diverifikasi di chrome://policy (Linux).
+REM Catatan: ini pelengkap host_permissions; fetch jaringan tetap diatur
+REM manifest (Phase D menghapus host dev dari build produksi).
+reg add "!B!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "1" /t REG_SZ /d "http://103.147.236.140" /f !WV! >nul 2>&1
+reg add "!B!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "2" /t REG_SZ /d "http://103.147.236.138" /f !WV! >nul 2>&1
+reg add "!B!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "3" /t REG_SZ /d "http://192.168.8.4" /f !WV! >nul 2>&1
+reg add "!B!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /v "4" /t REG_SZ /d "http://dev.rsudkotajambi.id" /f !WV! >nul 2>&1
+REM Autoplay: izinkan suara TTS antrian tanpa klik (value di root key).
+reg add "!B!" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f !WV! >nul 2>&1
+REM Verifikasi nyata: nilainya benar-benar ada di registry?
+reg query "!B!\ExtensionInstallForcelist" /v "1" !WV! 2>nul | findstr /C:"!EXT_ID!" >nul
+if errorlevel 1 exit /B 1
+reg query "!B!\ExtensionSettings\!EXT_ID!" /v "installation_mode" !WV! 2>nul | findstr /C:"force_installed" >nul
+if errorlevel 1 exit /B 1
+set "WRITTEN_ROOT=!B!"
+exit /B 0
+
+REM ============================================================
+REM  SUBROUTINE: WritePolicyPS <browser-base>
+REM  Cara terakhir: reg.exe diblokir software keamanan tapi PowerShell
+REM  boleh. Menulis ke HKLM (64-bit view) dan memverifikasi hasilnya.
+REM ============================================================
+:WritePolicyPS
+set "PSOK="
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ErrorActionPreference='Stop'; $b='HKLM:\SOFTWARE\Policies\%~1'; $id='!EXT_ID!'; $u='!UPDATE_URL!'; New-Item -Path ($b+'\ExtensionInstallForcelist') -Force ^| Out-Null; New-ItemProperty -Path ($b+'\ExtensionInstallForcelist') -Name '1' -Value ($id+';'+$u) -PropertyType String -Force ^| Out-Null; $es=$b+'\ExtensionSettings\'+$id; New-Item -Path $es -Force ^| Out-Null; New-ItemProperty -Path $es -Name 'installation_mode' -Value 'force_installed' -PropertyType String -Force ^| Out-Null; New-ItemProperty -Path $es -Name 'update_url' -Value $u -PropertyType String -Force ^| Out-Null; New-ItemProperty -Path $es -Name 'override_update_url' -Value 1 -PropertyType DWord -Force ^| Out-Null; $rh=$es+'\runtime_allowed_hosts'; New-Item -Path $rh -Force ^| Out-Null; New-ItemProperty -Path $rh -Name '1' -Value 'http://103.147.236.140' -PropertyType String -Force ^| Out-Null; New-ItemProperty -Path $rh -Name '2' -Value 'http://103.147.236.138' -PropertyType String -Force ^| Out-Null; New-ItemProperty -Path $rh -Name '3' -Value 'http://192.168.8.4' -PropertyType String -Force ^| Out-Null; New-ItemProperty -Path $rh -Name '4' -Value 'http://dev.rsudkotajambi.id' -PropertyType String -Force ^| Out-Null; New-ItemProperty -Path $b -Name 'AutoplayAllowed' -Value 1 -PropertyType DWord -Force ^| Out-Null" >nul 2>&1
+if errorlevel 1 exit /B 1
+reg query "HKLM\SOFTWARE\Policies\%~1\ExtensionInstallForcelist" /v "1" /reg:64 2>nul | findstr /C:"!EXT_ID!" >nul
+if errorlevel 1 exit /B 1
+set "WRITTEN_ROOT=HKLM\SOFTWARE\Policies\%~1 (PowerShell)"
+exit /B 0
+
+REM ============================================================
 REM  SUBROUTINE: hitung panjang EXT_ID -> EXT_ID_LEN
 REM ============================================================
 :StrLen
@@ -391,57 +493,24 @@ for %%P in (
     "Opera Software\Opera"
     "Chromium"
 ) do (
+    REM Policy bisa tertulis di HKLM (machine) atau HKCU (user) - cari di
+    REM keduanya, sesuai cara installer menulisnya.
     set "PB=HKLM\SOFTWARE\Policies\%%~P"
-    set "BSTAT=OK"
-    set "BDETAIL="
-
-    reg query "!PB!\ExtensionInstallForcelist" /v "1" /reg:64 2>nul | findstr /C:"!EXT_ID!" >nul
-    if errorlevel 1 (
-        set "BSTAT=FAIL"
-        set "BDETAIL=!BDETAIL! Forcelist "
+    call :ProbeBrowser "%%~P"
+    if "!BSTAT!"=="FAIL" (
+        set "PB=HKCU\SOFTWARE\Policies\%%~P"
+        call :ProbeBrowser "%%~P"
+        if "!BSTAT!"=="OK" set "BDETAIL=!BDETAIL! ^(HKCU^)"
     )
-    reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /reg:64 2>nul | findstr /C:"force_installed" >nul
-    if errorlevel 1 (
-        set "BSTAT=FAIL"
-        set "BDETAIL=!BDETAIL! installation_mode "
-    )
-    reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "update_url" /reg:64 2>nul | findstr /C:"adptra01.github.io" >nul
-    if errorlevel 1 (
-        set "BSTAT=FAIL"
-        set "BDETAIL=!BDETAIL! update_url "
-    )
-    reg query "!PB!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /reg:64 2>nul | findstr /C:"0x1" >nul
-    if errorlevel 1 (
-        set "BSTAT=FAIL"
-        set "BDETAIL=!BDETAIL! override_update_url "
-    )
-    REM Count host yang tertulis (nilai 1-4). Query /s lalu cocokkan host,
-    REM bukan nama value, supaya aman terhadap urutan penulisan.
-    set "HCNT=0"
-    for %%H in (103.147.236.140 103.147.236.138 192.168.8.4 dev.rsudkotajambi.id) do (
-        reg query "!PB!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /s /reg:64 2>nul | findstr /C:"%%~H" >nul
-        if not errorlevel 1 set /a "HCNT+=1"
-    )
-    if !HCNT! LSS 4 (
-        set "BSTAT=FAIL"
-        set "BDETAIL=!BDETAIL! runtime_allowed_hosts=!HCNT!/4 "
-    )
-    REM Regresi: pola berpath "/*" PENOLAK seluruh ExtensionSettings.
-    reg query "!PB!\ExtensionSettings\!EXT_ID!\runtime_allowed_hosts" /s /reg:64 2>nul | findstr /C:"/*" >nul
-    if not errorlevel 1 (
-        set "BSTAT=FAIL"
-        set "BDETAIL=!BDETAIL! POLA-PATH(tolak) "
-    )
-
     if "!BSTAT!"=="OK" (
         set /a "V_OK+=1"
-        echo    [OK]   %%~P
+        echo    [OK]   %%~P !BDETAIL!
     ) else (
         set /a "V_FAIL+=1"
         echo    [FAIL] %%~P - !BDETAIL!
         REM Tampilkan isi registry sebenarnya (jangan tebak penyebabnya).
         echo           isi registry:
-        reg query "!PB!" /s /reg:64 2>&1 | findstr /C:"ExtensionInstallForcelist" /C:"ExtensionSettings" /C:"!EXT_ID!" /C:"update_url" /C:"ERROR"
+        reg query "HKLM\SOFTWARE\Policies\%%~P" /s !RV! 2>&1 | findstr /C:"ExtensionInstallForcelist" /C:"ExtensionSettings" /C:"!EXT_ID!" /C:"update_url" /C:"ERROR"
     )
 )
 
