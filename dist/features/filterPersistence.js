@@ -86,9 +86,7 @@ var __morbis_feature = (() => {
       }
     });
     ctx.radioGroups?.forEach(function(groupName) {
-      const checked = document.querySelector(
-        `input[name="${groupName}"]:checked`
-      );
+      const checked = document.querySelector(`input[name="${groupName}"]:checked`);
       if (checked) filterState[groupName] = checked.value;
     });
     g.CookieFilterStorage.set(ctx.storageKey, filterState);

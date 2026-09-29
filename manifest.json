@@ -107,6 +107,12 @@
         "http://192.168.8.4/rekam-medik/rm-rawat-jalan-new*",
         "http://dev.rsudkotajambi.id/rekam-medik/rm-rawat-jalan-new*"
       ],
+      "exclude_matches": [
+        "http://103.147.236.140/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
+        "http://103.147.236.138/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
+        "http://192.168.8.4/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
+        "http://dev.rsudkotajambi.id/admisi/detail-rawat-inap/new-pemeriksaan-lab*"
+      ],
       "js": [
         "core.js",
         "features/shared/cookieFilterStorage.js",

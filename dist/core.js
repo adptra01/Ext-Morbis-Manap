@@ -133,7 +133,9 @@ var __morbis_core = (() => {
   });
   var _window = window;
   _window.ExtensionCore = ExtensionCore;
-  _window.featureModules = {};
+  if (typeof _window.featureModules === "undefined") {
+    _window.featureModules = {};
+  }
   Object.defineProperty(_window, "currentConfig", {
     get: () => currentConfig,
     configurable: true,

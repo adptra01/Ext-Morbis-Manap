@@ -124,7 +124,15 @@ chrome.runtime.onMessage.addListener(function (message: MessagePayload) {
 // Expose shared globals on window for feature modules & init (esbuild wraps in IIFE)
 const _window = window as unknown as Record<string, unknown>;
 _window.ExtensionCore = ExtensionCore;
-_window.featureModules = {};
+// JANGAN reset featureModules begitu saja: bila content script ter-inject >1× di
+// dokumen sama (overlap pattern manifest / SPA re-inject), core kedua yang reset
+// akan MENELAN modul yang sudah didaftarkan fitur entry pertama — modul lenyap
+// sebelum init sempat menjalankannya. Inisialisasi hanya bila belum ada; entry
+// kedua jadi idempoten. (Setiap dokumen baru punya isolated-world segar → tidak
+// ada staleness antar-halaman.)
+if (typeof _window.featureModules === 'undefined') {
+  _window.featureModules = {};
+}
 
 // Use getters so window values reflect live changes (not snapshots)
 Object.defineProperty(_window, 'currentConfig', {
