@@ -392,6 +392,10 @@ var __morbis_feature = (() => {
       width: 30px; min-width: 30px; text-align: center; vertical-align: middle;
       padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
       background: #f8fafc;
+      /* Kolom terkunci (freeze pane): tetap terlihat saat tabel digeser
+         horizontal (kontainer scroll: .main overflow-x auto di halaman). */
+      position: -webkit-sticky; position: sticky; left: 0; z-index: 11;
+      box-shadow: 2px 0 3px rgba(15, 23, 42, .10);
     }
     th.bv-sel-th input { width: 15px; height: 15px; cursor: pointer; margin: 0; }
     th.bv-sel-th input:disabled { cursor: not-allowed; }
@@ -399,7 +403,10 @@ var __morbis_feature = (() => {
       width: 30px; text-align: center; vertical-align: middle;
       padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
       background: #f8fafc;
+      position: -webkit-sticky; position: sticky; left: 0; z-index: 9;
     }
+    .table-hover tbody tr:hover > td.bv-sel,
+    tbody tr:hover > td.bv-sel { background: #eef2f7; }
     td.bv-sel input { width: 15px; height: 15px; cursor: pointer; margin: 0; }
     td.bv-sel input:disabled { cursor: not-allowed; }
     /* Penanda fitur aktif - memudahkan diagnosis di console */
