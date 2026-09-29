@@ -220,11 +220,17 @@ function injectCSS(): void {
       display: inline-flex; align-items: center; justify-content: center;
       margin-right: 6px; vertical-align: middle; cursor: pointer;
     }
-    .bv-check input { width: 14px; height: 14px; cursor: pointer; margin: 0; }
-    .bv-check input:disabled { cursor: not-allowed; }
-    th.bv-th-head { width: 26px; }
-    /* Kolom khusus checkbox - sel tersendiri di awal baris. Header native
-       TIDAK disentuh supaya indeks sorting bawaan tidak bergeser. */
+    /* Kolom khusus checkbox: <th> sendiri di posisi 0 + <td> sejajar di tiap
+       baris. <th> HANYA ditambahkan setelah DataTables aktif (lihat
+       renderHeaderCheckbox) supaya jumlah kolom yang dibaca saat init tetap
+       16 dan pemetaan data ajax tidak bergeser. */
+    th.bv-sel-th {
+      width: 30px; min-width: 30px; text-align: center; vertical-align: middle;
+      padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    th.bv-sel-th input { width: 15px; height: 15px; cursor: pointer; margin: 0; }
+    th.bv-sel-th input:disabled { cursor: not-allowed; }
     td.bv-sel {
       width: 30px; text-align: center; vertical-align: middle;
       padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
@@ -378,10 +384,10 @@ function renderCheckbox(target: TableTarget, row: HTMLElement): void {
 
   const sel = bolehPilih(target, row);
 
-  // Kolom khusus: sel <td> tersendiri di AWAL baris.
-  // Header native TIDAK ditambah kolom baru - bila ditambah, indeks sorting
-  // bawaan DataTables bergeser dan sorting DataTables ikut salah kolom.
-  // Checkbox "pilih semua" tetap di th kolom "No".
+  // Kolom khusus: sel <td> tersendiri di POSISI 0 baris, sejajar dengan
+  // <th class="bv-sel-th"> yang ditambahkan renderHeaderCheckbox. Header
+  // hanya dipasang SETELAH DataTables aktif supaya indeks sorting bawaan
+  // dan pemetaan kolom ajax tidak bergeser.
   const cell = document.createElement('td');
   cell.className = 'bv-sel';
 
@@ -446,43 +452,66 @@ function syncHeaderState(target: TableTarget): void {
   cb.indeterminate = tercentang > 0 && tercentang < total;
 }
 
+/** True kalau DataTables sudah menginisialisasi tabel ini. Header kolom
+ *  khusus HANYA boleh dipasang sesudahnya: bila <th> tambahan sudah ada saat
+ *  init, DataTables membaca 17 kolom sementara data ajax hanya 16 nilai per
+ *  baris -> kolom Aksi kehilangan headernya dan data bergeser. */
+function isDataTableAktif(table: HTMLTableElement | null): boolean {
+  if (!table) return false;
+  try {
+    const jq = (window as unknown as { jQuery?: any }).jQuery;
+    if (jq?.fn?.DataTable?.isDataTable?.(table)) return true;
+  } catch {
+    /* lanjut cek kelas */
+  }
+  return table.classList.contains('dataTable');
+}
+
 function renderHeaderCheckbox(target: TableTarget): void {
   const table = getTableEl(target);
-  const th = table?.querySelector<HTMLElement>('thead th');
-  if (!th) return;
+  if (!isDataTableAktif(table)) return;
 
-  if (th.dataset.extBvHeader === '1') {
+  const barisHeader = table?.querySelector<HTMLElement>('thead tr');
+  if (!barisHeader) return;
+
+  // Kalau th khusus sudah terpasang, cukup sinkronkan state.
+  const thAda = barisHeader.querySelector<HTMLElement>('th[data-ext-bv-header="1"]');
+  if (thAda) {
     syncHeaderState(target);
     return;
   }
 
-  th.classList.add('bv-th-head');
-  const wrap = document.createElement('span');
-  wrap.className = 'bv-check';
-  wrap.title = 'Pilih / batal pilih semua baris yang cocok dengan pencarian';
+  const th = document.createElement('th');
+  th.className = 'bv-sel-th';
+  th.dataset.extBvHeader = '1';
+  th.title = 'Pilih / batal pilih semua baris yang cocok dengan pencarian';
 
   const cb = document.createElement('input');
   cb.type = 'checkbox';
   cb.dataset.extBvHeader = '1';
+  cb.disabled = true; // sementara sampai syncHeaderState menentukannya
+  if (CONFIG.UJI_SAJA) {
+    cb.title = 'Mode uji - belum bisa dipilih';
+  } else {
+    cb.title = 'Pilih semua hasil pencarian';
+    cb.addEventListener('change', () => {
+      // Hanya baris hasil filter pencarian - persis yang dilihat petugas.
+      const baris = getBarisTersaring(target).map((tr) => toBarisInfo(target, tr));
+      applySelectAll(target.kind, baris, cb.checked);
+      syncRows(target);
+      updateBar();
+    });
+  }
+
+  th.appendChild(cb);
+  // Posisi 0: kolom checkbox di depan kolom "No", sejajar dengan td.bv-sel.
+  barisHeader.insertBefore(th, barisHeader.firstChild);
+
   if (CONFIG.UJI_SAJA) {
     cb.disabled = true;
-    cb.title = 'Mode uji - belum bisa dipilih';
-    wrap.appendChild(cb);
-    th.insertBefore(wrap, th.firstChild);
-    th.dataset.extBvHeader = '1';
-    return;
+  } else {
+    syncHeaderState(target);
   }
-  cb.addEventListener('change', () => {
-    // Hanya baris hasil filter pencarian - persis yang dilihat petugas.
-    const baris = getBarisTersaring(target).map((tr) => toBarisInfo(target, tr));
-    applySelectAll(target.kind, baris, cb.checked);
-    syncRows(target);
-    updateBar();
-  });
-
-  wrap.appendChild(cb);
-  th.insertBefore(wrap, th.firstChild);
-  th.dataset.extBvHeader = '1';
 }
 
 function renderAll(): void {
@@ -717,6 +746,9 @@ function safeSync(target: TableTarget): void {
   if (syncing) return;
   syncing = true;
   try {
+    // Header kolom dicek dulu: begitu DataTables aktif, <th> khusus dipasang
+    // sehingga baris (td.bv-sel di posisi 0) selalu sejajar dengan headernya.
+    renderHeaderCheckbox(target);
     syncRows(target);
     updateBar();
   } finally {
@@ -785,6 +817,8 @@ function jagaHidup(): void {
           initTabel(t); // elemen tabel diganti / terlepas dari DOM
         } else if (kini && !kolomKonsisten(kini)) {
           safeSync(t); // baris ada tapi kolom hilang (mis. restore cache)
+        } else if (kini && !kini.querySelector('thead th[data-ext-bv-header="1"]')) {
+          safeSync(t); // DataTables aktif tapi <th> kolom belum terpasang
         }
       });
     },
@@ -806,8 +840,7 @@ function bindDataTablesRedraw(): void {
         .off('draw.dt.extBv')
         .on('draw.dt.extBv', () => {
           if (sedangProses || syncing) return;
-          syncRows(t);
-          updateBar();
+          safeSync(t);
         });
     } catch {
       /* abaikan - observer tetap menjaga kolom */
@@ -831,7 +864,8 @@ export function initMKlaimBulkVerifFeature(): void {
         const baris = tbl ? tbl.querySelectorAll('tbody tr:not(.dataTables_empty)').length : 0;
         const selBv = tbl ? tbl.querySelectorAll('tbody td.bv-sel').length : 0;
         const unid = tbl ? tbl.querySelectorAll('tbody td.bv-sel[data-ext-bv-unid]').length : 0;
-        return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ''}`;
+        const thHdr = tbl ? !!tbl.querySelector('thead th[data-ext-bv-header="1"]') : false;
+        return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ''} ${thHdr ? 'header=ok' : 'header=BELUM'}`;
       });
       console.log(
         '[BulkVerif] Init complete -',

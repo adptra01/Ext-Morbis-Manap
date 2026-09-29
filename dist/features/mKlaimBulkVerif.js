@@ -367,11 +367,17 @@ var __morbis_feature = (() => {
       display: inline-flex; align-items: center; justify-content: center;
       margin-right: 6px; vertical-align: middle; cursor: pointer;
     }
-    .bv-check input { width: 14px; height: 14px; cursor: pointer; margin: 0; }
-    .bv-check input:disabled { cursor: not-allowed; }
-    th.bv-th-head { width: 26px; }
-    /* Kolom khusus checkbox - sel tersendiri di awal baris. Header native
-       TIDAK disentuh supaya indeks sorting bawaan tidak bergeser. */
+    /* Kolom khusus checkbox: <th> sendiri di posisi 0 + <td> sejajar di tiap
+       baris. <th> HANYA ditambahkan setelah DataTables aktif (lihat
+       renderHeaderCheckbox) supaya jumlah kolom yang dibaca saat init tetap
+       16 dan pemetaan data ajax tidak bergeser. */
+    th.bv-sel-th {
+      width: 30px; min-width: 30px; text-align: center; vertical-align: middle;
+      padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    th.bv-sel-th input { width: 15px; height: 15px; cursor: pointer; margin: 0; }
+    th.bv-sel-th input:disabled { cursor: not-allowed; }
     td.bv-sel {
       width: 30px; text-align: center; vertical-align: middle;
       padding: 4px 2px !important; border-right: 1px solid #e2e8f0;
@@ -514,38 +520,51 @@ var __morbis_feature = (() => {
     cb.checked = total > 0 && tercentang === total;
     cb.indeterminate = tercentang > 0 && tercentang < total;
   }
+  function isDataTableAktif(table) {
+    if (!table) return false;
+    try {
+      const jq = window.jQuery;
+      if (jq?.fn?.DataTable?.isDataTable?.(table)) return true;
+    } catch {
+    }
+    return table.classList.contains("dataTable");
+  }
   function renderHeaderCheckbox(target) {
     const table = getTableEl(target);
-    const th = table?.querySelector("thead th");
-    if (!th) return;
-    if (th.dataset.extBvHeader === "1") {
+    if (!isDataTableAktif(table)) return;
+    const barisHeader = table?.querySelector("thead tr");
+    if (!barisHeader) return;
+    const thAda = barisHeader.querySelector('th[data-ext-bv-header="1"]');
+    if (thAda) {
       syncHeaderState(target);
       return;
     }
-    th.classList.add("bv-th-head");
-    const wrap = document.createElement("span");
-    wrap.className = "bv-check";
-    wrap.title = "Pilih / batal pilih semua baris yang cocok dengan pencarian";
+    const th = document.createElement("th");
+    th.className = "bv-sel-th";
+    th.dataset.extBvHeader = "1";
+    th.title = "Pilih / batal pilih semua baris yang cocok dengan pencarian";
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.dataset.extBvHeader = "1";
+    cb.disabled = true;
+    if (CONFIG.UJI_SAJA) {
+      cb.title = "Mode uji - belum bisa dipilih";
+    } else {
+      cb.title = "Pilih semua hasil pencarian";
+      cb.addEventListener("change", () => {
+        const baris = getBarisTersaring(target).map((tr) => toBarisInfo(target, tr));
+        applySelectAll(target.kind, baris, cb.checked);
+        syncRows(target);
+        updateBar();
+      });
+    }
+    th.appendChild(cb);
+    barisHeader.insertBefore(th, barisHeader.firstChild);
     if (CONFIG.UJI_SAJA) {
       cb.disabled = true;
-      cb.title = "Mode uji - belum bisa dipilih";
-      wrap.appendChild(cb);
-      th.insertBefore(wrap, th.firstChild);
-      th.dataset.extBvHeader = "1";
-      return;
+    } else {
+      syncHeaderState(target);
     }
-    cb.addEventListener("change", () => {
-      const baris = getBarisTersaring(target).map((tr) => toBarisInfo(target, tr));
-      applySelectAll(target.kind, baris, cb.checked);
-      syncRows(target);
-      updateBar();
-    });
-    wrap.appendChild(cb);
-    th.insertBefore(wrap, th.firstChild);
-    th.dataset.extBvHeader = "1";
   }
   function renderAll() {
     TABLES.forEach(initTabel);
@@ -710,6 +729,7 @@ var __morbis_feature = (() => {
     if (syncing) return;
     syncing = true;
     try {
+      renderHeaderCheckbox(target);
       syncRows(target);
       updateBar();
     } finally {
@@ -756,18 +776,23 @@ var __morbis_feature = (() => {
     amatiTabel(t, el);
   }
   function jagaHidup() {
-    setInterval(() => {
-      if (syncing) return;
-      TABLES.forEach((t) => {
-        const el = teramati.get(t.sel);
-        const kini = getTableEl(t);
-        if (kini && (!el || !document.contains(el) || kini !== el)) {
-          initTabel(t);
-        } else if (kini && !kolomKonsisten(kini)) {
-          safeSync(t);
-        }
-      });
-    }, Math.max(1e3, CONFIG.readyPollMs * 4));
+    setInterval(
+      () => {
+        if (syncing) return;
+        TABLES.forEach((t) => {
+          const el = teramati.get(t.sel);
+          const kini = getTableEl(t);
+          if (kini && (!el || !document.contains(el) || kini !== el)) {
+            initTabel(t);
+          } else if (kini && !kolomKonsisten(kini)) {
+            safeSync(t);
+          } else if (kini && !kini.querySelector('thead th[data-ext-bv-header="1"]')) {
+            safeSync(t);
+          }
+        });
+      },
+      Math.max(1e3, CONFIG.readyPollMs * 4)
+    );
   }
   function bindDataTablesRedraw() {
     const jq = window.jQuery;
@@ -779,8 +804,7 @@ var __morbis_feature = (() => {
       try {
         jq(t.sel).off("draw.dt.extBv").on("draw.dt.extBv", () => {
           if (sedangProses || syncing) return;
-          syncRows(t);
-          updateBar();
+          safeSync(t);
         });
       } catch {
       }
@@ -801,7 +825,8 @@ var __morbis_feature = (() => {
           const baris = tbl ? tbl.querySelectorAll("tbody tr:not(.dataTables_empty)").length : 0;
           const selBv = tbl ? tbl.querySelectorAll("tbody td.bv-sel").length : 0;
           const unid = tbl ? tbl.querySelectorAll("tbody td.bv-sel[data-ext-bv-unid]").length : 0;
-          return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ""}`;
+          const thHdr = tbl ? !!tbl.querySelector('thead th[data-ext-bv-header="1"]') : false;
+          return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ""} ${thHdr ? "header=ok" : "header=BELUM"}`;
         });
         console.log(
           "[BulkVerif] Init complete -",
