@@ -1,35 +1,86 @@
 @echo off
 setlocal EnableDelayedExpansion
-title Installer Ekstensi SIMRS Morbis
+title MORBIS Ext - Utilitas (Pasang / Perbarui / Uninstall)
 color 0A
+
+REM ============================================================
+REM  SATU SKRIP UNTUK SEMUA KEBUTUHAN PC USER
+REM    [1] Pasang / Perbarui  - sekali seumur, auto-update aktif
+REM    [2] Verifikasi         - cek policy tanpa mengubah apa pun
+REM    [3] Uninstall          - hapus policy (sekali seumur juga)
+REM
+REM  Pemakaian non-interaktif (opsional):
+REM    Install_Morbis_Ext.bat install
+REM    Install_Morbis_Ext.bat verify
+REM    Install_Morbis_Ext.bat uninstall
+REM
+REM  CATATAN GPO: untuk 50-500 PC, JANGAN pakai .bat ini (ada
+REM  interaksi/prompt). Pakai policy JSON di deploy/policy/ yang
+REM  bisa di-push otomatis oleh GPO/Intune.
+REM ============================================================
 
 NET SESSION >nul 2>&1
 if %errorLevel% == 0 (
-    goto :INSTALL
+    goto :MAIN
 ) else (
     echo Meminta izin Administrator...
     powershell -Command "Start-Process '%0' -Verb RunAs"
     exit /B
 )
 
-:INSTALL
-cls
-echo ===================================================
-echo     AUTO-INSTALLER EKSTENSI SIMRS MORBIS
-echo     RSUD H. ABDUL MANAP
-echo ===================================================
-echo.
-echo Sedang mengonfigurasi browser Anda...
-echo.
-
+:MAIN
 REM ============================================================
 REM  KONFIGURASI - sumber tunggal identitas produksi.
-REM  EXT_ID = hash SHA256 public key dist.pem (wajib 32 char a-p).
+REM  EXT_ID = hash SHA256 public key (wajib 32 char a-p).
 REM  JANGAN ketik ulang manual - copy-paste dari update.xml live.
 REM  Sinkronisasi dijaga otomatis oleh CI (guard di deploy-to-main.yml).
 REM ============================================================
 set EXT_ID=beljnjfifmncnfnhdkcmjpeonoigdnbl
 set UPDATE_URL=https://adptra01.github.io/Ext-Morbis-Manap/update.xml
+
+REM Argument (kalau ada) langsung jalankan, tanpa menu.
+if /i "%~1"=="install"   goto :INSTALL
+if /i "%~1"=="verify"    goto :VERIFY_ONLY
+if /i "%~1"=="uninstall" goto :UNINSTALL
+
+:MENU
+cls
+echo ===================================================
+echo   MORBIS Ext - Utilitas
+echo   RSUD H. ABDUL MANAP
+echo ===================================================
+echo.
+echo  [1] PASANG / PERBARUI   (rekomendasi - sekali seumur)
+echo      Ekstensi terpasang otomatis + update OTOMATIS
+echo      setiap ada versi baru. Tidak perlu jalankan lagi.
+echo.
+echo  [2] VERIFIKASI          (cek policy, tidak mengubah apa pun)
+echo.
+echo  [3] UNINSTALL           (hapus policy dari semua browser)
+echo.
+echo  [0] KELUAR
+echo.
+set "PILIHAN="
+set /p "PILIHAN=Pilih [1]: "
+if not defined PILIHAN set "PILIHAN=1"
+if "%PILIHAN%"=="1" goto :INSTALL
+if "%PILIHAN%"=="2" goto :VERIFY_ONLY
+if "%PILIHAN%"=="3" goto :UNINSTALL
+if "%PILIHAN%"=="0" exit /B 0
+echo.
+echo Pilihan tidak dikenal.
+timeout /t 2 /nobreak >nul
+goto :MENU
+
+:INSTALL
+cls
+echo ===================================================
+echo     PASANG / PERBARUI EKSTENSI SIMRS MORBIS
+echo     RSUD H. ABDUL MANAP
+echo ===================================================
+echo.
+echo Sedang mengonfigurasi browser Anda...
+echo.
 
 REM Validasi EXT_ID harus tepat 32 karakter (a-p).
 call :StrLen
@@ -53,7 +104,7 @@ if "%PROCESSOR_ARCHITECTURE%"=="x86" if not defined PROCESSOR_ARCHITEW6432 (
     echo INFO: CMD 32-bit di OS 64-bit. /reg:64 akan memaksa tulis ke native view.
 )
 
-echo ===== PENTING SEBELUM INSTAL =====
+echo ===== PENTING SEBELUM INSTALL =====
 echo 1. Hapus dulu ekstensi MORBIS versi LAMA (Load unpacked) di browser:
 echo    chrome://extensions - cari MORBIS Ext Unofficial yang tertulis
 echo    "Dimuat sebagai unpacked" - klik Hapus.
@@ -110,11 +161,11 @@ for %%P in (
     reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f /reg:64 >nul 2>&1
     reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /t REG_DWORD /d "1" /f /reg:64 >nul 2>&1
     REM Host restriction (least-privilege): runtime_allowed_hosts membatasi
-    REM SITE tempat extension boleh berjalan/menyuntik content script — hanya
+    REM SITE tempat extension boleh berjalan/menyuntik content script - hanya
     REM host SIMRS produksi. List = array string (value "1","2",...).
     REM PENTING: Chrome MEMBUKA entri policy ExtensionSettings bila satu nilai
     REM tidak valid. Pola runtime_allowed_hosts WAJIB scheme://host TANPA path
-    REM (tanpa "/*") — kalau ada path, seluruh ExtensionSettings (termasuk
+    REM (tanpa "/*") - kalau ada path, seluruh ExtensionSettings (termasuk
     REM force_installed) ditolak. Diverifikasi di chrome://policy (Linux).
     REM Catatan: ini pelengkap host_permissions; fetch jaringan tetap diatur
     REM manifest (Phase D menghapus host dev dari build produksi).
@@ -147,7 +198,7 @@ echo.
 echo ===== VERIFIKASI WAJIB (1 menit) =====
 echo 1. chrome://policy  (atau edge://policy)
 echo    - baris ExtensionSettings ADA
-echo    - kolom "Error" KOSONG  <-- WAJIB. Kalau ada error, policy ditolak
+echo    - kolom "Error" KOSONG  ^<-- WAJIB. Kalau ada error, policy ditolak
 echo      browser dan ekstensi TIDAK akan ter-install.
 echo 2. chrome://extensions
 echo    - kartu MORBIS muncul, TANPA label "unpacked"
@@ -155,13 +206,90 @@ echo    - klik "Detail" - pastikan ID = beljnjfifmncnfnhdkcmjpeonoigdnbl
 echo 3. Buka http://103.147.236.140 - ekstensi aktif di halaman SIMRS.
 echo.
 echo Update berikutnya OTOMATIS dari update.xml (GitHub Pages) - tanpa
-echo perlu mengunduh atau memasang ulang apa pun.
+echo perlu mengunduh atau memasang ulang apa pun. Skrip ini tidak perlu
+echo dijalankan lagi.
+echo.
+pause
+exit /B 0
+
+:VERIFY_ONLY
+cls
+echo ===================================================
+echo     VERIFIKASI POLICY - MORBIS EXT
+echo ===================================================
+echo.
+echo Tidak ada yang diubah. Hanya membaca + memeriksa.
+echo.
+call :VerifyPolicy
+echo.
+pause
+exit /B 0
+
+:UNINSTALL
+cls
+color 0C
+echo ===================================================
+echo     UNINSTALLER EKSTENSI SIMRS MORBIS
+echo     RSUD H. ABDUL MANAP
+echo ===================================================
+echo.
+echo Menghapus policy MORBIS dari semua browser Chromium...
+echo.
+for %%P in (
+    "Google\Chrome"
+    "Microsoft\Edge"
+    "BraveSoftware\Brave"
+    "Vivaldi"
+    "Opera Software\Opera"
+    "Chromium"
+) do (
+    echo   - %%~P
+    REM /reg:64 wajib pada SEMUA reg delete (tanpa ini, host cmd 32-bit
+    REM menulis ke Wow6432Node dan policy MORBIS di native view selamat).
+    REM HANYA nilai MORBIS (value "1") yang dihapus - key Forcelist dan
+    REM key lain TIDAK disentuh agar ekstensi lain yang dikelola IT aman.
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" /f /reg:64 >nul 2>&1
+    REM Hapus subkey AutoplayAllowed yang salah (dibuat installer lama).
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\AutoplayAllowed" /f /reg:64 >nul 2>&1
+    REM Hapus ExtensionSettings khusus MORBIS (ID baru + ID lama).
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\beljnjfifmncnfnhdkcmjpeonoigdnbl" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\cbkjilfkdgclmpilonabdnicngjjgegd" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\xae4a2ltyv2bj7lqyzxi2xeynpiefblg" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P" /v "AutoplayAllowed" /f /reg:64 >nul 2>&1
+    REM Bersihkan sisa installer lama (level user) - tetap HANYA nilai MORBIS.
+    reg delete "HKCU\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" /f /reg:64 >nul 2>&1
+    reg delete "HKCU\SOFTWARE\Policies\%%~P\ExtensionSettings\beljnjfifmncnfnhdkcmjpeonoigdnbl" /f /reg:64 >nul 2>&1
+)
+
+echo.
+echo Menutup semua browser Chromium...
+call :KillBrowsers
+
+echo.
+echo Membersihkan jalur cadangan A (tugas terjadwal + clone lokal)...
+REM Idempoten: hapus kalau ada, biarkan kalau tidak ada.
+schtasks /Delete /TN "Morbis Ext Update" /F >nul 2>&1
+if exist "%USERPROFILE%\morbis-ext" rmdir /s /q "%USERPROFILE%\morbis-ext" >nul 2>&1
+
+echo.
+echo ===================================================
+echo  POLICY MORBIS SUDAH DIHAPUS.
+echo ===================================================
+echo - Hanya nilai MORBIS di Forcelist yang dihapus; ekstensi lain
+echo   yang dikelola IT tetap utuh.
+echo - Tugas terjadwal "Morbis Ext Update" dihapus (jika ada).
+echo - Folder %USERPROFILE%\morbis-ext dihapus (jika ada).
+echo.
+echo CATATAN: kartu MORBIS di chrome://extensions TIDAK hilang dengan
+echo sendirinya (Chrome menahannya selama policy aktif). Setelah policy
+echo dihapus, buka browser lalu hapus kartunya manual, atau gunakan
+echo "chrome://extensions" - tombol Hapus.
 echo.
 pause
 exit /B 0
 
 REM ============================================================
-REM  SUBROUTINE: hitung panjang EXT_ID -^> EXT_ID_LEN
+REM  SUBROUTINE: hitung panjang EXT_ID -> EXT_ID_LEN
 REM ============================================================
 :StrLen
 set "EXT_ID_LEN=0"

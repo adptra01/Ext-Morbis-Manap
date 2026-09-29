@@ -12,6 +12,29 @@ Identitas produksi (jangan diubah manual — dijaga otomatis oleh CI):
 
 ---
 
+## 0. Ringkasan: cukup SATU skrip
+
+Untuk PC user (Windows), **hanya butuh satu file**:
+[`Install_Morbis_Ext.bat`](https://adptra01.github.io/Ext-Morbis-Manap/Install_Morbis_Ext.bat)
+
+Unduh → klik 2× → pilih menu:
+
+| Menu                      | Kapan dipakai                                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **[1] Pasang / Perbarui** | **Sekali seumur.** Tulis policy → ekstensi terpasang otomatis + update otomatis selamanya. Aman dijalankan berkali-kali (idempoten). |
+| **[2] Verifikasi**        | Kapan saja untuk memastikan policy masih utuh (tidak mengubah apa pun).                                                              |
+| **[3] Uninstall**         | Saat PC dikembalikan / ganti user. Sekali seumur juga.                                                                               |
+
+Setelah opsi [1] selesai, **skrip tidak perlu dijalankan lagi** — setiap tag
+versi baru otomatis ditarik browser dari `update.xml`. Jalur non-interaktif
+(untuk otomasi): `Install_Morbis_Ext.bat install` / `verify` / `uninstall`.
+
+> Skrip `Setup_Update_Terjadwal.bat` & `morbis-update-main.bat` adalah **jalur
+> cadangan** (PC yang tak bisa menerima policy) — bukan untuk GPO/Intune karena
+> mengandung prompt interaktif. Untuk 50–500 PC pakai policy JSON (§2 & §5).
+
+---
+
 ## 1. Prasyarat & Alur Deploy
 
 Anda hanya butuh akses push ke branch `dev` repo
