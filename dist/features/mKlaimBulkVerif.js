@@ -403,12 +403,12 @@ var __morbis_feature = (() => {
     );
   }
   function getIdVisit(row) {
-    const btn = row.querySelector('button[onclick*="detail("]');
-    if (btn) {
-      const m = (btn.getAttribute("onclick") || "").match(/\d+/);
+    const el = row.querySelector('[onclick*="detail("]');
+    if (el) {
+      const m = (el.getAttribute("onclick") || "").match(/\d+/);
       if (m) return m[0];
     }
-    const bV = row.querySelector('button[onclick*="BatalVerif("]');
+    const bV = row.querySelector('[onclick*="BatalVerif("]');
     if (bV) {
       const m = (bV.getAttribute("onclick") || "").match(/\d+/);
       if (m) return m[0];
@@ -455,7 +455,18 @@ var __morbis_feature = (() => {
   }
   function renderCheckbox(target, row) {
     const id = getIdVisit(row);
-    if (!id) return;
+    if (!id) {
+      const cell2 = document.createElement("td");
+      cell2.className = "bv-sel";
+      cell2.dataset.extBvUnid = "1";
+      const cb2 = document.createElement("input");
+      cb2.type = "checkbox";
+      cb2.disabled = true;
+      cb2.title = "id_visit tidak terbaca dari markup baris ini";
+      cell2.appendChild(cb2);
+      row.insertBefore(cell2, row.firstChild);
+      return;
+    }
     const sel = bolehPilih(target, row);
     const cell = document.createElement("td");
     cell.className = "bv-sel";
@@ -714,9 +725,16 @@ var __morbis_feature = (() => {
         renderAll();
         bindDataTablesRedraw();
         document.documentElement.setAttribute("data-ext-bulk-verif", "1");
+        const ringkas = TABLES.map((t) => {
+          const tbl = getTableEl(t);
+          const baris = tbl ? tbl.querySelectorAll("tbody tr:not(.dataTables_empty)").length : 0;
+          const selBv = tbl ? tbl.querySelectorAll("tbody td.bv-sel").length : 0;
+          const unid = tbl ? tbl.querySelectorAll("tbody td.bv-sel[data-ext-bv-unid]").length : 0;
+          return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ""}`;
+        });
         console.log(
-          "[BulkVerif] Init complete - tabel:",
-          TABLES.map((t) => t.sel).join(", "),
+          "[BulkVerif] Init complete -",
+          ringkas.join(" | "),
           CONFIG.UJI_SAJA ? "(MODE UJI: checkbox nonaktif)" : ""
         );
       });

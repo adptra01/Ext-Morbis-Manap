@@ -260,14 +260,18 @@ function toEl(node: unknown): HTMLElement[] {
   );
 }
 
-/** id_visit dari tombol native (detail / BatalVerif) - sumber = UI asli. */
+/** id_visit dari aksi native (detail / BatalVerif) - sumber = UI asli.
+ *  Dicari di elemen APA PUN (button, <a>, <span>, <i>, dst) karena markup
+ *  tombol Aksi bisa berbeda antar-host SIMRS (140/138/192.168.8.4/dev).
+ *  Angka di dalam onclick = id_visit, bukan nomor baris - pilihan tetap
+ *  1:1 dengan klaim asli. */
 function getIdVisit(row: HTMLElement): string | null {
-  const btn = row.querySelector<HTMLElement>('button[onclick*="detail("]');
-  if (btn) {
-    const m = (btn.getAttribute('onclick') || '').match(/\d+/);
+  const el = row.querySelector<HTMLElement>('[onclick*="detail("]');
+  if (el) {
+    const m = (el.getAttribute('onclick') || '').match(/\d+/);
     if (m) return m[0];
   }
-  const bV = row.querySelector<HTMLElement>('button[onclick*="BatalVerif("]');
+  const bV = row.querySelector<HTMLElement>('[onclick*="BatalVerif("]');
   if (bV) {
     const m = (bV.getAttribute('onclick') || '').match(/\d+/);
     if (m) return m[0];
@@ -354,7 +358,23 @@ function getSemuaBaris(target: TableTarget): HTMLElement[] {
  */
 function renderCheckbox(target: TableTarget, row: HTMLElement): void {
   const id = getIdVisit(row);
-  if (!id) return;
+
+  // Kolom wajib tampil untuk SETIAP baris (termasuk saat mode uji), sehingga
+  // petugas selalu melihat kolomnya. Kalau id tidak terbaca dari markup host,
+  // checkbox tetap dirender tapi NONAKTIF - baris tak dikenal tidak boleh
+  // dipilih (jaminan "tidak salah pilih baris").
+  if (!id) {
+    const cell = document.createElement('td');
+    cell.className = 'bv-sel';
+    cell.dataset.extBvUnid = '1';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.disabled = true;
+    cb.title = 'id_visit tidak terbaca dari markup baris ini';
+    cell.appendChild(cb);
+    row.insertBefore(cell, row.firstChild);
+    return;
+  }
 
   const sel = bolehPilih(target, row);
 
@@ -707,9 +727,16 @@ export function initMKlaimBulkVerifFeature(): void {
       renderAll();
       bindDataTablesRedraw();
       document.documentElement.setAttribute('data-ext-bulk-verif', '1');
+      const ringkas = TABLES.map((t) => {
+        const tbl = getTableEl(t);
+        const baris = tbl ? tbl.querySelectorAll('tbody tr:not(.dataTables_empty)').length : 0;
+        const selBv = tbl ? tbl.querySelectorAll('tbody td.bv-sel').length : 0;
+        const unid = tbl ? tbl.querySelectorAll('tbody td.bv-sel[data-ext-bv-unid]').length : 0;
+        return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ''}`;
+      });
       console.log(
-        '[BulkVerif] Init complete - tabel:',
-        TABLES.map((t) => t.sel).join(', '),
+        '[BulkVerif] Init complete -',
+        ringkas.join(' | '),
         CONFIG.UJI_SAJA ? '(MODE UJI: checkbox nonaktif)' : '',
       );
     });
