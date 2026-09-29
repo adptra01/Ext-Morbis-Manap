@@ -10,15 +10,18 @@
 //   to X"), commit deploy orphan ("deploy: vX"), dan merge.
 // - Commit tanpa format conventional masuk grup "misc".
 //
-// Marker & lag 1 commit (diyakini, bukan bug):
+// Marker & lag 1 commit:
 //   Regenerasi hook pre-commit berjalan SEBELUM commit terbentuk, jadi file
-//   ter-commit tak memuat entri commit itu sendiri. Tiap regenerasi menulis
-//   marker `<!-- changelog-upto: <sha> -->` = generation point (HEAD saat
-//   regenerasi; atau `upto` saat render state historis). --check membandingkan
-//   file dengan buildMd({ upto: marker }), jadi file hasil hook (tinggal commit
-//   berikutnya + bump CI di atasnya) tetap dianggap valid; file stale/phantom
-//   (mis. marker hasil `git commit --amend` yang sha-nya hilang) atau hasil
-//   `--no-verify` tetap terdeteksi dan dituntun ke `npm run changelog`.
+//   ter-commit tak memuat entri commit itu sendiri (lag-1: marker file =
+//   parent dari commit yang membawanya). Tiap regenerasi menulis marker
+//   `<!-- changelog-upto: <sha> -->` = generation point (HEAD saat regenerasi;
+//   atau `upto` saat render state historis).
+//   --check membandingkan file dengan buildMd({ upto: marker }) dan menerima
+//   marker tertinggal HANYA bila gap marker→HEAD tidak memuat commit
+//   changelog-relevan selain HEAD itu sendiri (lag-1 alami + commit bump/deploy
+//   CI yang tersaring). Bila ada commit relevan lain di gap (mis. hasil
+//   `--no-verify`, atau amend sehingga sha marker phantom), file dianggap
+//   STALE → dituntun ke `npm run changelog`.
 //
 // Pemakaian:
 //   node scripts/changelog.mjs            # tulis CHANGELOG.md (hanya jika berubah)
@@ -177,7 +180,27 @@ if (existsSync(OUT)) {
   const markerMatch = old.match(MARKER_RE);
   let ok = old === md;
   if (!ok && markerMatch) {
-    ok = old === buildMd({ upto: markerMatch[1] });
+    // Toleransi marker tertinggal HANYA bila gap marker→HEAD tidak memuat
+    // commit changelog-relevan selain HEAD itu sendiri:
+    //   - gap kosong              → marker == HEAD (file persis HEAD)
+    //   - lag-1 alami             → gap = [HEAD], commit berisi file ini
+    //   - bump/deploy CI tersaring → gap berisi commit yang classify()==null
+    // Bila ada commit relevan LAIN di gap (mis. --no-verify), file STALE —
+    // jangan dianggap sinkron, biarkan regenerate di bawah.
+    const commits = gitLog();
+    const markerIdx = commits.findIndex(
+      (c) => c.hash === markerMatch[1] || c.hash7 === markerMatch[1],
+    );
+    if (markerIdx !== -1) {
+      const gap = commits.slice(0, markerIdx); // lebih baru dari marker
+      const headHash = commits[0]?.hash ?? null;
+      const relevantInGap = gap.filter((c) => classify(c.subject) !== null);
+      const safeLag = relevantInGap.every((c) => c.hash === headHash);
+      if (safeLag) {
+        const upto = buildMd({ upto: markerMatch[1] });
+        ok = upto !== null && old === upto;
+      }
+    }
   }
   if (ok) {
     console.log('[changelog] CHANGELOG.md sudah sinkron (state sesuai marker)');

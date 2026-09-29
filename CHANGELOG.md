@@ -9,14 +9,46 @@
 
 ## 2026-09-29
 
+### ✨ feat
+
+- **m-klaim** — kolom checkbox terkunci (freeze pane) saat tabel digeser (`b8df29b`)
+- **m-klaim** — progress bar saat proses massal berjalan (`10db7af`)
+- **m-klaim** — aktifkan seleksi - UJI_SAJA=false (`9ffc230`)
+- **m-klaim** — kolom checkbox tersendiri + mode uji (disabled) (`05d73ad`)
+- **m-klaim** — bulk Verif / Batal Verif dengan checkbox per baris (`7c4c75e`)
+- **deploy** — satu skrip untuk semua (menu: install/verify/uninstall) (`086c8ec`)
+- **ui** — tampilkan versi ekstensi di popup & side panel (dari manifest) (`9f98c51`)
+- **deploy** — installer .bat verifikasi lengkap otomatis (install + cek = 1 skrip) (`5a891ff`)
+
 ### 🐛 fix
 
+- **manifest** — hilangkan double core/init di new-pemeriksaan-lab + guard featureModules (`e37d9a9`)
+- **deploy** — satu content-script utk billing + skrip update .bat lebih kebal (`856f071`)
+- **filter** — radio billing tersimpan + guard API + buang stub doctor mati (`c6127f1`)
+- **m-klaim** — kolom checkbox kini punya header sendiri - data tidak bergeser (`d3c0fda`)
+- **m-klaim** — kolom checkbox tak lagi hilang saat data ditampilkan (`62c68de`)
+- **m-klaim** — kolom checkbox selalu tampil walau markup host berbeda (`d8fa967`)
+- **deploy** — tulis policy dengan rantai fallback + verifikasi nyata (`a410e80`)
+- **deploy** — skrip .bat self-diagnosing - tunjukkan penyebab, bukan cuma FAIL (`267c380`)
+- **release** — publish .zip sesuai sha256sums.txt + guard sha256sum -c (`52d1fda`)
+- **policy** — runtime_allowed_hosts tanpa path — Chrome tolak seluruh ExtensionSettings (`215682b`)
+- **changelog** — slice history-until-marker = ancestors (bukan prefix) (`4fd94cf`)
 - **changelog** — marker pakai generation point (upto/HEAD) (`17593b9`)
 - **changelog** — marker changelog-upto utk --check akurat (lag-1 + bump CI) (`266ccb8`)
 - **changelog** — saring commit bump CI yang lolos klasifikasi conventional (`007072f`)
 
+### ⚡ perf
+
+- pack hygiene + minify release (optimasi ukuran CRX) (`37b757d`)
+
+### 📝 docs
+
+- **audit** — catat incomplete sha256sums.txt pada rilis < v1.5.91 (`ef059a7`)
+- **policy** — dokumentasi siklus hidup force_installed (hapus policy = uninstall otomatis) (`ad3697d`)
+
 ### 🧹 chore
 
+- update knowledge graph (changelog.mjs: marker slice + genPoint) (`69d9d3f`)
 - **changelog** — --check toleran lag-1-commit + dokumentasi lag (`fd145fc`)
 - update knowledge graph (scripts/changelog.mjs + filter bump) (`5446a93`)
 
@@ -1615,4 +1647,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 17593b9fb512059375fb4c194dd6beec6509d5f6 -->
+<!-- changelog-upto: 37b757d9b89d37ae63db51cfa9a34cac3f0aba62 -->
