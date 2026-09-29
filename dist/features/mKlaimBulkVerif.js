@@ -269,11 +269,13 @@ var __morbis_feature = (() => {
     readyPollMs: 250,
     // Di atas ambang ini, petugas diberi tahu soal waktu proses.
     warnIfMoreThan: 100,
-    // MODE UJI: kolom checkbox ditampilkan tapi SEMUA checkbox nonaktif dan
-    // tombol aksi tidak muncul. Dipakai untuk memastikan kolom termuat di
-    // browser petugas sebelum mengaktifkan proses massal. Ubah ke false
-    // setelah kolom terlihat benar.
-    UJI_SAJA: true
+    // MODE UJI (true): kolom checkbox ditampilkan tapi SEMUA checkbox nonaktif
+    // dan tombol aksi tidak muncul. Dipakai untuk memastikan kolom termuat di
+    // browser petugas sebelum mengaktifkan proses massal.
+    // false: seleksi aktif - checkbox bisa dicentang dan aksi (POST) berjalan
+    // setelah konfirmasi petugas. Ubah dengan sengaja hanya setelah kolom
+    // terlihat benar (header khusus + tidak bergeser).
+    UJI_SAJA: false
   };
   var TABLES = [
     {
