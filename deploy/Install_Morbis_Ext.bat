@@ -19,13 +19,18 @@ REM  interaksi/prompt). Pakai policy JSON di deploy/policy/ yang
 REM  bisa di-push otomatis oleh GPO/Intune.
 REM ============================================================
 
-NET SESSION >nul 2>&1
-if %errorLevel% == 0 (
-    goto :MAIN
-) else (
-    echo Meminta izin Administrator...
-    powershell -Command "Start-Process '%0' -Verb RunAs"
-    exit /B
+REM Cek admin. CATATAN: "net session" bisa GAGAL walau sudah admin bila
+REM service Windows "Server" dimatikan - kondisi yang umum di PC kerja.
+REM fltmc (Filter Manager) selalu ada di Windows modern dan tidak bergantung
+REM service tersebut, jadi dipakai sebagai pemeriksaan utama.
+fltmc >nul 2>&1
+if errorlevel 1 (
+    net session >nul 2>&1
+    if errorlevel 1 (
+        echo Meminta izin Administrator...
+        powershell -Command "Start-Process '%0' -Verb RunAs"
+        exit /B
+    )
 )
 
 :MAIN
@@ -88,7 +93,7 @@ if not "!EXT_ID_LEN!"=="32" (
     echo.
     echo ==========================================
     echo  ERROR: EXT_ID panjang !EXT_ID_LEN! karakter.
-    echo  Harus tepat 32 karakter (a-p).
+    echo  Harus tepat 32 karakter ^(a-p^).
     echo  Installer dihentikan - screenshot dan kirim ke admin.
     echo ==========================================
     pause
@@ -97,11 +102,26 @@ if not "!EXT_ID_LEN!"=="32" (
 echo [OK] EXT_ID valid: 32 karakter.
 echo.
 
+REM Deteksi OS 32-bit. Semua policy ditulis dengan /reg:64 (view 64-bit);
+REM di OS 32-bit switch itu tidak berlaku sehingga SETIAP reg add gagal
+REM secara diam-diam. Lebih baik berhenti dengan pesan jelas.
+set "OS32="
+if /i "%PROCESSOR_ARCHITEW6432%"=="" if /i "%PROCESSOR_ARCHITECTURE%"=="x86" set "OS32=1"
+if defined OS32 (
+    echo ==========================================================
+    echo  ERROR: OS 32-bit terdeteksi.
+    echo  Script ini butuh Windows 64-bit karena policy ditulis ke
+    echo  registry 64-bit ^(/reg:64^). Di OS 32-bit semua policy akan
+    echo  gagal ditulis tanpa pesan - itu sebabnya ekstensi tidak muncul.
+    echo  Hubungi admin: gunakan PC 64-bit atau pasang lewat GPO.
+    echo ==========================================================
+    pause
+    exit /B 1
+)
+
 REM Pastikan script dijalankan di 64-bit context kalau OS 64-bit
 if "%PROCESSOR_ARCHITECTURE%"=="x86" if not defined PROCESSOR_ARCHITEW6432 (
-    echo WARNING: OS 32-bit terdeteksi. Policy akan ditulis ke 32-bit view.
-) else if "%PROCESSOR_ARCHITECTURE%"=="x86" (
-    echo INFO: CMD 32-bit di OS 64-bit. /reg:64 akan memaksa tulis ke native view.
+    echo WARNING: CMD 32-bit di OS 64-bit. /reg:64 akan memaksa tulis ke native view.
 )
 
 echo ===== PENTING SEBELUM INSTALL =====
@@ -178,6 +198,28 @@ for %%P in (
 )
 
 echo.
+echo [DIAGNOSIS] Memeriksa hasil penulisan (Chrome)...
+reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /v "1" /reg:64 >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo ==========================================================
+    echo  PENULISAN POLICY GAGAL - ini penyebabnya:
+    echo ==========================================================
+    echo Chrome_forced = registry tidak berubah setelah ditulis.
+    echo.
+    echo 1^) Ulangi skrip ini dengan KLIK KANAN -^> "Run as administrator".
+    echo 2^) Pastikan tidak ada antivirus/security software yang
+    echo    memblokir perubahan registry.
+    echo 3^) Lihat pesan error asli dari Windows di bawah ini:
+    echo.
+    reg add "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f /reg:64
+    echo.
+    echo Screenshot pesan di atas kirim ke admin.
+    echo.
+    pause
+    goto :FINISH_FAIL
+)
+echo.
 echo [4/6] Verifikasi lengkap (registry + update.xml + versi terpasang)...
 call :VerifyPolicy
 
@@ -211,6 +253,17 @@ echo dijalankan lagi.
 echo.
 pause
 exit /B 0
+
+:FINISH_FAIL
+echo.
+echo ===================================================
+echo  INSTALL BELUM BERHASIL - policy tidak tertulis
+echo ===================================================
+echo Perbaiki dulu penyebab di atas, lalu jalankan skrip ini lagi.
+echo Butuh bantuan? Screenshot jendela ini kirim ke admin.
+echo.
+pause
+exit /B 1
 
 :VERIFY_ONLY
 cls
@@ -386,6 +439,9 @@ for %%P in (
     ) else (
         set /a "V_FAIL+=1"
         echo    [FAIL] %%~P - !BDETAIL!
+        REM Tampilkan isi registry sebenarnya (jangan tebak penyebabnya).
+        echo           isi registry:
+        reg query "!PB!" /s /reg:64 2>&1 | findstr /C:"ExtensionInstallForcelist" /C:"ExtensionSettings" /C:"!EXT_ID!" /C:"update_url" /C:"ERROR"
     )
 )
 
