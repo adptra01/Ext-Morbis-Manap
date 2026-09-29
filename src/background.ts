@@ -170,6 +170,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Batch Delete Dokumen',
       description: 'Hapus dokumen yang sudah diupload (safety measures)',
     },
+    mKlaimBulkVerif: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Bulk Verif / Batal Verif',
+      description: 'Pilih banyak klaim lalu Verif atau Batal Verif sekaligus (halaman M-Klaim)',
+    },
     billingFilterPersistence: {
       enabled: true,
       allowedRoles: ['kasir', 'casemix'],
