@@ -18,6 +18,10 @@
 - **m-klaim** — badge PRE-OP pindah ke kolom Status Revisi (bukan No Registrasi) (`d18f866`)
 - **resumeHistory** — cegah salin kosong dari entri verifikasi berkas (`4874849`)
 
+### 🧹 chore
+
+- sync package-lock ke v1.5.109 (`7b9fbce`)
+
 ## 2026-09-29
 
 ### ✨ feat
@@ -1659,4 +1663,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d18f866a19c5b89e9d1cfa11cc88242128e802de -->
+<!-- changelog-upto: 3ebf8626f08d4ff3cd01d79a0cb3c52ebdc18b73 -->
