@@ -290,7 +290,7 @@ import {
 
   async function restoreDraft(): Promise<void> {
     const key = getDraftKey();
-    let raw: string | null = null;
+    let raw: string | null;
     try {
       raw = localStorage.getItem(key);
     } catch (_e) {

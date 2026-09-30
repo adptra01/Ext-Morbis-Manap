@@ -374,7 +374,7 @@ var __morbis_feature = (() => {
         const date = `${da}/${mo}/${y} 00:00:00`;
         save.disabled = true;
         save.textContent = "Menyimpan\u2026";
-        let ok = false;
+        let ok;
         try {
           const res = await fetch("/laboratorium/control/edit_tanggal", {
             method: "POST",

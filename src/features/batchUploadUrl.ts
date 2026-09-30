@@ -152,7 +152,7 @@ async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 2):
       if (err instanceof DOMException && err.name === 'AbortError') {
         if (signal?.aborted) {
           // Batch was cancelled — don't retry
-          throw new Error('Batch cancelled');
+          throw new Error('Batch cancelled', { cause: err });
         }
         lastErr = new Error('Request timeout');
       }
@@ -447,7 +447,7 @@ function updatePreview(items: BatchItem[]): void {
   }
 
   filtered.forEach(({ item, i }) => {
-    let modeText = '';
+    let modeText: string;
     if (item.tglFileTabel) {
       modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
         <span>Dibuat: <strong style="color:#111827;">${escHtml(item.tglFileTabel || '')}</strong></span>

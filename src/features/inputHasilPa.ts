@@ -283,7 +283,7 @@ import '../ui/web/ext-btn';
       const date = `${da}/${mo}/${y} 00:00:00`;
       save.disabled = true;
       save.textContent = 'Menyimpan…';
-      let ok = false;
+      let ok: boolean;
       try {
         const res = await fetch('/laboratorium/control/edit_tanggal', {
           method: 'POST',

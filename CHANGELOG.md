@@ -20,6 +20,7 @@
 
 ### 🧹 chore
 
+- sync dist+lock v1.5.110 & upgrade vite 8.3.1 + rolldown 1.2.11 (binding Linux) (`6eb75bd`)
 - sync package-lock ke v1.5.109 (`7b9fbce`)
 
 ## 2026-09-29
@@ -1663,4 +1664,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 3ebf8626f08d4ff3cd01d79a0cb3c52ebdc18b73 -->
+<!-- changelog-upto: d815f01c82b2fcc79dad1c0efcce74b706b201d9 -->

@@ -1445,7 +1445,7 @@ var __morbis_feature = (() => {
     }
     async function restoreDraft() {
       const key = getDraftKey();
-      let raw = null;
+      let raw;
       try {
         raw = localStorage.getItem(key);
       } catch (_e) {
