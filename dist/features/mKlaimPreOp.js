@@ -21,7 +21,8 @@ var __morbis_feature = (() => {
   // src/features/mKlaimPreOp.ts
   var mKlaimPreOp_exports = {};
   __export(mKlaimPreOp_exports, {
-    initPreOpMarker: () => initPreOpMarker
+    initPreOpMarker: () => initPreOpMarker,
+    statusRevisiIndexFromHeaders: () => statusRevisiIndexFromHeaders
   });
 
   // src/features/shared/types.ts
@@ -730,7 +731,7 @@ var __morbis_feature = (() => {
             if (marked && !localMap[id]) {
               setPreOp(id, extractPatientInfo(row));
             }
-            updateRowVisual(row, id, marked);
+            updateRowVisual(row, id, marked, resolveBadgeCell(row, table));
           }
         }
       }
@@ -776,7 +777,28 @@ var __morbis_feature = (() => {
     });
     return { norm, nama, noReg };
   }
-  function updateRowVisual(row, idVisit, marked) {
+  function statusRevisiIndexFromHeaders(headers) {
+    for (let i = 0; i < headers.length; i++) {
+      if (/status\s*revisi/i.test((headers[i] || "").trim())) return i;
+    }
+    return -1;
+  }
+  function resolveBadgeCell(row, table) {
+    const headers = Array.from(table.querySelectorAll("thead th")).map(
+      (th) => th.textContent?.trim() ?? ""
+    );
+    const idx = statusRevisiIndexFromHeaders(headers);
+    if (idx >= 0 && idx < row.cells.length) return row.cells[idx];
+    for (const td of Array.from(row.cells)) {
+      if (/revisi/i.test(td.textContent || "")) return td;
+    }
+    return null;
+  }
+  function badgeCellFor(row) {
+    const table = row.closest("table");
+    return table ? resolveBadgeCell(row, table) : null;
+  }
+  function updateRowVisual(row, idVisit, marked, badgeCell) {
     row.setAttribute("data-ext-preop-marked", marked ? "true" : "false");
     const btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
     if (btn) {
@@ -793,14 +815,13 @@ var __morbis_feature = (() => {
       }
     }
     let badge = row.querySelector(".ext-preop-badge");
-    if (marked) {
+    if (marked && badgeCell) {
       if (!badge) {
         badge = document.createElement("span");
         badge.className = "ext-preop-badge";
         badge.textContent = "PRE-OP";
-        const targetCell = row.cells[2] || row.cells[1] || row.cells[0];
-        if (targetCell) targetCell.appendChild(badge);
       }
+      if (badge.parentElement !== badgeCell) badgeCell.appendChild(badge);
     } else if (badge) {
       badge.remove();
     }
@@ -839,7 +860,7 @@ var __morbis_feature = (() => {
         const isMarked = effectiveMarked(idVisit, preOpMap, now);
         const done = row.getAttribute("data-ext-preop-marked") === String(isMarked);
         if (done) return;
-        updateRowVisual(row, idVisit, isMarked);
+        updateRowVisual(row, idVisit, isMarked, resolveBadgeCell(row, table));
       });
     });
   }
@@ -865,13 +886,13 @@ var __morbis_feature = (() => {
       const nextState = togglePreOp(idVisit, info);
       if (nextState) delete _localUnmarkAt[idVisit];
       else _localUnmarkAt[idVisit] = Date.now();
-      updateRowVisual(row, idVisit, nextState);
+      updateRowVisual(row, idVisit, nextState, badgeCellFor(row));
       _pendingToggle.add(idVisit);
       paintPending(btn);
       const settle = () => {
         _pendingToggle.delete(idVisit);
         try {
-          updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()));
+          updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()), badgeCellFor(row));
         } catch {
         }
       };
@@ -951,7 +972,7 @@ var __morbis_feature = (() => {
       run: initPreOpMarker
     };
   }
-  if (window.location.pathname.startsWith("/v2/m-klaim") && !window.location.pathname.includes("/detail")) {
+  if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initPreOpMarker);
     } else {

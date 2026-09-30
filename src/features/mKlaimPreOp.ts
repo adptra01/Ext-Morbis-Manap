@@ -172,7 +172,7 @@ function refreshCentral(): void {
           if (marked && !localMap[id]) {
             setPreOp(id, extractPatientInfo(row));
           }
-          updateRowVisual(row, id, marked);
+          updateRowVisual(row, id, marked, resolveBadgeCell(row, table));
         }
       }
     }
@@ -240,7 +240,47 @@ function extractPatientInfo(row: HTMLTableRowElement): {
   return { norm, nama, noReg };
 }
 
-function updateRowVisual(row: HTMLTableRowElement, idVisit: string, marked: boolean): void {
+/** Resolve indeks kolom "Status Revisi" dari daftar teks header tabel (0-based);
+ *  -1 bila header tidak ditemukan. Dipakai untuk menaruh badge PRE-OP di kolom
+ *  Status Revisi — bukan kolom No Registrasi (permintaan user: badge jangan di
+ *  kolom registrasi). */
+export function statusRevisiIndexFromHeaders(headers: string[]): number {
+  for (let i = 0; i < headers.length; i++) {
+    if (/status\s*revisi/i.test((headers[i] || '').trim())) return i;
+  }
+  return -1;
+}
+
+/** Cell kolom "Status Revisi" untuk baris ini: utama via header tabel (indeks
+ *  kolom), fallback via teks cell berisi kata "revisi". null → badge tidak
+ *  ditampilkan (konservatif: jangan sampai salah kolom lagi). */
+function resolveBadgeCell(
+  row: HTMLTableRowElement,
+  table: HTMLTableElement,
+): HTMLTableCellElement | null {
+  const headers = Array.from(table.querySelectorAll<HTMLElement>('thead th')).map(
+    (th) => th.textContent?.trim() ?? '',
+  );
+  const idx = statusRevisiIndexFromHeaders(headers);
+  if (idx >= 0 && idx < row.cells.length) return row.cells[idx];
+  for (const td of Array.from(row.cells)) {
+    if (/revisi/i.test(td.textContent || '')) return td;
+  }
+  return null;
+}
+
+/** badgeCell untuk baris (dipakai dari handler klik, di mana hanya ada row). */
+function badgeCellFor(row: HTMLTableRowElement): HTMLTableCellElement | null {
+  const table = row.closest('table');
+  return table ? resolveBadgeCell(row, table) : null;
+}
+
+function updateRowVisual(
+  row: HTMLTableRowElement,
+  idVisit: string,
+  marked: boolean,
+  badgeCell?: HTMLTableCellElement | null,
+): void {
   row.setAttribute('data-ext-preop-marked', marked ? 'true' : 'false');
 
   const btn = row.querySelector<HTMLButtonElement>(`button[data-ext-preop-btn="${idVisit}"]`);
@@ -259,17 +299,16 @@ function updateRowVisual(row: HTMLTableRowElement, idVisit: string, marked: bool
     }
   }
 
-  // Badge di samping nama/RM
+  // Badge PRE-OP di kolom "Status Revisi" (bukan lagi kolom No Registrasi).
   let badge = row.querySelector<HTMLElement>('.ext-preop-badge');
-  if (marked) {
+  if (marked && badgeCell) {
     if (!badge) {
       badge = document.createElement('span');
       badge.className = 'ext-preop-badge';
       badge.textContent = 'PRE-OP';
-      // Cari cell kedua (biasanya nama/RM) atau cell pertama
-      const targetCell = row.cells[2] || row.cells[1] || row.cells[0];
-      if (targetCell) targetCell.appendChild(badge);
     }
+    // appendChild otomatis memindah bila badge tersisa di cell lama.
+    if (badge.parentElement !== badgeCell) badgeCell.appendChild(badge);
   } else if (badge) {
     badge.remove();
   }
@@ -327,7 +366,7 @@ function scanInner(): void {
       const done = row.getAttribute('data-ext-preop-marked') === String(isMarked);
       if (done) return;
 
-      updateRowVisual(row, idVisit, isMarked);
+      updateRowVisual(row, idVisit, isMarked, resolveBadgeCell(row, table));
     });
   });
 }
@@ -363,13 +402,13 @@ function ensurePreOpButton(row: HTMLTableRowElement, idVisit: string): HTMLButto
     else _localUnmarkAt[idVisit] = Date.now();
 
     // Optimistic UI seketika, lalu kunci tombol + spinner sampai pusat merespons.
-    updateRowVisual(row, idVisit, nextState);
+    updateRowVisual(row, idVisit, nextState, badgeCellFor(row));
     _pendingToggle.add(idVisit);
     paintPending(btn);
     const settle = () => {
       _pendingToggle.delete(idVisit);
       try {
-        updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()));
+        updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()), badgeCellFor(row));
       } catch {
         /* baris sudah hilang dari DOM (redraw) — scan berikut yang urus */
       }
@@ -467,8 +506,8 @@ if (typeof g.featureModules !== 'undefined') {
 
 // Auto-run if matched directly
 if (
-  window.location.pathname.startsWith('/v2/m-klaim') &&
-  !window.location.pathname.includes('/detail')
+  (window.location?.pathname ?? '').startsWith('/v2/m-klaim') &&
+  !(window.location?.pathname ?? '').includes('/detail')
 ) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPreOpMarker);
