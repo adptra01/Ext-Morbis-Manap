@@ -66,3 +66,9 @@ __pycache__/
 # agent-browser local browser profile (state/data)
 .agent-browser-profile/
 .agent-notes/
+
+# Knowledge graph output — artifact lokal yang di-regenerate `graphify update .`
+# (AST-only, tanpa biaya API). Dulunya ikut ter-track sehingga tiap `git add -A`
+# menyeret puluhan ribu baris graph.json ke commit; sekarang di-ignore.
+# Riwayatnya tetap ada di repo (checkout lama/pull sebelum commit ini).
+graphify-out/
