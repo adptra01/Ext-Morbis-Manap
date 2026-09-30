@@ -9,8 +9,13 @@
 
 ## 2026-09-30
 
+### ✨ feat
+
+- **deploy** — konsolidasi semua .bat installer jadi Install_Morbis_Ext.bat (mode 1-6 + pull) (`a415f39`)
+
 ### 🐛 fix
 
+- **m-klaim** — badge PRE-OP pindah ke kolom Status Revisi (bukan No Registrasi) (`d18f866`)
 - **resumeHistory** — cegah salin kosong dari entri verifikasi berkas (`4874849`)
 
 ## 2026-09-29
@@ -1654,4 +1659,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 386d3b680373fad555ef0ef6ec688bb046e655c9 -->
+<!-- changelog-upto: d18f866a19c5b89e9d1cfa11cc88242128e802de -->
