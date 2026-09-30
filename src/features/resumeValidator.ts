@@ -476,6 +476,13 @@ import {
 
   /** Isi SEMUA field form dari snapshot (termasuk hidden), lalu user tinggal Simpan. */
   function applySnapshot(form: HTMLFormElement, snap: FormSnap): void {
+    // Entri verifikasi berkas (mKlaimVerifLog) hanya penanda audit — bukan
+    // snapshot form (after = {jenis, norm, _source, _verified_at}). Menyalinnya
+    // hanya mengisi 2 field pasien tanpa menyentuh klinis: tolak dengan jelas.
+    if (snap['_source'] === 'verif_action') {
+      showHistToast('Entri verifikasi berkas — tidak bisa disalin ke form.');
+      return;
+    }
     let filled = 0;
     let missing = 0;
     Object.keys(snap).forEach(function (name) {

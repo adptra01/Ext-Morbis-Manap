@@ -576,10 +576,16 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
       const title = document.createElement('div');
       title.style.fontWeight = '600';
       const who = entry.user ? ` — oleh ${entry.user}` : '';
+      // Entri verifikasi berkas (mKlaimVerifLog) bukan snapshot form resume:
+      // hanya penanda audit (jenis/norm/_verified_at). Jelas sekali labelnya
+      // dan JANGAN tawarkan "Salin ke Form" agar form React/native tidak
+      // ditimpa dengan field kosong.
+      const isVerif = (entry.after as Record<string, unknown>)?.['_source'] === 'verif_action';
+      const verifSuffix = isVerif ? ' — verifikasi berkas' : '';
       title.textContent =
         `#${no} — ${new Date(entry.at).toLocaleString('id-ID')} — ` +
         `${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} — ` +
-        `${entry.changed.length} field berubah`;
+        `${entry.changed.length} field berubah${verifSuffix}`;
       row.appendChild(title);
 
       const detail = document.createElement('div');
@@ -611,6 +617,7 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
       };
       bar.appendChild(btnLihat);
 
+      // Entri verifikasi: tidak bisa disalin ke form (bukan snapshot resume).
       const btnSalin = document.createElement('button');
       btnSalin.type = 'button';
       btnSalin.textContent = 'Salin ke Form';
@@ -625,7 +632,16 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
           /* biarkan modal terbuka bila apply gagal */
         }
       };
-      bar.appendChild(btnSalin);
+      if (isVerif) {
+        const verifNote = document.createElement('span');
+        verifNote.textContent = 'Entri verifikasi — bukan snapshot form, tidak untuk disalin.';
+        verifNote.style.cssText =
+          'align-self:center;color:#92400e;background:#fef3c7;border-radius:6px;' +
+          'padding:4px 10px;font-size:12px;line-height:1.5;';
+        bar.appendChild(verifNote);
+      } else {
+        bar.appendChild(btnSalin);
+      }
       row.appendChild(bar);
 
       body.appendChild(row);

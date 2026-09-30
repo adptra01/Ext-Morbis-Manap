@@ -102,6 +102,9 @@ function snapStr(snap: FormSnap, k: string): string {
 }
 
 export function snapToRanapForm(snap: FormSnap, cur: RanapFormData): RanapFormData {
+  // Entri verifikasi berkas (mKlaimVerifLog) bukan snapshot form resume —
+  // jangan timpa state dengan field kosong (guard lapis-2, lihat modal).
+  if (snap._source === 'verif_action') return cur;
   const d = structuredClone(cur) as RanapFormData & Record<string, string>;
   for (const k of STRING_KEYS) {
     const v = snap[k as string];

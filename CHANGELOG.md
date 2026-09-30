@@ -22,6 +22,7 @@
 
 ### 🐛 fix
 
+- **changelog** — marker tak lagi menutupi commit baru - toleransi lag hanya utk tip commit + bump CI (`cb31a55`)
 - **manifest** — hilangkan double core/init di new-pemeriksaan-lab + guard featureModules (`e37d9a9`)
 - **deploy** — satu content-script utk billing + skrip update .bat lebih kebal (`856f071`)
 - **filter** — radio billing tersimpan + guard API + buang stub doctor mati (`c6127f1`)
@@ -1647,4 +1648,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 37b757d9b89d37ae63db51cfa9a34cac3f0aba62 -->
+<!-- changelog-upto: d1fd97d4f39c940fe032b2d6c399b1507978a099 -->

@@ -954,7 +954,9 @@ var __morbis_feature = (() => {
         const title = document.createElement("div");
         title.style.fontWeight = "600";
         const who = entry.user ? ` \u2014 oleh ${entry.user}` : "";
-        title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString("id-ID")} \u2014 ${entry.aksi === "buat" ? "Buat baru" : "Ubah"}${who} \u2014 ${entry.changed.length} field berubah`;
+        const isVerif = entry.after?.["_source"] === "verif_action";
+        const verifSuffix = isVerif ? " \u2014 verifikasi berkas" : "";
+        title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString("id-ID")} \u2014 ${entry.aksi === "buat" ? "Buat baru" : "Ubah"}${who} \u2014 ${entry.changed.length} field berubah${verifSuffix}`;
         row.appendChild(title);
         const detail = document.createElement("div");
         detail.style.cssText = "display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;";
@@ -987,7 +989,14 @@ var __morbis_feature = (() => {
           } catch {
           }
         };
-        bar.appendChild(btnSalin);
+        if (isVerif) {
+          const verifNote = document.createElement("span");
+          verifNote.textContent = "Entri verifikasi \u2014 bukan snapshot form, tidak untuk disalin.";
+          verifNote.style.cssText = "align-self:center;color:#92400e;background:#fef3c7;border-radius:6px;padding:4px 10px;font-size:12px;line-height:1.5;";
+          bar.appendChild(verifNote);
+        } else {
+          bar.appendChild(btnSalin);
+        }
         row.appendChild(bar);
         body.appendChild(row);
       });
@@ -1584,6 +1593,10 @@ var __morbis_feature = (() => {
       return snap;
     }
     function applySnapshot(form, snap) {
+      if (snap["_source"] === "verif_action") {
+        showHistToast("Entri verifikasi berkas \u2014 tidak bisa disalin ke form.");
+        return;
+      }
       let filled = 0;
       let missing = 0;
       Object.keys(snap).forEach(function(name) {

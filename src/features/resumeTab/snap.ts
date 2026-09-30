@@ -56,6 +56,9 @@ export function resumeDataToSnap(d: ResumeData): FormSnap {
 }
 
 export function snapToResumeData(snap: FormSnap, cur: ResumeData): ResumeData {
+  // Entri verifikasi berkas (mKlaimVerifLog) bukan snapshot form resume —
+  // jangan timpa state dengan field kosong (guard lapis-2, lihat modal).
+  if (snap._source === 'verif_action') return cur;
   const diagMax = Math.max(
     arr(snap, 'kode10[]').length,
     arr(snap, 'idicd[]').length,
