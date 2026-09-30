@@ -19,19 +19,26 @@ Untuk PC user (Windows), **hanya butuh satu file**:
 
 Unduh → klik 2× → pilih menu:
 
-| Menu                      | Kapan dipakai                                                                                                                        |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **[1] Pasang / Perbarui** | **Sekali seumur.** Tulis policy → ekstensi terpasang otomatis + update otomatis selamanya. Aman dijalankan berkali-kali (idempoten). |
-| **[2] Verifikasi**        | Kapan saja untuk memastikan policy masih utuh (tidak mengubah apa pun).                                                              |
-| **[3] Uninstall**         | Saat PC dikembalikan / ganti user. Sekali seumur juga.                                                                               |
+| Menu                      | Kapan dipakai                                                                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[1] Pasang / Perbarui** | **Sekali seumur.** Tulis policy → ekstensi terpasang otomatis + update otomatis selamanya. Aman dijalankan berkali-kali (idempoten).            |
+| **[2] Verifikasi**        | Kapan saja untuk memastikan policy masih utuh (tidak mengubah apa pun).                                                                         |
+| **[3] Pasang manual**     | PC yang tidak bisa pakai policy (unmanaged/tanpa admin). Muat unpacked dari `%USERPROFILE%\morbis-ext`; perlu klik REFRESH saat ada versi baru. |
+| **[4] Uninstall**         | Saat PC dikembalikan / ganti user. Sekali seumur juga. Backup policy dipertahankan di `%LOCALAPPDATA%\Morbis\backup`.                           |
+| **[5] Jadwalkan update**  | Untuk jalur `[3]`: tarik versi baru tiap hari 05:00 + catch-up otomatis setelah login bila terlewat.                                            |
+| **[6] Pulihkan policy**   | Kembalikan policy dari backup `.reg` bila mode `[1]` menyebabkan masalah.                                                                       |
 
 Setelah opsi [1] selesai, **skrip tidak perlu dijalankan lagi** — setiap tag
 versi baru otomatis ditarik browser dari `update.xml`. Jalur non-interaktif
-(untuk otomasi): `Install_Morbis_Ext.bat install` / `verify` / `uninstall`.
+(untuk otomasi): `Install_Morbis_Ext.bat install` / `verify` / `manual` /
+`schedule` / `restore` / `pull` / `uninstall` (`pull` = mode mesin untuk
+tugas terjadwal, tanpa prompt).
 
-> Skrip `Setup_Update_Terjadwal.bat` & `morbis-update-main.bat` adalah **jalur
-> cadangan** (PC yang tak bisa menerima policy) — bukan untuk GPO/Intune karena
-> mengandung prompt interaktif. Untuk 50–500 PC pakai policy JSON (§2 & §5).
+> Mode `[5] Jadwalkan` & `[6] Pulihkan policy` di `Install_Morbis_Ext.bat`
+> adalah **jalur cadangan** (PC yang tak bisa menerima policy) — bukan untuk
+> GPO/Intune. (`pull` adalah mode mesin tanpa nomor menu, dipanggil tugas
+> terjadwal sebagai `Install_Morbis_Ext.bat pull`.) Untuk 50–500 PC pakai
+> policy JSON (§2 & §5).
 
 ---
 
@@ -158,25 +165,43 @@ Sebelum menulis, installer membuat backup registry per browser di
 - **Cek versi terpasang**: `chrome://extensions` → kartu MORBIS → Detail →
   versi di sana harus ≤ versi `update.xml` live.
 
-> Jalur cadangan (A) `Setup_Update_Terjadwal.bat` (schtasks 05:00 +
-> `morbis-update-main.bat`) masih ada untuk PC yang tidak bisa pakai policy,
-> tapi tetap butuh satu klik REFRESH di `chrome://extensions` — prefer Jalur B.
+> Jalur cadangan (A) mode `[5] Jadwalkan` di `Install_Morbis_Ext.bat`
+> (schtasks 05:00 + catch-up otomatis setelah login bila terlewat + mode mesin
+> `pull`) masih ada untuk PC yang tidak bisa pakai policy, tapi tetap butuh
+> satu klik REFRESH di `chrome://extensions` — prefer Jalur B.
 
 ---
 
 ## 4. Uninstall
 
-Jalankan `deploy/Uninstall_Morbis_Ext.bat` **sebagai Administrator**.
+Jalankan `deploy/Install_Morbis_Ext.bat` **sebagai Administrator**, lalu pilih
+menu `[4] UNINSTALL` - atau non-interaktif:
+
+```
+Install_Morbis_Ext.bat uninstall
+```
+
+Tidak ada lagi `Uninstall_Morbis_Ext.bat` terpisah. Dahulu ada, dan salinan
+itu **berbeda** dari installer: hanya menghapus `ExtensionSettings\<id>` sebagai
+subkey (bukan sebagai _value_), hanya membersihkan 1 ID di HKCU, dan menghapus
+`ExtensionInstallForcelist /v "1"` secara buta - yaitu entri pada indeks 1,
+bukan "entri milik MORBIS", sehingga bisa ikut menghapus ekstensi milik IT.
+Satu skrip sekarang menjadi satu sumber kebenaran.
 
 Yang dilakukan:
 
-1. Menghapus **hanya nilai MORBIS** (`value "1"`) di `ExtensionInstallForcelist`
-   (HKLM + HKCU, semua browser Chromium) — policy ekstensi lain **tidak disentuh**.
-   Semua `reg delete` memakai `/reg:64` agar host cmd 32-bit ikut terhapus (hindari Wow6432Node).
-2. Menghapus `ExtensionSettings\<ID MORBIS>` milik ekstensi ini.
-3. Menghapus **tugas terjadwal** `Morbis Ext Update` (jalur A, jika ada).
-4. Menghapus **clone lokal** `%USERPROFILE%\morbis-ext` (jalur A, jika ada).
-5. Menutup browser.
+1. Membersihkan policy MORBIS dari **HKLM dan HKCU**, semua browser Chromium.
+   Semua `reg delete` memakai view yang benar (`/reg:64` di OS 64-bit, termasuk
+   saat cmd 32-bit) agar policy native view ikut terhapus, bukan Wow6432Node.
+2. Menghapus `ExtensionSettings` dalam **dua layout**: subkey `\<id>` (layout
+   installer sekarang) **dan** _value_ `/v <id>` (layout installer lama yang
+   menulis JSON ter-escape di bawah key `ExtensionSettings`).
+3. Menghapus entri `ExtensionInstallForcelist` dan `ExtensionInstallAllowlist`
+   **hanya bila nilainya menyebut ID MORBIS** - entri milik IT tidak disentuh.
+4. Menghapus subkey `AutoplayAllowed` yang keliru dibuat installer lama.
+5. Menghapus **tugas terjadwal** `Morbis Ext Update` (jalur A, jika ada).
+6. Menghapus **clone lokal** `%USERPROFILE%\morbis-ext` (jalur A, jika ada).
+7. Menutup browser.
 
 Terakhir, buka `chrome://extensions` dan hapus kartu MORBIS secara manual
 (kartu force-installed tidak hilang otomatis hanya karena policy dihapus).
@@ -219,7 +244,7 @@ bukan rencana migrasi HTTPS). Ringkasannya:
 | CRX gagal load / "invalid"               | Pastikan versi CRX di Pages benar-benar ada (`releases/v<versi>/morbis-v<versi>.crx` → 404 berarti versi di update.xml ≠ CRX yang ada; jangan pernah edit update.xml manual).                                                  |
 | ID di policy ≠ ID ekstensi               | EXT_ID di `Install_Morbis_Ext.bat` salah vs key signing → jalankan ulang installer (CI guard menolak deploy kalau tidak sinkron; jangan ubah EXT_ID manual).                                                                   |
 | Ekstensi hilang setelah reinstall Chrome | Reinstall Chrome menghapus profil/ekstensi → jalankan ulang `Install_Morbis_Ext.bat` (policy tetap ada, ekstensi akan terpasang lagi otomatis).                                                                                |
-| PC offline saat 05:00 (jalur A)          | Task terjadwal terlewat → jalankan `morbis-update-main.bat` manual, atau dokumentasi `/RU SYSTEM` di Setup_Update_Terjadwal.bat (hanya untuk admin, non-interaktif).                                                           |
+| PC offline saat 05:00 (jalur A)          | Catch-up otomatis jalan sesaat setelah user login berikutnya; kalau perlu segera, jalankan `Install_Morbis_Ext.bat pull` manual. Jangan pakai `/RU SYSTEM` - `%USERPROFILE%`/Git user tidak ter-resolve dan pull akan gagal.   |
 | TTS tidak bunyi di kiosk                 | Policy `AutoplayAllowed=1` sudah ditulis installer; tutup & buka ulang browser; cek `chrome://policy`.                                                                                                                         |
 
 ---

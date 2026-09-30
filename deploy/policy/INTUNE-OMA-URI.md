@@ -90,6 +90,6 @@ Staging variant: ganti Name + Value dengan `ExtensionSettings-staging.json`.
 - **Hapus assignment** profile → policy hilang pada sinkron berikutnya; kartu
   ekstensi tetap ada sampai dihapus manual (force-installed tidak auto-hilang
   hanya karena policy dihapus).
-- Uninstall massal: tetap pakai `deploy/Uninstall_Morbis_Ext.bat` per PC, atau
-  tambahkan policy perangkat secara manual.
+- Uninstall massal: jalankan `deploy/Install_Morbis_Ext.bat uninstall` per PC
+  (Administrator), atau tambahkan policy perangkat secara manual.
 - Downgrade versi tidak didukung update mechanism — gunakan **hotfix versi baru**.

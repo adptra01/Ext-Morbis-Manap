@@ -29,6 +29,40 @@ dan **dipulihkan otomatis** oleh client.
 > non-domain / sementara — fungsinya tidak berubah, dan sudah dilengkapi
 > `runtime_allowed_hosts` (host restriction).
 
+### 1a. Batas keras: PC _unmanaged_ tidak bisa pakai force-install
+
+Ini batasan Chrome, bukan cacat pada installer. Chrome **mengabaikan** policy
+`ExtensionInstallForcelist` untuk ekstensi non-Web-Store bila peramban tidak
+terkelola. Registry bisa terisi 100% benar, `chrome://policy` bisa terlihat
+memang, tapi ekstensi tetap tidak terpasang.
+
+Chrome hanya memaksa ekstensi dari kanal resmi bila salah satu berlaku:
+
+| Syarat                             | PC unmanaged               |
+| ---------------------------------- | -------------------------- |
+| AD domain-join (`dsregcmd`)        | ❌                         |
+| Entra ID join / Workplace join     | ❌                         |
+| Terdaftar Chrome Enterprise Core   | ❌                         |
+| Hanya ekstensi di Chrome Web Store | ✅ (tidak berlaku di sini) |
+
+ekstensi MORBIS sengaja **tidak** diterbitkan ke Web Store, jadi di PC
+unmanaged opsi_registry tidak bisa dipakai sama sekali.
+
+Konsekuensi untuk `Install_Morbis_Ext.bat`:
+
+- Mode `install` policy **menolak** PC unmanaged dengan pesan jelas, bukan
+  menulis policy yang sia-sia lalu melapor berhasil.
+- Jalur yang benar-benar bekerja untuk PC unmanaged adalah mode **`manual`**
+  (muat unpacked lewat `chrome://extensions` → _Load unpacked_). Mode ini
+  perlu **Developer mode** ON dan bertahan selama Developer mode tetap aktif.
+
+Kalau PC unmanaged harus tetap terpasang tanpa intervensi manual, satu-satunya
+jalur yang benar adalah menerbitkan MORBIS ke Chrome Web Store (tetap
+unmanaged) — keputusan produk, bukan sesuatu yang bisa diatur policy.
+
+> Jangan pernah melaporkan policy "terpasang" pada PC unmanaged hanya karena
+> registry terisi. Cek dari `chrome://policy`, bukan dari `reg query`.
+
 ---
 
 ## 2. Dua channel update (konsep)
@@ -86,6 +120,21 @@ Penjelasan kunci:
 > Catatan akurat: `runtime_allowed_hosts` membatasi **situs tempat ekstensi
 > berjalan** (content script, dsb). Fetch jaringan lintas origin tetap diatur
 > `host_permissions` manifest. Dua-duanya sudah dibatasi ke 4 host SIMRS.
+
+### Format update.xml dan kunci penandatangan
+
+- `update_url` wajib mengembalikan **XML gupdate/Omaha**, bukan file `.crx`.
+  Contoh format ada di `deploy/update.xml`; file itu di-generate ulang oleh CI,
+  jadi jangan jadikan salinan di repo sebagai sumber kebenaran versi live.
+- Invarian: `appid` di XML harus sama dengan EXT_ID policy, dan `codebase`
+  harus HTTPS.
+- Setiap `.crx` baru harus ditandatangani dengan **kunci yang sama** dengan
+  CRX yang sudah terpasang; kunci privat adalah secret CI, tidak boleh masuk repo.
+- Jangan menonaktifkan header `X-Content-Type-Options: nosniff` di server
+  update; yang dibutuhkan adalah MIME yang benar, bukan mematikan proteksi.
+
+> Jangan tambahkan `"*": { "installation_mode": "blocked" }` di GPO fleet
+> tanpa review IT — itu memblokir ekstensi milik IT/sistem di semua PC.
 
 ### Uji coba di Linux/Chrome SEBELUM GPO Windows (sangat disarankan)
 
@@ -174,13 +223,13 @@ Lihat `INTUNE-OMA-URI.md` untuk langkah Settings Catalog + custom OMA-URI
 
 ## 6. Verifikasi & operasional
 
-| Cek                 | Command / alamat                                                                                            |
-| ------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Policy terbaca      | `chrome://policy` / `edge://policy` → cari `ExtensionSettings` & `ExtensionInstallForcelist`, status **OK** |
-| Ekstensi terpasang  | `chrome://extensions` → kartu MORBIS **tanpa** label "unpacked"                                             |
-| Versi terpasang     | kartu → Detail → versi ≥ versi di update.xml channel masing-masing                                          |
-| Update manual paksa | Di halaman extensions gunakan tombol **Update** (atau restart browser)                                      |
-| Backup registry     | `.bat` membuat `%TEMP%\morbis-ext-backup-<browser>.reg` — GPO tidak perlu (policy dipulihkan otomatis)      |
+| Cek                 | Command / alamat                                                                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Policy terbaca      | `chrome://policy` / `edge://policy` → cari `ExtensionSettings` & `ExtensionInstallForcelist`, status **OK**                                                                                       |
+| Ekstensi terpasang  | `chrome://extensions` → kartu MORBIS **tanpa** label "unpacked"                                                                                                                                   |
+| Versi terpasang     | kartu → Detail → versi ≥ versi di update.xml channel masing-masing                                                                                                                                |
+| Update manual paksa | Di halaman extensions gunakan tombol **Update** (atau restart browser)                                                                                                                            |
+| Backup registry     | `.bat` mode `[1]` mengekspor ke `%LOCALAPPDATA%\Morbis\backup\policy-<browser>.reg`; mode `[6]`/`restore` mengembalikannya bila install bermasalah — GPO tidak perlu (policy dipulihkan otomatis) |
 
 ### Rollback / roll-forward
 
@@ -213,5 +262,5 @@ Lihat `INTUNE-OMA-URI.md` untuk langkah Settings Catalog + custom OMA-URI
 - [ ] GPO `MORBIS-PILOT` (JSON staging) → OU pilot, coba di 5–10 PC
 - [ ] GPO `MORBIS-PRODUCTION` (JSON production) → OU produksi bertahap
 - [ ] Verifikasi `chrome://policy` + versi di PC contoh tiap grup
-- [ ] Non-domain → pertahankan `.bat` sebagai fallback terdokumentasi
+- [ ] Non-domain → pertahankan `.bat` sebagai fallback terdokumentasi (`manual` + `schedule`; log di `%LOCALAPPDATA%\Morbis\morbis-utilitas.log`)
 - [ ] Audit bulanan: versi device vs `releases/` (metadata.json)

@@ -36,7 +36,11 @@ function listFiles(dir: string): Entry[] {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const abs = join(dir, e.name);
     if (e.isDirectory()) out.push(...listFiles(abs));
-    else out.push({ abs, rel: relative(distDir, abs) });
+    // Normalisasi ke forward-slash: manifest JSON dan isi file JS selalu
+    // memakai '/', tapi path.relative() di Windows memakai '\'. Tanpa ini
+    // semua perbandingan refs di bawah gagal total di Windows (padahal
+    // lolos di CI Linux) — persis gejala "39 file unreachable" palsu.
+    else out.push({ abs, rel: relative(distDir, abs).replace(/\\/g, '/') });
   }
   return out;
 }
@@ -71,7 +75,8 @@ function htmlRefs(): Set<string> {
       const rel = spec.startsWith('/')
         ? relative(distDir, resolve(distDir, spec.slice(1))) // absolute → root dist
         : relative(distDir, resolve(distDir, baseDir, spec)); // relatif ke html
-      if (!rel.startsWith('..') && !rel.startsWith('/')) refs.add(rel);
+      const norm = rel.replace(/\\/g, '/'); // lihat listFiles: samakan separator
+      if (!norm.startsWith('..') && !norm.startsWith('/')) refs.add(norm);
     }
   }
   return refs;

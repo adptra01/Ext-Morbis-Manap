@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-09-30
+
+### 🐛 fix
+
+- **resumeHistory** — cegah salin kosong dari entri verifikasi berkas (`4874849`)
+
 ## 2026-09-29
 
 ### ✨ feat
@@ -1648,4 +1654,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d1fd97d4f39c940fe032b2d6c399b1507978a099 -->
+<!-- changelog-upto: 386d3b680373fad555ef0ef6ec688bb046e655c9 -->

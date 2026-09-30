@@ -200,13 +200,18 @@ jobs:
           cp "deploy/morbis-v${VERSION}.crx" "$ORPHAN/docs/morbis-v${VERSION}.crx"
           # Installer siap pakai ikut ke main (1 domain Pages) — sinkron
           # EXT_ID sudah dijaga step Pack di atas, tanpa inject/sed.
-          cp deploy/Install_Morbis_Ext.bat deploy/Setup_Update_Terjadwal.bat deploy/Uninstall_Morbis_Ext.bat "$ORPHAN/docs/"
+          # SATU-SATUNYA .bat yang dipublish. Uninstall dan penjadwal
+          # update sudah jadi mode [4] dan [5] di dalamnya.
+          cp deploy/Install_Morbis_Ext.bat "$ORPHAN/docs/"
           # Policy GPO/Intune (Phase E) — didokumentasikan ke Pages untuk tim IT.
           if [ -d deploy/policy ]; then
             cp -r deploy/policy "$ORPHAN/docs/policy"
           fi
-          # Script update satu-klik ikut ke main (branch main = dist siap pakai)
-          cp scripts/morbis-update-main.bat "$ORPHAN/morbis-update-main.bat"
+          # CATATAN: tidak ada lagi payload .bat terpisah. Logika tarik
+          # branch main sudah di-inline ke mode "pull" Install_Morbis_Ext.bat,
+          # jadi tidak ada skrip update yang perlu disalin ke Pages.
+          # Salinan lawas yang terlanjur tayang di branch main dihapus lewat
+          # aturan "!morbis-update-main.bat" di bawah.
           # Workflow repo ikut ke main (inert pada push main — Pages auto-deploy
           # dari branch main/docs; menjaga main mencerminkan konfigurasi CI).
           cp -r .github "$ORPHAN/.github"
