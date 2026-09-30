@@ -15,11 +15,13 @@
 
 ### 🐛 fix
 
+- **build** — pakai @tailwindcss/postcss di build.mjs + restore ui/shadow.css (SHADOW_CSS resume*Tab) + fail-fast (`e305f76`)
 - **m-klaim** — badge PRE-OP pindah ke kolom Status Revisi (bukan No Registrasi) (`d18f866`)
 - **resumeHistory** — cegah salin kosong dari entri verifikasi berkas (`4874849`)
 
 ### 🧹 chore
 
+- **toolchain** — upgrade eslint 10, vitest 5, tailwind 4, react 19.3 + dead-code clean (rule eslint baru) (`44456a3`)
 - sync dist+lock v1.5.110 & upgrade vite 8.3.1 + rolldown 1.2.11 (binding Linux) (`6eb75bd`)
 - sync package-lock ke v1.5.109 (`7b9fbce`)
 
@@ -1664,4 +1666,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d815f01c82b2fcc79dad1c0efcce74b706b201d9 -->
+<!-- changelog-upto: e305f769af07792f2acd061b15238e920720e551 -->
