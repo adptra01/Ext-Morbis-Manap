@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
 import postcss from 'postcss';
-import tailwindcss from 'tailwindcss';
+import tailwindcssPostcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { dirname, join, resolve, extname } from 'path';
@@ -118,6 +118,13 @@ async function compileFeatureFiles() {
         if (existsSync(cssPath)) {
           const cssContent = readFileSync(cssPath, 'utf-8');
           extraOptions.define = { SHADOW_CSS: JSON.stringify(cssContent) };
+        } else {
+          // Jangan injeksi diam-diam kosong: bundle resume*Tab butuh styling
+          // shadow DOM. Konsisten dgn pola "source not found" — catat agar
+          // build non-watch keluar non-zero (CI menolak).
+          const msg = `ui/shadow.css missing — SHADOW_CSS tidak di-inject (${relativePath})`;
+          console.error(`[build] ${msg}`);
+          failed.push(`${relativePath}: ${msg}`);
         }
       }
       await esbuild.build({
@@ -190,10 +197,10 @@ async function buildTailwindCSS() {
 
   try {
     const cssContent = readFileSync(cssPath, 'utf-8');
-    const result = await postcss([
-      tailwindcss({ config: join(rootDir, 'tailwind.config.js') }),
-      autoprefixer,
-    ]).process(cssContent, {
+    // Tailwind v4: plugin PostCSS pindah ke @tailwindcss/postcss; config JS
+    // lama di-resolve lewat direktif @config di globals.css (sama seperti
+    // pipeline Vite). Opsi `config:` ala v3 tidak lagi didukung.
+    const result = await postcss([tailwindcssPostcss(), autoprefixer]).process(cssContent, {
       from: cssPath,
       to: join(uiDest, 'shadow.css'),
     });
@@ -202,7 +209,11 @@ async function buildTailwindCSS() {
     writeFileSync(join(uiDest, 'shadow.css'), cleanCss);
     console.log(`[build] Compiled ui/shadow.css (${result.css.length}b)`);
   } catch (e) {
-    console.warn('[build] Tailwind CSS build failed:', e.message);
+    // ui/shadow.css WAJIB ada (di-inject sbg SHADOW_CSS ke bundle resume*Tab).
+    // Jangan sembunyikan kegagalan seperti dulu — naikkan exit code agar CI
+    // menolak build yang hasil bundle-nya tanpa styling shadow DOM.
+    console.error('[build] Tailwind CSS build FAILED:', e.message);
+    process.exitCode = 1;
   }
 }
 
