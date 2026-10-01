@@ -20,8 +20,16 @@ interface AppProps {
   onClose: () => void;
 }
 
+// Validasi disamakan dengan client-side form RJ asli (handler #save di
+// /rekam-medik/rm-rawat-jalan-new). Pesan error memakai teks yang sama
+// persis supaya perilaku modal ≡ form asli.
 function validate(data: ResumeData): ValidationError[] {
   const errors: ValidationError[] = [];
+
+  // Form asli: `if ($('#catatan').val() == '') { alert('catatan belum diisi') }`
+  if (!data.clinicalNotes.catatan || !data.clinicalNotes.catatan.trim()) {
+    errors.push({ section: 'Catatan Medis', message: 'catatan belum diisi' });
+  }
 
   data.diagnosa.forEach((d, i) => {
     if (isEmptyish(d.kode10) && isEmptyish(d.namaDiagnosa)) return;
@@ -31,12 +39,36 @@ function validate(data: ResumeData): ValidationError[] {
     if (!isEmptyish(d.namaDiagnosa) && isEmptyish(d.kode10)) {
       errors.push({ section: `Diagnosa #${i + 1}`, message: 'Kode ICD-10 kosong' });
     }
+    // Form asli: tiap baris wajib punya ID ICD ('Nama ICD 10 tidak boleh
+    // kosong !'). ID hanya terisi bila user memilih dari hasil pencarian —
+    // baris ketikan manual tanpa pilih akan dibuang serializer, jadi tolak
+    // di awal dengan pesan yang jelas.
+    if ((!isEmptyish(d.kode10) || !isEmptyish(d.namaDiagnosa)) && isEmptyish(d.idicd)) {
+      errors.push({
+        section: `Diagnosa #${i + 1}`,
+        message: 'Nama ICD 10 tidak boleh kosong — pilih diagnosa dari hasil pencarian',
+      });
+    }
   });
 
   data.tindakan.forEach((t, i) => {
-    if (isEmptyish(t.kode9)) return;
-    if (isEmptyish(t.namaTindakan))
+    if (isEmptyish(t.kode9) && isEmptyish(t.namaTindakan)) return;
+    if (!isEmptyish(t.kode9) && isEmptyish(t.namaTindakan)) {
       errors.push({ section: `Tindakan #${i + 1}`, message: 'Nama tindakan kosong' });
+    }
+    if (!isEmptyish(t.namaTindakan) && isEmptyish(t.kode9)) {
+      errors.push({ section: `Tindakan #${i + 1}`, message: 'Kode ICD-9 kosong' });
+    }
+    // Form asli: tiap baris wajib punya ID ICD-9 ('Nama ICD 9 tidak boleh
+    // kosong !'). kategoriProsedur tidak perlu divalidasi di sini —
+    // serializer selalu mengisinya (default '410606002') karena modal tidak
+    // menyediakan dropdown-nya.
+    if ((!isEmptyish(t.kode9) || !isEmptyish(t.namaTindakan)) && isEmptyish(t.idicdTindakan)) {
+      errors.push({
+        section: `Tindakan #${i + 1}`,
+        message: 'Nama ICD 9 tidak boleh kosong — pilih tindakan dari hasil pencarian',
+      });
+    }
   });
 
   return errors;

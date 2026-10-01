@@ -29265,6 +29265,9 @@ var __morbis_feature = (() => {
   var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
   function validate(data) {
     const errors = [];
+    if (!data.clinicalNotes.catatan || !data.clinicalNotes.catatan.trim()) {
+      errors.push({ section: "Catatan Medis", message: "catatan belum diisi" });
+    }
     data.diagnosa.forEach((d, i) => {
       if (isEmptyish(d.kode10) && isEmptyish(d.namaDiagnosa)) return;
       if (!isEmptyish(d.kode10) && isEmptyish(d.namaDiagnosa)) {
@@ -29273,11 +29276,27 @@ var __morbis_feature = (() => {
       if (!isEmptyish(d.namaDiagnosa) && isEmptyish(d.kode10)) {
         errors.push({ section: `Diagnosa #${i + 1}`, message: "Kode ICD-10 kosong" });
       }
+      if ((!isEmptyish(d.kode10) || !isEmptyish(d.namaDiagnosa)) && isEmptyish(d.idicd)) {
+        errors.push({
+          section: `Diagnosa #${i + 1}`,
+          message: "Nama ICD 10 tidak boleh kosong \u2014 pilih diagnosa dari hasil pencarian"
+        });
+      }
     });
     data.tindakan.forEach((t, i) => {
-      if (isEmptyish(t.kode9)) return;
-      if (isEmptyish(t.namaTindakan))
+      if (isEmptyish(t.kode9) && isEmptyish(t.namaTindakan)) return;
+      if (!isEmptyish(t.kode9) && isEmptyish(t.namaTindakan)) {
         errors.push({ section: `Tindakan #${i + 1}`, message: "Nama tindakan kosong" });
+      }
+      if (!isEmptyish(t.namaTindakan) && isEmptyish(t.kode9)) {
+        errors.push({ section: `Tindakan #${i + 1}`, message: "Kode ICD-9 kosong" });
+      }
+      if ((!isEmptyish(t.kode9) || !isEmptyish(t.namaTindakan)) && isEmptyish(t.idicdTindakan)) {
+        errors.push({
+          section: `Tindakan #${i + 1}`,
+          message: "Nama ICD 9 tidak boleh kosong \u2014 pilih tindakan dari hasil pencarian"
+        });
+      }
     });
     return errors;
   }
@@ -29861,9 +29880,7 @@ var __morbis_feature = (() => {
   }
   function serializeRawatJalan(data) {
     const params = new URLSearchParams();
-    const form = document.getElementById("formdata") || document.querySelector(
-      'form[action*="control/rm-rawatjalan"]'
-    );
+    const form = document.getElementById("formdata") || document.querySelector('form[action*="control/rm-rawatjalan"]');
     if (form) {
       const fd = new FormData(form);
       fd.forEach((value, key) => {
@@ -29990,6 +30007,18 @@ var __morbis_feature = (() => {
         icBudget -= 1;
       }
     });
+    const need = (cond, msg) => {
+      if (!cond) throw new Error(msg);
+    };
+    need(!!params.get("norm")?.trim(), "No. RM tidak boleh kosong !");
+    need(!!params.get("pasien")?.trim(), "Nama pasien tidak boleh kosong !");
+    need(!!params.get("id_visit")?.trim(), "Pilih nama atau No. RM dengan benar");
+    need(!!params.get("waktu")?.trim(), "Waktu harus diisi");
+    need(!!params.get("nama_dokter")?.trim(), "Nama dokter harus diisi");
+    need(!!params.get("id_dokter")?.trim(), "Pilih nama dokter dengan benar");
+    need(!!params.get("jenis_kasus")?.trim(), "Pilih jenis kasus");
+    need(!!params.get("tindak_lanjut")?.trim(), "Pilih tindak lanjut");
+    need(!!data.clinicalNotes.catatan?.trim(), "catatan belum diisi");
     const debug = {};
     for (const k of [
       "save",
@@ -36129,6 +36158,16 @@ var __morbis_feature = (() => {
         if (phpErrors.length > 0) {
           console.error("[RJ] PHP errors:", phpErrors);
           throw new Error(phpErrors.join("\n"));
+        }
+        if (!response.redirected && /name="id_visit"/.test(text) && /name="save"/.test(text)) {
+          const m2 = text.match(
+            /<div[^>]*class="[^"]*(?:error|alert|notif|warning)[^"]*"[^>]*>\s*([^<]{3,200})/i
+          );
+          const serverMsg = m2 ? m2[1].trim().replace(/\s+/g, " ") : "";
+          console.error("[RJ] server mengembalikan form, url akhir:", response.url);
+          throw new Error(
+            "Simpan ditolak server (form dikembalikan)" + (serverMsg ? ": " + serverMsg : "") + ". Periksa catatan, ICD, jenis kasus & tindak lanjut."
+          );
         }
       }
       cachedFormState = null;

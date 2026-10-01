@@ -852,7 +852,27 @@ function serializeRawatJalan(data: ResumeData): string {
   });
 
   // ═══════════════════════════════════════════════════════════
-  // 7. DEBUG LOG (bisa dihapus nanti)
+  // 7. VALIDASI ala cekForm()/handler #save form RJ asli.
+  //    Controller lama tidak me-validasi di server — form asli menolak di
+  //    browser. Karena modal mem-bypass submit form, cek di sini supaya
+  //    gagal cepat dengan pesan yang SAMA PERSIS seperti alert form asli
+  //    (bukan diam-diam terkirim lalu ditolak).
+  // ═══════════════════════════════════════════════════════════
+  const need = (cond: boolean, msg: string) => {
+    if (!cond) throw new Error(msg);
+  };
+  need(!!params.get('norm')?.trim(), 'No. RM tidak boleh kosong !');
+  need(!!params.get('pasien')?.trim(), 'Nama pasien tidak boleh kosong !');
+  need(!!params.get('id_visit')?.trim(), 'Pilih nama atau No. RM dengan benar');
+  need(!!params.get('waktu')?.trim(), 'Waktu harus diisi');
+  need(!!params.get('nama_dokter')?.trim(), 'Nama dokter harus diisi');
+  need(!!params.get('id_dokter')?.trim(), 'Pilih nama dokter dengan benar');
+  need(!!params.get('jenis_kasus')?.trim(), 'Pilih jenis kasus');
+  need(!!params.get('tindak_lanjut')?.trim(), 'Pilih tindak lanjut');
+  need(!!data.clinicalNotes.catatan?.trim(), 'catatan belum diisi');
+
+  // ═══════════════════════════════════════════════════════════
+  // 8. DEBUG LOG (bisa dihapus nanti)
   // ═══════════════════════════════════════════════════════════
   const debug: Record<string, string> = {};
   // Sama dengan daftar yang divalidasi form RJ asli (handler #save).
@@ -1289,6 +1309,23 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       if (phpErrors.length > 0) {
         console.error('[RJ] PHP errors:', phpErrors);
         throw new Error(phpErrors.join('\n'));
+      }
+      // Controller lama me-render ulang form RJ saat simpan ditolak
+      // (HTTP tetap 200, tanpa redirect). Tandanya: HTML balasan memuat
+      // form asli (input id_visit + tombol save). Sukses = redirect ke
+      // daftar RJ (fetch mengikutinya → response.redirected / url berubah).
+      // Tanpa cek ini, penolakan server terbaca sebagai "sukses".
+      if (!response.redirected && /name="id_visit"/.test(text) && /name="save"/.test(text)) {
+        const m = text.match(
+          /<div[^>]*class="[^"]*(?:error|alert|notif|warning)[^"]*"[^>]*>\s*([^<]{3,200})/i,
+        );
+        const serverMsg = m ? m[1].trim().replace(/\s+/g, ' ') : '';
+        console.error('[RJ] server mengembalikan form, url akhir:', response.url);
+        throw new Error(
+          'Simpan ditolak server (form dikembalikan)' +
+            (serverMsg ? ': ' + serverMsg : '') +
+            '. Periksa catatan, ICD, jenis kasus & tindak lanjut.',
+        );
       }
     }
     cachedFormState = null;
