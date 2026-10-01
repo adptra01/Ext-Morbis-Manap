@@ -113,6 +113,12 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-antrian-farmasi");
     }
+    const akCfg = cfg?.features?.antrolKirimOtomatis;
+    if (akCfg?.enabled && window.ExtensionCore.isFeatureAllowed("antrolKirimOtomatis")) {
+      document.documentElement.setAttribute("data-ext-antrol-kirim", "1");
+    } else {
+      document.documentElement.removeAttribute("data-ext-antrol-kirim");
+    }
     const tsCfg = cfg?.features?.ttsServer;
     if (!tsCfg || tsCfg.enabled) {
       document.documentElement.setAttribute("data-ext-tts-server", "1");

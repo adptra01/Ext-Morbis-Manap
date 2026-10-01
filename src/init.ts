@@ -102,6 +102,16 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-antrian-farmasi');
   }
 
+  // Antrol Kirim Otomatis (MJKN): penanda bagi CSS/MAIN-world — watcher
+  // sebenarnya mandiri (baca config via chrome.storage di ISOLATED), atribut
+  // ini hanya untuk konsistensi pola fitur lain + ekspos status ke halaman.
+  const akCfg = cfg?.features?.antrolKirimOtomatis;
+  if (akCfg?.enabled && window.ExtensionCore.isFeatureAllowed('antrolKirimOtomatis')) {
+    document.documentElement.setAttribute('data-ext-antrol-kirim', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-antrol-kirim');
+  }
+
   // Suara server cadangan (display farmasi + loket): '1' nyala, '0' mati.
   // SELALU tulis eksplisit (jangan removeAttribute): pembaca MAIN-world
   // membedakan mati lewat nilai '0'; atribut hilang = nyala (kompatibel

@@ -253,6 +253,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2×)',
     },
+    antrolKirimOtomatis: {
+      enabled: true,
+      allowedRoles: ['apotek', 'admin'],
+      name: 'Antrol Kirim Otomatis (MJKN)',
+      description:
+        'Kirim otomatis data MJKN/SatuSehat (update_bulk) saat status antrian farmasi selesai — berjalan di belakang layar selama kamu membuka sistem asli, tanpa tombol manual',
+    },
     ttsServer: {
       enabled: true,
       allowedRoles: ['apotek', 'admin'],

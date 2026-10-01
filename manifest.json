@@ -33,9 +33,7 @@
         "http://192.168.8.4/v2/m-klaim*",
         "http://dev.rsudkotajambi.id/v2/m-klaim*"
       ],
-      "js": [
-        "features/openDetailWindowOpen.js"
-      ],
+      "js": ["features/openDetailWindowOpen.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
@@ -80,11 +78,7 @@
         "http://192.168.8.4/inventory/penjualan-resep-edit/*",
         "http://dev.rsudkotajambi.id/inventory/penjualan-resep-edit/*"
       ],
-      "js": [
-        "core.js",
-        "features/penerimaan_resep/main.js",
-        "init.js"
-      ],
+      "js": ["core.js", "features/penerimaan_resep/main.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -134,9 +128,7 @@
         "http://192.168.8.4/admisi/detail-rawat-inap/edit-operasi*",
         "http://dev.rsudkotajambi.id/admisi/detail-rawat-inap/edit-operasi*"
       ],
-      "js": [
-        "features/pindahOperasi/main.js"
-      ],
+      "js": ["features/pindahOperasi/main.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -147,9 +139,7 @@
         "http://192.168.8.4/inventory/penjualan-bebas*",
         "http://dev.rsudkotajambi.id/inventory/penjualan-bebas*"
       ],
-      "js": [
-        "features/fixJasaPelayanan.js"
-      ],
+      "js": ["features/fixJasaPelayanan.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -161,10 +151,7 @@
         "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*",
         "http://dev.rsudkotajambi.id/admisi/pengajuan_konsultasi/konsultasi*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -175,9 +162,7 @@
         "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*",
         "http://dev.rsudkotajambi.id/admisi/pengajuan_konsultasi/konsultasi*"
       ],
-      "js": [
-        "features/consultationEnhancer.js"
-      ],
+      "js": ["features/consultationEnhancer.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -201,9 +186,7 @@
         "http://192.168.8.4/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*",
         "http://dev.rsudkotajambi.id/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*"
       ],
-      "js": [
-        "features/resumeValidator.js"
-      ],
+      "js": ["features/resumeValidator.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -223,10 +206,7 @@
         "http://192.168.8.4/rekam-medik/rm-rawat-jalan-new*",
         "http://dev.rsudkotajambi.id/rekam-medik/rm-rawat-jalan-new*"
       ],
-      "js": [
-        "features/resumeTab.js",
-        "features/resumeRanapTab.js"
-      ],
+      "js": ["features/resumeTab.js", "features/resumeRanapTab.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -246,10 +226,7 @@
         "http://192.168.8.4/counter-antrian/counter*",
         "http://dev.rsudkotajambi.id/counter-antrian/counter*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -260,9 +237,7 @@
         "http://192.168.8.4/public/mesin-antrian*",
         "http://dev.rsudkotajambi.id/public/mesin-antrian*"
       ],
-      "js": [
-        "features/antrianLoader.js"
-      ],
+      "js": ["features/antrianLoader.js"],
       "run_at": "document_start",
       "all_frames": false
     },
@@ -281,9 +256,7 @@
         "http://192.168.8.4/counter-antrian/counter*",
         "http://dev.rsudkotajambi.id/counter-antrian/counter*"
       ],
-      "js": [
-        "features/antrianTools.js"
-      ],
+      "js": ["features/antrianTools.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -295,10 +268,7 @@
         "http://192.168.8.4/public/antrian-farmasi-v2/view-call-websocet-v2*",
         "http://dev.rsudkotajambi.id/public/antrian-farmasi-v2/view-call-websocet-v2*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -309,9 +279,7 @@
         "http://192.168.8.4/public/antrian-farmasi-v2/view-call-websocet-v2*",
         "http://dev.rsudkotajambi.id/public/antrian-farmasi-v2/view-call-websocet-v2*"
       ],
-      "js": [
-        "features/antrianFarmasiDisplayApp.js"
-      ],
+      "js": ["features/antrianFarmasiDisplayApp.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
@@ -347,10 +315,7 @@
         "http://192.168.8.4/laboratorium/input-hasil/view-lab*",
         "http://dev.rsudkotajambi.id/laboratorium/input-hasil/view-lab*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -361,9 +326,7 @@
         "http://192.168.8.4/laboratorium/input-hasil/input-hasil-pa*",
         "http://dev.rsudkotajambi.id/laboratorium/input-hasil/input-hasil-pa*"
       ],
-      "js": [
-        "features/inputHasilPa.js"
-      ],
+      "js": ["features/inputHasilPa.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -375,9 +338,7 @@
         "http://192.168.8.4/laboratorium/input-hasil/view-lab*",
         "http://dev.rsudkotajambi.id/laboratorium/input-hasil/view-lab*"
       ],
-      "js": [
-        "features/cancelButton.js"
-      ],
+      "js": ["features/cancelButton.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -389,10 +350,7 @@
         "http://192.168.8.4/billing/pembayaran-new/index*",
         "http://dev.rsudkotajambi.id/billing/pembayaran-new/index*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -403,9 +361,7 @@
         "http://192.168.8.4/billing/pembayaran-new/index*",
         "http://dev.rsudkotajambi.id/billing/pembayaran-new/index*"
       ],
-      "js": [
-        "features/billingAdjustment.js"
-      ],
+      "js": ["features/billingAdjustment.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -417,10 +373,7 @@
         "http://192.168.8.4/admisi/radiologi/pemeriksaan*",
         "http://dev.rsudkotajambi.id/admisi/radiologi/pemeriksaan*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -431,9 +384,7 @@
         "http://192.168.8.4/admisi/radiologi/pemeriksaan*",
         "http://dev.rsudkotajambi.id/admisi/radiologi/pemeriksaan*"
       ],
-      "js": [
-        "features/cancelButton.js"
-      ],
+      "js": ["features/cancelButton.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -445,10 +396,7 @@
         "http://192.168.8.4/inventory/resep/penerimaan/detail*",
         "http://dev.rsudkotajambi.id/inventory/resep/penerimaan/detail*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -459,9 +407,7 @@
         "http://192.168.8.4/inventory/resep/penerimaan/detail*",
         "http://dev.rsudkotajambi.id/inventory/resep/penerimaan/detail*"
       ],
-      "js": [
-        "features/farmasiAntrolShift.js"
-      ],
+      "js": ["features/farmasiAntrolShift.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
@@ -473,9 +419,7 @@
         "http://192.168.8.4/inventory/penjualan-resep-edit/detail*",
         "http://dev.rsudkotajambi.id/inventory/penjualan-resep-edit/detail*"
       ],
-      "js": [
-        "features/penjualanResepAntrian.js"
-      ],
+      "js": ["features/penjualanResepAntrian.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
@@ -487,10 +431,7 @@
         "http://192.168.8.4/inventory/resep/penerimaan",
         "http://dev.rsudkotajambi.id/inventory/resep/penerimaan"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -501,9 +442,7 @@
         "http://192.168.8.4/inventory/resep/penerimaan*",
         "http://dev.rsudkotajambi.id/inventory/resep/penerimaan*"
       ],
-      "js": [
-        "features/penerimaanExport.js"
-      ],
+      "js": ["features/penerimaanExport.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -515,9 +454,7 @@
         "http://192.168.8.4/inventory/resep/penerimaan",
         "http://dev.rsudkotajambi.id/inventory/resep/penerimaan"
       ],
-      "js": [
-        "features/penerimaanAntrolCetak.js"
-      ],
+      "js": ["features/penerimaanAntrolCetak.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -529,9 +466,7 @@
         "http://192.168.8.4/admisi/informasi/laporan-kasir*",
         "http://dev.rsudkotajambi.id/admisi/informasi/laporan-kasir*"
       ],
-      "js": [
-        "features/laporanKasirTime.js"
-      ],
+      "js": ["features/laporanKasirTime.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -543,10 +478,7 @@
         "http://192.168.8.4/inventory/print/telaah-resep-manap*",
         "http://dev.rsudkotajambi.id/inventory/print/telaah-resep-manap*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end"
     },
     {
@@ -556,9 +488,7 @@
         "http://192.168.8.4/inventory/print/telaah-resep-manap*",
         "http://dev.rsudkotajambi.id/inventory/print/telaah-resep-manap*"
       ],
-      "js": [
-        "features/telaahResepPrint.js"
-      ],
+      "js": ["features/telaahResepPrint.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -570,10 +500,7 @@
         "http://192.168.8.4/laboratorium/print/hasil-lab-patologi-manap*",
         "http://dev.rsudkotajambi.id/laboratorium/print/hasil-lab-patologi-manap*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -584,9 +511,7 @@
         "http://192.168.8.4/laboratorium/print/hasil-lab-patologi-manap*",
         "http://dev.rsudkotajambi.id/laboratorium/print/hasil-lab-patologi-manap*"
       ],
-      "js": [
-        "features/paLabPrint.js"
-      ],
+      "js": ["features/paLabPrint.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -598,20 +523,21 @@
         "http://192.168.8.4/antrian-farmasi/v2*",
         "http://dev.rsudkotajambi.id/antrian-farmasi/v2*"
       ],
-      "js": [
-        "core.js",
-        "features/antrianFarmasiOperator.js",
-        "init.js"
+      "js": ["core.js", "features/antrianFarmasiOperator.js", "init.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://103.147.236.140/*",
+        "http://103.147.236.138/*",
+        "http://192.168.8.4/*",
+        "http://dev.rsudkotajambi.id/*"
       ],
+      "js": ["features/antrolKirimWatch.js"],
       "run_at": "document_idle"
     }
   ],
-  "permissions": [
-    "activeTab",
-    "alarms",
-    "sidePanel",
-    "storage"
-  ],
+  "permissions": ["activeTab", "alarms", "sidePanel", "storage"],
   "host_permissions": [
     "http://103.147.236.140/*",
     "http://103.147.236.138/*",

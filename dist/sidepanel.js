@@ -1535,6 +1535,12 @@ var FALLBACK_FEATURES = [
 		roles: ["apotek"]
 	},
 	{
+		key: "antrolKirimOtomatis",
+		name: "Antrol Kirim Otomatis (MJKN)",
+		desc: "Kirim otomatis data MJKN (update_bulk) saat antrian farmasi selesai, di belakang layar",
+		roles: ["apotek", "admin"]
+	},
+	{
 		key: "penerimaanExport",
 		name: "Export Penerimaan + Waktu",
 		desc: "Export xls dgn Waktu Verif/Antrikan + Waktu Klik Selesai",

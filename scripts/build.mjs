@@ -72,6 +72,8 @@ async function compileFeatureFiles() {
     'antrianFarmasiDisplayApp.ts',
     'antrianFarmasiOperator.ts',
 
+    'antrolKirimWatch.ts',
+
     'farmasiAntrolShift.ts',
     'farmasiRecallDeleg.ts',
     'penerimaanAntrolCetak.ts',
