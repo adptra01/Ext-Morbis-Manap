@@ -15,7 +15,7 @@
 
 ### 🧹 chore
 
-- sync CHANGELOG (`0360808`)
+- sync CHANGELOG + build dist (manifest 1.5.127) (`6342334`)
 
 ## 2026-10-01
 
@@ -1711,4 +1711,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0360808e0b4d23f5c1e80ed45d18d2436645c7dc -->
+<!-- changelog-upto: 63423343dac48400174093bb606f208db4526487 -->
