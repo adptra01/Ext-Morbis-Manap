@@ -11,12 +11,14 @@
 
 ### ✨ feat
 
+- **antrolKirim** — kirim otomatis MJKN update_bulk saat antrian farmasi selesai — watch realtime di belakang layar (poll display → deteksi DONE → klaim → resolve ID_VISIT → kirim → audit Reports) (`ef9d0de`)
 - **resumeHistory** — tampilkan diff field sebagai tabel (Field/Sebelum/Sesudah + badge tambah-hapus) (`4eef706`)
 - **ui** — urutkan daftar fitur popup & sidepanel abjad (locale Indonesia) (`a98810a`)
 - **print** — cetak otomatis berkas M-KLAIM — hanya section berisi, tiap dokumen pas 1 lembar A4 (tanpa checkbox) (`79cc8b9`)
 
 ### 🐛 fix
 
+- **resume** — simpan textarea dengan baris baru — kirim \n mentah, bukan <br/> (`8fc4df6`)
 - **resumeTab** — endpoint simpan RJ -> /rekam-medik/control/rm-rawat-jalan (path ber-dash) (`486485b`)
 - **resumeTab** — samakan validasi simpan dengan form RJ asli (`3342fcb`)
 - **resumeTab** — simpan via endpoint lama /rekam-medik/control/rm-rawatjalan (`fb76f0a`)
@@ -1697,4 +1699,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: fdf456302b749b294ed76c948465d421a1ee1bf3 -->
+<!-- changelog-upto: ef9d0de423e8b2fc9c54676a5a7051a9efc2be6f -->
