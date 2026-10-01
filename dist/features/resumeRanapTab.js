@@ -29732,6 +29732,12 @@ var __morbis_feature = (() => {
     }
   };
 
+  // src/features/shared/noteText.ts
+  var BR_TAG = /<\s*br\s*\/?\s*>/gi;
+  function restoreBreaks(value) {
+    return (value || "").replace(BR_TAG, "\n");
+  }
+
   // src/features/resumeRanapTab/mount.tsx
   var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
   var ENDPOINT = "/rekam-medik/control/edit-resume-rawat-inap";
@@ -29744,7 +29750,7 @@ var __morbis_feature = (() => {
   }
   function ta(doc, name) {
     const el = doc.querySelector(`textarea[name="${name}"]`);
-    return el?.textContent?.trim() ?? el?.value?.trim() ?? "";
+    return restoreBreaks(el?.textContent?.trim() ?? el?.value?.trim() ?? "");
   }
   function arrVal(doc, name) {
     return Array.from(doc.querySelectorAll(`[name="${name}"]`)).map((el) => el.value).filter(Boolean);

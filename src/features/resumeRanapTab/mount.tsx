@@ -7,6 +7,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import type { RanapFormData, IcdItem } from './types';
 import { logResumeHistory, loadLast } from '../shared/resumeHistory.js';
 import { ranapToSnap } from './snap.js';
+import { restoreBreaks } from '../shared/noteText.js';
 
 const FORM_URL = '/admisi/detail-rawat-inap/edit-resume-ri';
 const ENDPOINT = '/rekam-medik/control/edit-resume-rawat-inap';
@@ -21,7 +22,7 @@ function val(doc: Document, name: string): string {
 }
 function ta(doc: Document, name: string): string {
   const el = doc.querySelector<HTMLTextAreaElement>(`textarea[name="${name}"]`);
-  return el?.textContent?.trim() ?? el?.value?.trim() ?? '';
+  return restoreBreaks(el?.textContent?.trim() ?? el?.value?.trim() ?? '');
 }
 
 function arrVal(doc: Document, name: string): string[] {

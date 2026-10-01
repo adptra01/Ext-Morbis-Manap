@@ -29618,6 +29618,12 @@ var __morbis_feature = (() => {
     }
   };
 
+  // src/features/shared/noteText.ts
+  var BR_TAG = /<\s*br\s*\/?\s*>/gi;
+  function restoreBreaks(value) {
+    return (value || "").replace(BR_TAG, "\n");
+  }
+
   // src/features/resumeTab/mount.tsx
   var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
   var ITEM_PRIORITIES = [
@@ -29711,6 +29717,13 @@ var __morbis_feature = (() => {
   function parseResumeView() {
     const view = document.getElementById("resume-view");
     if (!view) return null;
+    const viewCellText = (el) => {
+      if (!el) return "";
+      const tmp = document.createElement("div");
+      const html = (el.innerHTML || "").replace(/<\s*br\s*\/?\s*>/gi, "\n");
+      tmp.innerHTML = html;
+      return (tmp.textContent || "").trim();
+    };
     const txt = (label) => {
       const rows = view.querySelectorAll("table table tr, fieldset table tr");
       for (const row of rows) {
@@ -29719,7 +29732,7 @@ var __morbis_feature = (() => {
           if (cells[i].textContent?.trim() === label && cells[i + 1]) {
             const next = cells[i + 1];
             const valCell = next.textContent?.trim() === ":" ? cells[i + 2] : next;
-            return valCell?.textContent?.trim() || "";
+            return valCell ? viewCellText(valCell) : "";
           }
         }
       }
@@ -29740,7 +29753,7 @@ var __morbis_feature = (() => {
       const cells = lainnyaRow.querySelectorAll("td");
       for (let i = 0; i < cells.length; i++) {
         if (cells[i].textContent?.trim() === "Lainnya" && i + 2 < cells.length) {
-          const raw = cells[i + 2]?.textContent?.trim() || "";
+          const raw = viewCellText(cells[i + 2]);
           const vitalPrefixes = [
             "Tensi:",
             "Nadi:",
@@ -29849,11 +29862,13 @@ var __morbis_feature = (() => {
       noregis: getVal("noregis") || (typeof cachedFormState?.["noregis"] === "string" ? cachedFormState["noregis"] : "")
     };
     const clinicalNotes = {
-      anamnesa: getField("anamnesa"),
-      pemeriksaan_fisik: getField("pemeriksaan_fisik") || getField("pemeriksaan") || getField("fisik") || "",
-      catatan: getField("catatan") || "",
-      tindakan: getField("tindakan") || getField("namaTindakan"),
-      terapi_pengobatan: getField("terapi_pengobatan") || "",
+      anamnesa: restoreBreaks(getField("anamnesa")),
+      pemeriksaan_fisik: restoreBreaks(
+        getField("pemeriksaan_fisik") || getField("pemeriksaan") || getField("fisik") || ""
+      ),
+      catatan: restoreBreaks(getField("catatan") || ""),
+      tindakan: restoreBreaks(getField("tindakan") || getField("namaTindakan")),
+      terapi_pengobatan: restoreBreaks(getField("terapi_pengobatan") || ""),
       jenis_kasus: getField("jenis_kasus"),
       status_kasus: getRadio("status_kasus"),
       tindak_lanjut: getField("tindak_lanjut")
@@ -30084,12 +30099,12 @@ var __morbis_feature = (() => {
     ];
     for (const f of arrayFieldsToClear) params.delete(f);
     params.delete("ic[]");
-    const toHtml = (val) => (val || "").replace(/\n/g, "<br/>");
-    params.set("anamnesa", toHtml(data.clinicalNotes.anamnesa));
-    params.set("pemeriksaan_fisik", toHtml(data.clinicalNotes.pemeriksaan_fisik));
-    params.set("catatan", toHtml(data.clinicalNotes.catatan));
-    params.set("tindakan", toHtml(data.clinicalNotes.tindakan));
-    params.set("terapi_pengobatan", toHtml(data.clinicalNotes.terapi_pengobatan));
+    const notes = (val) => restoreBreaks(val || "");
+    params.set("anamnesa", notes(data.clinicalNotes.anamnesa));
+    params.set("pemeriksaan_fisik", notes(data.clinicalNotes.pemeriksaan_fisik));
+    params.set("catatan", notes(data.clinicalNotes.catatan));
+    params.set("tindakan", notes(data.clinicalNotes.tindakan));
+    params.set("terapi_pengobatan", notes(data.clinicalNotes.terapi_pengobatan));
     const cleanVital = (val) => (val || "").match(/^([\d/.]+)/)?.[0] || "";
     params.set("tensi", cleanVital(data.vitalSigns.tensi));
     params.set("nadi", cleanVital(data.vitalSigns.nadi));

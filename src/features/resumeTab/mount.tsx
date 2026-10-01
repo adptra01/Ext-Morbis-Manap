@@ -112,6 +112,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types';
 import { logResumeHistory, loadLast } from '../shared/resumeHistory.js';
 import { resumeDataToSnap } from './snap.js';
+import { restoreBreaks } from '../shared/noteText.js';
 
 const isRj = location.pathname.includes('rm-rawat-jalan-new');
 
@@ -140,6 +141,17 @@ let overlayBtn: HTMLButtonElement | null = null;
 function parseResumeView(): ResumeData | null {
   const view = document.getElementById('resume-view');
   if (!view) return null;
+  // Baca teks SEL view dengan `<br>` → `\n` (jangan diratakan jadi satu
+  // baris panjang seperti `textContent`). Mengganti elemen `<br>` dengan
+  // `\n` di string HTML dulu; literal `<br/>` sisa korupsi lama pun ikut
+  // menjadi `\n` (idempoten untuk `\n` yang sudah benar).
+  const viewCellText = (el: Element): string => {
+    if (!el) return '';
+    const tmp = document.createElement('div');
+    const html = (el.innerHTML || '').replace(/<\s*br\s*\/?\s*>/gi, '\n');
+    tmp.innerHTML = html;
+    return (tmp.textContent || '').trim();
+  };
   const txt = (label: string): string => {
     const rows = view.querySelectorAll('table table tr, fieldset table tr');
     for (const row of rows) {
@@ -148,7 +160,7 @@ function parseResumeView(): ResumeData | null {
         if (cells[i].textContent?.trim() === label && cells[i + 1]) {
           const next = cells[i + 1];
           const valCell = next.textContent?.trim() === ':' ? cells[i + 2] : next;
-          return valCell?.textContent?.trim() || '';
+          return valCell ? viewCellText(valCell) : '';
         }
       }
     }
@@ -170,7 +182,7 @@ function parseResumeView(): ResumeData | null {
     const cells = lainnyaRow.querySelectorAll('td');
     for (let i = 0; i < cells.length; i++) {
       if (cells[i].textContent?.trim() === 'Lainnya' && i + 2 < cells.length) {
-        const raw = cells[i + 2]?.textContent?.trim() || '';
+        const raw = viewCellText(cells[i + 2]);
         const vitalPrefixes = [
           'Tensi:',
           'Nadi:',
@@ -317,12 +329,13 @@ function extractFormData(): ResumeData {
   };
 
   const clinicalNotes = {
-    anamnesa: getField('anamnesa'),
-    pemeriksaan_fisik:
+    anamnesa: restoreBreaks(getField('anamnesa')),
+    pemeriksaan_fisik: restoreBreaks(
       getField('pemeriksaan_fisik') || getField('pemeriksaan') || getField('fisik') || '',
-    catatan: getField('catatan') || '',
-    tindakan: getField('tindakan') || getField('namaTindakan'),
-    terapi_pengobatan: getField('terapi_pengobatan') || '',
+    ),
+    catatan: restoreBreaks(getField('catatan') || ''),
+    tindakan: restoreBreaks(getField('tindakan') || getField('namaTindakan')),
+    terapi_pengobatan: restoreBreaks(getField('terapi_pengobatan') || ''),
     jenis_kasus: getField('jenis_kasus'),
     status_kasus: getRadio('status_kasus'),
     tindak_lanjut: getField('tindak_lanjut'),
@@ -739,14 +752,18 @@ function serializeRawatJalan(data: ResumeData): string {
   params.delete('ic[]');
 
   // ═══════════════════════════════════════════════════════════
-  // 3. OVERLAY: notes dari React state (convert newline → <br/>)
+  // 3. OVERLAY: notes dari React state.
+  //    Kirim `\n` MENTAH seperti form asli (bukan `<br/>`): verifikasi live
+  //    membuktikan server menyimpan `\n` apa adanya untuk record native.
+  //    `restoreBreaks()` sekalian menyembuhkan literal `<br/>` dari korupsi
+  //    serializer lama → `\n` (idempoten, tidak mengubah `\n` yang benar).
   // ═══════════════════════════════════════════════════════════
-  const toHtml = (val: string) => (val || '').replace(/\n/g, '<br/>');
-  params.set('anamnesa', toHtml(data.clinicalNotes.anamnesa));
-  params.set('pemeriksaan_fisik', toHtml(data.clinicalNotes.pemeriksaan_fisik));
-  params.set('catatan', toHtml(data.clinicalNotes.catatan));
-  params.set('tindakan', toHtml(data.clinicalNotes.tindakan));
-  params.set('terapi_pengobatan', toHtml(data.clinicalNotes.terapi_pengobatan));
+  const notes = (val: string | undefined) => restoreBreaks(val || '');
+  params.set('anamnesa', notes(data.clinicalNotes.anamnesa));
+  params.set('pemeriksaan_fisik', notes(data.clinicalNotes.pemeriksaan_fisik));
+  params.set('catatan', notes(data.clinicalNotes.catatan));
+  params.set('tindakan', notes(data.clinicalNotes.tindakan));
+  params.set('terapi_pengobatan', notes(data.clinicalNotes.terapi_pengobatan));
 
   // ═══════════════════════════════════════════════════════════
   // 4. OVERLAY: vital signs dari React state

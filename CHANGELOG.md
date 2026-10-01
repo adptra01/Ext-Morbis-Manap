@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- **resumeHistory** — tampilkan diff field sebagai tabel (Field/Sebelum/Sesudah + badge tambah-hapus) (`a8188f4`)
+- **resumeHistory** — tampilkan diff field sebagai tabel (Field/Sebelum/Sesudah + badge tambah-hapus) (`4eef706`)
 - **ui** — urutkan daftar fitur popup & sidepanel abjad (locale Indonesia) (`a98810a`)
 - **print** — cetak otomatis berkas M-KLAIM — hanya section berisi, tiap dokumen pas 1 lembar A4 (tanpa checkbox) (`79cc8b9`)
 
@@ -27,6 +27,10 @@
 ### ♻️ refactor
 
 - **printSections** — hapus fitur optimasi cetak klaim (M-KLAIM) (`8a1465a`)
+
+### 🧹 chore
+
+- sync CHANGELOG (`fdf4563`)
 
 ### 📌 misc
 
@@ -1693,4 +1697,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a8188f430141d8795bcab07805004bc38af82dfe -->
+<!-- changelog-upto: fdf456302b749b294ed76c948465d421a1ee1bf3 -->
