@@ -145,30 +145,66 @@ async function fetchFormData(): Promise<RanapFormData | null> {
   // 1. Dapatkan resume ID dari halaman daftar resume (pola toleran —
   //    format inline onclick server bisa berubah: edit(123,), edit('123'),
   //    data-id="123", dsb).
-  const listHtml = await fetchText(`/admisi/detail-rawat-inap/resume-ri?idVisit=${idVisit}`);
+  const listUrls = [
+    `/admisi/detail-rawat-inap/resume-ri?idVisit=${encodeURIComponent(idVisit)}`,
+    `/admisi/detail-rawat-inap/resume-ri?id_visit=${encodeURIComponent(idVisit)}`,
+    `/rekam-medik/resume-rawat-inap?id_visit=${encodeURIComponent(idVisit)}`,
+  ];
+
+  let listHtml: string | null = null;
+  let resumeId = '';
+  for (const lUrl of listUrls) {
+    const res = await fetchText(lUrl);
+    if (res !== null) {
+      listHtml = res;
+      resumeId =
+        res.match(/edit\(\s*['"]?(\d+)/)?.[1] ??
+        res.match(/edit-resume[^0-9]*(\d{4,})/i)?.[1] ??
+        res.match(/id[=\s]+['"]?(\d+)/i)?.[1] ??
+        res.match(/data-id\s*=\s*["'](\d+)/i)?.[1] ??
+        '';
+      if (resumeId) break;
+    }
+  }
+
   if (listHtml === null) return null;
-  const resumeId =
-    listHtml.match(/edit\(\s*['"]?(\d+)/)?.[1] ??
-    listHtml.match(/edit-resume[^0-9]*(\d{4,})/i)?.[1] ??
-    listHtml.match(/data-id\s*=\s*["'](\d+)/i)?.[1] ??
-    '';
 
   if (!resumeId) {
     console.warn('[RI] no existing resume found, using empty form');
   }
 
   // 2. Fetch halaman form dengan ID resume
-  const url = resumeId
-    ? `${FORM_URL}?idVisit=${idVisit}&id=${resumeId}`
-    : `${FORM_URL}?idVisit=${idVisit}`;
-  const html = await fetchText(url);
-  if (html === null) return null;
-  const data = parseFormHtml(html);
-  // Validasi: halaman login/expire/salah mengembalikan HTML tanpa field
-  // kunci. Kembalikan null agar pemanggil menampilkan error + bisa retry,
-  // bukan modal kosong yang ter-cache permanen.
-  if (!data.id_visit && !data.id_resume_inap && !data.norm && !data.noreg) {
-    console.warn('[RI] form kosong (bukan form RI valid) untuk id_visit', idVisit);
+  const urls: string[] = [];
+  if (resumeId) {
+    urls.push(
+      `${location.origin}/rekam-medik/resume-rawat-inap?id=${encodeURIComponent(resumeId)}&id_visit=${encodeURIComponent(idVisit)}`,
+    );
+    urls.push(
+      `${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}&id=${encodeURIComponent(resumeId)}`,
+    );
+  }
+  urls.push(
+    `${location.origin}/rekam-medik/resume-rawat-inap?id_visit=${encodeURIComponent(idVisit)}`,
+  );
+  urls.push(
+    `${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}`,
+  );
+
+  let data: RanapFormData | null = null;
+  for (const url of urls) {
+    const html = await fetchText(url);
+    if (html !== null) {
+      const d = parseFormHtml(html);
+      // Validasi: form RI minimal punya id_visit atau norm atau noreg
+      if (d.id_visit || d.id_resume_inap || d.norm || d.noreg) {
+        data = d;
+        break;
+      }
+    }
+  }
+
+  if (!data) {
+    console.warn('[RI] form kosong (bukan form RI valid) untuk semua endpoint fallback', idVisit);
     return null;
   }
   return data;

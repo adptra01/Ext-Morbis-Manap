@@ -29609,7 +29609,6 @@ var __morbis_feature = (() => {
 
   // src/features/resumeRanapTab/mount.tsx
   var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
-  var FORM_URL = "/admisi/detail-rawat-inap/edit-resume-ri";
   var ENDPOINT = "/rekam-medik/control/edit-resume-rawat-inap";
   var reactRoot = null;
   var overlayBtn = null;
@@ -29710,13 +29709,13 @@ var __morbis_feature = (() => {
   async function fetchFormData() {
     const idVisit = new URLSearchParams(location.search).get("id_visit");
     if (!idVisit) return null;
-    const fetchText = async (url2, attempt = 0) => {
+    const fetchText = async (url, attempt = 0) => {
       try {
-        const resp = await fetch(url2, { credentials: "same-origin", cache: "no-store" });
+        const resp = await fetch(url, { credentials: "same-origin", cache: "no-store" });
         if (!resp.ok) {
           if (attempt === 0) {
             await new Promise((r2) => setTimeout(r2, 350));
-            return fetchText(url2, 1);
+            return fetchText(url, 1);
           }
           return null;
         }
@@ -29724,24 +29723,51 @@ var __morbis_feature = (() => {
       } catch (e) {
         if (attempt === 0) {
           await new Promise((r2) => setTimeout(r2, 350));
-          return fetchText(url2, 1);
+          return fetchText(url, 1);
         }
         console.error("[RI] fetch failed:", e);
         return null;
       }
     };
-    const listHtml = await fetchText(`/admisi/detail-rawat-inap/resume-ri?idVisit=${idVisit}`);
+    const listUrls = [
+      `/admisi/detail-rawat-inap/resume-ri?idVisit=${encodeURIComponent(idVisit)}`,
+      `/admisi/detail-rawat-inap/resume-ri?id_visit=${encodeURIComponent(idVisit)}`,
+      `/rekam-medik/resume-rawat-inap?id_visit=${encodeURIComponent(idVisit)}`
+    ];
+    let listHtml = null;
+    let resumeId = "";
+    for (const lUrl of listUrls) {
+      const res = await fetchText(lUrl);
+      if (res !== null) {
+        listHtml = res;
+        resumeId = res.match(/edit\(\s*['"]?(\d+)/)?.[1] ?? res.match(/edit-resume[^0-9]*(\d{4,})/i)?.[1] ?? res.match(/id[=\s]+['"]?(\d+)/i)?.[1] ?? res.match(/data-id\s*=\s*["'](\d+)/i)?.[1] ?? "";
+        if (resumeId) break;
+      }
+    }
     if (listHtml === null) return null;
-    const resumeId = listHtml.match(/edit\(\s*['"]?(\d+)/)?.[1] ?? listHtml.match(/edit-resume[^0-9]*(\d{4,})/i)?.[1] ?? listHtml.match(/data-id\s*=\s*["'](\d+)/i)?.[1] ?? "";
     if (!resumeId) {
       console.warn("[RI] no existing resume found, using empty form");
     }
-    const url = resumeId ? `${FORM_URL}?idVisit=${idVisit}&id=${resumeId}` : `${FORM_URL}?idVisit=${idVisit}`;
-    const html = await fetchText(url);
-    if (html === null) return null;
-    const data = parseFormHtml(html);
-    if (!data.id_visit && !data.id_resume_inap && !data.norm && !data.noreg) {
-      console.warn("[RI] form kosong (bukan form RI valid) untuk id_visit", idVisit);
+    const urls = [];
+    if (resumeId) {
+      urls.push(`${location.origin}/rekam-medik/resume-rawat-inap?id=${encodeURIComponent(resumeId)}&id_visit=${encodeURIComponent(idVisit)}`);
+      urls.push(`${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}&id=${encodeURIComponent(resumeId)}`);
+    }
+    urls.push(`${location.origin}/rekam-medik/resume-rawat-inap?id_visit=${encodeURIComponent(idVisit)}`);
+    urls.push(`${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}`);
+    let data = null;
+    for (const url of urls) {
+      const html = await fetchText(url);
+      if (html !== null) {
+        const d = parseFormHtml(html);
+        if (d.id_visit || d.id_resume_inap || d.norm || d.noreg) {
+          data = d;
+          break;
+        }
+      }
+    }
+    if (!data) {
+      console.warn("[RI] form kosong (bukan form RI valid) untuk semua endpoint fallback", idVisit);
       return null;
     }
     return data;

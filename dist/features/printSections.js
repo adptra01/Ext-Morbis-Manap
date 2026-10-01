@@ -110,15 +110,15 @@ var __morbis_feature = (() => {
   }
   function fitToSinglePage(contentHeightPx, pageHeightPx = PAGE_H, minScale = MIN_SCALE) {
     if (!(contentHeightPx > 0) || !(pageHeightPx > 0)) {
-      return { scale: 1, boxHeightPx: 0, fitsOnePage: true };
+      return { scale: 1, boxHeightPx: 0, fitsOnePage: true, needed: 1 };
     }
     if (contentHeightPx <= pageHeightPx) {
-      return { scale: 1, boxHeightPx: 0, fitsOnePage: true };
+      return { scale: 1, boxHeightPx: 0, fitsOnePage: true, needed: 1 };
     }
     const needed = pageHeightPx / contentHeightPx;
     const scale = Math.max(minScale, Math.min(1, needed));
     const fitsOnePage = contentHeightPx * scale <= pageHeightPx + 0.5;
-    return { scale, boxHeightPx: fitsOnePage ? contentHeightPx * scale : 0, fitsOnePage };
+    return { scale, boxHeightPx: fitsOnePage ? contentHeightPx * scale : 0, fitsOnePage, needed };
   }
   var DOC_CLASS = "ext-print-doc";
   var DOC_LAST_CLASS = "ext-print-doc-last";
@@ -264,7 +264,7 @@ var __morbis_feature = (() => {
         }
         if (fit.scale < 1 && !fit.fitsOnePage) {
           console.info(
-            `[PrintSections] "${sec.id}": butuh skala ${fit.scale.toFixed(2)} < batas ${MIN_SCALE} -> dicetak natural (${Math.ceil(natural / PAGE_H)} halaman) demi keterbacaan`
+            `[PrintSections] "${sec.id}": butuh skala ${fit.needed.toFixed(2)} < batas ${MIN_SCALE} -> dicetak natural (${Math.ceil(natural / PAGE_H)} halaman) demi keterbacaan`
           );
         }
       }

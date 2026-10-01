@@ -96,19 +96,19 @@ export function fitToSinglePage(
   contentHeightPx: number,
   pageHeightPx: number = PAGE_H,
   minScale: number = MIN_SCALE,
-): { scale: number; boxHeightPx: number; fitsOnePage: boolean } {
+): { scale: number; boxHeightPx: number; fitsOnePage: boolean; needed: number } {
   if (!(contentHeightPx > 0) || !(pageHeightPx > 0)) {
-    return { scale: 1, boxHeightPx: 0, fitsOnePage: true };
+    return { scale: 1, boxHeightPx: 0, fitsOnePage: true, needed: 1 };
   }
   if (contentHeightPx <= pageHeightPx) {
-    return { scale: 1, boxHeightPx: 0, fitsOnePage: true };
+    return { scale: 1, boxHeightPx: 0, fitsOnePage: true, needed: 1 };
   }
   const needed = pageHeightPx / contentHeightPx;
   const scale = Math.max(minScale, Math.min(1, needed));
   const fitsOnePage = contentHeightPx * scale <= pageHeightPx + 0.5;
   // Kalau tidak muat Even di skala minimum, biarkan mengalir natural (tanpa
   // clip) — kotak halaman tak dikunci tinggi.
-  return { scale, boxHeightPx: fitsOnePage ? contentHeightPx * scale : 0, fitsOnePage };
+  return { scale, boxHeightPx: fitsOnePage ? contentHeightPx * scale : 0, fitsOnePage, needed };
 }
 
 // ── Implementasi DOM ─────────────────────────────────────────────────────────
@@ -289,7 +289,7 @@ function measureAndScale(docs: HTMLElement[]): void {
 
       if (fit.scale < 1 && !fit.fitsOnePage) {
         console.info(
-          `[PrintSections] "${sec.id}": butuh skala ${fit.scale.toFixed(2)} < batas ${MIN_SCALE} ` +
+          `[PrintSections] "${sec.id}": butuh skala ${fit.needed.toFixed(2)} < batas ${MIN_SCALE} ` +
             `-> dicetak natural (${Math.ceil(natural / PAGE_H)} halaman) demi keterbacaan`,
         );
       }
