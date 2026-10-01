@@ -369,7 +369,7 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 //#endregion
 //#region src/features/sidepanel/FeaturesPanel.tsx
 function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, onModeChange }) {
-	const visible = features.filter((f) => role === "admin" || f.roles.includes(role));
+	const visible = features.filter((f) => role === "admin" || f.roles.includes(role)).sort((a, b) => a.name.localeCompare(b.name, "id"));
 	const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {

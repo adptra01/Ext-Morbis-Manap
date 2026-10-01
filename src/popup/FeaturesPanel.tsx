@@ -33,9 +33,10 @@ export function FeaturesPanel({
   onToggle,
   onModeChange,
 }: FeaturesPanelProps) {
-  const entries = Object.entries(features).filter(
-    ([, f]) => role === 'admin' || f.allowedRoles?.includes(role),
-  );
+  const entries = Object.entries(features)
+    .filter(([, f]) => role === 'admin' || f.allowedRoles?.includes(role))
+    // Urut abjad (Indonesia) berdasarkan nama fitur agar daftar konsisten.
+    .sort(([, a], [, b]) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
   const enabledCount = entries.filter(([, f]) => f.enabled && !f.comingSoon).length;
 
   if (entries.length === 0) {

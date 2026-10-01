@@ -74,7 +74,7 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 //#endregion
 //#region src/popup/FeaturesPanel.tsx
 function FeaturesPanel({ features, role, disabled, onToggle, onModeChange }) {
-	const entries = Object.entries(features).filter(([, f]) => role === "admin" || f.allowedRoles?.includes(role));
+	const entries = Object.entries(features).filter(([, f]) => role === "admin" || f.allowedRoles?.includes(role)).sort(([, a], [, b]) => (a.name ?? "").localeCompare(b.name ?? "", "id"));
 	const enabledCount = entries.filter(([, f]) => f.enabled && !f.comingSoon).length;
 	if (entries.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: "text-center py-4",

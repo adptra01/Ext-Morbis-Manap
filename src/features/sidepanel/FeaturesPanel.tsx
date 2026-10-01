@@ -26,8 +26,10 @@ export function FeaturesPanel({
   onModeChange,
 }: FeaturesPanelProps) {
   // Admin melihat semua fitur (sama seperti popup), bukan hanya yang roles-nya
-  // berisi 'admin'.
-  const visible = features.filter((f) => role === 'admin' || f.roles.includes(role));
+  // berisi 'admin'. Urut abjad (Indonesia) berdasarkan nama fitur.
+  const visible = features
+    .filter((f) => role === 'admin' || f.roles.includes(role))
+    .sort((a, b) => a.name.localeCompare(b.name, 'id'));
   const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
 
   return (
