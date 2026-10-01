@@ -303,12 +303,6 @@ var __morbis_bg = (() => {
         name: "Rekap Penerimaan Resep (Reports SIMRS)",
         description: "Tombol export penerimaan membuka halaman Rekap Penerimaan Resep + Waktu Antrian di Reports SIMRS (filter ter-prefill, export XLSX/CSV di sana)"
       },
-      ttvEditor: {
-        enabled: true,
-        allowedRoles: ["casemix", "dokter"],
-        name: "TTV Editor (Surat Pengantar)",
-        description: "Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal"
-      },
       resumeModal: {
         enabled: true,
         allowedRoles: ["casemix"],

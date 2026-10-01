@@ -125,12 +125,6 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-penerimaan-export");
     }
-    const ttvCfg = cfg?.features?.ttvEditor;
-    if (ttvCfg?.enabled && window.ExtensionCore.isFeatureAllowed("ttvEditor")) {
-      document.documentElement.setAttribute("data-ext-ttv-editor", "1");
-    } else {
-      document.documentElement.removeAttribute("data-ext-ttv-editor");
-    }
     const rmCfg = cfg?.features?.resumeModal;
     if (rmCfg?.enabled && window.ExtensionCore.isFeatureAllowed("resumeModal")) {
       document.documentElement.setAttribute("data-ext-resume-modal", "1");
