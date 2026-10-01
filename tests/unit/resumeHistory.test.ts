@@ -5,6 +5,9 @@ import {
   sameSnapVal,
   diffSnap,
   shortSnapVal,
+  fieldLabel,
+  formatSnapValue,
+  buildChangeRows,
   storeLast,
   loadLast,
   saveHistory,
@@ -60,6 +63,52 @@ describe('sameSnapVal / diffSnap / shortSnapVal', () => {
     const long = 'x'.repeat(100);
     // JSON.stringify: string terbungkus tanda kutip
     expect(shortSnapVal(long)).toBe('"' + 'x'.repeat(59) + '…');
+  });
+});
+
+describe('fieldLabel / formatSnapValue / buildChangeRows', () => {
+  it('fieldLabel memetakan key form native ke label manusiawi', () => {
+    expect(fieldLabel('anamnesa')).toBe('Anamnesa');
+    expect(fieldLabel('kode10[]')).toBe('Kode ICD-10 (Diagnosa)');
+    expect(fieldLabel('namaTindakan[]')).toBe('Nama Tindakan');
+  });
+
+  it('fieldLabel fallback = key asli untuk key tak dikenal', () => {
+    expect(fieldLabel('field_baru_x[]')).toBe('field_baru_x[]');
+  });
+
+  it('formatSnapValue: array jadi multi-baris bernomor, row kosong tetap tampil', () => {
+    expect(formatSnapValue(['A99', 'B00'])).toBe('1. A99\n2. B00');
+    expect(formatSnapValue([])).toBe('(kosong)');
+    expect(formatSnapValue(['x', ''])).toBe('1. x\n2. ∅');
+  });
+
+  it('formatSnapValue: string tak ikut JSON-quote, undefined jadi "—"', () => {
+    expect(formatSnapValue('SALDO 0')).toBe('SALDO 0');
+    expect(formatSnapValue('"quoted"')).toBe('"quoted"'); // nilai mentah, bukan parse
+    expect(formatSnapValue(undefined)).toBe('—');
+  });
+
+  it('buildChangeRows: dir benar utk ubah/tambah/hapus + label', () => {
+    const rows = buildChangeRows({
+      changed: ['catatan', 'kode10[]', 'spo2'],
+      before: { catatan: 'a', 'kode10[]': ['A99'] }, // spo2 tidak ada di before
+      after: { catatan: 'b', spo2: '95' }, // kode10[] dihapus di after
+    });
+    expect(rows.map((r) => r.dir)).toEqual(['ubah', 'hapus', 'tambah']);
+    expect(rows[0].label).toBe('Catatan');
+    expect(rows[0].key).toBe('catatan');
+    expect(rows[1].before).toEqual(['A99']);
+    expect(rows[2].after).toBe('95');
+  });
+
+  it('buildChangeRows mempertahankan urutan entry.changed', () => {
+    const rows = buildChangeRows({
+      changed: ['tensi', 'nadi'],
+      before: { tensi: '120/80', nadi: '72' },
+      after: { tensi: '130/90', nadi: '70' },
+    });
+    expect(rows.map((r) => r.key)).toEqual(['tensi', 'nadi']);
   });
 });
 

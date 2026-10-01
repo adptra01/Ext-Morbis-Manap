@@ -111,6 +111,105 @@ export function shortSnapVal(v: string | string[] | undefined): string {
   return s.length > 60 ? s.slice(0, 60) + '…' : s;
 }
 
+/* ── Label & tabel diff (pure, unit-tested) ── */
+
+/** Label bahasa Indonesia untuk nama field form native MORBIS. */
+const FIELD_LABELS: Record<string, string> = {
+  anamnesa: 'Anamnesa',
+  pemeriksaan_fisik: 'Pemeriksaan Fisik',
+  catatan: 'Catatan',
+  tindakan: 'Tindakan',
+  terapi_pengobatan: 'Terapi & Pengobatan',
+  tensi: 'Tensi',
+  nadi: 'Nadi',
+  suhu: 'Suhu',
+  nafas: 'Nafas',
+  tinggi: 'Tinggi Badan',
+  berat: 'Berat Badan',
+  jenis_kasus: 'Jenis Kasus',
+  status_kasus: 'Status Kasus',
+  tindak_lanjut: 'Tindak Lanjut',
+  'kode10[]': 'Kode ICD-10 (Diagnosa)',
+  'idicd[]': 'ID ICD-10 (Diagnosa)',
+  'nama[]': 'Nama Diagnosa',
+  'kasus_diagnosa[]': 'Kasus Diagnosa',
+  'komplikasi[]': 'Komplikasi',
+  'kode9[]': 'Kode ICD-9 (Tindakan)',
+  'idicdTindakan[]': 'ID ICD-9 (Tindakan)',
+  'namaTindakan[]': 'Nama Tindakan',
+  'komorbid[]': 'Komorbid',
+  'kategoriProsedur[]': 'Kategori Prosedur (SNOMED)',
+  snomedProsedur: 'Kode SNOMED',
+  codeProsedur: 'Kode Prosedur',
+  norm: 'No. RM',
+  pasien: 'Nama Pasien',
+  id_visit: 'ID Visit',
+  id_rawat_jalan: 'ID Rawat Jalan',
+  waktu: 'Waktu',
+  id_dokter: 'ID Dokter',
+  nama_dokter: 'Nama Dokter',
+  rujukan: 'Rujukan',
+  spo2: 'SpO2',
+  planning: 'Planning',
+  keterangan10: 'Keterangan',
+  _source: 'Sumber Entri',
+  jenis: 'Jenis Berkas',
+  _verified_at: 'Waktu Verifikasi',
+};
+
+/** Label manusiawi untuk key; fallback = key asli (misal key baru). */
+export function fieldLabel(key: string): string {
+  return FIELD_LABELS[key] ?? key;
+}
+
+/** Skalar JSON → teks rapi tanpa tanda kutip pembungkus. */
+function scalarText(v: string): string {
+  try {
+    const parsed: unknown = JSON.parse(v);
+    if (typeof parsed === 'string') return v;
+  } catch {
+    /* bukan JSON — pakai mentah */
+  }
+  return v;
+}
+
+/** Nilai snapshot → teks multi-baris ramah mata (array satu item per baris). */
+export function formatSnapValue(v: string | string[] | undefined): string {
+  if (v === undefined) return '—';
+  if (Array.isArray(v)) {
+    if (v.length === 0) return '(kosong)';
+    return v
+      .map((item, i) => {
+        const t = scalarText(item);
+        return `${i + 1}. ${t.trim() || '∅'}`;
+      })
+      .join('\n');
+  }
+  return scalarText(v).trim() || '∅';
+}
+
+export type ChangeDir = 'ubah' | 'tambah' | 'hapus';
+
+export interface ChangeRow {
+  key: string;
+  label: string;
+  before: string | string[] | undefined;
+  after: string | string[] | undefined;
+  dir: ChangeDir;
+}
+
+/** Baris-baris perubahan utk tabel detail (urutan sesuai entry.changed). */
+export function buildChangeRows(
+  entry: Pick<ResumeHistoryEntry, 'changed' | 'before' | 'after'>,
+): ChangeRow[] {
+  return entry.changed.map((k) => {
+    const b = entry.before[k];
+    const a = entry.after[k];
+    const dir: ChangeDir = b === undefined ? 'tambah' : a === undefined ? 'hapus' : 'ubah';
+    return { key: k, label: fieldLabel(k), before: b, after: a, dir };
+  });
+}
+
 /* ── Storage (localStorage, tipe-aware, legacy migration) ── */
 
 export function loadHistory(
@@ -589,19 +688,100 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
       row.appendChild(title);
 
       const detail = document.createElement('div');
-      detail.style.cssText =
-        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;' +
-        'font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
-      if (!entry.changed.length) {
-        detail.textContent = 'Tidak ada perbedaan field.';
-      } else {
-        detail.textContent = entry.changed
-          .map(function (k) {
-            return k + ': ' + shortSnapVal(entry.before[k]) + ' → ' + shortSnapVal(entry.after[k]);
-          })
-          .join('\n');
-      }
+      detail.style.display = 'none';
       row.appendChild(detail);
+
+      const paintDiff = (): void => {
+        detail.replaceChildren();
+        detail.style.cssText =
+          'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;' +
+          'overflow:auto;max-height:240px;';
+
+        if (!entry.changed.length) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'font-size:13px;line-height:1.6;color:#475569;';
+          empty.textContent = 'Tidak ada perbedaan field.';
+          detail.appendChild(empty);
+          return;
+        }
+
+        const rows = buildChangeRows(entry);
+        const tbl = document.createElement('table');
+        tbl.style.cssText =
+          'width:100%;border-collapse:collapse;font-size:13px;line-height:1.5;' +
+          'font-family:' +
+          HIST_FONT +
+          '!important;';
+
+        const thead = document.createElement('thead');
+        const htr = document.createElement('tr');
+        for (const label of ['Field', 'Sebelum', 'Sesudah']) {
+          const th = document.createElement('th');
+          th.textContent = label;
+          th.style.cssText =
+            'text-align:left;padding:6px 10px;background:#eef2f7;border-bottom:2px solid #cbd5e1;' +
+            'position:sticky;top:0;font-weight:700;font-size:12px;text-transform:uppercase;' +
+            'letter-spacing:.03em;';
+          htr.appendChild(th);
+        }
+        thead.appendChild(htr);
+        tbl.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        for (const ch of rows) {
+          const tr = document.createElement('tr');
+          const tone =
+            ch.dir === 'tambah' ? '#ecfdf5' : ch.dir === 'hapus' ? '#fef2f2' : 'transparent';
+          tr.style.cssText = `border-bottom:1px solid #e2e8f0;background:${tone};`;
+
+          const tdLabel = document.createElement('td');
+          tdLabel.style.cssText = 'padding:6px 10px;vertical-align:top;';
+          const labelTxt = document.createElement('div');
+          labelTxt.style.fontWeight = '600';
+          labelTxt.textContent = ch.label;
+          tdLabel.appendChild(labelTxt);
+          const keyTxt = document.createElement('div');
+          keyTxt.style.cssText = 'font-size:11px;color:#94a3b8;';
+          keyTxt.textContent = ch.key;
+          tdLabel.appendChild(keyTxt);
+
+          const badge = document.createElement('span');
+          badge.style.cssText =
+            'display:inline-block;margin-top:4px;padding:1px 8px;border-radius:999px;' +
+            'font-size:11px;font-weight:700;' +
+            (ch.dir === 'tambah'
+              ? 'color:#065f46;background:#d1fae5;'
+              : ch.dir === 'hapus'
+                ? 'color:#991b1b;background:#fee2e2;'
+                : 'color:#334155;background:#e2e8f0;');
+          badge.textContent =
+            ch.dir === 'tambah' ? '+ Ditambahkan' : ch.dir === 'hapus' ? '− Dihapus' : 'berubah';
+          tdLabel.appendChild(badge);
+
+          const cell = (v: string | string[] | undefined): HTMLTableCellElement => {
+            const td = document.createElement('td');
+            td.style.cssText =
+              'padding:6px 10px;vertical-align:top;white-space:pre-line;' +
+              'font-size:12px;color:#1c2530;';
+            td.textContent = formatSnapValue(v);
+            return td;
+          };
+          const tdBefore = cell(ch.dir === 'tambah' ? undefined : ch.before);
+          tdBefore.style.cssText += ch.dir === 'tambah' ? 'color:#94a3b8;' : '';
+          const tdAfter = cell(ch.dir === 'hapus' ? undefined : ch.after);
+          tdAfter.style.cssText += ch.dir === 'hapus' ? 'color:#94a3b8;' : '';
+          if (ch.dir === 'ubah') tdAfter.style.fontWeight = '600';
+
+          tr.appendChild(tdLabel);
+          tr.appendChild(tdBefore);
+          tr.appendChild(tdAfter);
+          tbody.appendChild(tr);
+        }
+        tbl.appendChild(tbody);
+        detail.appendChild(tbl);
+      };
+
+      paintDiff();
 
       const bar = document.createElement('div');
       bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
@@ -613,7 +793,9 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
         'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;' +
         'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
       btnLihat.onclick = function () {
-        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+        const show = detail.style.display === 'none';
+        detail.style.cssText = detail.style.cssText.replace(/display:[^;]*;/, '');
+        detail.style.display = show ? 'block' : 'none';
       };
       bar.appendChild(btnLihat);
 

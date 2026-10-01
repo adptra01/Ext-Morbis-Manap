@@ -24468,9 +24468,77 @@ var __morbis_feature = (() => {
     Object.keys(after).forEach((k) => keys[k] = true);
     return Object.keys(keys).filter((k) => !sameSnapVal(before[k], after[k]));
   }
-  function shortSnapVal(v) {
-    const s = v === void 0 ? "-" : JSON.stringify(v);
-    return s.length > 60 ? s.slice(0, 60) + "\u2026" : s;
+  var FIELD_LABELS = {
+    anamnesa: "Anamnesa",
+    pemeriksaan_fisik: "Pemeriksaan Fisik",
+    catatan: "Catatan",
+    tindakan: "Tindakan",
+    terapi_pengobatan: "Terapi & Pengobatan",
+    tensi: "Tensi",
+    nadi: "Nadi",
+    suhu: "Suhu",
+    nafas: "Nafas",
+    tinggi: "Tinggi Badan",
+    berat: "Berat Badan",
+    jenis_kasus: "Jenis Kasus",
+    status_kasus: "Status Kasus",
+    tindak_lanjut: "Tindak Lanjut",
+    "kode10[]": "Kode ICD-10 (Diagnosa)",
+    "idicd[]": "ID ICD-10 (Diagnosa)",
+    "nama[]": "Nama Diagnosa",
+    "kasus_diagnosa[]": "Kasus Diagnosa",
+    "komplikasi[]": "Komplikasi",
+    "kode9[]": "Kode ICD-9 (Tindakan)",
+    "idicdTindakan[]": "ID ICD-9 (Tindakan)",
+    "namaTindakan[]": "Nama Tindakan",
+    "komorbid[]": "Komorbid",
+    "kategoriProsedur[]": "Kategori Prosedur (SNOMED)",
+    snomedProsedur: "Kode SNOMED",
+    codeProsedur: "Kode Prosedur",
+    norm: "No. RM",
+    pasien: "Nama Pasien",
+    id_visit: "ID Visit",
+    id_rawat_jalan: "ID Rawat Jalan",
+    waktu: "Waktu",
+    id_dokter: "ID Dokter",
+    nama_dokter: "Nama Dokter",
+    rujukan: "Rujukan",
+    spo2: "SpO2",
+    planning: "Planning",
+    keterangan10: "Keterangan",
+    _source: "Sumber Entri",
+    jenis: "Jenis Berkas",
+    _verified_at: "Waktu Verifikasi"
+  };
+  function fieldLabel(key) {
+    return FIELD_LABELS[key] ?? key;
+  }
+  function scalarText(v) {
+    try {
+      const parsed = JSON.parse(v);
+      if (typeof parsed === "string") return v;
+    } catch {
+    }
+    return v;
+  }
+  function formatSnapValue(v) {
+    if (v === void 0) return "\u2014";
+    if (Array.isArray(v)) {
+      if (v.length === 0) return "(kosong)";
+      return v.map((item, i) => {
+        const t = scalarText(item);
+        return `${i + 1}. ${t.trim() || "\u2205"}`;
+      }).join("\n");
+    }
+    return scalarText(v).trim() || "\u2205";
+  }
+  function buildChangeRows(entry) {
+    return entry.changed.map((k) => {
+      const b = entry.before[k];
+      const a = entry.after[k];
+      const dir = b === void 0 ? "tambah" : a === void 0 ? "hapus" : "ubah";
+      return { key: k, label: fieldLabel(k), before: b, after: a, dir };
+    });
   }
   function loadHistory(idVisit, tipe, store = defaultStore()) {
     const arr = readJson(store, getHistoryKey(idVisit, tipe));
@@ -24754,15 +24822,70 @@ var __morbis_feature = (() => {
         title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString("id-ID")} \u2014 ${entry.aksi === "buat" ? "Buat baru" : "Ubah"}${who} \u2014 ${entry.changed.length} field berubah${verifSuffix}`;
         row.appendChild(title);
         const detail = document.createElement("div");
-        detail.style.cssText = "display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;";
-        if (!entry.changed.length) {
-          detail.textContent = "Tidak ada perbedaan field.";
-        } else {
-          detail.textContent = entry.changed.map(function(k) {
-            return k + ": " + shortSnapVal(entry.before[k]) + " \u2192 " + shortSnapVal(entry.after[k]);
-          }).join("\n");
-        }
+        detail.style.display = "none";
         row.appendChild(detail);
+        const paintDiff = () => {
+          detail.replaceChildren();
+          detail.style.cssText = "display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;overflow:auto;max-height:240px;";
+          if (!entry.changed.length) {
+            const empty = document.createElement("div");
+            empty.style.cssText = "font-size:13px;line-height:1.6;color:#475569;";
+            empty.textContent = "Tidak ada perbedaan field.";
+            detail.appendChild(empty);
+            return;
+          }
+          const rows2 = buildChangeRows(entry);
+          const tbl = document.createElement("table");
+          tbl.style.cssText = "width:100%;border-collapse:collapse;font-size:13px;line-height:1.5;font-family:" + HIST_FONT + "!important;";
+          const thead = document.createElement("thead");
+          const htr = document.createElement("tr");
+          for (const label of ["Field", "Sebelum", "Sesudah"]) {
+            const th = document.createElement("th");
+            th.textContent = label;
+            th.style.cssText = "text-align:left;padding:6px 10px;background:#eef2f7;border-bottom:2px solid #cbd5e1;position:sticky;top:0;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;";
+            htr.appendChild(th);
+          }
+          thead.appendChild(htr);
+          tbl.appendChild(thead);
+          const tbody = document.createElement("tbody");
+          for (const ch of rows2) {
+            const tr = document.createElement("tr");
+            const tone = ch.dir === "tambah" ? "#ecfdf5" : ch.dir === "hapus" ? "#fef2f2" : "transparent";
+            tr.style.cssText = `border-bottom:1px solid #e2e8f0;background:${tone};`;
+            const tdLabel = document.createElement("td");
+            tdLabel.style.cssText = "padding:6px 10px;vertical-align:top;";
+            const labelTxt = document.createElement("div");
+            labelTxt.style.fontWeight = "600";
+            labelTxt.textContent = ch.label;
+            tdLabel.appendChild(labelTxt);
+            const keyTxt = document.createElement("div");
+            keyTxt.style.cssText = "font-size:11px;color:#94a3b8;";
+            keyTxt.textContent = ch.key;
+            tdLabel.appendChild(keyTxt);
+            const badge = document.createElement("span");
+            badge.style.cssText = "display:inline-block;margin-top:4px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;" + (ch.dir === "tambah" ? "color:#065f46;background:#d1fae5;" : ch.dir === "hapus" ? "color:#991b1b;background:#fee2e2;" : "color:#334155;background:#e2e8f0;");
+            badge.textContent = ch.dir === "tambah" ? "+ Ditambahkan" : ch.dir === "hapus" ? "\u2212 Dihapus" : "berubah";
+            tdLabel.appendChild(badge);
+            const cell = (v) => {
+              const td = document.createElement("td");
+              td.style.cssText = "padding:6px 10px;vertical-align:top;white-space:pre-line;font-size:12px;color:#1c2530;";
+              td.textContent = formatSnapValue(v);
+              return td;
+            };
+            const tdBefore = cell(ch.dir === "tambah" ? void 0 : ch.before);
+            tdBefore.style.cssText += ch.dir === "tambah" ? "color:#94a3b8;" : "";
+            const tdAfter = cell(ch.dir === "hapus" ? void 0 : ch.after);
+            tdAfter.style.cssText += ch.dir === "hapus" ? "color:#94a3b8;" : "";
+            if (ch.dir === "ubah") tdAfter.style.fontWeight = "600";
+            tr.appendChild(tdLabel);
+            tr.appendChild(tdBefore);
+            tr.appendChild(tdAfter);
+            tbody.appendChild(tr);
+          }
+          tbl.appendChild(tbody);
+          detail.appendChild(tbl);
+        };
+        paintDiff();
         const bar = document.createElement("div");
         bar.style.cssText = "margin-top:8px;display:flex;gap:8px;";
         const btnLihat = document.createElement("button");
@@ -24770,7 +24893,9 @@ var __morbis_feature = (() => {
         btnLihat.textContent = "Lihat";
         btnLihat.style.cssText = "border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;";
         btnLihat.onclick = function() {
-          detail.style.display = detail.style.display === "none" ? "block" : "none";
+          const show = detail.style.display === "none";
+          detail.style.cssText = detail.style.cssText.replace(/display:[^;]*;/, "");
+          detail.style.display = show ? "block" : "none";
         };
         bar.appendChild(btnLihat);
         const btnSalin = document.createElement("button");
