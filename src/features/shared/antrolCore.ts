@@ -21,11 +21,12 @@ export const ANTRL_FEATURE_KEY = 'antrolKirimOtomatis';
  *  polling harus membandingkan nilai mentah ini, bukan label. */
 export const DONE_STATUS = 'DONE';
 
-/** Asal status DONE pada baris display:
- *  - 'manual'   → operator benar-benar klik Selesai (layak kirim MJKN);
- *  - 'auto_cap' → DONE palsu kebijakan "maks 5 dipanggil" (enforceActiveCap,
- *                 display cleanup — layanan belum selesai → JANGAN kirim);
- *  - undefined/null → DONE dari sebelum kolom ini ada (baseline: tak dikirim). */
+/** Asal status DONE pada baris display — metadata audit (BUKAN gate kirim):
+ *  - 'manual'   → operator menekan Selesai;
+ *  - 'auto_cap' → dorongan kebijakan "maks 5 dipanggil" (enforceActiveCap);
+ *    keduanya berarti pasien SUDAH selesai dilayani → tetap dikirim;
+ *  - undefined  → baris lama (sebelum kolom ada). Dikirim ke tabel audit
+ *    Reports supaya admin bisa melihat asal tiap pengiriman. */
 export type DoneBy = 'manual' | 'auto_cap';
 
 /** Batas maksimum percobaan per antrian per sesi browser (anti spam saat
@@ -139,13 +140,16 @@ export function antrolSentKey(queueNumber: string, dateKey: string): string {
   return `${normalizeQueueNumber(queueNumber)}|${dateKey}`;
 }
 
-/** Payload POST /api/queue/antrol-kirim/claim. */
+/** Payload POST /api/queue/antrol-kirim/claim. done_by = asal status DONE
+ *  (manual / auto_cap) — metadata audit, dikirim supaya panel admin tahu
+ *  kenapa satu antrian terkirim. */
 export function buildClaimPayload(row: AntrolRow, tanggal: string): Record<string, unknown> {
   return {
     queue_number: row.queue_number,
     tanggal,
     resep_id: row.resep_id || null,
     nama_pasien: row.nama_pasien || null,
+    done_by: row.done_by ?? null,
   };
 }
 

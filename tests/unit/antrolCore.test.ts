@@ -210,7 +210,23 @@ describe('antrolCore — payload claim & report', () => {
       tanggal: '2026-10-01',
       resep_id: '219648',
       nama_pasien: 'ZUAIRIYAH',
+      done_by: null,
     });
+  });
+
+  it('buildClaimPayload menyertakan done_by (asal DONE) utk audit', () => {
+    expect(
+      buildClaimPayload(
+        { queue_number: 'T-002', resep_id: '1', status: 'DONE', done_by: 'auto_cap' },
+        '2026-10-01',
+      ).done_by,
+    ).toBe('auto_cap');
+    expect(
+      buildClaimPayload(
+        { queue_number: 'T-003', resep_id: '2', status: 'DONE', done_by: 'manual' },
+        '2026-10-01',
+      ).done_by,
+    ).toBe('manual');
   });
 
   it('buildReportPayload mengisi status ok + id_visit/message opsional', () => {

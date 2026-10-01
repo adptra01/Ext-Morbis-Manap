@@ -233,12 +233,6 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
   }
   attempts.set(key, used + 1);
 
-  // 0) DONE palsu dari enforceActiveCap ("maks 5 dipanggil" — display cleanup
-  //    layanan belum selesai): jangan kirim MJKN. Row dibuang dari pending.
-  if (row.done_by === 'auto_cap') {
-    return true;
-  }
-
   // 1) Tanpa resep_id tidak bisa diresolusi → catat & skip.
   if (!row.resep_id) {
     await reportToServer(base, qn, tanggal, 'skipped', {
@@ -249,7 +243,7 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
   }
   const resepId = row.resep_id;
 
-  // 1) Klaim unik di server (insert-ignore (queue_number, tanggal)).
+  // 2) Klaim unik di server (insert-ignore (queue_number, tanggal)).
   let claimRes: QAResult;
   try {
     claimRes = await queueApi(
@@ -284,7 +278,7 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
     return true;
   }
 
-  // 2) Resolve ID_VISIT (blacklist harian "bukan antrol" → jangan spam MORBIS).
+  // 3) Resolve ID_VISIT (blacklist harian "bukan antrol" → jangan spam MORBIS).
   if (blacklistResep.has(resepId)) {
     await reportToServer(base, qn, tanggal, 'skipped', {
       message: 'resep bukan antrol (blacklist harian)',
@@ -314,7 +308,7 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
     return true;
   }
 
-  // 3) Kirim update_bulk (sesi MORBIS pengguna; TS selesai → responden).
+  // 4) Kirim update_bulk (sesi MORBIS pengguna; TS selesai → responden).
   const sendResult = await sendUpdateBulk(idVisit);
   const status: KirimReportStatus = sendResult.ok ? 'ok' : 'error';
   await reportToServer(base, qn, tanggal, status, {

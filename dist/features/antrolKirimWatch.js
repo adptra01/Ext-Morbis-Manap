@@ -135,7 +135,8 @@ var __morbis_feature = (() => {
       queue_number: row.queue_number,
       tanggal,
       resep_id: row.resep_id || null,
-      nama_pasien: row.nama_pasien || null
+      nama_pasien: row.nama_pasien || null,
+      done_by: row.done_by ?? null
     };
   }
   function buildReportPayload(queueNumber, tanggal, status, extra) {
@@ -466,9 +467,6 @@ var __morbis_feature = (() => {
       return true;
     }
     attempts.set(key, used + 1);
-    if (row.done_by === "auto_cap") {
-      return true;
-    }
     if (!row.resep_id) {
       await reportToServer(base, qn, tanggal, "skipped", {
         message: "resep_id kosong \u2014 tidak bisa resolve ID_VISIT"
