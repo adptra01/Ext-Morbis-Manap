@@ -28898,7 +28898,7 @@ var __morbis_feature = (() => {
                 "aria-label": `Kode ICD-10 ${no}`
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "kasus[]", value: row.kasus }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "kasus_diagnosa[]", value: row.kasus }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("input", { type: "hidden", name: "komplikasi[]", value: row.komplikasi })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -28922,7 +28922,9 @@ var __morbis_feature = (() => {
           className: "gap-2 w-full",
           onClick: () => onChange([
             ...rows,
-            { idicd: "", kode10: "", namaDiagnosa: "", kasus: "LAMA", komplikasi: "TIDAK" }
+            // Default = opsi pertama form asli (Pilih / kosong), sama seperti
+            // baris yang baru dirender halaman RJ.
+            { idicd: "", kode10: "", namaDiagnosa: "", kasus: "", komplikasi: "" }
           ]),
           children: "\uFF0B Tambah Diagnosa"
         }
@@ -29013,7 +29015,7 @@ var __morbis_feature = (() => {
               Input,
               {
                 id: `rj-nama-tindakan${no}`,
-                name: "nama_tindakan[]",
+                name: "namaTindakan[]",
                 value: row.namaTindakan,
                 placeholder: "Cari tindakan...",
                 autoComplete: "off",
@@ -29028,7 +29030,7 @@ var __morbis_feature = (() => {
               {
                 type: "hidden",
                 id: `rj-idicd-tindakan${no}`,
-                name: "idicd_tindakan[]",
+                name: "idicdTindakan[]",
                 value: row.idicdTindakan,
                 autoComplete: "off"
               }
@@ -29078,8 +29080,10 @@ var __morbis_feature = (() => {
                 "aria-label": `Kode ICD-9 ${no}`
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "jenis[]", value: row.jenis || "Primer" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "kategoriProsedur[]", value: row.kategoriProsedur })
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "komorbid[]", value: row.komorbid || "" }),
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "kategoriProsedur[]", value: row.kategoriProsedur }),
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "snomedProsedur[]", value: row.snomedProsedur }),
+            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { type: "hidden", name: "codeProsedur[]", value: row.codeProsedur })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
             Button,
@@ -29557,7 +29561,7 @@ var __morbis_feature = (() => {
     };
   }
   var isRj = location.pathname.includes("rm-rawat-jalan-new");
-  var ENDPOINT = "/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan";
+  var ENDPOINT = "/rekam-medik/control/rm-rawatjalan";
   var reactRoot = null;
   var overlayBtn = null;
   function parseResumeView() {
@@ -29777,14 +29781,16 @@ var __morbis_feature = (() => {
       const nama = row.querySelector('input[name="namaTindakan[]"]')?.value || "";
       const komorbid = row.querySelector('select[name="komorbid[]"]')?.value || "";
       const kategori = row.querySelector('select[name="kategoriProsedur[]"]')?.value || "";
+      const snomed = row.querySelector('input[name="snomedProsedur[]"]')?.value || "";
+      const codeP = row.querySelector('input[name="codeProsedur[]"]')?.value || "";
       tindakan.push({
         idicdTindakan: idicd,
         kode9,
         namaTindakan: nama,
         komorbid,
         kategoriProsedur: kategori,
-        snomedProsedur: "",
-        codeProsedur: ""
+        snomedProsedur: snomed,
+        codeProsedur: codeP
       });
     });
     if (tindakan.length === 0 && cachedFormState) {
@@ -29793,6 +29799,8 @@ var __morbis_feature = (() => {
       const cIdicdT = Array.isArray(cachedFormState["idicdTindakan[]"]) ? cachedFormState["idicdTindakan[]"] : [];
       const cKomorbid = Array.isArray(cachedFormState["komorbid[]"]) ? cachedFormState["komorbid[]"] : [];
       const cKategori = Array.isArray(cachedFormState["kategoriProsedur[]"]) ? cachedFormState["kategoriProsedur[]"] : [];
+      const cSnomed = Array.isArray(cachedFormState["snomedProsedur[]"]) ? cachedFormState["snomedProsedur[]"] : [];
+      const cCodeP = Array.isArray(cachedFormState["codeProsedur[]"]) ? cachedFormState["codeProsedur[]"] : [];
       cKode9.forEach((kode9, i) => {
         if (kode9) {
           tindakan.push({
@@ -29800,7 +29808,9 @@ var __morbis_feature = (() => {
             kode9,
             namaTindakan: cNamaT[i] || "",
             komorbid: cKomorbid[i] || "",
-            kategoriProsedur: cKategori[i] || ""
+            kategoriProsedur: cKategori[i] || "",
+            snomedProsedur: cSnomed[i] || "",
+            codeProsedur: cCodeP[i] || ""
           });
         }
       });
@@ -29851,7 +29861,9 @@ var __morbis_feature = (() => {
   }
   function serializeRawatJalan(data) {
     const params = new URLSearchParams();
-    const form = document.getElementById("formdata");
+    const form = document.getElementById("formdata") || document.querySelector(
+      'form[action*="control/rm-rawatjalan"]'
+    );
     if (form) {
       const fd = new FormData(form);
       fd.forEach((value, key) => {
@@ -29878,21 +29890,15 @@ var __morbis_feature = (() => {
     ensure("id_visit", idVisit);
     ensure("id_rawat_jalan", idRJ);
     ensure("id_user", fsVal("id_user") || "1");
-    if (!params.get("id_kunjungan")) {
-      params.set("id_kunjungan", domVal("id_kunjungan") || fsVal("id_kunjungan") || idRJ || idVisit);
-    }
+    params.set("save", "Simpan");
     for (const f of [
       "norm",
-      "ihs_number",
-      "ihs_number_dokter",
-      "waktu_visit",
-      "nama_pasien",
+      "noregis",
+      "pasien",
       "id_bed",
       "id_dokter",
       "nama_dokter",
-      "planning",
-      "pasien",
-      "noregis"
+      "pulang_berkas"
     ]) {
       if (params.get(f)) continue;
       const v = pi(f) || domVal(f) || fsVal(f);
@@ -29906,14 +29912,24 @@ var __morbis_feature = (() => {
         `${p2(n.getDate())}/${p2(n.getMonth() + 1)}/${n.getFullYear()} ${p2(n.getHours())}:${p2(n.getMinutes())}:${p2(n.getSeconds())}`
       );
     }
-    for (const f of ["nama_pasien", "planning", "waktu_visit"]) {
+    for (const f of [
+      "jenis_kasus",
+      "status_kasus",
+      "tindak_lanjut",
+      "rujukan",
+      "keadaan_keluar",
+      "cara_keluar",
+      "pemeriksaan_lanjut",
+      "alergiMakananJSON",
+      "alergiLingkunganJSON",
+      "composition_diet"
+    ]) {
       if (!params.has(f)) params.set(f, pi(f) || fsVal(f) || "");
     }
     const arrayFieldsToClear = [
       "kode10[]",
       "idicd[]",
       "nama[]",
-      "keterangan10[]",
       "kasus_diagnosa[]",
       "komplikasi[]",
       "namaTindakan[]",
@@ -29925,7 +29941,7 @@ var __morbis_feature = (() => {
       "codeProsedur[]"
     ];
     for (const f of arrayFieldsToClear) params.delete(f);
-    for (let i = 1; i <= 50; i++) params.delete(`ic${i}`);
+    params.delete("ic[]");
     const toHtml = (val) => (val || "").replace(/\n/g, "<br/>");
     params.set("anamnesa", toHtml(data.clinicalNotes.anamnesa));
     params.set("pemeriksaan_fisik", toHtml(data.clinicalNotes.pemeriksaan_fisik));
@@ -29937,62 +29953,60 @@ var __morbis_feature = (() => {
     params.set("nadi", cleanVital(data.vitalSigns.nadi));
     params.set("suhu", cleanVital(data.vitalSigns.suhu));
     params.set("nafas", cleanVital(data.vitalSigns.nafas));
-    params.set("spo2", cleanVital(data.vitalSigns.spo2));
     params.set("tinggi", cleanVital(data.vitalSigns.tinggi));
     params.set("berat", cleanVital(data.vitalSigns.berat));
     const cKode10 = Array.isArray(cachedFormState?.["kode10[]"]) ? cachedFormState["kode10[]"] : [];
     const cIdicd = Array.isArray(cachedFormState?.["idicd[]"]) ? cachedFormState["idicd[]"] : [];
-    const cKeterangan = Array.isArray(cachedFormState?.["keterangan10[]"]) ? cachedFormState["keterangan10[]"] : [];
     const cleanDiagnosa = data.diagnosa.filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, arr2) => arr2.findIndex((x) => x.idicd === d.idicd) === i);
+    const cleanKasus = (v) => v === "LAMA" ? "Kasus Lama" : v === "BARU" ? "Kasus Baru" : v === "Kasus Lama" || v === "Kasus Baru" ? v : "";
+    const cleanKomplikasi = (v) => v === "Primer" || v === "Komplikasi" || v === "Komorbid" ? v : "";
     cleanDiagnosa.forEach((d) => {
       let idicd = d.idicd;
       if (!idicd && d.kode10) {
         const idx = cKode10.indexOf(d.kode10);
         if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
       }
-      const pos = cIdicd.indexOf(idicd);
-      const ket = pos >= 0 ? cKeterangan[pos] || "" : "";
       params.append("nama[]", d.namaDiagnosa);
       params.append("idicd[]", idicd);
       params.append("kode10[]", d.kode10);
-      params.append("keterangan10[]", ket);
-      params.append("kasus_diagnosa[]", d.kasus || "");
-      params.append("komplikasi[]", d.komplikasi || "");
+      params.append("kasus_diagnosa[]", cleanKasus(d.kasus));
+      params.append("komplikasi[]", cleanKomplikasi(d.komplikasi));
     });
-    const cTindIdicd = Array.isArray(cachedFormState?.["idicdTindakan[]"]) ? cachedFormState["idicdTindakan[]"] : [];
     const cleanTindakan = data.tindakan.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter(
       (t, i, arr2) => arr2.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i
     );
-    const icFor = (idTindakan) => {
-      const pos = cTindIdicd.indexOf(idTindakan);
-      return pos >= 0 ? fsVal(`ic${pos + 1}`) : "";
-    };
+    let icBudget = Array.isArray(cachedFormState?.["ic[]"]) ? cachedFormState["ic[]"].length : 0;
+    const cleanKomorbid = (v) => v === "Primer" || v === "Sekunder" ? v : "";
     cleanTindakan.forEach((t) => {
       params.append("namaTindakan[]", t.namaTindakan);
       params.append("kode9[]", t.kode9);
       params.append("idicdTindakan[]", t.idicdTindakan);
-      params.append("komorbid[]", t.komorbid || "");
-      const ic = icFor(t.idicdTindakan);
-      if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
+      params.append("komorbid[]", cleanKomorbid(t.komorbid));
+      params.append("kategoriProsedur[]", t.kategoriProsedur || "410606002");
+      params.append("snomedProsedur[]", t.snomedProsedur || "");
+      params.append("codeProsedur[]", t.codeProsedur || "");
+      if (icBudget > 0) {
+        params.append("ic[]", "1");
+        icBudget -= 1;
+      }
     });
     const debug = {};
     for (const k of [
+      "save",
+      "noregis",
+      "norm",
+      "pasien",
       "id_visit",
       "id_rawat_jalan",
-      "id_kunjungan",
       "id_user",
-      "norm",
-      "ihs_number",
-      "ihs_number_dokter",
-      "waktu_visit",
-      "nama_pasien",
-      "waktu",
       "id_bed",
       "id_dokter",
       "nama_dokter",
-      "planning",
+      "waktu",
       "jenis_kasus",
-      "save"
+      "status_kasus",
+      "tindak_lanjut",
+      "catatan"
     ]) {
       debug[k] = params.get(k) || "(missing)";
     }
@@ -36186,8 +36200,7 @@ var __morbis_feature = (() => {
     }
     urls.push(
       `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${encodeURIComponent(idVisit)}`,
-      `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}&page=6`,
-      `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}`,
+      `${location.origin}/rekam-medik/rm-rawatjalan?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
       `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`
     );
     for (const url of urls) {
@@ -36202,9 +36215,9 @@ var __morbis_feature = (() => {
           if (!resp.ok) continue;
           const html = await resp.text();
           const doc = new DOMParser().parseFromString(html, "text/html");
-          if (doc.querySelector('form, input[name="id_kunjungan"]') === null) break;
+          if (doc.querySelector('input[name="id_visit"]') === null) break;
           const state = parseFormControls(doc);
-          if (state.id_kunjungan) {
+          if (state.id_visit && state.id_rawat_jalan !== void 0) {
             cachedFormKeys = Object.keys(state);
             return state;
           }
@@ -36312,9 +36325,9 @@ var __morbis_feature = (() => {
       if (btn.disabled) return;
       btn.disabled = true;
       try {
-        if (!cachedFormState || !cachedFormState.id_kunjungan) {
+        if (!cachedFormState || !cachedFormState.id_visit) {
           const fresh = await fetchFormState();
-          if (fresh && fresh.id_kunjungan) {
+          if (fresh && fresh.id_visit) {
             cachedFormState = fresh;
           } else if (!cachedFormState) {
             const { confirmExt: confirmExt2 } = await Promise.resolve().then(() => (init_confirm(), confirm_exports));

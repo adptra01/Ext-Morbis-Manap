@@ -15,7 +15,7 @@ export interface VitalSigns {
   nadi: string;
   suhu: string;
   nafas: string;
-  spo2: string; // ← tambah (form asli punya <input name="spo2" required>
+  spo2: string; // ← hanya dipakai UI modal; form RJ lama tidak punya field ini
   tinggi: string;
   berat: string;
 }

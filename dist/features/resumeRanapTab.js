@@ -29750,11 +29750,19 @@ var __morbis_feature = (() => {
     }
     const urls = [];
     if (resumeId) {
-      urls.push(`${location.origin}/rekam-medik/resume-rawat-inap?id=${encodeURIComponent(resumeId)}&id_visit=${encodeURIComponent(idVisit)}`);
-      urls.push(`${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}&id=${encodeURIComponent(resumeId)}`);
+      urls.push(
+        `${location.origin}/rekam-medik/resume-rawat-inap?id=${encodeURIComponent(resumeId)}&id_visit=${encodeURIComponent(idVisit)}`
+      );
+      urls.push(
+        `${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}&id=${encodeURIComponent(resumeId)}`
+      );
     }
-    urls.push(`${location.origin}/rekam-medik/resume-rawat-inap?id_visit=${encodeURIComponent(idVisit)}`);
-    urls.push(`${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}`);
+    urls.push(
+      `${location.origin}/rekam-medik/resume-rawat-inap?id_visit=${encodeURIComponent(idVisit)}`
+    );
+    urls.push(
+      `${location.origin}/admisi/detail-rawat-inap/edit-resume-ri?idVisit=${encodeURIComponent(idVisit)}`
+    );
     let data = null;
     for (const url of urls) {
       const html = await fetchText(url);

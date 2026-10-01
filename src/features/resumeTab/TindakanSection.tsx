@@ -115,7 +115,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                 <div className="flex-1 min-w-0 relative">
                   <Input
                     id={`rj-nama-tindakan${no}`}
-                    name="nama_tindakan[]"
+                    name="namaTindakan[]"
                     value={row.namaTindakan}
                     placeholder="Cari tindakan..."
                     autoComplete="off"
@@ -129,7 +129,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                   <input
                     type="hidden"
                     id={`rj-idicd-tindakan${no}`}
-                    name="idicd_tindakan[]"
+                    name="idicdTindakan[]"
                     value={row.idicdTindakan}
                     autoComplete="off"
                   />
@@ -178,8 +178,13 @@ export function TindakanSection({ rows, onChange }: Props) {
                     className="font-mono text-base"
                     aria-label={`Kode ICD-9 ${no}`}
                   />
-                  <input type="hidden" name="jenis[]" value={row.jenis || 'Primer'} />
+                  {/* Nama field mengikuti form RJ asli: komorbid[] (bukan
+                      jenis[]) + kategoriProsedur[]/snomedProsedur[]/
+                      codeProsedur[] yang dibaca controller per indeks. */}
+                  <input type="hidden" name="komorbid[]" value={row.komorbid || ''} />
                   <input type="hidden" name="kategoriProsedur[]" value={row.kategoriProsedur} />
+                  <input type="hidden" name="snomedProsedur[]" value={row.snomedProsedur} />
+                  <input type="hidden" name="codeProsedur[]" value={row.codeProsedur} />
                 </div>
 
                 <Button

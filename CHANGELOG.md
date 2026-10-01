@@ -16,6 +16,8 @@
 
 ### 🐛 fix
 
+- **ri** — cari resume ID + form RI dari /rekam-medik endpoint + perbaiki log skala printSections (`edef1c1`)
+- **resume** — kembalikan resumeTab ke endpoint lama + retry/error dialog untuk RJ & RI (`d696c62`)
 - **gate** — toggle OFF kini berlaku untuk semua fitur — storage-gate untuk 13 file IIFE/auto-run + injeksi init.ts + migrasi config di core (`622355e`)
 
 ### 📌 misc
@@ -1683,4 +1685,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 726ed0f0254004670615145f73b5e3fccf94d4e7 -->
+<!-- changelog-upto: edef1c129556aa7195f7b34a5b6bac28c6b11e2d -->

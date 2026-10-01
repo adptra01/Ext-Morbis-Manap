@@ -172,7 +172,9 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                     className="font-mono text-base"
                     aria-label={`Kode ICD-10 ${no}`}
                   />
-                  <input type="hidden" name="kasus[]" value={row.kasus} />
+                  {/* Nama field mengikuti form RJ asli: kasus_diagnosa[]
+                      (bukan kasus[]) — select 'Kasus Lama'/'Kasus Baru'. */}
+                  <input type="hidden" name="kasus_diagnosa[]" value={row.kasus} />
                   <input type="hidden" name="komplikasi[]" value={row.komplikasi} />
                 </div>
 
@@ -198,7 +200,9 @@ export function DiagnosaSection({ rows, onChange }: Props) {
         onClick={() =>
           onChange([
             ...rows,
-            { idicd: '', kode10: '', namaDiagnosa: '', kasus: 'LAMA', komplikasi: 'TIDAK' },
+            // Default = opsi pertama form asli (Pilih / kosong), sama seperti
+            // baris yang baru dirender halaman RJ.
+            { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
           ])
         }
       >

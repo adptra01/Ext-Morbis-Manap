@@ -120,13 +120,16 @@ const AUTOCOMPLETE_URLS = {
   icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
 };
 
-// Endpoint WAJIB sama dengan yang dipakai form asli SIMRS. Verified live
-// against the page's own handler `simpan()` (tombol #save):
-//   url: '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan'
-//   data: $("#formdata").serialize()
-// Jangan pakai `rm-rawat-jalan` (tanpa -refaktor) — itu handler
-// `simpan_then_wa()` yang tidak terikat ke tombol, sisa kode lama.
-const ENDPOINT = '/admisi/pelaksanaan_pelayanan/control/rm-rawat-jalan-refaktor?sub=simpan';
+// Endpoint WAJIB sama dengan `action` form asli SIMRS. Verified live di
+// /rekam-medik/rm-rawat-jalan-new?id=<id_rawat_jalan>&id_visit=<id_visit>:
+//   <form action="/rekam-medik/control/rm-rawatjalan" method="POST"
+//         onsubmit="return cekForm()">     <- form TANPA atribut id
+//   <input type="submit" name="save" value="Simpan" id="save">
+// Submit form biasa -> `save=Simpan` ikut terkirim; controller membacanya
+// dari $_POST['save']. Balasan = HTML (redirect ke daftar RJ), bukan JSON.
+// Riwayat: endpoint `admisi/.../control/rm-rawat-jalan-refaktor?sub=simpan`
+// (kontrak JSON) sudah tidak dipakai — bukan yang dipakai form asli.
+const ENDPOINT = '/rekam-medik/control/rm-rawatjalan';
 
 let reactRoot: Root | null = null;
 let overlayBtn: HTMLButtonElement | null = null;
@@ -408,16 +411,17 @@ function extractFormData(): ResumeData {
     const komorbid = row.querySelector<HTMLSelectElement>('select[name="komorbid[]"]')?.value || '';
     const kategori =
       row.querySelector<HTMLSelectElement>('select[name="kategoriProsedur[]"]')?.value || '';
-    // snomedProsedur[] dan codeProsedur[] dikomen di form asli SIMRS,
-    // jadi tidak dibaca dari DOM
+    const snomed =
+      row.querySelector<HTMLInputElement>('input[name="snomedProsedur[]"]')?.value || '';
+    const codeP = row.querySelector<HTMLInputElement>('input[name="codeProsedur[]"]')?.value || '';
     tindakan.push({
       idicdTindakan: idicd,
       kode9,
       namaTindakan: nama,
       komorbid,
       kategoriProsedur: kategori,
-      snomedProsedur: '',
-      codeProsedur: '',
+      snomedProsedur: snomed,
+      codeProsedur: codeP,
     });
   });
   if (tindakan.length === 0 && cachedFormState) {
@@ -434,6 +438,12 @@ function extractFormData(): ResumeData {
     const cKategori = Array.isArray(cachedFormState['kategoriProsedur[]'])
       ? cachedFormState['kategoriProsedur[]']
       : [];
+    const cSnomed = Array.isArray(cachedFormState['snomedProsedur[]'])
+      ? cachedFormState['snomedProsedur[]']
+      : [];
+    const cCodeP = Array.isArray(cachedFormState['codeProsedur[]'])
+      ? cachedFormState['codeProsedur[]']
+      : [];
     cKode9.forEach((kode9, i) => {
       if (kode9) {
         tindakan.push({
@@ -442,6 +452,8 @@ function extractFormData(): ResumeData {
           namaTindakan: cNamaT[i] || '',
           komorbid: cKomorbid[i] || '',
           kategoriProsedur: cKategori[i] || '',
+          snomedProsedur: cSnomed[i] || '',
+          codeProsedur: cCodeP[i] || '',
         });
       }
     });
@@ -578,7 +590,7 @@ function serializeKlaim(data: ResumeData): string {
     add('idicd[]', d.idicd);
     add('kode10[]', d.kode10);
     add('namaDiagnosa[]', d.namaDiagnosa);
-    add('kasus[]', d.kasus);
+    add('kasus_diagnosa[]', d.kasus);
     add('komplikasi[]', d.komplikasi);
   });
 
@@ -596,11 +608,14 @@ function serializeRawatJalan(data: ResumeData): string {
   const params = new URLSearchParams();
 
   // ═══════════════════════════════════════════════════════════
-  // 1. BASE: ambil SEMUA field dari <form id="formdata"> yang ada
-  //    di halaman asli — ini yang menjamin id_kunjungan, ihs_number,
-  //    waktu_visit, dll. ikut terkirim.
+  // 1. BASE: ambil SEMUA field dari form RJ asli — ini yang menjamin
+  //    id_bed, id_user, jenis_kasus, rujukan, SATUSEHAT, dll. ikut
+  //    terkirim. Form asli verified live TIDAK punya atribut `id`,
+  //    jadi selain #formdata (varian lain) kita cari lewat `action`.
   // ═══════════════════════════════════════════════════════════
-  const form = document.getElementById('formdata') as HTMLFormElement | null;
+  const form =
+    (document.getElementById('formdata') as HTMLFormElement | null) ||
+    (document.querySelector('form[action*="control/rm-rawatjalan"]') as HTMLFormElement | null);
 
   if (form) {
     const fd = new FormData(form);
@@ -645,26 +660,23 @@ function serializeRawatJalan(data: ResumeData): string {
   // id_user: pakai nilai form asli. Fallback terakhir tetap '1' (superadmin)
   // agar $_POST['id_user'] tidak undefined.
   ensure('id_user', fsVal('id_user') || '1');
-  // Catatan: `save` SENGAJA tidak dikirim. Tombol submit form asli
-  // (<button id="save">Ubah</button>) tidak punya atribut name, jadi
-  // $("#formdata").serialize() juga tidak mengirimnya.
+  // `save` WAJIB dikirim. Form asli memakai submit button
+  // <input type="submit" name="save" value="Simpan"> dan controller lama
+  // hanya memproses simpan kalau $_POST['save'] ada. Tanpa ini data
+  // diam-diam tidak tersimpan (controller jatuh ke cabang view/load).
+  params.set('save', 'Simpan');
 
-  // id_kunjungan: kolom NOT NULL di tabel OBSERVATION → ORA-01400.
-  if (!params.get('id_kunjungan')) {
-    params.set('id_kunjungan', domVal('id_kunjungan') || fsVal('id_kunjungan') || idRJ || idVisit);
-  }
+  // Field id_kunjungan / ihs_number / ihs_number_dokter / waktu_visit /
+  // nama_pasien / planning TIDAK ada di form RJ lama (verified live, 0
+  // kemunculan) — jangan dikirim.
   for (const f of [
     'norm',
-    'ihs_number',
-    'ihs_number_dokter',
-    'waktu_visit',
-    'nama_pasien',
+    'noregis',
+    'pasien',
     'id_bed',
     'id_dokter',
     'nama_dokter',
-    'planning',
-    'pasien',
-    'noregis',
+    'pulang_berkas',
   ] as const) {
     if (params.get(f)) continue;
     const v = pi(f) || domVal(f) || fsVal(f);
@@ -679,8 +691,23 @@ function serializeRawatJalan(data: ResumeData): string {
       `${p2(n.getDate())}/${p2(n.getMonth() + 1)}/${n.getFullYear()} ${p2(n.getHours())}:${p2(n.getMinutes())}:${p2(n.getSeconds())}`,
     );
   }
-  // Field yang wajib ADA walau kosong — server tetap membacanya di $_POST.
-  for (const f of ['nama_pasien', 'planning', 'waktu_visit'] as const) {
+  // Select (jenis_kasus/status_kasus/tindak_lanjut), field keluar-rujukan,
+  // dan SATUSEHAT dibaca controller lewat $_POST jadi harus ADA walau
+  // kosong — hilang = PHP Notice "Undefined index" lalu kolom NULL.
+  // Nilainya dipertahankan dari form asli (cache); modal tidak punya UI
+  // untuk field-field ini sehingga tidak boleh ditimpa default.
+  for (const f of [
+    'jenis_kasus',
+    'status_kasus',
+    'tindak_lanjut',
+    'rujukan',
+    'keadaan_keluar',
+    'cara_keluar',
+    'pemeriksaan_lanjut',
+    'alergiMakananJSON',
+    'alergiLingkunganJSON',
+    'composition_diet',
+  ] as const) {
     if (!params.has(f)) params.set(f, pi(f) || fsVal(f) || '');
   }
 
@@ -691,7 +718,6 @@ function serializeRawatJalan(data: ResumeData): string {
     'kode10[]',
     'idicd[]',
     'nama[]',
-    'keterangan10[]',
     'kasus_diagnosa[]',
     'komplikasi[]',
     'namaTindakan[]',
@@ -704,8 +730,10 @@ function serializeRawatJalan(data: ResumeData): string {
   ];
   for (const f of arrayFieldsToClear) params.delete(f);
 
-  // Hapus juga checkbox ic1, ic2, ... dari base (nanti di-set ulang)
-  for (let i = 1; i <= 50; i++) params.delete(`ic${i}`);
+  // Checkbox persetujuan prosedur: form asli memakai name LITERAL `ic[]`
+  // untuk SEMUA baris (verified live: satu-satunya pola name ic di halaman
+  // adalah "name='ic[]'"), bukan ic1/ic2/... seperti form era refaktor.
+  params.delete('ic[]');
 
   // ═══════════════════════════════════════════════════════════
   // 3. OVERLAY: notes dari React state (convert newline → <br/>)
@@ -725,7 +753,8 @@ function serializeRawatJalan(data: ResumeData): string {
   params.set('nadi', cleanVital(data.vitalSigns.nadi));
   params.set('suhu', cleanVital(data.vitalSigns.suhu));
   params.set('nafas', cleanVital(data.vitalSigns.nafas));
-  params.set('spo2', cleanVital(data.vitalSigns.spo2));
+  // `spo2` SENGAJA tidak dikirim: tidak ada di form RJ asli (verified
+  // live, 0 kemunculan di halaman) jadi controller lama tidak membacanya.
   params.set('tinggi', cleanVital(data.vitalSigns.tinggi));
   params.set('berat', cleanVital(data.vitalSigns.berat));
 
@@ -744,15 +773,25 @@ function serializeRawatJalan(data: ResumeData): string {
   const cIdicd = Array.isArray(cachedFormState?.['idicd[]'])
     ? (cachedFormState!['idicd[]'] as string[])
     : [];
-  // `keterangan10[]` sejajar dengan `idicd[]` di form asli. DiagnosaRow
-  // tidak punya field ini, jadi ambil dari cache berdasarkan posisi.
-  const cKeterangan = Array.isArray(cachedFormState?.['keterangan10[]'])
-    ? (cachedFormState!['keterangan10[]'] as string[])
-    : [];
-
   const cleanDiagnosa = data.diagnosa
     .filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
     .filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
+
+  // Baris diagnosa asli hanya punya 5 field: nama[]/idicd[]/kode10[]/
+  // kasus_diagnosa[]/komplikasi[] — TIDAK ada keterangan10[] (verified
+  // live, 0 kemunculan). `kasus_diagnosa[]` = teks 'Kasus Lama'/'Kasus
+  // Baru', `komplikasi[]` = Primer/Komplikasi/Komorbid; nilai di luar
+  // daftar itu dibuang agar tidak tersimpan sebagai string asing.
+  const cleanKasus = (v: string): string =>
+    v === 'LAMA'
+      ? 'Kasus Lama'
+      : v === 'BARU'
+        ? 'Kasus Baru'
+        : v === 'Kasus Lama' || v === 'Kasus Baru'
+          ? v
+          : '';
+  const cleanKomplikasi = (v: string): string =>
+    v === 'Primer' || v === 'Komplikasi' || v === 'Komorbid' ? v : '';
 
   cleanDiagnosa.forEach((d) => {
     let idicd = d.idicd;
@@ -760,30 +799,23 @@ function serializeRawatJalan(data: ResumeData): string {
       const idx = cKode10.indexOf(d.kode10);
       if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx];
     }
-    // keterangan10 baris ini = nilai pada posisi yang sama di form asli
-    const pos = cIdicd.indexOf(idicd);
-    const ket = pos >= 0 ? cKeterangan[pos] || '' : '';
     params.append('nama[]', d.namaDiagnosa);
     params.append('idicd[]', idicd);
     params.append('kode10[]', d.kode10);
-    params.append('keterangan10[]', ket);
-    // JANGAN kirim `keterangan10` skalar: form asli hanya punya
-    // `keterangan10[]`. Skalar menimpa array di $_POST lalu controller
-    // mengindeks $x[0]/$x[1] => "Uninitialized string offset: 0/1".
-    params.append('kasus_diagnosa[]', d.kasus || '');
-    params.append('komplikasi[]', d.komplikasi || '');
+    params.append('kasus_diagnosa[]', cleanKasus(d.kasus));
+    params.append('komplikasi[]', cleanKomplikasi(d.komplikasi));
   });
 
   // ═══════════════════════════════════════════════════════════
   // 6. OVERLAY: tindakan dari React state
-  //    PENTING: JANGAN kirim kategoriProsedur[]/snomedProsedur[]/codeProsedur[]
-  //             — form asli tidak punya & memicu ORA-00936
+  //    Baris tindakan form RJ asli (verified lewat template
+  //    #tambahBarisTindakan) punya: namaTindakan[]/idicdTindakan[]/
+  //    kode9[]/ic[]/komorbid[]/kategoriProsedur[]/snomedProsedur[]/
+  //    codeProsedur[]. Tiga field terakhir WAJIB ikut — validasi
+  //    client-side form asli menolak baris tanpa kategoriProsedur dan
+  //    controller membacanya per indeks.
   //    Sama seperti diagnosa: hapus = delete-all-then-insert, tanpa penanda.
   // ═══════════════════════════════════════════════════════════
-  const cTindIdicd = Array.isArray(cachedFormState?.['idicdTindakan[]'])
-    ? (cachedFormState!['idicdTindakan[]'] as string[])
-    : [];
-
   const cleanTindakan = data.tindakan
     .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
     .filter(
@@ -791,45 +823,55 @@ function serializeRawatJalan(data: ResumeData): string {
         arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
     );
 
-  // `ic1`, `ic2`, ... = checkbox persetujuan per baris, terikat ke POSISI
-  // baris di form asli. `deleteElements()` hanya menomori ulang atribut
-  // `id`, bukan `name` — jadi baris yang tersisa tetap memakai nama ic
-  // sesuai posisinya yang lama.
-  const icFor = (idTindakan: string): string => {
-    const pos = cTindIdicd.indexOf(idTindakan);
-    return pos >= 0 ? fsVal(`ic${pos + 1}`) : '';
-  };
+  // `ic[]` = checkbox persetujuan prosedur; semua baris memakai name
+  // literal yang sama sehingga hanya baris TERCENTANG yang ikut submit
+  // (tanpa indeks posisi). Modal tidak punya toggle ic, jadi jumlah
+  // persetujuan dari form asli diteruskan ke baris yang dikirim.
+  let icBudget = Array.isArray(cachedFormState?.['ic[]'])
+    ? (cachedFormState!['ic[]'] as string[]).length
+    : 0;
+
+  // komorbid[] = '' | 'Primer' | 'Sekunder' (verified live).
+  const cleanKomorbid = (v: string): string => (v === 'Primer' || v === 'Sekunder' ? v : '');
 
   cleanTindakan.forEach((t) => {
     params.append('namaTindakan[]', t.namaTindakan);
     params.append('kode9[]', t.kode9);
     params.append('idicdTindakan[]', t.idicdTindakan);
-    params.append('komorbid[]', t.komorbid || '');
-    const ic = icFor(t.idicdTindakan);
-    if (ic) params.append(`ic${cTindIdicd.indexOf(t.idicdTindakan) + 1}`, ic);
+    params.append('komorbid[]', cleanKomorbid(t.komorbid));
+    // kategoriProsedur[] wajib (validasi form asli + dibaca controller).
+    // Default = '410606002' (Social service procedure), sama seperti
+    // default baris baru di TindakanSection.
+    params.append('kategoriProsedur[]', t.kategoriProsedur || '410606002');
+    params.append('snomedProsedur[]', t.snomedProsedur || '');
+    params.append('codeProsedur[]', t.codeProsedur || '');
+    if (icBudget > 0) {
+      params.append('ic[]', '1');
+      icBudget -= 1;
+    }
   });
 
   // ═══════════════════════════════════════════════════════════
   // 7. DEBUG LOG (bisa dihapus nanti)
   // ═══════════════════════════════════════════════════════════
   const debug: Record<string, string> = {};
+  // Sama dengan daftar yang divalidasi form RJ asli (handler #save).
   for (const k of [
+    'save',
+    'noregis',
+    'norm',
+    'pasien',
     'id_visit',
     'id_rawat_jalan',
-    'id_kunjungan',
     'id_user',
-    'norm',
-    'ihs_number',
-    'ihs_number_dokter',
-    'waktu_visit',
-    'nama_pasien',
-    'waktu',
     'id_bed',
     'id_dokter',
     'nama_dokter',
-    'planning',
+    'waktu',
     'jenis_kasus',
-    'save',
+    'status_kasus',
+    'tindak_lanjut',
+    'catatan',
   ]) {
     debug[k] = params.get(k) || '(missing)';
   }
@@ -1217,7 +1259,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       throw new Error('HTTP ' + response.status);
     }
 
-    // ── Controller refaktor return JSON {status, msg} ──
+    // ── Controller lama membalas HTML (redirect); kalau suatu saat JSON ──
     let json: { status?: number; msg?: string } | null = null;
     try {
       json = JSON.parse(text);
@@ -1295,7 +1337,7 @@ let cachedFormState: Record<string, string | string[]> | null = null;
  * name → value (atau string[] untuk name ber-`[]`).
  *
  * Menangkap SEMUA <input> (bukan cuma hidden/text) + <textarea> +
- * <select>, karena controller `rm-rawatjalan-refaktor` membaca banyak
+ * <select>, karena controller `rm-rawatjalan` membaca banyak
  * field non-hidden (norm, id_bed, id_dokter, nama_dokter, waktu, …)
  * yang bila hilang memunculkan "Undefined index" di PHP Notice.
  */
@@ -1350,8 +1392,10 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   const idVisit = qs.get('id_visit');
   if (!idVisit) return {};
 
-  // `id` = id_rawat_jalan. Endpoint lama butuh KEDUANYA:
+  // `id` = id_rawat_jalan. Form RJ lama butuh KEDUANYA:
   //   /rekam-medik/rm-rawat-jalan-new?id=<id_rawat_jalan>&id_visit=<id_visit>
+  // (catatan ejaan path: `rm-rawat-jalan-new` — varian tanpa strip 404,
+  // verified live).
   // Di halaman detail-v2, `id` kadang tidak ada di URL — ambil juga dari
   // DOM / cache sebelumnya bila tersedia.
   const idRJ =
@@ -1373,8 +1417,7 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   }
   urls.push(
     `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${encodeURIComponent(idVisit)}`,
-    `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}&page=6`,
-    `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}`,
+    `${location.origin}/rekam-medik/rm-rawatjalan?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
     `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`,
   );
 
@@ -1398,11 +1441,11 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
         const html = await resp.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
-        // Form RJ harus punya id_kunjungan; kalau tidak, halaman ini
-        // bukan form RJ — coba URL berikutnya.
-        if (doc.querySelector('form, input[name="id_kunjungan"]') === null) break;
+        // Form RJ asli teridentifikasi dari `id_visit` + `id_rawat_jalan`
+        // (form LAMA tidak punya id_kunjungan — itu field era refaktor).
+        if (doc.querySelector('input[name="id_visit"]') === null) break;
         const state = parseFormControls(doc);
-        if (state.id_kunjungan) {
+        if (state.id_visit && state.id_rawat_jalan !== undefined) {
           cachedFormKeys = Object.keys(state);
           return state;
         }
@@ -1530,10 +1573,11 @@ function setupFloatingButton() {
     try {
       // Jangan cache hasil kosong permanen: fetch gagal (404 sesaat/server
       // sibuk) membuat modal tampil kosong dan klik berikutnya tidak pernah
-      // retry karena `{}` truthy. Hanya simpan bila ada id_kunjungan.
-      if (!cachedFormState || !cachedFormState.id_kunjungan) {
+      // retry karena `{}` truthy. Hanya simpan bila ada id_visit (form RJ
+      // lama tidak punya id_kunjungan — itu field era refaktor).
+      if (!cachedFormState || !cachedFormState.id_visit) {
         const fresh = await fetchFormState();
-        if (fresh && fresh.id_kunjungan) {
+        if (fresh && fresh.id_visit) {
           cachedFormState = fresh;
         } else if (!cachedFormState) {
           // Belum pernah dapat data valid sama sekali → beri tahu user
