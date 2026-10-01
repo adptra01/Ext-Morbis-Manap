@@ -189,13 +189,6 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Export Pre-op & Revisi (M-KLAIM)',
       description: 'Export PDF Pre-op & Revisi mengikuti filter halaman klaim (data DB pusat)',
     },
-    printSections: {
-      enabled: true,
-      allowedRoles: ['casemix', 'admin'],
-      name: 'Cetak Otomatis Berkas (M-KLAIM)',
-      description:
-        'Cetak hanya berkas yang ada isinya, tiap dokumen pas 1 lembar A4 (tanpa centang checkbox)',
-    },
     billingFilterPersistence: {
       enabled: true,
       allowedRoles: ['kasir', 'casemix'],

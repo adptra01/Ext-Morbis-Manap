@@ -84,12 +84,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'admin'],
   },
   {
-    key: 'printSections',
-    name: 'Cetak Otomatis Berkas',
-    desc: 'Cetak berkas yang ada isinya saja, 1 dokumen = 1 lembar A4',
-    roles: ['casemix', 'admin'],
-  },
-  {
     key: 'antrianTools',
     name: 'Antrian Tools',
     desc: 'Penomoran unik per loket (L1-001) + auto cetak',
