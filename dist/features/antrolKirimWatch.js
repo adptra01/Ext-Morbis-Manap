@@ -79,7 +79,7 @@ var __morbis_feature = (() => {
   // src/features/shared/antrolCore.ts
   var ANTRL_POLL_INTERVAL_MS = 5e3;
   var ANTRL_FEATURE_KEY = "antrolKirimOtomatis";
-  var DONE_STATUS = "selesai";
+  var DONE_STATUS = "DONE";
   var ANTRL_MAX_ATTEMPTS = 3;
   var ANTRL_FETCH_TIMEOUT_MS = 15e3;
   function extractDisplayRows(data) {
@@ -92,11 +92,13 @@ var __morbis_feature = (() => {
       const qn = String(q.queue_number ?? "").trim();
       if (!qn) continue;
       const rs = q.resep_id == null ? "" : String(q.resep_id);
+      const doneBy = q.done_by === "manual" || q.done_by === "auto_cap" ? q.done_by : void 0;
       rows.push({
         queue_number: qn,
         resep_id: rs,
         nama_pasien: q.nama_pasien == null ? void 0 : String(q.nama_pasien),
-        status: String(q.status ?? "")
+        status: String(q.status ?? ""),
+        done_by: doneBy
       });
     }
     return rows;
@@ -443,7 +445,11 @@ var __morbis_feature = (() => {
   }
   async function reportToServer(base, qn, tanggal, status, extra) {
     try {
-      await queueApi(`${base}/api/queue/antrol-kirim/report`, "POST", buildReportPayload(qn, tanggal, status, extra));
+      await queueApi(
+        `${base}/api/queue/antrol-kirim/report`,
+        "POST",
+        buildReportPayload(qn, tanggal, status, extra)
+      );
     } catch (e) {
       console.warn(LOG_PREFIX, "report gagal:", e.message);
     }
@@ -460,6 +466,9 @@ var __morbis_feature = (() => {
       return true;
     }
     attempts.set(key, used + 1);
+    if (row.done_by === "auto_cap") {
+      return true;
+    }
     if (!row.resep_id) {
       await reportToServer(base, qn, tanggal, "skipped", {
         message: "resep_id kosong \u2014 tidak bisa resolve ID_VISIT"
@@ -470,7 +479,11 @@ var __morbis_feature = (() => {
     const resepId = row.resep_id;
     let claimRes;
     try {
-      claimRes = await queueApi(`${base}/api/queue/antrol-kirim/claim`, "POST", buildClaimPayload(row, tanggal));
+      claimRes = await queueApi(
+        `${base}/api/queue/antrol-kirim/claim`,
+        "POST",
+        buildClaimPayload(row, tanggal)
+      );
     } catch (e) {
       console.warn(LOG_PREFIX, "claim gagal (retry):", e.message);
       return false;
@@ -526,11 +539,14 @@ var __morbis_feature = (() => {
       message: sendResult.message || (sendResult.ok ? "ok" : "update_bulk error")
     });
     persistSent(key);
-    console.log(
-      LOG_PREFIX,
-      status === "ok" ? "TERKIRIM ke MJKN" : "GAGAL kirim",
-      { qn, tanggal, resepId, idVisit, code: sendResult.code, message: sendResult.message }
-    );
+    console.log(LOG_PREFIX, status === "ok" ? "TERKIRIM ke MJKN" : "GAGAL kirim", {
+      qn,
+      tanggal,
+      resepId,
+      idVisit,
+      code: sendResult.code,
+      message: sendResult.message
+    });
     return true;
   }
   async function pollOnce() {
@@ -589,7 +605,11 @@ var __morbis_feature = (() => {
       blacklistResep = b;
       void pollOnce();
       timer = window.setInterval(() => void pollOnce(), ANTRL_POLL_INTERVAL_MS);
-      console.log(LOG_PREFIX, "watch berjalan di belakang layar (poll", ANTRL_POLL_INTERVAL_MS / 1e3 + "s)");
+      console.log(
+        LOG_PREFIX,
+        "watch berjalan di belakang layar (poll",
+        ANTRL_POLL_INTERVAL_MS / 1e3 + "s)"
+      );
     } else if (!shouldRun && started) {
       started = false;
       if (timer !== null) {

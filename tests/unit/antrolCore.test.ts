@@ -26,15 +26,33 @@ describe('antrolCore — ekstraksi baris display', () => {
     const rows = extractDisplayRows({
       status: 'ok',
       queues: [
-        { queue_number: 'T-001', resep_id: '219648', nama_pasien: 'ZUAIRIYAH', status: 'menunggu' },
-        { queue_number: 'R-002', resep_id: null, nama_pasien: null, status: 'dipanggil' },
-        { queue_number: 'L-003', status: 'selesai' },
+        { queue_number: 'T-001', resep_id: '219648', nama_pasien: 'ZUAIRIYAH', status: 'WAITING' },
+        { queue_number: 'R-002', resep_id: null, nama_pasien: null, status: 'CALLED' },
+        { queue_number: 'L-003', status: 'DONE' },
       ],
     });
     expect(rows).toEqual([
-      { queue_number: 'T-001', resep_id: '219648', nama_pasien: 'ZUAIRIYAH', status: 'menunggu' },
-      { queue_number: 'R-002', resep_id: '', nama_pasien: undefined, status: 'dipanggil' },
-      { queue_number: 'L-003', resep_id: '', nama_pasien: undefined, status: 'selesai' },
+      {
+        queue_number: 'T-001',
+        resep_id: '219648',
+        nama_pasien: 'ZUAIRIYAH',
+        status: 'WAITING',
+        done_by: undefined,
+      },
+      {
+        queue_number: 'R-002',
+        resep_id: '',
+        nama_pasien: undefined,
+        status: 'CALLED',
+        done_by: undefined,
+      },
+      {
+        queue_number: 'L-003',
+        resep_id: '',
+        nama_pasien: undefined,
+        status: 'DONE',
+        done_by: undefined,
+      },
     ]);
   });
 
@@ -42,58 +60,78 @@ describe('antrolCore — ekstraksi baris display', () => {
     const rows = extractDisplayRows({
       status: 'ok',
       queues: [
-        { resep_id: '1', status: 'selesai' },
+        { resep_id: '1', status: 'DONE' },
         { queue_number: '', resep_id: '2' },
       ],
     });
     expect(rows).toEqual([]);
   });
 
+  it('done_by diteruskan hanya utk nilai manual/auto_cap', () => {
+    const rows = extractDisplayRows({
+      status: 'ok',
+      queues: [
+        { queue_number: 'T-001', status: 'DONE', done_by: 'manual' },
+        { queue_number: 'T-002', status: 'DONE', done_by: 'auto_cap' },
+        { queue_number: 'T-003', status: 'DONE', done_by: 'ngawur' },
+        { queue_number: 'T-004', status: 'WAITING' },
+      ],
+    });
+    expect(rows.map((r) => r.done_by)).toEqual(['manual', 'auto_cap', undefined, undefined]);
+  });
+
   it('buildStatusMap memetakan queue_number → status', () => {
     const rows = extractDisplayRows({
       status: 'ok',
       queues: [
-        { queue_number: 'T-001', status: 'selesai' },
-        { queue_number: 'R-002', status: 'menunggu' },
+        { queue_number: 'T-001', status: 'DONE' },
+        { queue_number: 'R-002', status: 'WAITING' },
       ],
     });
-    expect(buildStatusMap(rows)).toEqual({ 'T-001': 'selesai', 'R-002': 'menunggu' });
+    expect(buildStatusMap(rows)).toEqual({ 'T-001': 'DONE', 'R-002': 'WAITING' });
   });
 });
 
 describe('antrolCore — deteksi transisi DONE (baseline-safe)', () => {
   it('transisi nyata menunggu → selesai terdeteksi', () => {
-    const prev = { 'T-001': 'menunggu', 'R-002': 'dipanggil' };
-    const cur = { 'T-001': 'selesai', 'R-002': 'dipanggil' };
+    const prev = { 'T-001': 'WAITING', 'R-002': 'CALLED' };
+    const cur = { 'T-001': 'DONE', 'R-002': 'CALLED' };
     expect(detectDoneTransitions(cur, prev)).toEqual(['T-001']);
   });
 
+  it('dipanggil → selesai terdeteksi (jalur normal: CALLED → DONE)', () => {
+    const prev = { 'T-001': 'CALLED' };
+    expect(detectDoneTransitions({ 'T-001': 'DONE' }, prev)).toEqual(['T-001']);
+  });
+
   it('sudah selesai sejak awal (baseline) BUKAN transisi', () => {
-    const prev = { 'T-001': 'selesai' };
-    const cur = { 'T-001': 'selesai' };
-    expect(detectDoneTransitions(cur, prev)).toEqual([]);
+    const prev = { 'T-001': 'DONE' };
+    expect(detectDoneTransitions({ 'T-001': 'DONE' }, prev)).toEqual([]);
   });
 
   it('antrian yang MUNCUL sudah selesai (tidak ada di prev) diabaikan — anti kirim massal', () => {
     const prev = {}; // snapshot sempat kosong
-    const cur = { 'T-001': 'selesai', 'T-002': 'selesai' };
+    const cur = { 'T-001': 'DONE', 'T-002': 'DONE' };
     expect(detectDoneTransitions(cur, prev)).toEqual([]);
   });
 
   it('status selain selesai tidak memicu apa pun', () => {
-    const prev = { 'T-001': 'menunggu' };
-    const cur = { 'T-001': 'dipanggil' };
-    expect(detectDoneTransitions(cur, prev)).toEqual([]);
+    const prev = { 'T-001': 'WAITING' };
+    expect(detectDoneTransitions({ 'T-001': 'CALLED' }, prev)).toEqual([]);
   });
 
-  it('batal → selesai TETAP terdeteksi (antrian diaktifkan ulang lalu selesai)', () => {
-    const prev = { 'T-001': 'batal' };
-    const cur = { 'T-001': 'selesai' };
-    expect(detectDoneTransitions(cur, prev)).toEqual(['T-001']);
+  it('tunda → selesai terdeteksi (operator menunda lalu menyelesaikan)', () => {
+    const prev = { 'T-001': 'DEFERRED' };
+    expect(detectDoneTransitions({ 'T-001': 'DONE' }, prev)).toEqual(['T-001']);
   });
 
-  it('DONE_STATUS konstan konsisten dgn label app', () => {
-    expect(DONE_STATUS).toBe('selesai');
+  it('lewat → selesai TETAP terdeteksi (antrian dipanggil ulang lalu selesai)', () => {
+    const prev = { 'T-001': 'SKIPPED' };
+    expect(detectDoneTransitions({ 'T-001': 'DONE' }, prev)).toEqual(['T-001']);
+  });
+
+  it('DONE_STATUS = nilai MENTAH API (bukan label UI "Selesai")', () => {
+    expect(DONE_STATUS).toBe('DONE');
   });
 });
 
@@ -165,7 +203,7 @@ describe('antrolCore — payload claim & report', () => {
       queue_number: 'T-001',
       resep_id: '219648',
       nama_pasien: 'ZUAIRIYAH',
-      status: 'selesai',
+      status: 'DONE',
     };
     expect(buildClaimPayload(row, '2026-10-01')).toEqual({
       queue_number: 'T-001',

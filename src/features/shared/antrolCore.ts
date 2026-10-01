@@ -16,8 +16,17 @@ export const ANTRL_POLL_INTERVAL_MS = 5000;
 /** Key fitur di config extension (toggle popup/sidepanel). */
 export const ANTRL_FEATURE_KEY = 'antrolKirimOtomatis';
 
-/** Status antrian yang memicu kirim otomatis. */
-export const DONE_STATUS = 'selesai';
+/** Status antrian yang memicu kirim otomatis — nilai MENTAH dari API display
+ *  Reports (Queue::STATUS_DONE). UI menerjemahkan ke label "Selesai"; klien
+ *  polling harus membandingkan nilai mentah ini, bukan label. */
+export const DONE_STATUS = 'DONE';
+
+/** Asal status DONE pada baris display:
+ *  - 'manual'   → operator benar-benar klik Selesai (layak kirim MJKN);
+ *  - 'auto_cap' → DONE palsu kebijakan "maks 5 dipanggil" (enforceActiveCap,
+ *                 display cleanup — layanan belum selesai → JANGAN kirim);
+ *  - undefined/null → DONE dari sebelum kolom ini ada (baseline: tak dikirim). */
+export type DoneBy = 'manual' | 'auto_cap';
 
 /** Batas maksimum percobaan per antrian per sesi browser (anti spam saat
  *  server antrian atau MORBIS sedang bermasalah). */
@@ -31,6 +40,8 @@ export interface AntrolRow {
   resep_id: string;
   nama_pasien?: string;
   status: string;
+  /** Asal status DONE (opsional — ada hanya untuk baris DONE). */
+  done_by?: DoneBy;
 }
 
 /** Bagian payload display yang relevan (field lain diabaikan). */
@@ -62,11 +73,13 @@ export function extractDisplayRows(data: AntrolDisplayData | null | undefined): 
     const qn = String(q.queue_number ?? '').trim();
     if (!qn) continue;
     const rs = q.resep_id == null ? '' : String(q.resep_id);
+    const doneBy = q.done_by === 'manual' || q.done_by === 'auto_cap' ? q.done_by : undefined;
     rows.push({
       queue_number: qn,
       resep_id: rs,
       nama_pasien: q.nama_pasien == null ? undefined : String(q.nama_pasien),
       status: String(q.status ?? ''),
+      done_by: doneBy,
     });
   }
   return rows;

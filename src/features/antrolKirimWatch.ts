@@ -233,7 +233,13 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
   }
   attempts.set(key, used + 1);
 
-  // 0) Tanpa resep_id tidak bisa diresolusi → catat & skip.
+  // 0) DONE palsu dari enforceActiveCap ("maks 5 dipanggil" — display cleanup
+  //    layanan belum selesai): jangan kirim MJKN. Row dibuang dari pending.
+  if (row.done_by === 'auto_cap') {
+    return true;
+  }
+
+  // 1) Tanpa resep_id tidak bisa diresolusi → catat & skip.
   if (!row.resep_id) {
     await reportToServer(base, qn, tanggal, 'skipped', {
       message: 'resep_id kosong — tidak bisa resolve ID_VISIT',

@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- **antrolKirim** — kirim otomatis MJKN update_bulk saat antrian farmasi selesai — watch realtime di belakang layar (poll display → deteksi DONE → klaim → resolve ID_VISIT → kirim → audit Reports) (`ef9d0de`)
+- **antrolKirim** — kirim otomatis MJKN update_bulk saat antrian farmasi selesai — watch realtime di belakang layar (poll display → deteksi DONE → klaim → resolve ID_VISIT → kirim → audit Reports) (`cce9fad`)
 - **resumeHistory** — tampilkan diff field sebagai tabel (Field/Sebelum/Sesudah + badge tambah-hapus) (`4eef706`)
 - **ui** — urutkan daftar fitur popup & sidepanel abjad (locale Indonesia) (`a98810a`)
 - **print** — cetak otomatis berkas M-KLAIM — hanya section berisi, tiap dokumen pas 1 lembar A4 (tanpa checkbox) (`79cc8b9`)
@@ -32,6 +32,7 @@
 
 ### 🧹 chore
 
+- sync CHANGELOG (`d344cbb`)
 - sync CHANGELOG (`fdf4563`)
 
 ### 📌 misc
@@ -1699,4 +1700,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ef9d0de423e8b2fc9c54676a5a7051a9efc2be6f -->
+<!-- changelog-upto: d344cbb865ef1e28e46ba85d11bf1a4181996763 -->
