@@ -1,4 +1,5 @@
-(function () {
+import { whenFeatureEnabled } from './shared/featureGate.js';
+whenFeatureEnabled('telaahResep', function () {
   'use strict';
 
   /**
@@ -806,4 +807,4 @@
       window.clearInterval(iv); // fitur telaah resep tidak aktif -> biarkan halaman default
     }
   }, 200);
-})();
+});

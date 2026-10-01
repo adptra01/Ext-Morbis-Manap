@@ -1,3 +1,4 @@
+import { whenFeatureEnabled } from './shared/featureGate.js';
 /**
  * openDetailWindowOpen.ts — MAIN-world net pengaman lapis-0 untuk Open Detail Mode.
  *
@@ -19,7 +20,7 @@
  * sebelum skrip MORBIS berjalan.
  */
 
-(() => {
+whenFeatureEnabled('openDetailInNewTab', () => {
   const MODE_ATTR = 'data-ext-open-detail-mode';
   const DETAIL_URL_RE = /\/v2\/m-klaim\/detail|id_visit=/i;
 
@@ -48,4 +49,4 @@
     }
     return originalOpen(url as string, target, features);
   };
-})();
+});

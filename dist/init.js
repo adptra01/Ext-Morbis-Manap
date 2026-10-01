@@ -250,8 +250,12 @@ var __morbis_init = (() => {
       }
     }
     window.log("Extension initialized successfully");
-    watchStuckLoadingModal();
-    injectFetchWatchdogToMainWorld();
+    const fwCfg = cfg?.features?.["fetchWatchdog"];
+    const fwOn = !fwCfg || fwCfg.enabled !== false && window.ExtensionCore.isFeatureAllowed("fetchWatchdog");
+    if (fwOn) {
+      watchStuckLoadingModal();
+      injectFetchWatchdogToMainWorld();
+    }
     watchDataModalUnblock();
   }
   function watchStuckLoadingModal() {
@@ -304,6 +308,10 @@ var __morbis_init = (() => {
   }
   function injectFetchWatchdogToMainWorld() {
     if (!window.location.pathname.includes("/detail-v2-refaktor")) return;
+    const fwCfg = window.currentConfig?.features?.["fetchWatchdog"];
+    if (fwCfg && (fwCfg.enabled === false || !window.ExtensionCore.isFeatureAllowed("fetchWatchdog"))) {
+      return;
+    }
     const script = document.createElement("script");
     script.src = chrome.runtime.getURL("features/fetchWatchdog.js");
     script.onload = () => {
@@ -342,6 +350,10 @@ var __morbis_init = (() => {
     const path = window.location.pathname;
     const needsAntrianTools = path.includes("/mesin-antrian") || path.includes("/counter-antrian/view-antrian") || path.includes("/counter-antrian/counter");
     if (!needsAntrianTools) return;
+    const atCfg = window.currentConfig?.features?.["antrianTools"];
+    if (atCfg && (atCfg.enabled === false || !window.ExtensionCore.isFeatureAllowed("antrianTools"))) {
+      return;
+    }
     const script = document.createElement("script");
     script.src = chrome.runtime.getURL("features/antrianTools.js");
     script.onload = () => {

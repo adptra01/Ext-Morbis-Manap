@@ -1,4 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 import { injectCSS } from '../shared/ui/index.js';
 import { togglePreOp, loadPreOpMap, setPreOp, resolvePreOpMarked } from './shared/preOpStorage.js';
 import { readPetugas } from './shared/resumeHistory.js';
@@ -504,14 +505,17 @@ if (typeof g.featureModules !== 'undefined') {
   };
 }
 
-// Auto-run if matched directly
-if (
-  (window.location?.pathname ?? '').startsWith('/v2/m-klaim') &&
-  !(window.location?.pathname ?? '').includes('/detail')
-) {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPreOpMarker);
-  } else {
-    initPreOpMarker();
+// Auto-run jika dimuat langsung (load-unpacked/dev) — TETAP lewat gate config
+// supaya toggle OFF di popup benar-benar menonaktifkan fitur.
+whenFeatureEnabled('preOpMarker', () => {
+  if (
+    (window.location?.pathname ?? '').startsWith('/v2/m-klaim') &&
+    !(window.location?.pathname ?? '').includes('/detail')
+  ) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPreOpMarker);
+    } else {
+      initPreOpMarker();
+    }
   }
-}
+});

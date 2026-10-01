@@ -268,8 +268,16 @@ async function initExtension(): Promise<void> {
 
   window.log('Extension initialized successfully');
 
-  watchStuckLoadingModal();
-  injectFetchWatchdogToMainWorld();
+  // Watchdog modal macet + injeksi fetchWatchdog = satu kesatuan infra
+  // "Fetch Watchdog (anti-hang)". Tunduk pada toggle config seperti fitur lain:
+  // user mematikan → tidak ada interval/SW inject yang berjalan.
+  const fwCfg = cfg?.features?.['fetchWatchdog'];
+  const fwOn =
+    !fwCfg || (fwCfg.enabled !== false && window.ExtensionCore.isFeatureAllowed('fetchWatchdog'));
+  if (fwOn) {
+    watchStuckLoadingModal();
+    injectFetchWatchdogToMainWorld();
+  }
   watchDataModalUnblock();
 }
 
@@ -351,6 +359,15 @@ function watchDataModalUnblock(): void {
 // nunggu ambang 20s watchdog.
 function injectFetchWatchdogToMainWorld(): void {
   if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
+  // Page-world script tak punya akses chrome.storage → gate di sini (init.js
+  // punya window.currentConfig). Entry hilang = ON (kompatibel mundur).
+  const fwCfg = window.currentConfig?.features?.['fetchWatchdog'];
+  if (
+    fwCfg &&
+    (fwCfg.enabled === false || !window.ExtensionCore.isFeatureAllowed('fetchWatchdog'))
+  ) {
+    return;
+  }
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('features/fetchWatchdog.js');
   script.onload = () => {
@@ -415,6 +432,15 @@ function injectAntrianToolsToMainWorld(): void {
     path.includes('/counter-antrian/counter');
 
   if (!needsAntrianTools) return;
+
+  // Page-world script tak punya akses chrome.storage → gate di sini.
+  const atCfg = window.currentConfig?.features?.['antrianTools'];
+  if (
+    atCfg &&
+    (atCfg.enabled === false || !window.ExtensionCore.isFeatureAllowed('antrianTools'))
+  ) {
+    return;
+  }
 
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('features/antrianTools.js');

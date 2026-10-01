@@ -1,3 +1,4 @@
+import { whenFeatureEnabled } from './shared/featureGate.js';
 /* AntrianTools – tirai loading awal + progressive handoff (inject saat document_start)
  * Gate: semua efek hanya aktif saat html[data-ext-antrian-tools] ada (di-set init.ts
  * document_end). Extension disabled / role tidak sesuai → halaman server tampil normal.
@@ -20,7 +21,7 @@
  *   - inject gagal total (health null > 4s) → buka tirai → native
  *   - UI gagal muncul (health ≠ 'ui' > 8s) → buka tirai → native
  * Prinsip: extension boleh gagal, mesin antrian tidak boleh ikut gagal. */
-(function () {
+whenFeatureEnabled('antrianTools', function () {
   const INJECT_MAX_MS = 4000;
   const UI_MAX_MS = 8000;
   const MIN_VISIBLE_MS = 1500;
@@ -114,4 +115,4 @@
   }
 
   monitor();
-})();
+});

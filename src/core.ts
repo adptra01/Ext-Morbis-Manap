@@ -24,6 +24,20 @@ function log(...args: unknown[]): void {
 }
 
 async function loadConfig(): Promise<ExtensionConfig> {
+  // Minta ke background dulu: background.loadConfig() menjalankan
+  // migrateConfig (backfill key fitur baru + roles), jadi content script tak
+  // pernah melihat config basi yang membuat fitur baru selalu "skipped".
+  try {
+    const resp = await chrome.runtime.sendMessage({ type: 'GET_CONFIG' });
+    if (resp?.config) {
+      currentConfig = resp.config as ExtensionConfig;
+      isExtensionEnabled = currentConfig.extensionEnabled;
+      log('Config loaded (migrated), role:', currentConfig.currentRole);
+      return currentConfig;
+    }
+  } catch {
+    /* background tidur/unreachable → fallback baca langsung di bawah */
+  }
   try {
     const result = (await chrome.storage.sync.get('extensionConfig')) as {
       extensionConfig?: ExtensionConfig;

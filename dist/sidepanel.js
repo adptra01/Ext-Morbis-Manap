@@ -1473,6 +1473,26 @@ var FALLBACK_FEATURES = [
 		roles: ["casemix"]
 	},
 	{
+		key: "fetchWatchdog",
+		name: "Fetch Watchdog",
+		desc: "Batalkan request menggantung + tutup modal macet",
+		roles: [
+			"casemix",
+			"kasir",
+			"dokter",
+			"apotek",
+			"admin",
+			"labor",
+			"pendaftaran"
+		]
+	},
+	{
+		key: "casemixExport",
+		name: "Export Pre-op & Revisi",
+		desc: "Export PDF Pre-op & Revisi mengikuti filter klaim",
+		roles: ["casemix", "admin"]
+	},
+	{
 		key: "printSections",
 		name: "Cetak Otomatis Berkas",
 		desc: "Cetak berkas yang ada isinya saja, 1 dokumen = 1 lembar A4",

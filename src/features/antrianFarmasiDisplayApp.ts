@@ -19,6 +19,7 @@
  * (sebelum take-over iframe) dibungkam.
  */
 import { farmasiAppBase, whenAntrianFarmasiActive } from './shared/farmasiQueueSync';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
 interface DisplayTarget {
   url: string;
@@ -30,7 +31,7 @@ const TARGETS: Record<'calls' | 'waiting', DisplayTarget> = {
   waiting: { url: farmasiAppBase() + '/antrian-farmasi-menunggu', label: 'antrian menunggu' },
 };
 
-(function () {
+whenFeatureEnabled('antrianFarmasi', function () {
   let currentMode: 'calls' | 'waiting' = 'calls';
   let iframe: HTMLIFrameElement | null = null;
   let corner: HTMLElement | null = null;
@@ -119,4 +120,4 @@ const TARGETS: Record<'calls' | 'waiting', DisplayTarget> = {
     }
   };
   whenAntrianFarmasiActive(start);
-})();
+});

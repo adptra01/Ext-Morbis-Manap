@@ -183,12 +183,44 @@ var __morbis_feature = (() => {
     setTimeout(() => banner.remove(), 1e4);
   }
 
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
   // src/features/antrianFarmasiDisplayApp.ts
   var TARGETS = {
     calls: { url: farmasiAppBase() + "/antrian-farmasi", label: "panggilan aktif" },
     waiting: { url: farmasiAppBase() + "/antrian-farmasi-menunggu", label: "antrian menunggu" }
   };
-  (function() {
+  whenFeatureEnabled("antrianFarmasi", function() {
     let currentMode = "calls";
     let iframe = null;
     let corner = null;
@@ -258,6 +290,6 @@ var __morbis_feature = (() => {
       }
     };
     whenAntrianFarmasiActive(start);
-  })();
+  });
 })();
 //# sourceMappingURL=antrianFarmasiDisplayApp.js.map

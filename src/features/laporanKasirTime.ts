@@ -1,4 +1,5 @@
-(function () {
+import { whenFeatureEnabled } from './shared/featureGate.js';
+whenFeatureEnabled('laporanKasirTime', function () {
   if (!window.location.pathname.includes('laporan-kasir')) return;
 
   // Gate: atribut data-ext-laporan-kasir-time di-set init.ts (document_end,
@@ -202,4 +203,4 @@
     setTimeout(applyPicker, 2000);
     setTimeout(applyPicker, 5000);
   }
-})();
+});

@@ -7,6 +7,13 @@
 
 ---
 
+## 2026-10-01
+
+### ✨ feat
+
+- **ui** — urutkan daftar fitur popup & sidepanel abjad (locale Indonesia) (`a98810a`)
+- **print** — cetak otomatis berkas M-KLAIM — hanya section berisi, tiap dokumen pas 1 lembar A4 (tanpa checkbox) (`79cc8b9`)
+
 ## 2026-09-30
 
 ### ✨ feat
@@ -1668,4 +1675,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 25d0518f6ab2ee0adcb3a572764f5c28e3d72647 -->
+<!-- changelog-upto: a98810a331f7cc36958142574c6261e6afa3e6e5 -->

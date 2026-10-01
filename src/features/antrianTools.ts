@@ -1,5 +1,6 @@
+import { whenFeatureEnabled } from './shared/featureGate.js';
 /* AntrianTools – rewrite sederhana (build 2026‑08‑10) */
-(function () {
+whenFeatureEnabled('antrianTools', function () {
   // Guard anti double-inject: file ini terdaftar di manifest content_scripts
   // (world MAIN) DAN di-inject manual oleh init.ts via chrome.runtime.getURL —
   // tanpa guard, UI/polling/TTS jalan dobel di ruang tunggu. Pola sama dengan
@@ -1023,4 +1024,4 @@
     extLog('page_unload', true);
   });
   init();
-})();
+});

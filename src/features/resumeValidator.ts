@@ -19,9 +19,10 @@ import {
   openHistoryModal,
   showHistToast,
 } from './shared/resumeHistory.js';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
 /* eslint-disable @typescript-eslint/no-unused-vars, no-var */
-(function () {
+whenFeatureEnabled('resumeValidator', function () {
   const MAX_WAIT = 100;
   let waited = 0;
 
@@ -1287,4 +1288,4 @@ import {
       attachClear('tindakan' + j, tgtT);
     }
   }
-})();
+});

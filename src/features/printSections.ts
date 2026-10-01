@@ -24,6 +24,7 @@
 
 import { getMorbisGlobals } from './shared/types.js';
 import { injectCSS } from '../shared/ui/index.js';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
 const g = getMorbisGlobals();
 
@@ -431,11 +432,14 @@ if (typeof g.featureModules !== 'undefined') {
   };
 }
 
-// Auto-run bila dimuat langsung (load-unpacked/dev).
-if ((window.location?.pathname ?? '').includes('/v2/m-klaim/detail')) {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPrintSections);
-  } else {
-    initPrintSections();
+// Auto-run bila dimuat langsung (load-unpacked/dev) — TETAP lewat gate config
+// supaya toggle OFF di popup benar-benar menonaktifkan fitur.
+whenFeatureEnabled('printSections', () => {
+  if ((window.location?.pathname ?? '').includes('/v2/m-klaim/detail')) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPrintSections);
+    } else {
+      initPrintSections();
+    }
   }
-}
+});

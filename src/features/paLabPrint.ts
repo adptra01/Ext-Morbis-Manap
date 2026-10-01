@@ -1,4 +1,5 @@
-(function () {
+import { whenFeatureEnabled } from './shared/featureGate.js';
+whenFeatureEnabled('paLabPrint', function () {
   'use strict';
 
   /**
@@ -1153,4 +1154,4 @@
       window.clearInterval(iv); // fitur tidak aktif -> biarkan halaman default
     }
   }, 200);
-})();
+});

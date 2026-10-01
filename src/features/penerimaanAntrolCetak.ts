@@ -21,6 +21,7 @@
  */
 import { printKartuAntrian } from './shared/printKartu';
 import { pushQueueEvent, queueEventId, whenAntrianFarmasiActive } from './shared/farmasiQueueSync';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
 const ANTRL_URL = '/v2/antrol/search';
 const ANTRL_SUB = 'sub=update_v2';
@@ -351,10 +352,12 @@ function sweepCetakUlang(): void {
     /* tabel belum siap — coba lagi nanti */
   }
 }
-whenAntrianFarmasiActive(() => {
-  sweepCetakUlang();
-  // FIX: simpan interval ID agar bisa di-clear pas unload
-  _sweepInterval = window.setInterval(sweepCetakUlang, 4000);
+whenFeatureEnabled('penerimaanExport', () => {
+  whenAntrianFarmasiActive(() => {
+    sweepCetakUlang();
+    // FIX: simpan interval ID agar bisa di-clear pas unload
+    _sweepInterval = window.setInterval(sweepCetakUlang, 4000);
+  });
 });
 
 // FIX: cleanup semua interval saat page unload/navigate

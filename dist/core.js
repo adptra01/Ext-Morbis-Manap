@@ -48,6 +48,16 @@ var __morbis_core = (() => {
   }
   async function loadConfig() {
     try {
+      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
+      if (resp?.config) {
+        currentConfig = resp.config;
+        isExtensionEnabled = currentConfig.extensionEnabled;
+        log("Config loaded (migrated), role:", currentConfig.currentRole);
+        return currentConfig;
+      }
+    } catch {
+    }
+    try {
       const result = await chrome.storage.sync.get("extensionConfig");
       currentConfig = result.extensionConfig ?? null;
       if (!currentConfig) {

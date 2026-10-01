@@ -30,6 +30,38 @@ var __morbis_feature = (() => {
     return window;
   }
 
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
   // src/shared/ui/index.ts
   var injectedSheets = /* @__PURE__ */ new Set();
   function injectCSS(id, css) {
@@ -972,13 +1004,15 @@ var __morbis_feature = (() => {
       run: initPreOpMarker
     };
   }
-  if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", initPreOpMarker);
-    } else {
-      initPreOpMarker();
+  whenFeatureEnabled("preOpMarker", () => {
+    if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPreOpMarker);
+      } else {
+        initPreOpMarker();
+      }
     }
-  }
+  });
   return __toCommonJS(mKlaimPreOp_exports);
 })();
 //# sourceMappingURL=mKlaimPreOp.js.map

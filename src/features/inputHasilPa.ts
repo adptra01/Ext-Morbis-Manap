@@ -1,6 +1,7 @@
 import '../ui/web/ext-btn';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
-(function () {
+whenFeatureEnabled('labHistory', function () {
   /**
    * inputHasilPa.ts — Replikasi langsung tombol aksi lab di halaman
    * input-hasil-pa. Tidak fetch halaman daftar & tidak butuh bridge:
@@ -426,4 +427,4 @@ import '../ui/web/ext-btn';
       _keepCaseIntervalId = null;
     }
   });
-})();
+});

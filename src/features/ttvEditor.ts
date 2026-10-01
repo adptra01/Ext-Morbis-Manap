@@ -1,7 +1,8 @@
 import { colors, injectCSS } from '../shared/ui/index.js';
 import '../ui/web';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
-(function () {
+whenFeatureEnabled('ttvEditor', function () {
   const MAX_WAIT = 100;
   let waited = 0;
 
@@ -220,4 +221,4 @@ import '../ui/web';
       lockBtn.textContent = locked ? 'Buka TTV' : 'Kunci TTV';
     });
   }
-})();
+});

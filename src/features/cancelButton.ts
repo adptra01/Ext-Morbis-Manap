@@ -1,8 +1,9 @@
 import '../ui/web';
 import type { ExtModal } from '../ui/web';
 import { confirmExt } from '../ui/web';
+import { whenFeatureEnabled } from './shared/featureGate.js';
 
-(function () {
+whenFeatureEnabled('cancelBatal', function () {
   'use strict';
   const EXT_CLASS = 'ext-batal';
   const INTERVAL_MS = 3000;
@@ -273,4 +274,4 @@ import { confirmExt } from '../ui/web';
     attributes: true,
     attributeFilter: ['data-ext-cancel-batal'],
   });
-})();
+});

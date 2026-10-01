@@ -1,3 +1,4 @@
+import { whenFeatureEnabled } from './shared/featureGate.js';
 /**
  * Billing Adjustment — Total Jasa editable, Pembulatan editable,
  * realtime recalculation + regenerate dari baris item.
@@ -12,7 +13,7 @@
  * Gating: jalan hanya bila init.ts (ISOLATED) set
  * `data-ext-billing-adj="1"` (fitur enabled + role admin).
  */
-(function () {
+whenFeatureEnabled('billingAdjustment', function () {
   'use strict';
 
   const ATTR = 'data-ext-billing-adj';
@@ -509,4 +510,4 @@
       stopPolling();
     }
   }, FIELD_WAIT_MS);
-})();
+});

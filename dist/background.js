@@ -213,6 +213,18 @@ var __morbis_bg = (() => {
         name: "Bulk Verif / Batal Verif",
         description: "Pilih banyak klaim lalu Verif atau Batal Verif sekaligus (halaman M-Klaim)"
       },
+      fetchWatchdog: {
+        enabled: true,
+        allowedRoles: ["casemix", "kasir", "dokter", "apotek", "admin", "labor", "pendaftaran"],
+        name: "Fetch Watchdog (anti-hang)",
+        description: "Batalkan request menggantung + tutup modal loading macet (infrastruktur, aman dimatikan)"
+      },
+      casemixExport: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Export Pre-op & Revisi (M-KLAIM)",
+        description: "Export PDF Pre-op & Revisi mengikuti filter halaman klaim (data DB pusat)"
+      },
       printSections: {
         enabled: true,
         allowedRoles: ["casemix", "admin"],
