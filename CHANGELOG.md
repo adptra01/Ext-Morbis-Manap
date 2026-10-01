@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-10-02
+
+### 🐛 fix
+
+- **antrolKirim** — auto_cap ikut dikirim; done_by jadi metadata audit (`57cde49`)
+
+### 🧹 chore
+
+- sync CHANGELOG (`0360808`)
+
 ## 2026-10-01
 
 ### ✨ feat
@@ -18,6 +28,7 @@
 
 ### 🐛 fix
 
+- **antrolKirim** — pakai status mentah DONE (bukan label 'Selesai') + skip DONE palsu enforceActiveCap via done_by (`e5bd295`)
 - **resume** — simpan textarea dengan baris baru — kirim \n mentah, bukan <br/> (`8fc4df6`)
 - **resumeTab** — endpoint simpan RJ -> /rekam-medik/control/rm-rawat-jalan (path ber-dash) (`486485b`)
 - **resumeTab** — samakan validasi simpan dengan form RJ asli (`3342fcb`)
@@ -1700,4 +1711,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d344cbb865ef1e28e46ba85d11bf1a4181996763 -->
+<!-- changelog-upto: 0360808e0b4d23f5c1e80ed45d18d2436645c7dc -->
