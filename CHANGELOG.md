@@ -21,6 +21,8 @@
 
 ### 🧹 chore
 
+- **repo** — untrack graphify-out (artifact lokal, di-regenerate graphify update) + .gitignore (`25d0518`)
+- sync dist ke v1.5.112 (hasil build dengan ui/shadow.css) (`decc537`)
 - **toolchain** — upgrade eslint 10, vitest 5, tailwind 4, react 19.3 + dead-code clean (rule eslint baru) (`44456a3`)
 - sync dist+lock v1.5.110 & upgrade vite 8.3.1 + rolldown 1.2.11 (binding Linux) (`6eb75bd`)
 - sync package-lock ke v1.5.109 (`7b9fbce`)
@@ -1666,4 +1668,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e305f769af07792f2acd061b15238e920720e551 -->
+<!-- changelog-upto: 25d0518f6ab2ee0adcb3a572764f5c28e3d72647 -->

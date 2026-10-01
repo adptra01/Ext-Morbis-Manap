@@ -213,6 +213,12 @@ var __morbis_bg = (() => {
         name: "Bulk Verif / Batal Verif",
         description: "Pilih banyak klaim lalu Verif atau Batal Verif sekaligus (halaman M-Klaim)"
       },
+      printSections: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Cetak Otomatis Berkas (M-KLAIM)",
+        description: "Cetak hanya berkas yang ada isinya, tiap dokumen pas 1 lembar A4 (tanpa centang checkbox)"
+      },
       billingFilterPersistence: {
         enabled: true,
         allowedRoles: ["kasir", "casemix"],
