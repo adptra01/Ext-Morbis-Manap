@@ -36174,13 +36174,22 @@ var __morbis_feature = (() => {
   }
   var cachedFormKeys = [];
   async function fetchFormState() {
-    const idVisit = new URLSearchParams(location.search).get("id_visit");
+    const qs = new URLSearchParams(location.search);
+    const idVisit = qs.get("id_visit");
     if (!idVisit) return {};
-    const urls = [
+    const idRJ = qs.get("id") || document.getElementById("id_rawat_jalan")?.value || document.querySelector('[name="id_rawat_jalan"]')?.value || (typeof cachedFormState?.["id_rawat_jalan"] === "string" ? cachedFormState["id_rawat_jalan"] : "");
+    const urls = [];
+    if (idRJ) {
+      urls.push(
+        `${location.origin}/rekam-medik/rm-rawat-jalan-new?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`
+      );
+    }
+    urls.push(
+      `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${encodeURIComponent(idVisit)}`,
       `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}&page=6`,
       `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}`,
       `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`
-    ];
+    );
     for (const url of urls) {
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt > 0) await new Promise((r2) => setTimeout(r2, 350));
@@ -36303,8 +36312,22 @@ var __morbis_feature = (() => {
       if (btn.disabled) return;
       btn.disabled = true;
       try {
-        if (!cachedFormState) {
-          cachedFormState = await fetchFormState();
+        if (!cachedFormState || !cachedFormState.id_kunjungan) {
+          const fresh = await fetchFormState();
+          if (fresh && fresh.id_kunjungan) {
+            cachedFormState = fresh;
+          } else if (!cachedFormState) {
+            const { confirmExt: confirmExt2 } = await Promise.resolve().then(() => (init_confirm(), confirm_exports));
+            await confirmExt2({
+              title: "Data belum termuat",
+              message: "Form resume gagal dimuat dari server (jaringan/server sibuk). Klik tombol RJ sekali lagi untuk mencoba ulang.",
+              variant: "danger",
+              okLabel: "OK",
+              hideCancel: true
+            });
+            btn.disabled = false;
+            return;
+          }
         }
         const prescriptionText = await fetchAllPrescriptionHistories();
         const data = extractFormData();

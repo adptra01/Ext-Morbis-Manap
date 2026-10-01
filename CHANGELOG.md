@@ -14,6 +14,14 @@
 - **ui** — urutkan daftar fitur popup & sidepanel abjad (locale Indonesia) (`a98810a`)
 - **print** — cetak otomatis berkas M-KLAIM — hanya section berisi, tiap dokumen pas 1 lembar A4 (tanpa checkbox) (`79cc8b9`)
 
+### 🐛 fix
+
+- **gate** — toggle OFF kini berlaku untuk semua fitur — storage-gate untuk 13 file IIFE/auto-run + injeksi init.ts + migrasi config di core (`622355e`)
+
+### 📌 misc
+
+- feat!: hapus total TTV Editor (Surat Pengantar) — file, config, manifest, build, init gate, sidepanel fallback (`726ed0f`)
+
 ## 2026-09-30
 
 ### ✨ feat
@@ -1675,4 +1683,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a98810a331f7cc36958142574c6261e6afa3e6e5 -->
+<!-- changelog-upto: 726ed0f0254004670615145f73b5e3fccf94d4e7 -->

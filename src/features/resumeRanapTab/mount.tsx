@@ -120,29 +120,58 @@ async function fetchFormData(): Promise<RanapFormData | null> {
   const idVisit = new URLSearchParams(location.search).get('id_visit');
   if (!idVisit) return null;
 
-  try {
-    // 1. Dapatkan resume ID dari halaman daftar resume
-    const listResp = await fetch(`/admisi/detail-rawat-inap/resume-ri?idVisit=${idVisit}`, {
-      credentials: 'same-origin',
-    });
-    const listHtml = await listResp.text();
-    const resumeId = listHtml.match(/edit\((\d+),/)?.[1] ?? '';
-
-    if (!resumeId) {
-      console.warn('[RI] no existing resume found, using empty form');
+  const fetchText = async (url: string, attempt = 0): Promise<string | null> => {
+    try {
+      const resp = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+      if (!resp.ok) {
+        // Server SIMRS kadang 404 sesaat untuk halaman valid → retry 1x.
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 350));
+          return fetchText(url, 1);
+        }
+        return null;
+      }
+      return await resp.text();
+    } catch (e) {
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 350));
+        return fetchText(url, 1);
+      }
+      console.error('[RI] fetch failed:', e);
+      return null;
     }
+  };
 
-    // 2. Fetch halaman form dengan ID resume
-    const url = resumeId
-      ? `${FORM_URL}?idVisit=${idVisit}&id=${resumeId}`
-      : `${FORM_URL}?idVisit=${idVisit}`;
-    const resp = await fetch(url, { credentials: 'same-origin' });
-    const html = await resp.text();
-    return parseFormHtml(html);
-  } catch (e) {
-    console.error('[RI] fetch failed:', e);
+  // 1. Dapatkan resume ID dari halaman daftar resume (pola toleran —
+  //    format inline onclick server bisa berubah: edit(123,), edit('123'),
+  //    data-id="123", dsb).
+  const listHtml = await fetchText(`/admisi/detail-rawat-inap/resume-ri?idVisit=${idVisit}`);
+  if (listHtml === null) return null;
+  const resumeId =
+    listHtml.match(/edit\(\s*['"]?(\d+)/)?.[1] ??
+    listHtml.match(/edit-resume[^0-9]*(\d{4,})/i)?.[1] ??
+    listHtml.match(/data-id\s*=\s*["'](\d+)/i)?.[1] ??
+    '';
+
+  if (!resumeId) {
+    console.warn('[RI] no existing resume found, using empty form');
+  }
+
+  // 2. Fetch halaman form dengan ID resume
+  const url = resumeId
+    ? `${FORM_URL}?idVisit=${idVisit}&id=${resumeId}`
+    : `${FORM_URL}?idVisit=${idVisit}`;
+  const html = await fetchText(url);
+  if (html === null) return null;
+  const data = parseFormHtml(html);
+  // Validasi: halaman login/expire/salah mengembalikan HTML tanpa field
+  // kunci. Kembalikan null agar pemanggil menampilkan error + bisa retry,
+  // bukan modal kosong yang ter-cache permanen.
+  if (!data.id_visit && !data.id_resume_inap && !data.norm && !data.noreg) {
+    console.warn('[RI] form kosong (bukan form RI valid) untuk id_visit', idVisit);
     return null;
   }
+  return data;
 }
 
 function serializeFormData(data: RanapFormData): string {
@@ -653,8 +682,9 @@ async function init() {
       if (!cachedData) cachedData = await fetchFormData();
       if (!cachedData) {
         void confirmExt({
-          title: 'Gagal',
-          message: 'Gagal memuat data',
+          title: 'Data belum termuat',
+          message:
+            'Form resume rawat inap gagal dimuat dari server (jaringan/server sibuk atau sesi kedaluwarsa). Klik tombol RI sekali lagi untuk mencoba ulang.',
           variant: 'danger',
           okLabel: 'OK',
           hideCancel: true,

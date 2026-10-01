@@ -1346,16 +1346,37 @@ function parseFormControls(doc: Document): Record<string, string | string[]> {
 let cachedFormKeys: string[] = [];
 
 async function fetchFormState(): Promise<Record<string, string | string[]>> {
-  const idVisit = new URLSearchParams(location.search).get('id_visit');
+  const qs = new URLSearchParams(location.search);
+  const idVisit = qs.get('id_visit');
   if (!idVisit) return {};
 
-  // Halaman form RJ (BUKAN halaman daftar `rj` — `rj` tidak punya
-  // <form>, sehingga id_kunjungan/ihs_number/norm dst. hilang semua).
-  const urls = [
+  // `id` = id_rawat_jalan. Endpoint lama butuh KEDUANYA:
+  //   /rekam-medik/rm-rawat-jalan-new?id=<id_rawat_jalan>&id_visit=<id_visit>
+  // Di halaman detail-v2, `id` kadang tidak ada di URL — ambil juga dari
+  // DOM / cache sebelumnya bila tersedia.
+  const idRJ =
+    qs.get('id') ||
+    (document.getElementById('id_rawat_jalan') as HTMLInputElement | null)?.value ||
+    (document.querySelector('[name="id_rawat_jalan"]') as HTMLInputElement | null)?.value ||
+    (typeof cachedFormState?.['id_rawat_jalan'] === 'string'
+      ? (cachedFormState['id_rawat_jalan'] as string)
+      : '');
+
+  // Endpoint LAMA (verified: /rekam-medik/rm-rawat-jalan-new?id=&id_visit=)
+  // dikembalikan sebagai prioritas utama; endpoint baru di bawahnya tetap
+  // dipertahankan sebagai fallback bila yang lama gagal.
+  const urls: string[] = [];
+  if (idRJ) {
+    urls.push(
+      `${location.origin}/rekam-medik/rm-rawat-jalan-new?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
+    );
+  }
+  urls.push(
+    `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${encodeURIComponent(idVisit)}`,
     `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}&page=6`,
     `${location.origin}/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new?id_visit=${idVisit}`,
     `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`,
-  ];
+  );
 
   for (const url of urls) {
     // Server SIMRS sesekali membalas 404 sesaat untuk halaman RJ yang
@@ -1507,8 +1528,29 @@ function setupFloatingButton() {
     if (btn.disabled) return;
     btn.disabled = true;
     try {
-      if (!cachedFormState) {
-        cachedFormState = await fetchFormState();
+      // Jangan cache hasil kosong permanen: fetch gagal (404 sesaat/server
+      // sibuk) membuat modal tampil kosong dan klik berikutnya tidak pernah
+      // retry karena `{}` truthy. Hanya simpan bila ada id_kunjungan.
+      if (!cachedFormState || !cachedFormState.id_kunjungan) {
+        const fresh = await fetchFormState();
+        if (fresh && fresh.id_kunjungan) {
+          cachedFormState = fresh;
+        } else if (!cachedFormState) {
+          // Belum pernah dapat data valid sama sekali → beri tahu user
+          // alih-alih membuka modal kosong yang membingungkan.
+          const { confirmExt } = await import('../../ui/web/confirm.js');
+          await confirmExt({
+            title: 'Data belum termuat',
+            message:
+              'Form resume gagal dimuat dari server (jaringan/server sibuk). Klik tombol RJ sekali lagi untuk mencoba ulang.',
+            variant: 'danger',
+            okLabel: 'OK',
+            hideCancel: true,
+          });
+          btn.disabled = false;
+          return;
+        }
+        // Sudah ada cache valid lama → lanjut pakai itu walau refresh gagal.
       }
       const prescriptionText = await fetchAllPrescriptionHistories();
       const data = extractFormData();
