@@ -122,14 +122,17 @@ const AUTOCOMPLETE_URLS = {
 
 // Endpoint WAJIB sama dengan `action` form asli SIMRS. Verified live di
 // /rekam-medik/rm-rawat-jalan-new?id=<id_rawat_jalan>&id_visit=<id_visit>:
-//   <form action="/rekam-medik/control/rm-rawatjalan" method="POST"
+//   <form action="/rekam-medik/control/rm-rawat-jalan" method="POST"
 //         onsubmit="return cekForm()">     <- form TANPA atribut id
 //   <input type="submit" name="save" value="Simpan" id="save">
 // Submit form biasa -> `save=Simpan` ikut terkirim; controller membacanya
 // dari $_POST['save']. Balasan = HTML (redirect ke daftar RJ), bukan JSON.
+// PENTING: path-nya `rm-rawat-jalan` (DASH). Varian tanpa dash
+// `/rekam-medik/control/rm-rawatjalan` dan `/rekam-medik/control/rm-rawat`
+// sama-sama 404 (dicek via GET di sesi login) — jangan dipakai.
 // Riwayat: endpoint `admisi/.../control/rm-rawat-jalan-refaktor?sub=simpan`
 // (kontrak JSON) sudah tidak dipakai — bukan yang dipakai form asli.
-const ENDPOINT = '/rekam-medik/control/rm-rawatjalan';
+const ENDPOINT = '/rekam-medik/control/rm-rawat-jalan';
 
 let reactRoot: Root | null = null;
 let overlayBtn: HTMLButtonElement | null = null;
@@ -615,7 +618,7 @@ function serializeRawatJalan(data: ResumeData): string {
   // ═══════════════════════════════════════════════════════════
   const form =
     (document.getElementById('formdata') as HTMLFormElement | null) ||
-    (document.querySelector('form[action*="control/rm-rawatjalan"]') as HTMLFormElement | null);
+    (document.querySelector('form[action*="control/rm-rawat-jalan"]') as HTMLFormElement | null);
 
   if (form) {
     const fd = new FormData(form);
@@ -1374,7 +1377,7 @@ let cachedFormState: Record<string, string | string[]> | null = null;
  * name → value (atau string[] untuk name ber-`[]`).
  *
  * Menangkap SEMUA <input> (bukan cuma hidden/text) + <textarea> +
- * <select>, karena controller `rm-rawatjalan` membaca banyak
+ * <select>, karena controller `rm-rawat-jalan` membaca banyak
  * field non-hidden (norm, id_bed, id_dokter, nama_dokter, waktu, …)
  * yang bila hilang memunculkan "Undefined index" di PHP Notice.
  */
@@ -1454,7 +1457,7 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   }
   urls.push(
     `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${encodeURIComponent(idVisit)}`,
-    `${location.origin}/rekam-medik/rm-rawatjalan?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
+    `${location.origin}/rekam-medik/rm-rawat-jalan?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
     `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`,
   );
 

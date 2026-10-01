@@ -29580,7 +29580,7 @@ var __morbis_feature = (() => {
     };
   }
   var isRj = location.pathname.includes("rm-rawat-jalan-new");
-  var ENDPOINT = "/rekam-medik/control/rm-rawatjalan";
+  var ENDPOINT = "/rekam-medik/control/rm-rawat-jalan";
   var reactRoot = null;
   var overlayBtn = null;
   function parseResumeView() {
@@ -29880,7 +29880,7 @@ var __morbis_feature = (() => {
   }
   function serializeRawatJalan(data) {
     const params = new URLSearchParams();
-    const form = document.getElementById("formdata") || document.querySelector('form[action*="control/rm-rawatjalan"]');
+    const form = document.getElementById("formdata") || document.querySelector('form[action*="control/rm-rawat-jalan"]');
     if (form) {
       const fd = new FormData(form);
       fd.forEach((value, key) => {
@@ -36239,7 +36239,7 @@ var __morbis_feature = (() => {
     }
     urls.push(
       `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${encodeURIComponent(idVisit)}`,
-      `${location.origin}/rekam-medik/rm-rawatjalan?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
+      `${location.origin}/rekam-medik/rm-rawat-jalan?id=${encodeURIComponent(idRJ)}&id_visit=${encodeURIComponent(idVisit)}`,
       `${location.origin}/admisi/pelaksanaan_pelayanan/rj?id_visit=${idVisit}`
     );
     for (const url of urls) {

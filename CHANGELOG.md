@@ -16,6 +16,8 @@
 
 ### 🐛 fix
 
+- **resumeTab** — samakan validasi simpan dengan form RJ asli (`7335897`)
+- **resumeTab** — simpan via endpoint lama /rekam-medik/control/rm-rawatjalan (`a31259e`)
 - **ri** — cari resume ID + form RI dari /rekam-medik endpoint + perbaiki log skala printSections (`edef1c1`)
 - **resume** — kembalikan resumeTab ke endpoint lama + retry/error dialog untuk RJ & RI (`d696c62`)
 - **gate** — toggle OFF kini berlaku untuk semua fitur — storage-gate untuk 13 file IIFE/auto-run + injeksi init.ts + migrasi config di core (`622355e`)
@@ -1685,4 +1687,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: edef1c129556aa7195f7b34a5b6bac28c6b11e2d -->
+<!-- changelog-upto: 73358970ef2ef157eb50a56a7ae870f98321d5ef -->
