@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **resumeHistory** — tampilkan diff field sebagai tabel (Field/Sebelum/Sesudah + badge tambah-hapus) (`a8188f4`)
 - **ui** — urutkan daftar fitur popup & sidepanel abjad (locale Indonesia) (`a98810a`)
 - **print** — cetak otomatis berkas M-KLAIM — hanya section berisi, tiap dokumen pas 1 lembar A4 (tanpa checkbox) (`79cc8b9`)
 
@@ -22,6 +23,10 @@
 - **ri** — cari resume ID + form RI dari /rekam-medik endpoint + perbaiki log skala printSections (`edef1c1`)
 - **resume** — kembalikan resumeTab ke endpoint lama + retry/error dialog untuk RJ & RI (`d696c62`)
 - **gate** — toggle OFF kini berlaku untuk semua fitur — storage-gate untuk 13 file IIFE/auto-run + injeksi init.ts + migrasi config di core (`622355e`)
+
+### ♻️ refactor
+
+- **printSections** — hapus fitur optimasi cetak klaim (M-KLAIM) (`8a1465a`)
 
 ### 📌 misc
 
@@ -1688,4 +1693,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 486485b9b4fe6cdeb43bd8c0466b6bc5c4d2aba3 -->
+<!-- changelog-upto: a8188f430141d8795bcab07805004bc38af82dfe -->
