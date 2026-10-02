@@ -11,10 +11,12 @@
 
 ### 🐛 fix
 
+- **antrolKirim** — extractDisplayRows tidak pernah jalan di produksi (W-7.18) (`4cd1b29`)
 - **antrolKirim** — auto_cap ikut dikirim; done_by jadi metadata audit (`57cde49`)
 
 ### 🧹 chore
 
+- sync CHANGELOG (`cde829d`)
 - sync CHANGELOG + build dist (manifest 1.5.127) (`6342334`)
 
 ## 2026-10-01
@@ -1711,4 +1713,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 63423343dac48400174093bb606f208db4526487 -->
+<!-- changelog-upto: 4cd1b29f8379f9d7418961df4ab8b42d7bc0d2ea -->
