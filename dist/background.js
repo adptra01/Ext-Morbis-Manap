@@ -225,6 +225,12 @@ var __morbis_bg = (() => {
         name: "Export Pre-op & Revisi (M-KLAIM)",
         description: "Export PDF Pre-op & Revisi mengikuti filter halaman klaim (data DB pusat)"
       },
+      laporanLinks: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Tautan Laporan Pre-op & Revisi (M-KLAIM)",
+        description: "Tombol buka laporan Pre-op & Revisi BPJS di Reports dengan filter form terbawa"
+      },
       billingFilterPersistence: {
         enabled: true,
         allowedRoles: ["kasir", "casemix"],

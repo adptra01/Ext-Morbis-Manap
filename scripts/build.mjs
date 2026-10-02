@@ -89,6 +89,7 @@ async function compileFeatureFiles() {
     'mKlaimPreOp.ts',
     'mKlaimVerifLog.ts',
     'mKlaimCasemixExport.ts',
+    'mKlaimLaporanLinks.ts',
     'mKlaimBulkVerif.ts',
     'fetchWatchdog.ts',
   ];

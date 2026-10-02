@@ -84,6 +84,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'admin'],
   },
   {
+    key: 'laporanLinks',
+    name: 'Tautan Laporan Pre-op & Revisi',
+    desc: 'Tombol buka laporan di Reports dengan filter terbawa',
+    roles: ['casemix', 'admin'],
+  },
+  {
     key: 'antrianTools',
     name: 'Antrian Tools',
     desc: 'Penomoran unik per loket (L1-001) + auto cetak',
