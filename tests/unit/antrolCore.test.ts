@@ -22,6 +22,40 @@ describe('antrolCore — ekstraksi baris display', () => {
     expect(extractDisplayRows({ status: 'ok', queues: 'x' } as never)).toEqual([]);
   });
 
+  it('menerima bentuk NYATA display Reports (tanpa field status)', () => {
+    // Regresi: payload live tidak punya `status`; sebelumnya guard
+    // `data.status !== 'ok'` membuat extractDisplayRows selalu [] → watcher
+    // tidak pernah jalan di produksi.
+    const payload = {
+      tanggal: '2026-10-01',
+      current: [],
+      waiting: [],
+      called: [],
+      queues: [
+        {
+          queue_number: 'T-127',
+          resep_id: '219648',
+          nama_pasien: 'ZUAIRIYAH',
+          status: 'DONE',
+          done_by: 'manual',
+        },
+      ],
+      history: [],
+      counters: {},
+      signal: '1790875332:c0cb7645ede3a3283b0a9aa1ce04a1b9',
+    };
+    const rows = extractDisplayRows(payload as never);
+    expect(rows).toEqual([
+      {
+        queue_number: 'T-127',
+        resep_id: '219648',
+        nama_pasien: 'ZUAIRIYAH',
+        status: 'DONE',
+        done_by: 'manual',
+      },
+    ]);
+  });
+
   it('mengambil queue_number, resep_id, nama_pasien, status', () => {
     const rows = extractDisplayRows({
       status: 'ok',

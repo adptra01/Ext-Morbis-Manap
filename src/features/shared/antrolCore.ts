@@ -63,9 +63,15 @@ export interface UpdateBulkResult {
 
 /** Ekstrak baris antrian dari payload display. Baris tanpa queue_number
  *  dibuang; resep_id boleh kosong (tetap dilacak statusnya, hanya tak bisa
- *  dikirim). Bukan payload display → []. */
+ *  dikirim). Bukan payload display → [].
+ *
+ *  Bentuk NYATA `GET /api/queue/display` Reports (diverifikasi live
+ *  2026-10-02) = `{tanggal, current, waiting, called, queues, history,
+ *  counters, signal}` — TIDAK ada field `status`. Karena itu guard cukup
+ *  `typeof object` + `queues` array; memaksakan `status === 'ok'` membuat
+ *  watcher tak pernah mengenali satu baris pun di produksi. */
 export function extractDisplayRows(data: AntrolDisplayData | null | undefined): AntrolRow[] {
-  if (!data || typeof data !== 'object' || data.status !== 'ok' || !Array.isArray(data.queues)) {
+  if (!data || typeof data !== 'object' || !Array.isArray(data.queues)) {
     return [];
   }
   const rows: AntrolRow[] = [];

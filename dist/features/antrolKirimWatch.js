@@ -83,7 +83,7 @@ var __morbis_feature = (() => {
   var ANTRL_MAX_ATTEMPTS = 3;
   var ANTRL_FETCH_TIMEOUT_MS = 15e3;
   function extractDisplayRows(data) {
-    if (!data || typeof data !== "object" || data.status !== "ok" || !Array.isArray(data.queues)) {
+    if (!data || typeof data !== "object" || !Array.isArray(data.queues)) {
       return [];
     }
     const rows = [];
