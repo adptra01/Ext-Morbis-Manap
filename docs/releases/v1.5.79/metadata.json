@@ -1,0 +1,9 @@
+{
+  "extension": "morbis",
+  "version": "1.5.79",
+  "git_commit": "5893b3e7b4fe5f81724b138542574adf3201f55e",
+  "sha256": "1d5bba33b42a56c6f3c6a3546b597680238a40ed36937df1cb40ce53ff7f6e29",
+  "build_id": "run-36453803284",
+  "channel": "production",
+  "released_at": "2026-09-28T16:50:36.422Z"
+}

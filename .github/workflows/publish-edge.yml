@@ -1,0 +1,236 @@
+name: Publish to Edge Add-ons
+
+# Dipanggil sebagai reusable workflow dari akhir "Deploy dist to main"
+# (push token tak memicu workflow_run — rantai event antar-workflow mati).
+# Tetap bisa manual (dispatch) untuk validasi/publish ulang.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    # Tanpa job-if: dipanggil dari deploy-to-main (event push) atau manual
+    # (dispatch). Gerbang skip ada di step preflight (secrets) + guard (versi).
+    runs-on: ubuntu-24.04
+    env:
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+      EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      # Preflight: tanpa secrets → lewati halus (bukan merah). Dipanggil
+      # dari deploy-to-main; manual tanpa secrets lanjut agar galat eksplisit.
+      - name: Preflight secrets
+        id: pre
+        env:
+          HAS_SECRETS: ${{ secrets.EDGE_API_KEY != '' }}
+        run: |
+          if [ "$HAS_SECRETS" != "true" ]; then
+            echo "SKIP=true" >> $GITHUB_OUTPUT
+            echo "::notice::Secrets Edge (EDGE_CLIENT_ID/API_KEY/PRODUCT_ID) belum dipasang — lewati publish. Pasang lalu dispatch manual."
+          else
+            echo "SKIP=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create extension zip
+        if: steps.pre.outputs.SKIP != 'true'
+        run: |
+          test -f manifest.json || { echo "::error::bukan bit main (manifest.json hilang)"; exit 1; }
+          VERSION=$(jq -r .version manifest.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Versi paket: $VERSION"
+          # Hanya file paket extension: docs/*.bat/*.md tidak ikut ke Store.
+          zip -r "morbis-ext-v${VERSION}.zip" . -x '.git/*' '.github/*' 'docs/*' '*.bat' '*.md' '.gitignore'
+          echo "ZIP=morbis-ext-v${VERSION}.zip" >> $GITHUB_ENV
+
+      # Gerbang 1 — kebersihan paket (syarat sertifikasi Edge).
+      - name: Secret & manifest scan gate
+        if: steps.pre.outputs.SKIP != 'true'
+        run: |
+          echo "== manifest =="
+          jq -e '.manifest_version == 3' manifest.json > /dev/null
+          test "$(jq -r '.browser_specific_settings // empty' manifest.json)" = "" \
+            || { echo "::error::blok Firefox bocor ke paket Store"; exit 1; }
+          echo "== string terlarang di zip =="
+          if unzip -p "$ZIP" | grep -a -E -o 'morbis-antrian-relay|translate\.google\.com/translate_tts|api\.telegram\.org|TELEGRAM_BOT_TOKEN' | sort -u | tee /tmp/hits | grep -q .; then
+            echo "::error::string terlarang di paket:"; cat /tmp/hits; exit 1
+          fi
+          echo "Gerbang bersih."
+
+      # Gerbang 2 — lewati bila versi ini sudah pernah disubmit (aturan Edge:
+      # versi duplikat ditolak; skip = sukses tanpa antre sertifikasi sia-sia).
+      - name: Skip if version already submitted
+        id: guard
+        if: steps.pre.outputs.SKIP != 'true'
+        run: |
+          LIST=$(curl -s \
+            -H "Authorization: ApiKey $EDGE_API_KEY" \
+            -H "X-ClientID: $EDGE_CLIENT_ID" \
+            -X GET \
+            "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions") || LIST=""
+          echo "Daftar submission (ringkas): $(echo "$LIST" | grep -oP '"version"\s*:\s*"[^"]+"[^}]{0,120}' | head -5)"
+          echo "Mentah list (400 char): $(echo "$LIST" | head -c 400)"
+          # Catatan: endpoint list me-return 404 di API ini → guard advisory
+          # saja (fail-open). Proteksi duplikat mengandalkan penolakan versi
+          # dari Microsoft saat upload/publish.
+          if [ -n "$LIST" ] && echo "$LIST" | grep -q "\"version\"[ ]*:[ ]*\"$VERSION\""; then
+            echo "SKIP=true" >> $GITHUB_OUTPUT
+            echo "::notice::Versi $VERSION sudah ada di Store — lewati submit."
+          else
+            echo "SKIP=false" >> $GITHUB_OUTPUT
+            echo "Versi $VERSION belum disubmit — lanjut."
+          fi
+
+      - name: Upload package to Edge
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
+        id: upload
+        run: |
+          RESPONSE=$(curl -s -D /tmp/edge-hdrs.txt -w "\n%{http_code}" \
+            -H "Authorization: ApiKey $EDGE_API_KEY" \
+            -H "X-ClientID: $EDGE_CLIENT_ID" \
+            -H "Content-Type: application/zip" \
+            -X POST \
+            -T "$ZIP" \
+            "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1 | tr -d "[:space:]")
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY"
+
+          if [ "$HTTP_CODE" != "202" ]; then
+            echo "::error::Upload failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+          # operationId bisa di body ATAU header Location (bash -e: grep
+          # tanpa hasil = exit 1 diam-diam → tangkap + diagnostik jelas).
+          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+' || true)
+          if [ -z "$LOCATION" ]; then
+            LOCATION=$(grep -ai -oP '(?:operation-)?location:\s*\K\S+' /tmp/edge-hdrs.txt | head -1 || true)
+          fi
+          if [ -z "$LOCATION" ]; then
+            echo "::error::Upload 202 tanpa operationId. Body: $(echo "$BODY" | head -c 300)"
+            echo "::error::Headers: $(head -c 300 /tmp/edge-hdrs.txt)"
+            exit 1
+          fi
+          echo "operation_id=$LOCATION" >> $GITHUB_OUTPUT
+          case "$LOCATION" in
+            http*) STATUS_URL="$LOCATION" ;;
+            *) STATUS_URL="https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package/operations/$LOCATION" ;;
+          esac
+          echo "status_url=$STATUS_URL" >> $GITHUB_OUTPUT
+          echo "Upload accepted, operation: $LOCATION"
+
+      - name: Wait for upload processing
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
+        run: |
+          MAX_RETRIES=30
+          RETRY=0
+          STATUS=""
+
+          while [ $RETRY -lt $MAX_RETRIES ] && [ "$STATUS" != "Succeeded" ]; do
+            sleep 5
+            RETRY=$((RETRY + 1))
+
+            RESPONSE=$(curl -s \
+              -H "Authorization: ApiKey $EDGE_API_KEY" \
+              -H "X-ClientID: $EDGE_CLIENT_ID" \
+              -X GET \
+              "${{ steps.upload.outputs.status_url }}")
+
+            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+' || true)
+            echo "[$RETRY/$MAX_RETRIES] Status: $STATUS"
+
+            if [ "$STATUS" = "Failed" ]; then
+              echo "::error::Upload processing failed"
+              echo "$RESPONSE"
+              exit 1
+            fi
+          done
+
+          if [ "$STATUS" != "Succeeded" ]; then
+            echo "::error::Timeout waiting for upload"
+            exit 1
+          fi
+
+      - name: Publish submission
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
+        id: publish
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          test -n "$SHA" || SHA="${{ github.sha }}"
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: ApiKey $EDGE_API_KEY" \
+            -H "X-ClientID: $EDGE_CLIENT_ID" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"notes\":\"Auto-publish v$VERSION dari main @$SHA — Product ID $EDGE_PRODUCT_ID\"}" \
+            "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1 | tr -d "[:space:]")
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY"
+
+          if [ "$HTTP_CODE" != "202" ]; then
+            echo "::error::Publish failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+' || true)
+          if [ -z "$LOCATION" ]; then
+            LOCATION=$(grep -ai -oP '(?:operation-)?location:\s*\K\S+' /tmp/edge-hdrs.txt | head -1 || true)
+          fi
+          if [ -z "$LOCATION" ]; then
+            echo "::error::Publish 202 tanpa operationId. Body: $(echo "$BODY" | head -c 300)"
+            exit 1
+          fi
+          # Header Location bisa berupa URL status penuh atau ID saja.
+          case "$LOCATION" in
+            http*) STATUS_URL="$LOCATION" ;;
+            *) STATUS_URL="https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/operations/$LOCATION" ;;
+          esac
+          echo "status_url=$STATUS_URL" >> $GITHUB_OUTPUT
+          echo "Publish accepted: $STATUS_URL"
+
+      # Catatan API: tidak ada endpoint status-publish yang valid untuk
+      # dipoll (GET .../submissions -> 404; URL operasi dari header Location
+      # juga 404 persisten). Sertifikasi makan waktu berhari-hari — CI tidak
+      # bisa menunggu itu. Yang diverifikasi CI: paket valid (upload
+      # Succeeded) + publish DITERIMA (202). Cek singkat di bawah hanya
+      # menangkap penolakan cepat; status akhir di Partner Center.
+      - name: Wait for publishing (sanity check)
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
+        run: |
+          for i in 1 2 3 4 5 6; do
+            sleep 10
+            RESP=$(curl -s -w "\n%{http_code}" \
+              -H "Authorization: ApiKey $EDGE_API_KEY" \
+              -H "X-ClientID: $EDGE_CLIENT_ID" \
+              -X GET \
+              "${{ steps.publish.outputs.status_url }}")
+            CODE=$(echo "$RESP" | tail -1 | tr -d "[:space:]")
+            RESPONSE=$(echo "$RESP" | sed '$d')
+            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+' || true)
+            echo "[$i/6] HTTP=$CODE Status: $STATUS"
+            if [ "$STATUS" = "Failed" ]; then
+              echo "::error::Publishing failed"
+              echo "$RESPONSE" | head -c 1000
+              exit 1
+            fi
+            if [ "$STATUS" = "Succeeded" ]; then
+              echo "Publish operation selesai."
+              break
+            fi
+          done
+          echo "Submission diterima Microsoft (HTTP 202). Status sertifikasi (±7 hari kerja) pantau di Partner Center."
