@@ -9,6 +9,10 @@
 
 ## 2026-10-02
 
+### ✨ feat
+
+- **laporanLinks** — tombol buka laporan Pre-op & Revisi BPJS di Reports (W-7.19) (`33a8ada`)
+
 ### 🐛 fix
 
 - **antrolKirim** — extractDisplayRows tidak pernah jalan di produksi (W-7.18) (`4cd1b29`)
@@ -16,6 +20,7 @@
 
 ### 🧹 chore
 
+- sync CHANGELOG (`63fc372`)
 - sync CHANGELOG (`cde829d`)
 - sync CHANGELOG + build dist (manifest 1.5.127) (`6342334`)
 
@@ -1713,4 +1718,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4cd1b29f8379f9d7418961df4ab8b42d7bc0d2ea -->
+<!-- changelog-upto: 33a8adaa308fa103f11321e7320764782f7e32c2 -->
