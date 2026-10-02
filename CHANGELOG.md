@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- **laporanLinks** — tombol buka laporan Pre-op & Revisi BPJS di Reports (W-7.19) (`33a8ada`)
+- **laporanLinks** — tombol buka laporan Pre-op & Revisi BPJS di Reports (W-7.19) (`0d37acc`)
 
 ### 🐛 fix
 
@@ -20,6 +20,7 @@
 
 ### 🧹 chore
 
+- sync CHANGELOG (`bbb2058`)
 - sync CHANGELOG (`63fc372`)
 - sync CHANGELOG (`cde829d`)
 - sync CHANGELOG + build dist (manifest 1.5.127) (`6342334`)
@@ -1718,4 +1719,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 33a8adaa308fa103f11321e7320764782f7e32c2 -->
+<!-- changelog-upto: bbb2058a504c9ba23388dab9b3810e719035a6ca -->

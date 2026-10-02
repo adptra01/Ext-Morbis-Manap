@@ -85,8 +85,8 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
   },
   {
     key: 'laporanLinks',
-    name: 'Tautan Laporan Pre-op & Revisi',
-    desc: 'Tombol buka laporan di Reports dengan filter terbawa',
+    name: 'Tautan Laporan Klaim BPJS',
+    desc: 'Tombol buka laporan gabungan Pre-op & Revisi di Reports dengan filter terbawa',
     roles: ['casemix', 'admin'],
   },
   {

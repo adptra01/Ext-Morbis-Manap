@@ -21,12 +21,9 @@ var __morbis_feature = (() => {
   // src/features/mKlaimLaporanLinks.ts
   var mKlaimLaporanLinks_exports = {};
   __export(mKlaimLaporanLinks_exports, {
-    LAPORAN_PREOP_PATH: () => LAPORAN_PREOP_PATH,
-    LAPORAN_REVISI_PATH: () => LAPORAN_REVISI_PATH,
-    buildPreOpParams: () => buildPreOpParams,
-    buildPreOpUrl: () => buildPreOpUrl,
-    buildRevisiParams: () => buildRevisiParams,
-    buildRevisiUrl: () => buildRevisiUrl,
+    LAPORAN_KLAIM_PATH: () => LAPORAN_KLAIM_PATH,
+    buildKlaimParams: () => buildKlaimParams,
+    buildKlaimUrl: () => buildKlaimUrl,
     initLaporanLinks: () => initLaporanLinks,
     injectLaporanButtons: () => injectLaporanButtons,
     toIsoDate: () => toIsoDate
@@ -518,8 +515,7 @@ var __morbis_feature = (() => {
 
   // src/features/mKlaimLaporanLinks.ts
   var g2 = getMorbisGlobals();
-  var LAPORAN_PREOP_PATH = "/laporan-pre-op";
-  var LAPORAN_REVISI_PATH = "/laporan-revisi-bpjs";
+  var LAPORAN_KLAIM_PATH = "/laporan-klaim-bpjs";
   function cleanFilterValue(v) {
     const t = String(v ?? "").trim();
     if (t === "undefined" || t === "null" || t === "NaN") return "";
@@ -543,7 +539,7 @@ var __morbis_feature = (() => {
     const v = cleanFilterValue(value);
     if (v !== "") params.set(key, v);
   }
-  function buildPreOpParams(filter) {
+  function buildKlaimParams(filter) {
     const params = new URLSearchParams();
     const mulai = toIsoDate(filter.tanggalAwal);
     const selesai = toIsoDate(filter.tanggalAkhir);
@@ -552,30 +548,29 @@ var __morbis_feature = (() => {
     setParam(params, "norm", filter.norm);
     setParam(params, "nama", filter.nama);
     setParam(params, "no_reg", filter.reg);
-    return params;
-  }
-  function buildRevisiParams(filter) {
-    const params = new URLSearchParams();
-    const mulai = toIsoDate(filter.tanggalAwal);
-    const selesai = toIsoDate(filter.tanggalAkhir);
-    if (mulai !== "") params.set("tanggal_mulai", mulai);
-    if (selesai !== "") params.set("tanggal_selesai", selesai);
-    setParam(params, "norm", filter.norm);
-    setParam(params, "nama", filter.nama);
     setParam(params, "poli", filter.poli || filter.idPoli);
     const st = cleanFilterValue(filter.status).toLowerCase();
     if (st === "pending" || st === "saved") params.set("status", st);
     return params;
   }
-  function buildPreOpUrl(base, filter) {
-    const qs = buildPreOpParams(filter).toString();
-    return base.replace(/\/+$/, "") + LAPORAN_PREOP_PATH + (qs ? "?" + qs : "");
+  function buildKlaimUrl(base, filter) {
+    const qs = buildKlaimParams(filter).toString();
+    return base.replace(/\/+$/, "") + LAPORAN_KLAIM_PATH + (qs ? "?" + qs : "");
   }
-  function buildRevisiUrl(base, filter) {
-    const qs = buildRevisiParams(filter).toString();
-    return base.replace(/\/+$/, "") + LAPORAN_REVISI_PATH + (qs ? "?" + qs : "");
+  function emptyFilter() {
+    return {
+      tanggalAwal: "",
+      tanggalAkhir: "",
+      norm: "",
+      nama: "",
+      reg: "",
+      billing: "",
+      status: "",
+      idPoli: "",
+      poli: ""
+    };
   }
-  function openLaporan(kind) {
+  function openLaporan() {
     let base;
     try {
       base = resolveCasemixBase();
@@ -587,20 +582,10 @@ var __morbis_feature = (() => {
     try {
       filter = readKlaimFilter();
     } catch {
-      filter = {
-        tanggalAwal: "",
-        tanggalAkhir: "",
-        norm: "",
-        nama: "",
-        reg: "",
-        billing: "",
-        status: "",
-        idPoli: "",
-        poli: ""
-      };
+      filter = emptyFilter();
     }
-    const url = kind === "preop" ? buildPreOpUrl(base, filter) : buildRevisiUrl(base, filter);
-    window.console.info("[mKlaimLaporanLinks] buka laporan \u2192", url);
+    const url = buildKlaimUrl(base, filter);
+    window.console.info("[mKlaimLaporanLinks] buka laporan klaim \u2192", url);
     window.open(url, "_blank", "noopener");
   }
   function makeLinkButton(id, label, title, refBtn, onClick) {
@@ -627,32 +612,23 @@ var __morbis_feature = (() => {
     return btn;
   }
   function injectLaporanButtons() {
-    if (document.getElementById("ext-laporan-preop-btn")) return;
+    if (document.getElementById("ext-laporan-klaim-btn")) return;
     const exportBtn = document.getElementById("ext-casemix-export-btn");
     const anchor = exportBtn?.parentNode ? exportBtn : null;
     const refBtn = document.getElementById("ext-casemix-export-btn") || document.querySelector('button[onclick*="loadTableExcel"]');
-    const btnPreOp = makeLinkButton(
-      "ext-laporan-preop-btn",
-      "Laporan Pre-op",
-      "Buka laporan Pre-op di Reports (filter form ikut terbawa, bisa cari/filter sendiri)",
+    const btnKlaim = makeLinkButton(
+      "ext-laporan-klaim-btn",
+      "Laporan Klaim BPJS",
+      "Buka laporan Pre-op & Revisi Klaim BPJS di Reports (filter form ikut terbawa, bisa pilih jenis di sana)",
       refBtn,
-      () => openLaporan("preop")
-    );
-    const btnRevisi = makeLinkButton(
-      "ext-laporan-revisi-btn",
-      "Laporan Revisi BPJS",
-      "Buka laporan Revisi Klaim BPJS di Reports (filter form ikut terbawa, bisa cari/filter sendiri)",
-      refBtn,
-      () => openLaporan("revisi")
+      () => openLaporan()
     );
     if (anchor?.parentNode) {
-      anchor.parentNode.insertBefore(btnPreOp, anchor.nextSibling);
-      anchor.parentNode.insertBefore(btnRevisi, btnPreOp.nextSibling);
+      anchor.parentNode.insertBefore(btnKlaim, anchor.nextSibling);
     } else {
       const table = document.querySelector("table");
       if (table?.parentNode) {
-        table.parentNode.insertBefore(btnRevisi, table);
-        table.parentNode.insertBefore(btnPreOp, btnRevisi);
+        table.parentNode.insertBefore(btnKlaim, table);
       }
     }
   }
@@ -670,8 +646,8 @@ var __morbis_feature = (() => {
   if (typeof g2.featureModules !== "undefined") {
     g2.featureModules.laporanLinks = {
       id: "laporanLinks",
-      name: "Tautan Laporan Pre-op & Revisi (M-KLAIM)",
-      description: "Tombol buka laporan Pre-op & Revisi BPJS di Reports dengan filter form terbawa",
+      name: "Tautan Laporan Klaim BPJS (M-KLAIM)",
+      description: "Tombol buka laporan gabungan Pre-op & Revisi BPJS di Reports dengan filter form terbawa",
       match: {
         oneOf: [
           { pathname: "/v2/m-klaim" },

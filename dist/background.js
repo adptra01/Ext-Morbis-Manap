@@ -228,8 +228,8 @@ var __morbis_bg = (() => {
       laporanLinks: {
         enabled: true,
         allowedRoles: ["casemix", "admin"],
-        name: "Tautan Laporan Pre-op & Revisi (M-KLAIM)",
-        description: "Tombol buka laporan Pre-op & Revisi BPJS di Reports dengan filter form terbawa"
+        name: "Tautan Laporan Klaim BPJS (M-KLAIM)",
+        description: "Tombol buka laporan gabungan Pre-op & Revisi BPJS di Reports dengan filter form terbawa"
       },
       billingFilterPersistence: {
         enabled: true,
