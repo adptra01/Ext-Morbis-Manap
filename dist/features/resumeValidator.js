@@ -1338,19 +1338,37 @@ var __morbis_feature = (() => {
     }
     return out;
   }
-  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
+  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch, resolveIdentity) {
     const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
     if (!store) return res;
     try {
       const map = loadPreOpMap(store);
       const migrated = loadMigratedIds(store);
       const pending = collectPreOpPending(map, migrated);
+      let ident = /* @__PURE__ */ new Map();
+      if (pending.length > 0 && resolveIdentity) {
+        try {
+          const rows = await resolveIdentity(pending) ?? [];
+          ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
+        } catch {
+        }
+      }
       for (const id of pending) {
         const item = map[id];
         if (!item) continue;
+        const info = ident.get(id);
         const ok = await postCentral(
           "/api/casemix/pre-op/toggle",
-          { id_visit: id, marked: true },
+          {
+            id_visit: id,
+            marked: true,
+            norm: info?.norm ?? null,
+            nama: info?.nama ?? null,
+            no_reg: info?.noReg ?? null,
+            visit_datetime: info?.visitDatetime ?? null,
+            poli: info?.poli ?? null,
+            user: info?.user ?? null
+          },
           fetcher
         );
         if (!ok) {
@@ -1444,14 +1462,16 @@ var __morbis_feature = (() => {
     return res;
   }
   var _backfillTimer = null;
-  function initCasemixBackfill() {
+  var _backfillResolver;
+  function initCasemixBackfill(resolver) {
+    if (resolver) _backfillResolver = resolver;
     if (_backfillTimer !== null) return;
     const tick = () => {
       try {
         if (document.hidden) return;
       } catch {
       }
-      void runCasemixBackfill().catch(() => {
+      void runCasemixBackfill(void 0, void 0, _backfillResolver).catch(() => {
       });
     };
     window.setTimeout(tick, 5e3);

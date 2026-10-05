@@ -1,4 +1,4 @@
-import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, i as Select, l as X, m as Switch, n as Button, o as SelectItem, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-DY9FHoM7.js";
+import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, i as Select, l as X, m as Switch, n as Button, o as SelectItem, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-CTJMvF44.js";
 //#region src/popup/StatusCard.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_client = require_client();

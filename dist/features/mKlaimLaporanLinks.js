@@ -22,14 +22,9 @@ var __morbis_feature = (() => {
   var mKlaimLaporanLinks_exports = {};
   __export(mKlaimLaporanLinks_exports, {
     LAPORAN_KLAIM_PATH: () => LAPORAN_KLAIM_PATH,
-    buildKlaimParams: () => buildKlaimParams,
-    buildKlaimUrl: () => buildKlaimUrl,
+    buildLaporanUrl: () => buildLaporanUrl,
     initLaporanLinks: () => initLaporanLinks,
-    injectLaporanButtons: () => injectLaporanButtons,
-    readKlaimFilter: () => readKlaimFilter,
-    readPoliName: () => readPoliName,
-    resolveLaporanFilter: () => resolveLaporanFilter,
-    toIsoDate: () => toIsoDate
+    injectLaporanButtons: () => injectLaporanButtons
   });
 
   // src/features/shared/types.ts
@@ -175,145 +170,9 @@ var __morbis_feature = (() => {
 
   // src/features/mKlaimLaporanLinks.ts
   var g = getMorbisGlobals();
-  var FILTER_KEYS = [
-    ["tanggalAwal", ["tanggalAwal"]],
-    ["tanggalAkhir", ["tanggalAkhir"]],
-    ["norm", ["norm"]],
-    ["nama", ["nama"]],
-    ["reg", ["reg"]],
-    ["billing", ["billing"]],
-    ["status", ["status"]],
-    ["idPoli", ["id_poli_cari", "idPoli"]],
-    ["poli", ["poli_cari", "poli"]]
-  ];
-  function readKlaimFilter(doc = document) {
-    const qs = new URLSearchParams(window.location.search);
-    const out = {};
-    for (const [key, names] of FILTER_KEYS) {
-      let v = "";
-      for (const n of names) {
-        const el = doc.getElementById(n);
-        if (el?.value !== void 0 && el.value !== "") {
-          v = el.value;
-          break;
-        }
-        const byName = doc.querySelector(`[name="${n}"]`);
-        if (byName?.value !== void 0 && byName.value !== "") {
-          v = byName.value;
-          break;
-        }
-      }
-      if (!v) {
-        for (const n of names) {
-          const q = qs.get(n);
-          if (q !== null && q !== "" && q !== "undefined") {
-            v = q;
-            break;
-          }
-        }
-      }
-      out[key] = v;
-    }
-    return out;
-  }
   var LAPORAN_KLAIM_PATH = "/laporan-klaim-bpjs";
-  function cleanFilterValue(v) {
-    const t = String(v ?? "").trim();
-    if (t === "undefined" || t === "null" || t === "NaN") return "";
-    return t;
-  }
-  function toIsoDate(v) {
-    const dmy = /^(\d{2})[/-](\d{2})[/-](\d{4})$/.exec((v || "").trim());
-    if (dmy) {
-      const d = Number(dmy[1]);
-      const m = Number(dmy[2]);
-      const y = Number(dmy[3]);
-      const dt = new Date(Date.UTC(y, m - 1, d));
-      const valid = dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
-      if (!valid) return "";
-      return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    }
-    if (/^\d{4}-\d{2}-\d{2}$/.test((v || "").trim())) return v.trim();
-    return "";
-  }
-  function setParam(params, key, value) {
-    const v = cleanFilterValue(value);
-    if (v !== "") params.set(key, v);
-  }
-  function readUnitSelect(doc) {
-    try {
-      const sel = doc.querySelector?.("select#id_poli_cari, #id_poli_cari");
-      if (!sel) return null;
-      const value = (sel.value ?? "").trim();
-      const opt = sel.selectedOptions?.[0];
-      const text = (opt?.textContent ?? opt?.text ?? "").trim();
-      return { value, text };
-    } catch {
-      return null;
-    }
-  }
-  function isUnitPlaceholder(value, text) {
-    if (value === "") return true;
-    if (/pilih\s*unit/i.test(text)) return true;
-    if (/^semua$/i.test(text)) return true;
-    return false;
-  }
-  function readPoliName(doc = document) {
-    const unit = readUnitSelect(doc);
-    if (!unit || isUnitPlaceholder(unit.value, unit.text)) return "";
-    return unit.text;
-  }
-  function resolveLaporanFilter(doc = document) {
-    let filter;
-    try {
-      filter = readKlaimFilter(doc);
-    } catch {
-      filter = emptyFilter();
-    }
-    try {
-      const unit = readUnitSelect(doc);
-      if (unit !== null) {
-        if (isUnitPlaceholder(unit.value, unit.text)) {
-          filter = { ...filter, poli: "", idPoli: "" };
-        } else {
-          filter = { ...filter, poli: unit.text, idPoli: unit.value };
-        }
-      }
-    } catch {
-    }
-    return filter;
-  }
-  function buildKlaimParams(filter) {
-    const params = new URLSearchParams();
-    const mulai = toIsoDate(filter.tanggalAwal);
-    const selesai = toIsoDate(filter.tanggalAkhir);
-    if (mulai !== "") params.set("tanggal_mulai", mulai);
-    if (selesai !== "") params.set("tanggal_selesai", selesai);
-    setParam(params, "norm", filter.norm);
-    setParam(params, "nama", filter.nama);
-    setParam(params, "no_reg", filter.reg);
-    setParam(params, "poli", filter.poli);
-    setParam(params, "id_poli", filter.idPoli);
-    const st = cleanFilterValue(filter.status).toLowerCase();
-    if (st === "pending" || st === "saved") params.set("status", st);
-    return params;
-  }
-  function buildKlaimUrl(base, filter) {
-    const qs = buildKlaimParams(filter).toString();
-    return base.replace(/\/+$/, "") + LAPORAN_KLAIM_PATH + (qs ? "?" + qs : "");
-  }
-  function emptyFilter() {
-    return {
-      tanggalAwal: "",
-      tanggalAkhir: "",
-      norm: "",
-      nama: "",
-      reg: "",
-      billing: "",
-      status: "",
-      idPoli: "",
-      poli: ""
-    };
+  function buildLaporanUrl(base) {
+    return base.replace(/\/+$/, "") + LAPORAN_KLAIM_PATH;
   }
   function openLaporan() {
     const w = window.open("about:blank", "_blank");
@@ -321,14 +180,8 @@ var __morbis_feature = (() => {
       window.alert("Popup diblokir \u2014 izinkan popup untuk halaman ini lalu ulangi.");
       return;
     }
-    let filter;
-    try {
-      filter = resolveLaporanFilter(document);
-    } catch {
-      filter = emptyFilter();
-    }
     void Promise.resolve().then(() => ensureCasemixBase()).then((base) => {
-      const url = buildKlaimUrl(base, filter);
+      const url = buildLaporanUrl(base);
       window.console.info("[mKlaimLaporanLinks] buka laporan klaim \u2192", url);
       w.location.href = url;
     }).catch(() => {
@@ -374,7 +227,7 @@ var __morbis_feature = (() => {
     const btnKlaim = makeLinkButton(
       "ext-laporan-klaim-btn",
       "Laporan Klaim BPJS",
-      "Buka laporan Pre-op & Revisi Klaim BPJS di Reports (filter form ikut terbawa, bisa pilih jenis di sana)",
+      "Buka laporan Pre-op & Revisi Klaim BPJS di Reports (halaman polos, filter diisi sendiri di sana)",
       refBtn,
       () => openLaporan()
     );
@@ -402,7 +255,7 @@ var __morbis_feature = (() => {
     g.featureModules.laporanLinks = {
       id: "laporanLinks",
       name: "Tautan Laporan Klaim BPJS (M-KLAIM)",
-      description: "Tombol buka laporan gabungan Pre-op & Revisi BPJS di Reports dengan filter form terbawa",
+      description: "Tombol buka laporan gabungan Pre-op & Revisi BPJS di Reports (halaman polos)",
       match: {
         oneOf: [
           { pathname: "/v2/m-klaim" },

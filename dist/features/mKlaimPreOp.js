@@ -351,14 +351,16 @@ var __morbis_feature = (() => {
       {
         id_visit: idVisit,
         marked,
-        // Identitas pasien (norm/nama/no_reg) SELALU dikirim bila diketahui:
-        // halaman laporan Reports menampilkannya sebagai kolom, dan server
-        // hanya menimpa field yang non-null (tidak menghapus data baik).
+        // Identitas pasien SELALU dikirim bila diketahui (norm/nama/no_reg/
+        // visit_datetime/poli): halaman laporan Reports menampilkannya
+        // sebagai kolom, dan server hanya menimpa field yang non-null —
+        // kiriman sebagian/gagal TIDAK menghapus data baik yang sudah ada.
         norm: info.norm ?? null,
         nama: info.nama ?? null,
         no_reg: info.noReg ?? null,
         user: info.user ?? null,
-        visit_datetime: info.visitDatetime ?? null
+        visit_datetime: info.visitDatetime ?? null,
+        poli: info.poli ?? null
       },
       fetcher
     );
@@ -563,19 +565,37 @@ var __morbis_feature = (() => {
     }
     return out;
   }
-  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
+  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch, resolveIdentity) {
     const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
     if (!store) return res;
     try {
       const map = loadPreOpMap(store);
       const migrated = loadMigratedIds(store);
       const pending = collectPreOpPending(map, migrated);
+      let ident = /* @__PURE__ */ new Map();
+      if (pending.length > 0 && resolveIdentity) {
+        try {
+          const rows = await resolveIdentity(pending) ?? [];
+          ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
+        } catch {
+        }
+      }
       for (const id of pending) {
         const item = map[id];
         if (!item) continue;
+        const info = ident.get(id);
         const ok = await postCentral(
           "/api/casemix/pre-op/toggle",
-          { id_visit: id, marked: true },
+          {
+            id_visit: id,
+            marked: true,
+            norm: info?.norm ?? null,
+            nama: info?.nama ?? null,
+            no_reg: info?.noReg ?? null,
+            visit_datetime: info?.visitDatetime ?? null,
+            poli: info?.poli ?? null,
+            user: info?.user ?? null
+          },
           fetcher
         );
         if (!ok) {
@@ -669,14 +689,16 @@ var __morbis_feature = (() => {
     return res;
   }
   var _backfillTimer = null;
-  function initCasemixBackfill() {
+  var _backfillResolver;
+  function initCasemixBackfill(resolver) {
+    if (resolver) _backfillResolver = resolver;
     if (_backfillTimer !== null) return;
     const tick = () => {
       try {
         if (document.hidden) return;
       } catch {
       }
-      void runCasemixBackfill().catch(() => {
+      void runCasemixBackfill(void 0, void 0, _backfillResolver).catch(() => {
       });
     };
     window.setTimeout(tick, 5e3);
@@ -708,7 +730,9 @@ var __morbis_feature = (() => {
     const merged = {
       norm: visibleInfo?.norm ?? legacy?.norm,
       nama: visibleInfo?.nama ?? legacy?.nama,
-      noReg: visibleInfo?.noReg ?? legacy?.noReg
+      noReg: visibleInfo?.noReg ?? legacy?.noReg,
+      visitDatetime: visibleInfo?.visitDatetime,
+      poli: visibleInfo?.poli
     };
     return infoPresent(merged) ? merged : void 0;
   }
@@ -763,7 +787,7 @@ var __morbis_feature = (() => {
       const need = /* @__PURE__ */ new Set();
       const centralComplete = (id) => {
         const m = central[id];
-        return !!(m && m.norm && m.nama && m.no_reg);
+        return !!(m && m.norm && m.nama && m.no_reg && m.visit_datetime && m.poli);
       };
       for (const id of /* @__PURE__ */ new Set([...Object.keys(local), ...Object.keys(central)])) {
         if (infoPresent(visible.get(id))) continue;
@@ -874,7 +898,7 @@ var __morbis_feature = (() => {
     return null;
   }
   function infoPresent2(i) {
-    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0);
+    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0 || i.visitDatetime !== void 0 || i.poli !== void 0);
   }
   function pickFromObject(o) {
     const get = (...keys) => {
@@ -895,7 +919,8 @@ var __morbis_feature = (() => {
         noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
         visitDatetime: normalizeVisitDatetime(
           get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
-        )
+        ),
+        poli: get("poli", "unit", "unit_kerja", "ruangan", "ruang", "bangsal")
       }
     };
   }
@@ -1170,7 +1195,8 @@ var __morbis_feature = (() => {
     },
     { field: "norm", re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
     { field: "nama", re: /nama(\s*pasien)?/i },
-    { field: "visitDatetime", re: /tanggal\s*kunjungan|waktu\s*kunjungan/i }
+    { field: "visitDatetime", re: /tanggal\s*kunjungan|waktu\s*kunjungan/i },
+    { field: "poli", re: /\bunit\b|\bpoli\b/i }
   ];
   function patientFieldIndexFromHeaders(headers) {
     const out = {};
@@ -1208,7 +1234,8 @@ var __morbis_feature = (() => {
       norm: pick(idx.norm),
       nama: pick(idx.nama),
       noReg: pick(idx.noReg),
-      visitDatetime: rawVisit ? normalizeVisitDatetime(rawVisit) : void 0
+      visitDatetime: rawVisit ? normalizeVisitDatetime(rawVisit) : void 0,
+      poli: pick(idx.poli)
     };
   }
   function guessPatientInfo(cells) {
@@ -1232,7 +1259,7 @@ var __morbis_feature = (() => {
   function extractPatientInfo(row) {
     const cells = Array.from(row.querySelectorAll("td")).map((td) => td.textContent?.trim() ?? "");
     const byHeader = pickPatientInfo(headersOfRow(row), cells);
-    if (byHeader.norm !== void 0 || byHeader.nama !== void 0 || byHeader.noReg !== void 0) {
+    if (byHeader.norm !== void 0 || byHeader.nama !== void 0 || byHeader.noReg !== void 0 || byHeader.visitDatetime !== void 0 || byHeader.poli !== void 0) {
       return byHeader;
     }
     return guessPatientInfo(cells);
@@ -1365,7 +1392,8 @@ var __morbis_feature = (() => {
             nama: info.nama,
             noReg: info.noReg,
             user: readPetugas(),
-            visitDatetime: info.visitDatetime
+            visitDatetime: info.visitDatetime,
+            poli: info.poli
           })
         ).then(settle, settle);
       } catch {
@@ -1460,6 +1488,25 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
+  async function resolveKlaimIdentities(ids, silent = false) {
+    if (!silent) showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM\u2026`, 12e4);
+    const headers = Array.from(document.querySelectorAll("#data-table thead th")).filter((th) => th.getAttribute("data-ext-bv-header") !== "1").map((th) => th.textContent?.trim() ?? "");
+    const rows = await fetchKlaimIdentity(ids, {
+      headers,
+      pick: pickPatientInfo,
+      onProgress: silent ? void 0 : (p) => showSyncToast(
+        `Mencari identitas pasien\u2026 ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
+        12e4
+      )
+    });
+    let user;
+    try {
+      user = readPetugas();
+    } catch {
+    }
+    if (!user) return rows;
+    return rows.map((r) => ({ ...r, info: { ...r.info, user } }));
+  }
   async function syncPreOpNow() {
     if (_syncRunning) return;
     _syncRunning = true;
@@ -1492,6 +1539,7 @@ var __morbis_feature = (() => {
                 nama: info?.nama ?? null,
                 no_reg: info?.noReg ?? null,
                 visit_datetime: info?.visitDatetime ?? null,
+                poli: info?.poli ?? null,
                 user: user ?? null
               }),
               credentials: "omit"
@@ -1517,19 +1565,7 @@ var __morbis_feature = (() => {
         },
         // Tabel hanya merender halaman aktif (DataTables, 10 baris/halaman) →
         // identitas id lain diambil dari endpoint data M-KLAIM yang sama.
-        resolveIdentity: async (ids) => {
-          showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM\u2026`, 12e4);
-          const headers = Array.from(document.querySelectorAll("#data-table thead th")).filter((th) => th.getAttribute("data-ext-bv-header") !== "1").map((th) => th.textContent?.trim() ?? "");
-          const rows = await fetchKlaimIdentity(ids, {
-            headers,
-            pick: pickPatientInfo,
-            onProgress: (p) => showSyncToast(
-              `Mencari identitas pasien\u2026 ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
-              12e4
-            )
-          });
-          return rows;
-        }
+        resolveIdentity: async (ids) => resolveKlaimIdentities(ids)
       });
       try {
         scanAndInjectPreOpButtons();
@@ -1606,7 +1642,7 @@ var __morbis_feature = (() => {
       _booted = true;
       scanAndInjectPreOpButtons();
       refreshCentral();
-      initCasemixBackfill();
+      initCasemixBackfill((ids) => resolveKlaimIdentities(ids, true));
       injectSyncButton();
       if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
       _scanIntervalId = window.setInterval(() => {
