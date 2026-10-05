@@ -57,6 +57,13 @@ export interface SyncDeps {
    * marked:false untuk tanda milik PC lain.
    */
   markMigrated?(ids: string[]): void;
+  /**
+   * Cari identitas (norm/nama/no_reg) untuk id yang barisnya TIDAK ada di
+   * DOM — mis. di halaman DataTables lain atau di luar filter tanggal.
+   * Dipanggil sekali setelah pull. Gagal/melempar → diabaikan (sinkron
+   * tetap jalan seperti biasa, hanya tanpa identitas tambahan).
+   */
+  resolveIdentity?(ids: string[]): Promise<SyncRow[]>;
   now?: number;
 }
 
@@ -173,6 +180,36 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
     offline && !(id in central) ? null : id in central;
   const isMarked = (id: string): boolean =>
     resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
+
+  // 1b. Identitas untuk id yang tak terlihat di DOM: tabel M-KLAIM hanya
+  //     merender halaman aktif, jadi tanpa ini id lain terkirim hanya-id
+  //     dan baris laporan tetap kosong. Hanya id yang ditandai dan belum
+  //     lengkap di pusat (norm+nama+no_reg) yang dicari.
+  if (deps.resolveIdentity) {
+    const need = new Set<string>();
+    const centralComplete = (id: string): boolean => {
+      const m = central[id];
+      return !!(m && m.norm && m.nama && m.no_reg);
+    };
+    for (const id of new Set([...Object.keys(local), ...Object.keys(central)])) {
+      if (infoPresent(visible.get(id))) continue;
+      if (centralComplete(id)) continue;
+      if (!isMarked(id)) continue;
+      need.add(id);
+    }
+    if (need.size > 0) {
+      try {
+        const extra = await deps.resolveIdentity([...need].slice(0, 500));
+        for (const r of extra ?? []) {
+          if (r?.idVisit && infoPresent(r.info) && !infoPresent(visible.get(r.idVisit))) {
+            visible.set(r.idVisit, r.info);
+          }
+        }
+      } catch {
+        /* pencarian identitas gagal — lanjut tanpa */
+      }
+    }
+  }
 
   // 2. Push semua id lokal — identitas dari baris terlihat (segar) atau
   //    warisan versi lama (diperbaiki) bila baris tak terlihat. Server

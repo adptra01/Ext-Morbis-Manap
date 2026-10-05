@@ -18,6 +18,7 @@ import {
   type KVStore as BackfillStore,
 } from './shared/casemixBackfill.js';
 import { syncCasemixNow, type SyncRow } from './shared/casemixSync.js';
+import { fetchKlaimIdentity } from './shared/klaimIdentity.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 import { logUsage } from './shared/usageLog.js';
 
@@ -715,6 +716,25 @@ export async function syncPreOpNow(): Promise<void> {
         } catch {
           /* storage penuh */
         }
+      },
+      // Tabel hanya merender halaman aktif (DataTables, 10 baris/halaman) →
+      // identitas id lain diambil dari endpoint data M-KLAIM yang sama.
+      resolveIdentity: async (ids) => {
+        showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM…`, 120000);
+        // Buang kolom checkbox tambahan BulkVerif: baris respons tak memilikinya.
+        const headers = Array.from(document.querySelectorAll<HTMLElement>('#data-table thead th'))
+          .filter((th) => th.getAttribute('data-ext-bv-header') !== '1')
+          .map((th) => th.textContent?.trim() ?? '');
+        const rows = await fetchKlaimIdentity(ids, {
+          headers,
+          pick: pickPatientInfo,
+          onProgress: (p) =>
+            showSyncToast(
+              `Mencari identitas pasien… ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
+              120000,
+            ),
+        });
+        return rows;
       },
     });
     // Gambar ulang dari map lokal yang baru (sapuan 1,5 dtk juga mengejar).

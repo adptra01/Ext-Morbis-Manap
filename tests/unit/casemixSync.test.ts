@@ -266,3 +266,60 @@ describe('repairLegacyInfo + mergePushInfo (kompatibilitas versi lama)', () => {
     });
   });
 });
+
+describe('syncCasemixNow resolveIdentity (baris di luar DOM)', () => {
+  const central = (m: Record<string, unknown>) => ({ ok: true, marks: m as never });
+
+  it('melengkapi id yang tak terlihat: push lokal + enrich tanda PC lain', async () => {
+    const resolve = vi.fn(async (ids: string[]) =>
+      ids.map((id) => ({
+        idVisit: id,
+        info: { norm: '00' + id, nama: 'N' + id, noReg: 'R' + id },
+      })),
+    );
+    const d = deps({
+      loadLocal: () => localMap(['L1']),
+      fetchMarks: async () => central({ L1: {}, C1: { norm: null, nama: null, no_reg: null } }),
+      fetchRecent: async () => central({ C1: { norm: null, nama: null, no_reg: null } }),
+      resolveIdentity: resolve,
+    });
+    const c = await syncCasemixNow([], d);
+    expect(resolve).toHaveBeenCalledTimes(1);
+    expect((resolve.mock.calls[0][0] as string[]).sort()).toEqual(['C1', 'L1']);
+    // lokal L1 dipush dengan identitas; C1 (milik PC lain) di-enrich
+    expect(d.posts).toContainEqual({
+      id: 'L1',
+      marked: true,
+      info: { norm: '00L1', nama: 'NL1', noReg: 'RL1' },
+    });
+    expect(d.posts).toContainEqual({
+      id: 'C1',
+      marked: true,
+      info: { norm: '00C1', nama: 'NC1', noReg: 'RC1' },
+    });
+    expect(c.enriched).toBe(1);
+  });
+
+  it('tidak mencari id yang sudah lengkap di pusat atau sudah beridentitas di DOM', async () => {
+    const resolve = vi.fn(async () => []);
+    const d = deps({
+      loadLocal: () => localMap(['A', 'B']),
+      fetchMarks: async () => central({ A: { norm: '1', nama: 'X', no_reg: 'R' }, B: {} }),
+      resolveIdentity: resolve,
+    });
+    await syncCasemixNow([{ idVisit: 'B', info: { nama: 'BUDI' } }], d);
+    expect(resolve).not.toHaveBeenCalled();
+  });
+
+  it('resolveIdentity melempar → sinkron tetap jalan', async () => {
+    const d = deps({
+      loadLocal: () => localMap(['A']),
+      resolveIdentity: async () => {
+        throw new Error('boom');
+      },
+    });
+    const c = await syncCasemixNow([], d);
+    expect(c.pushed).toBe(1);
+    expect(c.offline).toBe(false);
+  });
+});
