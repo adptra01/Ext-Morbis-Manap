@@ -318,6 +318,7 @@ var __morbis_feature = (() => {
   var mKlaimTelaah_exports = {};
   __export(mKlaimTelaah_exports, {
     collectDetailPairs: () => collectDetailPairs,
+    detailConfirmMessage: () => detailConfirmMessage,
     detailIdVisit: () => detailIdVisit,
     findDetailFooter: () => findDetailFooter,
     initTelaah: () => initTelaah,
@@ -2303,7 +2304,21 @@ var __morbis_feature = (() => {
   .ext-telaah-btn.ext-telaah-large.active:hover {
     background: #204d74 !important;
   }
-  .ext-telaah-btn:disabled { opacity: 0.6; cursor: wait; }`
+  .ext-telaah-btn:disabled { opacity: 0.6; cursor: wait; }
+  /* Badge di kolom "Status Revisi" \u2014 sama seperti badge PRE-OP, warna teal. */
+  .ext-telaah-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    border-radius: 4px;
+    background: #ccfbf1;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
+    margin-left: 6px;
+    vertical-align: middle;
+  }`
   );
   function detailIdVisit(search) {
     try {
@@ -2314,32 +2329,54 @@ var __morbis_feature = (() => {
       return null;
     }
   }
-  var DETAIL_LABEL_PATTERNS = [
-    { field: "noReg", re: /no\.?\s*reg(istrasi)?\b|no\.?\s*daftar/i },
-    { field: "norm", re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis/i },
-    { field: "nama", re: /nama(\s*pasien)?/i },
-    {
-      field: "visitDatetime",
-      re: /tgl\.?\s*masuk|tanggal\s*kunjungan|tanggal\s*masuk|waktu\s*kunjungan/i
-    },
-    { field: "poli", re: /unit(\s*\/\s*instalasi)?\b|\bpoli\b|ruang/i }
-  ];
+  var DETAIL_LABEL_FIELDS = {
+    norm: "norm",
+    nrm: "norm",
+    norekammedis: "norm",
+    no_rm: "norm",
+    noregistrasi: "noReg",
+    noreg: "noReg",
+    nodaftar: "noReg",
+    nama: "nama",
+    namapasien: "nama",
+    tglmasukrs: "visitDatetime",
+    tanggalkunjungan: "visitDatetime",
+    tanggalmasuk: "visitDatetime",
+    waktukunjungan: "visitDatetime",
+    unit: "poli",
+    unitinstalasi: "poli",
+    poli: "poli",
+    ruangan: "poli",
+    ruanganpoli: "poli"
+  };
+  function detailFieldOf(label) {
+    return DETAIL_LABEL_FIELDS[(label ?? "").toLowerCase().replace(/[^a-z0-9]/g, "")];
+  }
+  function cleanDetailValue(s) {
+    const t = (s ?? "").replace(/^[\s:—–-]+/, "").replace(/[\s:—–-]+$/, "").replace(/\s+/g, " ").trim();
+    if (t === "" || /^[\s:—–-]+$/.test(t)) return "";
+    return t;
+  }
   function parseDetailPairs(pairs) {
     const out = {};
     for (const [rawLabel, rawValue] of pairs) {
-      const label = (rawLabel ?? "").trim();
-      const value = (rawValue ?? "").trim();
-      if (label === "" || value === "" || value === "-" || value === "\u2014") continue;
-      for (const { field, re } of DETAIL_LABEL_PATTERNS) {
-        if (re.test(label)) {
-          if (field === "visitDatetime") {
-            const v = normalizeVisitDatetime(value);
-            if (v !== void 0 && out.visitDatetime === void 0) out.visitDatetime = v;
-          } else if (out[field] === void 0) {
-            out[field] = value;
-          }
-          break;
-        }
+      let label = (rawLabel ?? "").trim();
+      let value = (rawValue ?? "").trim();
+      if (label.includes(":")) {
+        const i = label.indexOf(":");
+        const after = label.slice(i + 1);
+        label = label.slice(0, i);
+        if (cleanDetailValue(value) === "") value = after;
+      }
+      const field = detailFieldOf(label);
+      if (!field) continue;
+      const v = cleanDetailValue(value);
+      if (v === "") continue;
+      if (field === "visitDatetime") {
+        const t = normalizeVisitDatetime(v);
+        if (t !== void 0 && out.visitDatetime === void 0) out.visitDatetime = t;
+      } else if (out[field] === void 0) {
+        out[field] = v;
       }
     }
     return out;
@@ -2355,18 +2392,17 @@ var __morbis_feature = (() => {
     const arr = Array.from(cells);
     for (let i = 0; i < arr.length; i++) {
       const label = (arr[i].textContent ?? "").trim();
-      if (label === "") continue;
-      if (!DETAIL_LABEL_PATTERNS.some(({ re }) => re.test(label))) continue;
+      if (label === "" || !detailFieldOf(label)) continue;
       let value = "";
-      const next = arr[i + 1];
-      if (next) value = (next.textContent ?? "").trim();
-      if (value === "" || value === "-" || value === "\u2014") {
-        const parent = arr[i].parentElement;
-        const full = (parent?.innerText ?? "").replace(/\s+/g, " ");
-        const m = full.match(/:\s*(.+)$/);
-        if (m) value = m[1].trim();
+      for (let j = i + 1; j < Math.min(i + 3, arr.length); j++) {
+        const t = (arr[j].textContent ?? "").trim();
+        if (t !== "" && t !== ":" && t !== "-" && t !== "\u2014") {
+          if (detailFieldOf(t)) break;
+          value = t;
+          break;
+        }
       }
-      if (value !== "" && value !== "-" && value !== "\u2014") out.push([label, value]);
+      out.push([label, value]);
     }
     return out;
   }
@@ -2413,7 +2449,38 @@ var __morbis_feature = (() => {
   function paintTelaah(btn, marked) {
     btn.classList.toggle("active", marked);
     btn.setAttribute("data-ext-telaah-marked", marked ? "true" : "false");
+    if (!btn.classList.contains("ext-telaah-large")) {
+      btn.textContent = marked ? "\u2713 Telaah" : "Telaah";
+    }
     btn.title = marked ? "Telaah Berkas: SUDAH ditandai (klik untuk batal)" : "Tandai Telaah Berkas";
+  }
+  function updateTelaahBadge(row, marked) {
+    let badgeCell = null;
+    try {
+      badgeCell = badgeCellFor(row);
+    } catch {
+    }
+    let badge = null;
+    try {
+      badge = row.querySelector(".ext-telaah-badge");
+    } catch {
+    }
+    if (marked && badgeCell) {
+      try {
+        if (!badge) {
+          badge = document.createElement("span");
+          badge.className = "ext-telaah-badge";
+          badge.textContent = "TELAAH";
+        }
+        if (badge.parentElement !== badgeCell) badgeCell.appendChild(badge);
+      } catch {
+      }
+    } else if (badge) {
+      try {
+        badge.remove();
+      } catch {
+      }
+    }
   }
   function makeTelaahButton(idVisit, marked, large = false) {
     const btn = document.createElement("button");
@@ -2438,7 +2505,10 @@ var __morbis_feature = (() => {
       _pendingTelaah.delete(idVisit);
       btn.disabled = false;
       try {
-        paintTelaah(btn, telaahEffectiveMarked(idVisit, loadTelaahMap()));
+        const marked = telaahEffectiveMarked(idVisit, loadTelaahMap());
+        paintTelaah(btn, marked);
+        const row = btn.closest("tr");
+        if (row) updateTelaahBadge(row, marked);
       } catch {
       }
     };
@@ -2511,35 +2581,23 @@ var __morbis_feature = (() => {
           btn = makeTelaahButton(id, false);
           if (anchor?.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling);
           else row.querySelector("td:last-child")?.appendChild(btn);
-          const b2 = btn;
-          b2.addEventListener("click", (e) => {
+          const b = btn;
+          b.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             try {
-              void toggleTelaah(id, b2, extractPatientInfo(row));
+              void toggleTelaah(id, b, extractPatientInfo(row));
             } catch {
-              void toggleTelaah(id, b2);
+              void toggleTelaah(id, b);
             }
           });
         }
         if (btn.getAttribute("data-ext-telaah-btn") !== id)
           btn.setAttribute("data-ext-telaah-btn", id);
-        if (!_pendingTelaah.has(id)) paintTelaah(btn, telaahEffectiveMarked(id, localMap));
-        const b = btn;
-        if (!b.dataset.extTelaahBound) {
-          b.dataset.extTelaahBound = "1";
-          b.addEventListener(
-            "click",
-            () => {
-              try {
-                const info = extractPatientInfo(row);
-                void toggleTelaah(id, b, info);
-              } catch {
-                void toggleTelaah(id, b);
-              }
-            },
-            { once: false }
-          );
+        if (!_pendingTelaah.has(id)) {
+          const marked = telaahEffectiveMarked(id, localMap);
+          paintTelaah(btn, marked);
+          updateTelaahBadge(row, marked);
         }
       }
     }
@@ -2577,9 +2635,24 @@ var __morbis_feature = (() => {
       void (async () => {
         const dom = parseDetailPairs(collectDetailPairs(document));
         const info = await resolveDetailIdentity(id, dom);
+        let marked = false;
+        try {
+          marked = telaahEffectiveMarked(id, loadTelaahMap());
+        } catch {
+        }
+        let ok = false;
+        try {
+          if (window.confirm(detailConfirmMessage(info.nama, id, marked))) ok = true;
+        } catch {
+        }
+        if (!ok) return;
         await toggleTelaah(id, btn, info);
       })();
     });
+  }
+  function detailConfirmMessage(nama, idVisit, marked) {
+    const siapa = nama && nama.trim() !== "" ? nama : `kunjungan ID ${idVisit}`;
+    return marked ? `Batalkan tanda Telaah Berkas untuk ${siapa}?` : `Tandai Telaah Berkas untuk ${siapa}?`;
   }
   function refreshTelaahCentral() {
     const now = Date.now();
@@ -2639,6 +2712,7 @@ var __morbis_feature = (() => {
             }
             paintTelaah(btn, marked);
           }
+          updateTelaahBadge(row, marked);
         }
       }
     });

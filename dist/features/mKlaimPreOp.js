@@ -21,6 +21,7 @@ var __morbis_feature = (() => {
   // src/features/mKlaimPreOp.ts
   var mKlaimPreOp_exports = {};
   __export(mKlaimPreOp_exports, {
+    badgeCellFor: () => badgeCellFor,
     extractPatientInfo: () => extractPatientInfo,
     guessPatientInfo: () => guessPatientInfo,
     initPreOpMarker: () => initPreOpMarker,
