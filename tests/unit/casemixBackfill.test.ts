@@ -283,3 +283,26 @@ describe('migrated watermark helpers', () => {
     expect(loadMigratedIds(store)).toEqual(['A', 'B']);
   });
 });
+
+describe('runCasemixBackfill anti-resurrect', () => {
+  beforeEach(stubHttpsBase);
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('melewati entry fromCentral (tanda PC lain hasil pull)', async () => {
+    const s = new MockStore();
+    s.setItem(
+      'morbis_preop_markers',
+      JSON.stringify({
+        MIRROR: { idVisit: 'MIRROR', markedAt: Date.now(), fromCentral: true },
+        OWNED: { idVisit: 'OWNED', markedAt: Date.now() },
+      }),
+    );
+    const f = okFetch();
+    const r = await runCasemixBackfill(s, f);
+    expect(r.preopUploaded).toBe(1);
+    const bodies = (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls.map(
+      ([, o]) => JSON.parse(o.body as string) as { id_visit: string },
+    );
+    expect(bodies.map((b) => b.id_visit)).toEqual(['OWNED']);
+  });
+});

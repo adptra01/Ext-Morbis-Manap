@@ -104,20 +104,25 @@ async function postCentral(
 
 /* ── Pre-op: pure helpers (unit-tested) ── */
 
-/** Id visit yang belum pernah diunggah ke pusat. */
+/** Id visit MILIK PC ini (klik user lokal, bukan cerminan pull) yang belum
+ *  pernah diunggah ke pusat. Entry fromCentral (tanda PC lain hasil pull)
+ *  SENGAJA dikecualikan: mendorongnya = menghidupkan lagi tanda yang PC
+ *  lain sudah unmark (perang unmark/resurrect lintas-PC). */
 export function collectPreOpPending(map: PreOpMap, migratedIds: string[]): string[] {
   const done = new Set(migratedIds);
   return Object.keys(map)
-    .filter((id) => !done.has(id))
+    .filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true)
     .slice(0, BACKFILL_BATCH);
 }
 
-/** Jumlah id lokal yang BELUM terkirim ke pusat (tanpa cap batch — untuk badge tombol Sinkron). */
+/** Jumlah id lokal MILIK PC ini yang BELUM terkirim ke pusat (tanpa cap
+ *  batch — untuk badge tombol Sinkron). Cerminan pull dikecualikan
+ *  (bukan "menunggu kirim"). */
 export function countPreOpPending(map: PreOpMap, migratedIds: string[]): number {
   const done = new Set(migratedIds);
   let n = 0;
   for (const id of Object.keys(map)) {
-    if (!done.has(id)) n++;
+    if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
   }
   return n;
 }

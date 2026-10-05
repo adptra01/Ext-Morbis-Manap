@@ -456,3 +456,54 @@ describe('syncCasemixNow reconcile unmark lintas-PC (langkah 4)', () => {
     expect(c.offline).toBe(false);
   });
 });
+
+describe('syncCasemixNow anti-resurrect (cerminan pull tak di-push buta)', () => {
+  const central = (m: Record<string, unknown>) => ({ ok: true, marks: m as never });
+
+  it('langkah 2 melewati fromCentral; langkah 3 melengkapi bila pusat masih menandai', async () => {
+    const d = deps({
+      loadLocal: () => ({
+        MIRROR: { idVisit: 'MIRROR', markedAt: 999000, fromCentral: true },
+        OWNED: { idVisit: 'OWNED', markedAt: 999000 },
+      }),
+      fetchMarks: async () =>
+        central({
+          MIRROR: { norm: '1', nama: 'X', no_reg: 'R' },
+          OWNED: {},
+        }),
+      fetchRecent: async () => central({}),
+      resolveIdentity: async (ids: string[]) =>
+        ids.map((id) => ({
+          idVisit: id,
+          info: {
+            norm: 'N' + id,
+            nama: 'Nama ' + id,
+            visitDatetime: '2026-09-02 11:00:00',
+            poli: 'IGD',
+          },
+        })),
+    });
+    const c = await syncCasemixNow([], d);
+    const pushes = d.posts.filter((p) => p.marked);
+    // OWNED dipush langkah 2; MIRROR dilengkapi langkah 3 (pusat masih menandai)
+    expect(pushes.map((p) => p.id).sort()).toEqual(['MIRROR', 'OWNED']);
+    const mirror = pushes.find((p) => p.id === 'MIRROR');
+    expect(mirror?.info).toMatchObject({ visitDatetime: '2026-09-02 11:00:00', poli: 'IGD' });
+    expect(c.enriched).toBe(1);
+  });
+
+  it('cerminan yang sudah di-unmark pusat TIDAK dihidupkan lagi', async () => {
+    const d = deps({
+      loadLocal: () => ({
+        GONE: { idVisit: 'GONE', markedAt: 999000, fromCentral: true },
+      }),
+      fetchMarks: async () => central({}),
+      fetchRecent: async () => central({}),
+      resolveIdentity: async () => [],
+    });
+    const c = await syncCasemixNow([], d);
+    expect(d.posts).toEqual([]);
+    expect(c.pushed).toBe(0);
+    expect(c.enriched).toBe(0);
+  });
+});

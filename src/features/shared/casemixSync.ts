@@ -230,11 +230,15 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
     }
   }
 
-  // 2. Push semua id lokal — identitas dari baris terlihat (segar) atau
-  //    warisan versi lama (diperbaiki) bila baris tak terlihat. Server
-  //    mempertahankan field yang tak dikirim (W-7.20), jadi id-only aman.
+  // 2. Push id lokal MILIK PC ini — identitas dari baris terlihat (segar)
+  //    atau warisan versi lama (diperbaiki) bila baris tak terlihat.
+  //    Cerminan pull (fromCentral) SENGAJA dilewati: isinya sudah ada di
+  //    pusat (dari sanalah ia datang); mendorongnya menghidupkan lagi
+  //    unmark PC lain (perang resurrect). Server mempertahankan field
+  //    yang tak dikirim (W-7.20), jadi id-only aman bila resolver gagal.
   const pushOk: string[] = [];
   for (const id of Object.keys(local)) {
+    if (local[id]?.fromCentral === true) continue;
     try {
       if (await deps.postToggle(id, true, mergePushInfo(visible.get(id), local[id]))) {
         pushed++;
@@ -258,9 +262,14 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
     }
   }
 
-  // 3. Enrich: baris terlihat yang marked tapi belum di-push beridentitas.
+  // 3. Enrich: baris beridentitas yang marked di pusat tapi belum
+  //    terkirim beridentitas. Milik-PC (owned) yang sudah dipush langkah 2
+  //    dilewati; cerminan pull (fromCentral) ikut dilengkapi DI SINI
+  //    (bukan langkah 2) — dan HANYA bila pusat masih menandai, supaya
+  //    tak menghidupkan lagi unmark PC lain.
   for (const [id, info] of visible) {
-    if (id in local && infoPresent(info)) continue; // sudah terkirim + identitas di langkah 2
+    const owned = id in local && local[id]?.fromCentral !== true;
+    if (owned && infoPresent(info)) continue; // sudah terkirim + identitas di langkah 2
     if (!isMarked(id)) continue;
     if (!infoPresent(info)) continue; // tak ada identitas → id-only tak mengubah apa pun
     try {
