@@ -28,6 +28,10 @@ export interface SyncRowInfo {
   nama?: string;
   noReg?: string;
   user?: string;
+  /** Waktu kunjungan pasien (format ISO: YYYY-MM-DD HH:MM:SS).
+   *  Diambil dari kolom "Tanggal Kunjungan" endpoint M-KLAIM.
+   *  Opsional — server yang belum punya kolom abaikan. */
+  visitDatetime?: string;
 }
 
 export interface SyncRow {

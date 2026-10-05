@@ -11,12 +11,14 @@
 
 ### ✨ feat
 
+- **pre-op** — fetch patient identity from M-KLAIM data endpoint (`6f77c3e`)
 - **preop** — sinkron baca data lokal versi lama + badge belum-terkirim (`e6c0ac0`)
 - **preop** — tombol Sinkron tampilkan jumlah belum terkirim (`0f49a60`)
 - **preop** — hapus tombol Export PDF + sinkron dua arah + perbaiki identitas (`eb4585b`)
 
 ### 🐛 fix
 
+- **pre-op** — prevent stale unmark wiping old marks + fix cross-PC toggle (`cbdae89`)
 - **laporanLinks** — kirim ID unit sebagai id_poli, bukan nama saja (`b57a16a`)
 - **antrolKirim** — hentikan polling saat konteks extension mati (`8896393`)
 
@@ -1733,4 +1735,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: b57a16ab37f9eb9da697dd2fd732b6af6e2ab8d1 -->
+<!-- changelog-upto: 6f77c3e675e06ddd4a487300c006847ae2e5bb62 -->

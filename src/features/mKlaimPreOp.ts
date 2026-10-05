@@ -235,6 +235,8 @@ export interface PatientInfo {
   norm?: string;
   nama?: string;
   noReg?: string;
+  /** Waktu kunjungan dari kolom "Tanggal Kunjungan" (format: YYYY-MM-DD HH:MM:SS). */
+  visitDatetime?: string;
 }
 
 /**
@@ -250,6 +252,7 @@ const HEADER_FIELD_PATTERNS: Array<{ field: keyof PatientInfo | 'idVisit'; re: R
   },
   { field: 'norm', re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
   { field: 'nama', re: /nama(\s*pasien)?/i },
+  { field: 'visitDatetime', re: /tanggal\s*kunjungan|waktu\s*kunjungan/i },
 ];
 
 /**
@@ -298,7 +301,12 @@ export function pickPatientInfo(headers: string[], cells: string[]): PatientInfo
     const t = (cells[i] ?? '').trim();
     return cellTextEmpty(t) ? undefined : t;
   };
-  return { norm: pick(idx.norm), nama: pick(idx.nama), noReg: pick(idx.noReg) };
+  return {
+    norm: pick(idx.norm),
+    nama: pick(idx.nama),
+    noReg: pick(idx.noReg),
+    visitDatetime: pick(idx.visitDatetime),
+  };
 }
 
 /**
@@ -693,6 +701,7 @@ export async function syncPreOpNow(): Promise<void> {
               norm: info?.norm ?? null,
               nama: info?.nama ?? null,
               no_reg: info?.noReg ?? null,
+              visit_datetime: info?.visitDatetime ?? null,
               user: user ?? null,
             }),
             credentials: 'omit',

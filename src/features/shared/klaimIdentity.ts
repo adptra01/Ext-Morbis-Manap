@@ -113,6 +113,7 @@ function pickFromObject(o: Record<string, unknown>): { id: string | null; info: 
       norm: get('norm', 'no_rm', 'norm_pasien', 'id_pasien'),
       nama: get('nama', 'nama_pasien', 'pasien'),
       noReg: get('no_reg', 'noreg', 'no_registrasi', 'reg', 'registrasi'),
+      visitDatetime: get('tanggal_kunjungan', 'tgl_kunjungan', 'visit_datetime', 'visit_date'),
     },
   };
 }

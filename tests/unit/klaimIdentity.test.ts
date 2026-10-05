@@ -92,7 +92,12 @@ describe('parseKlaimRows', () => {
     expect(rows).toEqual([
       {
         idVisit: '205258',
-        info: { norm: '00052170', nama: 'MARSONO', noReg: '2609280034' },
+        info: {
+          norm: '00052170',
+          nama: 'MARSONO',
+          noReg: '2609280034',
+          visitDatetime: '28-09-2026',
+        },
       },
     ]);
   });
@@ -129,7 +134,10 @@ describe('fetchKlaimIdentity', () => {
     });
     const out = await fetchKlaimIdentity(['206767'], { ...base, fetcher: f as never });
     expect(out).toEqual([
-      { idVisit: '206767', info: { norm: '00001111', nama: 'ASNAH', noReg: '2610030027' } },
+      {
+        idVisit: '206767',
+        info: { norm: '00001111', nama: 'ASNAH', noReg: '2610030027', visitDatetime: '28-09-2026' },
+      },
     ]);
     expect(f).toHaveBeenCalledTimes(1);
   });
