@@ -127,16 +127,7 @@ var __morbis_feature = (() => {
       const parsed = JSON.parse(raw);
       if (typeof parsed !== "object" || parsed === null) return {};
       const { purged, count } = purgeExpiredPreOp(parsed, now);
-      let scrubbedCount = 0;
-      for (const id of Object.keys(purged)) {
-        const item = purged[id];
-        if (!item) continue;
-        if (item.norm !== void 0 || item.nama !== void 0 || item.noReg !== void 0) {
-          scrubbedCount++;
-        }
-        purged[id] = minimalPreOpItem(item);
-      }
-      if (count > 0 || scrubbedCount > 0) {
+      if (count > 0) {
         savePreOpMap(purged, store);
       }
       return purged;
@@ -145,12 +136,18 @@ var __morbis_feature = (() => {
     }
   }
   function minimalPreOpItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
     return { idVisit: raw.idVisit, markedAt: raw.markedAt };
   }
   function savePreOpMap(map, store = defaultStore()) {
     if (!store) return;
     try {
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalPreOpItem(item);
+      }
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
     } catch {
     }
   }
@@ -681,6 +678,31 @@ var __morbis_feature = (() => {
   function infoPresent(info) {
     return !!info && (info.norm !== void 0 || info.nama !== void 0 || info.noReg !== void 0);
   }
+  function repairLegacyInfo(stored) {
+    if (!stored) return void 0;
+    const clean = (v) => {
+      const t = String(v ?? "").trim();
+      return t === "" ? void 0 : t;
+    };
+    let norm = clean(stored.norm);
+    const nama = clean(stored.nama);
+    let noReg = clean(stored.noReg);
+    if (norm === void 0 && noReg !== void 0 && /^\d{6,10}$/.test(noReg)) {
+      norm = noReg;
+      noReg = void 0;
+    }
+    if (norm === void 0 && nama === void 0 && noReg === void 0) return void 0;
+    return { norm, nama, noReg };
+  }
+  function mergePushInfo(visibleInfo, storedItem) {
+    const legacy = repairLegacyInfo(storedItem);
+    const merged = {
+      norm: visibleInfo?.norm ?? legacy?.norm,
+      nama: visibleInfo?.nama ?? legacy?.nama,
+      noReg: visibleInfo?.noReg ?? legacy?.noReg
+    };
+    return infoPresent(merged) ? merged : void 0;
+  }
   async function syncCasemixNow(rows, deps) {
     const now = deps.now ?? Date.now();
     const visible = /* @__PURE__ */ new Map();
@@ -731,7 +753,7 @@ var __morbis_feature = (() => {
     const pushOk = [];
     for (const id of Object.keys(local)) {
       try {
-        if (await deps.postToggle(id, true, visible.get(id))) {
+        if (await deps.postToggle(id, true, mergePushInfo(visible.get(id), local[id]))) {
           pushed++;
           pushOk.push(id);
         } else {

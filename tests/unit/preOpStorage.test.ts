@@ -49,8 +49,10 @@ describe('preOpStorage', () => {
     expect(map['202203'].markedAt).toBe(t0);
   });
 
-  it('scrub PII data lama saat dibaca (migrasi sekali jalan)', () => {
-    // Data era lama yang masih menyimpan nama/norm harus dibersihkan saat load.
+  it('data lama versi lama tetap terbaca apa adanya (untuk diunggah sinkron)', () => {
+    // Kompatibilitas mundur W-7.20: user masih memakai versi lama yang
+    // menyimpan identitas. Load TIDAK boleh memusnahkannya sebelum sinkron
+    // sempat mengunggah ke pusat.
     store.setItem(
       PRE_OP_STORAGE_KEY,
       JSON.stringify({
@@ -65,15 +67,33 @@ describe('preOpStorage', () => {
     );
     const map = loadPreOpMap(store, 1000000);
     expect(map['202203'].markedAt).toBe(1000000);
-    expect(map['202203'].nama).toBeUndefined();
-    expect(map['202203'].norm).toBeUndefined();
-    expect(map['202203'].noReg).toBeUndefined();
-    // Penulisan balik: localStorage ikut bersih setelah sekali jalan.
+    expect(map['202203'].norm).toBe('123456');
+    expect(map['202203'].nama).toBe('Budi');
+    expect(map['202203'].noReg).toBe('R-1');
+    // Tanpa purge: tidak ada tulis-balik — storage lama utuh.
+    const raw = JSON.parse(store.getItem(PRE_OP_STORAGE_KEY) ?? '{}') as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(raw['202203'].nama).toBe('Budi');
+  });
+
+  it('save men-strip PII (penyimpanan menyusut bersih setelah tulis)', () => {
+    store.setItem(
+      PRE_OP_STORAGE_KEY,
+      JSON.stringify({
+        '202203': { idVisit: '202203', markedAt: 1000000, norm: '123456', nama: 'Budi' },
+      }),
+    );
+    setPreOp('202204', {}, store, 1000000);
     const raw = JSON.parse(store.getItem(PRE_OP_STORAGE_KEY) ?? '{}') as Record<
       string,
       Record<string, unknown>
     >;
     expect(raw['202203'].nama).toBeUndefined();
+    expect(raw['202203'].norm).toBeUndefined();
+    expect(raw['202203'].markedAt).toBe(1000000);
+    expect(raw['202204'].markedAt).toBe(1000000);
   });
 
   it('removePreOp menghapus data visit', () => {

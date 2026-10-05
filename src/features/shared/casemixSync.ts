@@ -73,6 +73,50 @@ function infoPresent(info: SyncRowInfo | undefined): info is SyncRowInfo {
   return !!info && (info.norm !== undefined || info.nama !== undefined || info.noReg !== undefined);
 }
 
+/**
+ * Perbaiki identitas warisan versi lama sebelum diunggah (terakhir kali).
+ * Pola salah mapping ekstraktor lama yang diketahui: angka 6–10 digit
+ * murni (format norm: 00050927, 2609280034) tersimpan di `noReg` —
+ * kembalikan ke `norm` bila `norm` kosong. Murni, unit-tested.
+ */
+export function repairLegacyInfo(stored?: {
+  norm?: string;
+  nama?: string;
+  noReg?: string;
+}): SyncRowInfo | undefined {
+  if (!stored) return undefined;
+  const clean = (v: unknown): string | undefined => {
+    const t = String(v ?? '').trim();
+    return t === '' ? undefined : t;
+  };
+  let norm = clean(stored.norm);
+  const nama = clean(stored.nama);
+  let noReg = clean(stored.noReg);
+  if (norm === undefined && noReg !== undefined && /^\d{6,10}$/.test(noReg)) {
+    norm = noReg;
+    noReg = undefined;
+  }
+  if (norm === undefined && nama === undefined && noReg === undefined) return undefined;
+  return { norm, nama, noReg };
+}
+
+/**
+ * Gabung identitas baris terlihat (segar, berbasis header — utama) dengan
+ * warisan versi lama (cadangan). Kembalikan undefined bila tak ada apa pun.
+ */
+export function mergePushInfo(
+  visibleInfo: SyncRowInfo | undefined,
+  storedItem?: { norm?: string; nama?: string; noReg?: string },
+): SyncRowInfo | undefined {
+  const legacy = repairLegacyInfo(storedItem);
+  const merged: SyncRowInfo = {
+    norm: visibleInfo?.norm ?? legacy?.norm,
+    nama: visibleInfo?.nama ?? legacy?.nama,
+    noReg: visibleInfo?.noReg ?? legacy?.noReg,
+  };
+  return infoPresent(merged) ? merged : undefined;
+}
+
 export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<SyncCounts> {
   const now = deps.now ?? Date.now();
   const visible = new Map<string, SyncRowInfo>();
@@ -130,11 +174,13 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
   const isMarked = (id: string): boolean =>
     resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
 
-  // 2. Push semua id lokal (identitas bila barisnya terlihat).
+  // 2. Push semua id lokal — identitas dari baris terlihat (segar) atau
+  //    warisan versi lama (diperbaiki) bila baris tak terlihat. Server
+  //    mempertahankan field yang tak dikirim (W-7.20), jadi id-only aman.
   const pushOk: string[] = [];
   for (const id of Object.keys(local)) {
     try {
-      if (await deps.postToggle(id, true, visible.get(id))) {
+      if (await deps.postToggle(id, true, mergePushInfo(visible.get(id), local[id]))) {
         pushed++;
         pushOk.push(id);
       } else {

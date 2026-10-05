@@ -501,16 +501,7 @@ var __morbis_feature = (() => {
       const parsed = JSON.parse(raw);
       if (typeof parsed !== "object" || parsed === null) return {};
       const { purged, count } = purgeExpiredPreOp(parsed, now);
-      let scrubbedCount = 0;
-      for (const id of Object.keys(purged)) {
-        const item = purged[id];
-        if (!item) continue;
-        if (item.norm !== void 0 || item.nama !== void 0 || item.noReg !== void 0) {
-          scrubbedCount++;
-        }
-        purged[id] = minimalPreOpItem(item);
-      }
-      if (count > 0 || scrubbedCount > 0) {
+      if (count > 0) {
         savePreOpMap(purged, store);
       }
       return purged;
@@ -519,12 +510,18 @@ var __morbis_feature = (() => {
     }
   }
   function minimalPreOpItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
     return { idVisit: raw.idVisit, markedAt: raw.markedAt };
   }
   function savePreOpMap(map, store = defaultStore()) {
     if (!store) return;
     try {
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalPreOpItem(item);
+      }
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
     } catch {
     }
   }

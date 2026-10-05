@@ -2,10 +2,12 @@
  * preOpStorage.ts — Penyimpanan & manajemen state Pre-op untuk tabel M-KLAIM.
  * Data disimpan di localStorage dengan TTL 30 hari (1 bulan).
  *
- * Privasi: hanya idVisit + markedAt yang ditulis ke localStorage (PC bersama,
- * terbaca skrip halaman). Identitas pasien (norm/nama/noReg) TIDAK disimpan —
- * konsumen membaca ulang dari baris tabel (mKlaimPreOp.extractPatientInfo).
- * Entry lama yang masih membawa PII di-scrub otomatis saat dibaca (loadPreOpMap).
+ * Kompatibilitas mundur (W-7.20): user masih memakai versi lama yang
+ * menyimpan identitas (norm/nama/noReg) di localStorage. Load
+ * MEMPERTAHANKAN data lama apa adanya di memori supaya sinkron masih bisa
+ * mengunggahnya ke pusat (terakhir kali); save SELALU men-strip PII
+ * sehingga penyimpanan menyusut bersih setelah tulis pertama. Privasi
+ * tidak regresi: tak ada PII *baru* yang ditulis.
  */
 
 export interface PreOpItem {
@@ -80,9 +82,11 @@ export function purgeExpiredPreOp(
 
 /**
  * Baca seluruh PreOpMap dari storage, otomatis purge data > 30 hari.
- * Sekaligus scrub PII lama (norm/nama/noReg) — localStorage di PC bersama
- * bisa dibaca skrip halaman; konsumen membaca ulang identitas pasien dari
- * baris tabel — hanya markedAt dipakai.
+ *
+ * Data lama versi lama (termasuk identitas norm/nama/noReg) dikembalikan
+ * APA ADANYA di memori — sinkron memakainya untuk melengkapi baris pusat
+ * yang kosong (terakhir kali mengunggah identitas itu). Pembersihan PII
+ * terjadi di `savePreOpMap` (tulis), bukan di sini.
  */
 export function loadPreOpMap(
   store: KVStore | null = defaultStore(),
@@ -96,18 +100,7 @@ export function loadPreOpMap(
     if (typeof parsed !== 'object' || parsed === null) return {};
 
     const { purged, count } = purgeExpiredPreOp(parsed, now);
-    // Scrub PII: buang norm/nama/noReg dari entry yang masih hidup, lalu
-    // simpan balik agar localStorage lama ikut dibersihkan (sekali jalan).
-    let scrubbedCount = 0;
-    for (const id of Object.keys(purged)) {
-      const item = purged[id];
-      if (!item) continue;
-      if (item.norm !== undefined || item.nama !== undefined || item.noReg !== undefined) {
-        scrubbedCount++;
-      }
-      purged[id] = minimalPreOpItem(item);
-    }
-    if (count > 0 || scrubbedCount > 0) {
+    if (count > 0) {
       savePreOpMap(purged, store);
     }
     return purged;
@@ -117,20 +110,27 @@ export function loadPreOpMap(
 }
 
 /** Bentuk entry yang boleh disimpan: PII sengaja TIDAK ditulis ke
- *  localStorage (PC bersama, terbaca skrip halaman). Field norm/nama/noReg
- *  dipertahankan di interface hanya agar data lama + type backfill tetap
- *  kompatibel — pada runtime selalu di-strip lewat fungsi ini. */
+ *  localStorage (PC bersama, terbaca skrip halaman). Satu-satunya titik
+ *  tulis — dipakai `savePreOpMap`, jadi data lama versi lama ikut bersih
+ *  setelah tulis pertama (sesudah sempat diunggah sinkron). */
 function minimalPreOpItem(raw: PreOpItem): PreOpItem {
+  if (!raw || typeof raw !== 'object') return { idVisit: '', markedAt: 0 };
   return { idVisit: raw.idVisit, markedAt: raw.markedAt };
 }
 
 /**
- * Simpan PreOpMap ke storage.
+ * Simpan PreOpMap ke storage — SELALU tanpa PII. Entry rusak (bukan objek
+ * / tanpa idVisit) dibuang sekalian.
  */
 export function savePreOpMap(map: PreOpMap, store: KVStore | null = defaultStore()): void {
   if (!store) return;
   try {
-    store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
+    const clean: PreOpMap = {};
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || typeof item !== 'object' || !item.idVisit) continue;
+      clean[id] = minimalPreOpItem(item);
+    }
+    store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
   } catch {
     /* storage full */
   }

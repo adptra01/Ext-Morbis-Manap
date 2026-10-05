@@ -41,6 +41,14 @@ function localMap(ids: string[]): PreOpMap {
   return m;
 }
 
+function localMapWith(
+  items: Array<{ idVisit: string; markedAt: number; norm?: string; nama?: string; noReg?: string }>,
+): PreOpMap {
+  const m: PreOpMap = {};
+  for (const item of items) m[item.idVisit] = { ...item };
+  return m;
+}
+
 describe('syncCasemixNow push', () => {
   it('mengunggah semua id lokal (identitas bila barisnya terlihat)', async () => {
     const d = deps({ loadLocal: () => localMap(['A', 'B']) });
@@ -191,5 +199,70 @@ describe('syncCasemixNow watermark belum-terkirim', () => {
     // C dan X bukan anggota map lokal → watermark tak boleh tersentuh
     // (kalau tersentuh, sapuan unmark backfill akan menghapus tanda PC lain).
     expect(marked).toEqual([]);
+  });
+});
+
+describe('repairLegacyInfo + mergePushInfo (kompatibilitas versi lama)', () => {
+  it('angka 6-10 digit di noReg warisan dikembalikan ke norm', async () => {
+    const { repairLegacyInfo } = await import('../../src/features/shared/casemixSync.js');
+    // Pola salah mapping ekstraktor lama: norm nyasar ke no_reg.
+    expect(repairLegacyInfo({ noReg: '2609280034' })).toEqual({
+      norm: '2609280034',
+      nama: undefined,
+      noReg: undefined,
+    });
+    expect(repairLegacyInfo({ noReg: '00050927' })?.norm).toBe('00050927');
+    // norm sudah ada → noReg dibiarkan (mungkin memang no registrasi).
+    expect(repairLegacyInfo({ norm: '123456', noReg: 'RJ-1' })).toEqual({
+      norm: '123456',
+      nama: undefined,
+      noReg: 'RJ-1',
+    });
+    // Bukan digit / kosong → tak ada info.
+    expect(repairLegacyInfo({ noReg: 'RJ-1' })?.norm).toBeUndefined();
+    expect(repairLegacyInfo({})).toBeUndefined();
+    expect(repairLegacyInfo(undefined)).toBeUndefined();
+  });
+
+  it('visible (segar) menang atas warisan; warisan mengisi yang kosong', async () => {
+    const { mergePushInfo } = await import('../../src/features/shared/casemixSync.js');
+    expect(
+      mergePushInfo({ norm: '999', nama: undefined }, { norm: '111', nama: 'Lama', noReg: 'R-9' }),
+    ).toEqual({ norm: '999', nama: 'Lama', noReg: 'R-9' });
+    expect(mergePushInfo(undefined, { nama: 'Lama' })).toEqual({
+      norm: undefined,
+      nama: 'Lama',
+      noReg: undefined,
+    });
+    expect(mergePushInfo(undefined, {})).toBeUndefined();
+    expect(mergePushInfo(undefined, undefined)).toBeUndefined();
+  });
+
+  it('push memakai identitas warisan untuk baris yang tak terlihat', async () => {
+    const d = deps({
+      loadLocal: () =>
+        localMapWith([{ idVisit: 'A', markedAt: 999000, norm: '00050927', nama: 'PAIYEN' }]),
+    });
+    // Baris A TIDAK terlihat (filter lain / halaman lain) → identitas dari storage lama.
+    const c = await syncCasemixNow([], d);
+    expect(c.pushed).toBe(1);
+    expect(d.posts).toContainEqual({
+      id: 'A',
+      marked: true,
+      info: { norm: '00050927', nama: 'PAIYEN', noReg: undefined },
+    });
+  });
+
+  it('warisan salah mapping ikut diperbaiki saat push', async () => {
+    const d = deps({
+      loadLocal: () => localMapWith([{ idVisit: 'B', markedAt: 999000, noReg: '2609280034' }]),
+    });
+    const c = await syncCasemixNow([], d);
+    expect(c.pushed).toBe(1);
+    expect(d.posts).toContainEqual({
+      id: 'B',
+      marked: true,
+      info: { norm: '2609280034', nama: undefined, noReg: undefined },
+    });
   });
 });
