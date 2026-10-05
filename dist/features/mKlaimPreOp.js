@@ -138,7 +138,9 @@ var __morbis_feature = (() => {
   }
   function minimalPreOpItem(raw) {
     if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
-    return { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
   }
   function savePreOpMap(map, store = defaultStore()) {
     if (!store) return;
@@ -152,10 +154,10 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
-  function setPreOp(idVisit, _info = {}, store = defaultStore(), now = Date.now()) {
+  function setPreOp(idVisit, _info = {}, store = defaultStore(), now = Date.now(), fromCentral = false) {
     if (!idVisit) return;
     const map = loadPreOpMap(store, now);
-    map[idVisit] = { idVisit, markedAt: now };
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
     savePreOpMap(map, store);
   }
   function loadUnmarkQueue(store = defaultStore()) {
@@ -185,6 +187,30 @@ var __morbis_feature = (() => {
     }
     const q = loadUnmarkQueue(store);
     if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
+  }
+  var RECONCILE_GRACE_MS = 6e4;
+  function collectStaleCentralMarks(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
+    const out = [];
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || item.fromCentral !== true) continue;
+      if (centralHas(id)) continue;
+      if (now - item.markedAt < graceMs) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function forgetCentralMark(idVisit, store = defaultStore()) {
+    if (!idVisit || !store) return false;
+    try {
+      const map = loadPreOpMap(store);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      savePreOpMap(map, store);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // src/features/shared/casemixApi.ts
@@ -518,13 +544,13 @@ var __morbis_feature = (() => {
   }
   function collectPreOpPending(map, migratedIds) {
     const done = new Set(migratedIds);
-    return Object.keys(map).filter((id) => !done.has(id)).slice(0, BACKFILL_BATCH);
+    return Object.keys(map).filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true).slice(0, BACKFILL_BATCH);
   }
   function countPreOpPending(map, migratedIds) {
     const done = new Set(migratedIds);
     let n = 0;
     for (const id of Object.keys(map)) {
-      if (!done.has(id)) n++;
+      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
     }
     return n;
   }
@@ -809,6 +835,7 @@ var __morbis_feature = (() => {
     }
     const pushOk = [];
     for (const id of Object.keys(local)) {
+      if (local[id]?.fromCentral === true) continue;
       try {
         if (await deps.postToggle(id, true, mergePushInfo(visible.get(id), local[id]))) {
           pushed++;
@@ -827,7 +854,8 @@ var __morbis_feature = (() => {
       }
     }
     for (const [id, info] of visible) {
-      if (id in local && infoPresent(info)) continue;
+      const owned = id in local && local[id]?.fromCentral !== true;
+      if (owned && infoPresent(info)) continue;
       if (!isMarked(id)) continue;
       if (!infoPresent(info)) continue;
       try {
@@ -847,6 +875,18 @@ var __morbis_feature = (() => {
         deps.saveMark(id);
         pulled++;
       } catch {
+      }
+    }
+    if (!offline && ids.length <= 400 && deps.forgetMark) {
+      for (const [id, item] of Object.entries(local)) {
+        if (!item || item.fromCentral !== true) continue;
+        if (ids.includes(id) && central[id]) continue;
+        if (!ids.includes(id)) continue;
+        if (now - item.markedAt < RECONCILE_GRACE_MS) continue;
+        try {
+          deps.forgetMark(id);
+        } catch {
+        }
       }
     }
     return { pushed, enriched, pulled, pending, offline };
@@ -1145,6 +1185,11 @@ var __morbis_feature = (() => {
       }
       const localMap = loadPreOpMap();
       const now2 = Date.now();
+      const hasCentral = (id) => !!marks[id];
+      for (const id of collectStaleCentralMarks(localMap, hasCentral, now2)) {
+        if (_pendingToggle.has(id)) continue;
+        if (forgetCentralMark(id)) delete localMap[id];
+      }
       for (const table of document.querySelectorAll("table")) {
         for (const row of table.querySelectorAll("tbody tr")) {
           const id = extractIdVisitFromRow(row);
@@ -1152,7 +1197,7 @@ var __morbis_feature = (() => {
           const marked = effectiveMarked(id, localMap, now2);
           if (row.getAttribute("data-ext-preop-marked") !== String(marked)) {
             if (marked && !localMap[id]) {
-              setPreOp(id, extractPatientInfo(row));
+              setPreOp(id, extractPatientInfo(row), void 0, Date.now(), true);
             }
             updateRowVisual(row, id, marked, resolveBadgeCell(row, table));
           }
@@ -1559,7 +1604,15 @@ var __morbis_feature = (() => {
         },
         saveMark: (id) => {
           try {
-            setPreOp(id, {});
+            setPreOp(id, {}, void 0, Date.now(), true);
+          } catch {
+          }
+        },
+        // Rekonsiliasi unmark lintas-PC (langkah 4 sinkron): lupakan entry
+        // fromCentral yang sudah tak ada di pusat — tanpa antre unmark.
+        forgetMark: (id) => {
+          try {
+            forgetCentralMark(id);
           } catch {
           }
         },

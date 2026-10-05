@@ -512,7 +512,9 @@ var __morbis_feature = (() => {
   }
   function minimalPreOpItem(raw) {
     if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
-    return { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
   }
   function savePreOpMap(map, store = defaultStore()) {
     if (!store) return;
@@ -1299,7 +1301,7 @@ var __morbis_feature = (() => {
   }
   function collectPreOpPending(map, migratedIds) {
     const done = new Set(migratedIds);
-    return Object.keys(map).filter((id) => !done.has(id)).slice(0, BACKFILL_BATCH);
+    return Object.keys(map).filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true).slice(0, BACKFILL_BATCH);
   }
   function loadMigratedIds(store = defaultStore3()) {
     const raw = readJson2(store, MIGRATED_PREOP_KEY);

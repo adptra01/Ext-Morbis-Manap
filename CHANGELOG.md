@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **pre-op** — unmark lintas-PC direkonsiliasi, semua PC tampil sama (`15183c8`)
 - **pre-op** — poli ikut terkirim + backfill otomatis field lengkap (`0bab2d3`)
 - **laporan** — tombol buka halaman polos tanpa prefill filter (`51b450a`)
 - **pre-op** — realtime toggle now sends visit_datetime (`adc491d`)
@@ -22,6 +23,7 @@
 
 ### 🐛 fix
 
+- **pre-op** — backfill/sync tak resurrect unmark lintas-PC (`10fa4a3`)
 - **pre-op** — normalize visit_datetime format to ISO Y-m-d H:i:s (`2bf4ba6`)
 - **pre-op** — prevent stale unmark wiping old marks + fix cross-PC toggle (`cbdae89`)
 - **laporanLinks** — kirim ID unit sebagai id_poli, bukan nama saja (`b57a16a`)
@@ -1748,4 +1750,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 3dbab55c9fecd810be26b4cef9c4bdef70a0e161 -->
+<!-- changelog-upto: 10fa4a388b2fe03ab4cde22db052ed57d29bf55e -->
