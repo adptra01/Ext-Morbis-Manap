@@ -301,6 +301,10 @@ export function paintTelaah(btn: HTMLButtonElement, marked: boolean): void {
   if (!btn.classList.contains('ext-telaah-large')) {
     const wantText = marked ? '✓ Telaah' : 'Telaah';
     if (btn.textContent !== wantText) btn.textContent = wantText;
+  } else {
+    // Footer detail: teks ikut status ("Batal Telaah" bila sudah ditandai).
+    const wantText = marked ? 'Batal Telaah' : 'Telaah';
+    if (btn.textContent !== wantText) btn.textContent = wantText;
   }
   const wantTitle = marked
     ? 'Telaah Berkas: SUDAH ditandai (klik untuk batal)'

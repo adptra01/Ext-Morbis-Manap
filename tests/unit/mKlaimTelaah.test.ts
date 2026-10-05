@@ -164,8 +164,8 @@ describe('mKlaimTelaah — footer detail', () => {
 });
 
 describe('mKlaimTelaah — paintTelaah anti-glitch', () => {
-  const fakeBtn = () => {
-    const cls = new Set<string>();
+  const fakeBtn = (large = false) => {
+    const cls = new Set<string>(large ? ['ext-telaah-large'] : []);
     const attrs = new Map<string, string>();
     let textWrites = 0;
     let attrWrites = 0;
@@ -216,5 +216,14 @@ describe('mKlaimTelaah — paintTelaah anti-glitch', () => {
     paintTelaah(f.btn, false);
     expect(f.btn.textContent).toBe('Telaah');
     expect(f.writes().textWrites).toBeGreaterThan(afterFirst.textWrites);
+  });
+
+  it('varian besar (footer detail): teks ikut status Batal Telaah', async () => {
+    const { paintTelaah } = await import('../../src/features/mKlaimTelaah.js');
+    const f = fakeBtn(true);
+    paintTelaah(f.btn, true);
+    expect(f.btn.textContent).toBe('Batal Telaah');
+    paintTelaah(f.btn, false);
+    expect(f.btn.textContent).toBe('Telaah');
   });
 });

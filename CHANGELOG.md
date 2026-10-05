@@ -25,6 +25,7 @@
 
 ### 🐛 fix
 
+- **glitch** — tulis DOM hanya bila berubah (scan/refresh/settle quiet) (`8e7f234`)
 - **pre-op** — backfill/sync tak resurrect unmark lintas-PC (`10fa4a3`)
 - **pre-op** — normalize visit_datetime format to ISO Y-m-d H:i:s (`2bf4ba6`)
 - **pre-op** — prevent stale unmark wiping old marks + fix cross-PC toggle (`cbdae89`)
@@ -37,6 +38,7 @@
 
 ### 🧹 chore
 
+- rebuild dist (anti-glitch repaint guards) (`c7b6d5c`)
 - rebuild dist (badge telaah + konfirmasi detail) (`dead5e9`)
 - rebuild dist (tombol telaah footer biru Bootstrap) (`db9ec10`)
 - rebuild dist (telaah berkas list + footer detail) (`fe3c2c9`)
@@ -1760,4 +1762,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: dead5e951341afc46b38303dd46adb9ff6afe2d1 -->
+<!-- changelog-upto: c7b6d5cb718c466eba91d9d2b298c1531cf86deb -->
