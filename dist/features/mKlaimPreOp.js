@@ -92,6 +92,7 @@ var __morbis_feature = (() => {
 
   // src/features/shared/preOpStorage.ts
   var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
+  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
   var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
   var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
   function resolvePreOpMarked(localHas, centralHas, unmarkedAt, now = Date.now(), tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS) {
@@ -151,18 +152,29 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
-  function isPreOp(idVisit, store = defaultStore(), now = Date.now()) {
-    if (!idVisit) return false;
-    const map = loadPreOpMap(store, now);
-    const item = map[idVisit];
-    if (!item) return false;
-    return now - item.markedAt <= PRE_OP_TTL_MS;
-  }
   function setPreOp(idVisit, _info = {}, store = defaultStore(), now = Date.now()) {
     if (!idVisit) return;
     const map = loadPreOpMap(store, now);
     map[idVisit] = { idVisit, markedAt: now };
     savePreOpMap(map, store);
+  }
+  function loadUnmarkQueue(store = defaultStore()) {
+    if (!store) return [];
+    try {
+      const raw = store.getItem(PRE_OP_UNMARK_QUEUE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveUnmarkQueue(ids, store = defaultStore()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
+    } catch {
+    }
   }
   function removePreOp(idVisit, store = defaultStore()) {
     if (!idVisit) return;
@@ -171,15 +183,8 @@ var __morbis_feature = (() => {
       delete map[idVisit];
       savePreOpMap(map, store);
     }
-  }
-  function togglePreOp(idVisit, info = {}, store = defaultStore(), now = Date.now()) {
-    if (isPreOp(idVisit, store, now)) {
-      removePreOp(idVisit, store);
-      return false;
-    } else {
-      setPreOp(idVisit, info, store, now);
-      return true;
-    }
+    const q = loadUnmarkQueue(store);
+    if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
   }
 
   // src/features/shared/casemixApi.ts
@@ -581,14 +586,13 @@ var __morbis_feature = (() => {
       }
       try {
         const alive = new Set(Object.keys(map));
-        const kept = [];
-        for (const id of migrated) {
-          if (alive.has(id)) {
-            kept.push(id);
-            continue;
-          }
+        const queue = loadUnmarkQueue(store);
+        const stillQueued = [];
+        const sent = /* @__PURE__ */ new Set();
+        for (const id of queue) {
+          if (alive.has(id)) continue;
           if (res.offline) {
-            kept.push(id);
+            stillQueued.push(id);
             continue;
           }
           const ok = await postCentral(
@@ -598,12 +602,16 @@ var __morbis_feature = (() => {
           );
           if (!ok) {
             res.offline = true;
-            kept.push(id);
+            stillQueued.push(id);
           } else {
+            sent.add(id);
             res.preopUploaded++;
           }
         }
-        if (kept.length !== migrated.length || res.preopUploaded > 0) {
+        if (queue.length > 0) saveUnmarkQueue(stillQueued, store);
+        const keep = new Set(stillQueued);
+        const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
+        if (kept.length !== migrated.length || res.preopUploaded > 0 || sent.size > 0) {
           saveMigratedIds(store, kept);
         }
       } catch {
@@ -750,6 +758,30 @@ var __morbis_feature = (() => {
     }
     const centralHas = (id) => offline && !(id in central) ? null : id in central;
     const isMarked = (id) => resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
+    if (deps.resolveIdentity) {
+      const need = /* @__PURE__ */ new Set();
+      const centralComplete = (id) => {
+        const m = central[id];
+        return !!(m && m.norm && m.nama && m.no_reg);
+      };
+      for (const id of /* @__PURE__ */ new Set([...Object.keys(local), ...Object.keys(central)])) {
+        if (infoPresent(visible.get(id))) continue;
+        if (centralComplete(id)) continue;
+        if (!isMarked(id)) continue;
+        need.add(id);
+      }
+      if (need.size > 0) {
+        try {
+          const extra = await deps.resolveIdentity([...need].slice(0, 500));
+          for (const r of extra ?? []) {
+            if (r?.idVisit && infoPresent(r.info) && !infoPresent(visible.get(r.idVisit))) {
+              visible.set(r.idVisit, r.info);
+            }
+          }
+        } catch {
+        }
+      }
+    }
     const pushOk = [];
     for (const id of Object.keys(local)) {
       try {
@@ -793,6 +825,125 @@ var __morbis_feature = (() => {
       }
     }
     return { pushed, enriched, pulled, pending, offline };
+  }
+
+  // src/features/shared/klaimIdentity.ts
+  var KLAIM_DATA_PATH = "/v2/m-klaim/data-tabel/data";
+  var DAY_MS = 24 * 60 * 60 * 1e3;
+  function formatDmy(d) {
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}-${mm}-${d.getFullYear()}`;
+  }
+  function buildKlaimDataQuery(start, end, jenis, filterTanggal = "kunjungan") {
+    return new URLSearchParams({
+      tanggalAwal: formatDmy(start),
+      tanggalAkhir: formatDmy(end),
+      filter_tanggal: filterTanggal,
+      norm: "",
+      nama: "",
+      reg: "",
+      billing: "all",
+      status: "all",
+      id_poli_cari: "",
+      jenis_pasien: "all",
+      jenis
+    });
+  }
+  function stripHtml(s) {
+    return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
+  }
+  function extractIdVisitFromCells(cellsRaw) {
+    for (let i = cellsRaw.length - 1; i >= 0; i--) {
+      const c = cellsRaw[i] ?? "";
+      const m = c.match(/detail\(\s*['"]?(\d+)/) || c.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  function infoPresent2(i) {
+    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0);
+  }
+  function pickFromObject(o) {
+    const get = (...keys) => {
+      for (const k of Object.keys(o)) {
+        if (keys.includes(k.toLowerCase())) {
+          const t = stripHtml(o[k]);
+          if (t !== "" && t !== "-") return t;
+        }
+      }
+      return void 0;
+    };
+    const id = get("id_visit", "idvisit");
+    return {
+      id: id ?? null,
+      info: {
+        norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
+        nama: get("nama", "nama_pasien", "pasien"),
+        noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
+        visitDatetime: get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
+      }
+    };
+  }
+  function parseKlaimRows(json, headers, pick) {
+    const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : Array.isArray(json?.aaData) ? json.aaData : [];
+    const out = [];
+    for (const r of rows) {
+      if (Array.isArray(r)) {
+        const raw = r.map((c) => String(c ?? ""));
+        const id = extractIdVisitFromCells(raw);
+        if (!id) continue;
+        const info = pick(headers, raw.map(stripHtml));
+        if (infoPresent2(info)) out.push({ idVisit: id, info });
+      } else if (r && typeof r === "object") {
+        const { id, info } = pickFromObject(r);
+        if (id && infoPresent2(info)) out.push({ idVisit: id, info });
+      }
+    }
+    return out;
+  }
+  async function fetchKlaimIdentity(needIds, deps) {
+    const need = new Set(needIds.map((s) => String(s).trim()).filter(Boolean));
+    const found = /* @__PURE__ */ new Map();
+    if (need.size === 0) return [];
+    const fetcher = deps.fetcher ?? fetch;
+    const today = deps.now ?? /* @__PURE__ */ new Date();
+    const windowDays = Math.max(1, deps.windowDays ?? 31);
+    const maxWindows = Math.max(1, deps.maxWindows ?? 9);
+    const delayMs = deps.delayMs ?? 300;
+    const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+    const total = maxWindows * 2;
+    let request = 0;
+    let failStreak = 0;
+    outer: for (let w = 0; w < maxWindows; w++) {
+      const end = new Date(today.getTime() - w * windowDays * DAY_MS);
+      const start = new Date(end.getTime() - (windowDays - 1) * DAY_MS);
+      for (const jenis of ["n", "y"]) {
+        if (found.size >= need.size) break outer;
+        request++;
+        try {
+          const qs = buildKlaimDataQuery(start, end, jenis).toString();
+          const res = await fetcher(`${KLAIM_DATA_PATH}?${qs}`, {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
+          });
+          if (!res || !res.ok) throw new Error("HTTP " + (res?.status ?? "?"));
+          const json = await res.json();
+          for (const row of parseKlaimRows(json, deps.headers, deps.pick)) {
+            if (need.has(row.idVisit) && !found.has(row.idVisit)) found.set(row.idVisit, row);
+          }
+          failStreak = 0;
+        } catch {
+          failStreak++;
+          if (failStreak >= 3) break outer;
+        }
+        deps.onProgress?.({ request, total, found: found.size, need: need.size });
+        if (found.size < need.size) await sleep(delayMs);
+      }
+    }
+    return [...found.values()];
   }
 
   // src/features/shared/whenIdle.ts
@@ -1004,7 +1155,8 @@ var __morbis_feature = (() => {
       re: /(?:no\.?\s*)?registrasi\b|no\.?\s*reg\b|no\.?\s*daftar|no\.?\s*transaksi/i
     },
     { field: "norm", re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
-    { field: "nama", re: /nama(\s*pasien)?/i }
+    { field: "nama", re: /nama(\s*pasien)?/i },
+    { field: "visitDatetime", re: /tanggal\s*kunjungan|waktu\s*kunjungan/i }
   ];
   function patientFieldIndexFromHeaders(headers) {
     const out = {};
@@ -1037,7 +1189,12 @@ var __morbis_feature = (() => {
       const t = (cells[i] ?? "").trim();
       return cellTextEmpty(t) ? void 0 : t;
     };
-    return { norm: pick(idx.norm), nama: pick(idx.nama), noReg: pick(idx.noReg) };
+    return {
+      norm: pick(idx.norm),
+      nama: pick(idx.nama),
+      noReg: pick(idx.noReg),
+      visitDatetime: pick(idx.visitDatetime)
+    };
   }
   function guessPatientInfo(cells) {
     let norm;
@@ -1171,7 +1328,9 @@ var __morbis_feature = (() => {
       e.stopPropagation();
       if (_pendingToggle.has(idVisit) || btn.disabled) return;
       const info = extractPatientInfo(row);
-      const nextState = togglePreOp(idVisit, info);
+      const nextState = !effectiveMarked(idVisit, loadPreOpMap());
+      if (nextState) setPreOp(idVisit, info);
+      else removePreOp(idVisit);
       if (nextState) delete _localUnmarkAt[idVisit];
       else _localUnmarkAt[idVisit] = Date.now();
       updateRowVisual(row, idVisit, nextState, badgeCellFor(row));
@@ -1316,6 +1475,7 @@ var __morbis_feature = (() => {
                 norm: info?.norm ?? null,
                 nama: info?.nama ?? null,
                 no_reg: info?.noReg ?? null,
+                visit_datetime: info?.visitDatetime ?? null,
                 user: user ?? null
               }),
               credentials: "omit"
@@ -1338,6 +1498,21 @@ var __morbis_feature = (() => {
             setPreOp(id, {});
           } catch {
           }
+        },
+        // Tabel hanya merender halaman aktif (DataTables, 10 baris/halaman) →
+        // identitas id lain diambil dari endpoint data M-KLAIM yang sama.
+        resolveIdentity: async (ids) => {
+          showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM\u2026`, 12e4);
+          const headers = Array.from(document.querySelectorAll("#data-table thead th")).filter((th) => th.getAttribute("data-ext-bv-header") !== "1").map((th) => th.textContent?.trim() ?? "");
+          const rows = await fetchKlaimIdentity(ids, {
+            headers,
+            pick: pickPatientInfo,
+            onProgress: (p) => showSyncToast(
+              `Mencari identitas pasien\u2026 ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
+              12e4
+            )
+          });
+          return rows;
         }
       });
       try {

@@ -324,6 +324,7 @@ var __morbis_feature = (() => {
 
   // src/features/shared/preOpStorage.ts
   var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
+  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
   var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
   function defaultStore2() {
     try {
@@ -373,6 +374,24 @@ var __morbis_feature = (() => {
         clean[id] = minimalPreOpItem(item);
       }
       store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function loadUnmarkQueue(store = defaultStore2()) {
+    if (!store) return [];
+    try {
+      const raw = store.getItem(PRE_OP_UNMARK_QUEUE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveUnmarkQueue(ids, store = defaultStore2()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
     } catch {
     }
   }
@@ -487,14 +506,13 @@ var __morbis_feature = (() => {
       }
       try {
         const alive = new Set(Object.keys(map));
-        const kept = [];
-        for (const id of migrated) {
-          if (alive.has(id)) {
-            kept.push(id);
-            continue;
-          }
+        const queue = loadUnmarkQueue(store);
+        const stillQueued = [];
+        const sent = /* @__PURE__ */ new Set();
+        for (const id of queue) {
+          if (alive.has(id)) continue;
           if (res.offline) {
-            kept.push(id);
+            stillQueued.push(id);
             continue;
           }
           const ok = await postCentral(
@@ -504,12 +522,16 @@ var __morbis_feature = (() => {
           );
           if (!ok) {
             res.offline = true;
-            kept.push(id);
+            stillQueued.push(id);
           } else {
+            sent.add(id);
             res.preopUploaded++;
           }
         }
-        if (kept.length !== migrated.length || res.preopUploaded > 0) {
+        if (queue.length > 0) saveUnmarkQueue(stillQueued, store);
+        const keep = new Set(stillQueued);
+        const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
+        if (kept.length !== migrated.length || res.preopUploaded > 0 || sent.size > 0) {
           saveMigratedIds(store, kept);
         }
       } catch {
