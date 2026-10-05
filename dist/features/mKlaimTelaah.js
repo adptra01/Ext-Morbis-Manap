@@ -322,6 +322,7 @@ var __morbis_feature = (() => {
     detailIdVisit: () => detailIdVisit,
     findDetailFooter: () => findDetailFooter,
     initTelaah: () => initTelaah,
+    paintTelaah: () => paintTelaah,
     parseDetailPairs: () => parseDetailPairs
   });
 
@@ -1625,8 +1626,9 @@ var __morbis_feature = (() => {
   function paintPending(btn) {
     btn.disabled = true;
     if (!btn.classList.contains("pending")) btn.classList.add("pending");
-    btn.textContent = "\u23F3 Menyimpan\u2026";
-    btn.title = "Menyimpan ke server pusat\u2026";
+    if (btn.textContent !== "\u23F3 Menyimpan\u2026") btn.textContent = "\u23F3 Menyimpan\u2026";
+    const t = "Menyimpan ke server pusat\u2026";
+    if (btn.title !== t) btn.title = t;
   }
   function collectVisibleIds() {
     const ids = [];
@@ -1813,13 +1815,15 @@ var __morbis_feature = (() => {
       btn.disabled = false;
       btn.classList.remove("pending");
       if (marked) {
-        btn.classList.add("active");
-        btn.textContent = "\u2713 Pre-op";
-        btn.title = "Ditandai sebagai Pre-op (klik untuk batalkan)";
+        if (!btn.classList.contains("active")) btn.classList.add("active");
+        if (btn.textContent !== "\u2713 Pre-op") btn.textContent = "\u2713 Pre-op";
+        const t = "Ditandai sebagai Pre-op (klik untuk batalkan)";
+        if (btn.title !== t) btn.title = t;
       } else {
-        btn.classList.remove("active");
-        btn.textContent = "Pre-op";
-        btn.title = "Tandai pasien sebagai Pre-op (tersimpan 1 bulan)";
+        if (btn.classList.contains("active")) btn.classList.remove("active");
+        if (btn.textContent !== "Pre-op") btn.textContent = "Pre-op";
+        const t = "Tandai pasien sebagai Pre-op (tersimpan 1 bulan)";
+        if (btn.title !== t) btn.title = t;
       }
     }
     let badge = row.querySelector(".ext-preop-badge");
@@ -2447,12 +2451,16 @@ var __morbis_feature = (() => {
     }
   }
   function paintTelaah(btn, marked) {
-    btn.classList.toggle("active", marked);
-    btn.setAttribute("data-ext-telaah-marked", marked ? "true" : "false");
+    if (btn.classList.contains("active") !== marked) btn.classList.toggle("active", marked);
+    const wantMarked = marked ? "true" : "false";
+    if (btn.getAttribute("data-ext-telaah-marked") !== wantMarked)
+      btn.setAttribute("data-ext-telaah-marked", wantMarked);
     if (!btn.classList.contains("ext-telaah-large")) {
-      btn.textContent = marked ? "\u2713 Telaah" : "Telaah";
+      const wantText = marked ? "\u2713 Telaah" : "Telaah";
+      if (btn.textContent !== wantText) btn.textContent = wantText;
     }
-    btn.title = marked ? "Telaah Berkas: SUDAH ditandai (klik untuk batal)" : "Tandai Telaah Berkas";
+    const wantTitle = marked ? "Telaah Berkas: SUDAH ditandai (klik untuk batal)" : "Tandai Telaah Berkas";
+    if (btn.title !== wantTitle) btn.title = wantTitle;
   }
   function updateTelaahBadge(row, marked) {
     let badgeCell = null;
@@ -2594,8 +2602,9 @@ var __morbis_feature = (() => {
         }
         if (btn.getAttribute("data-ext-telaah-btn") !== id)
           btn.setAttribute("data-ext-telaah-btn", id);
-        if (!_pendingTelaah.has(id)) {
-          const marked = telaahEffectiveMarked(id, localMap);
+        const want = String(telaahEffectiveMarked(id, localMap));
+        if (!_pendingTelaah.has(id) && (btn.getAttribute("data-ext-telaah-marked") !== want || btn.classList.contains("active") !== (want === "true"))) {
+          const marked = want === "true";
           paintTelaah(btn, marked);
           updateTelaahBadge(row, marked);
         }

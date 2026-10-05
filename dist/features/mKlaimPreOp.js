@@ -1390,8 +1390,9 @@ var __morbis_feature = (() => {
   function paintPending(btn) {
     btn.disabled = true;
     if (!btn.classList.contains("pending")) btn.classList.add("pending");
-    btn.textContent = "\u23F3 Menyimpan\u2026";
-    btn.title = "Menyimpan ke server pusat\u2026";
+    if (btn.textContent !== "\u23F3 Menyimpan\u2026") btn.textContent = "\u23F3 Menyimpan\u2026";
+    const t = "Menyimpan ke server pusat\u2026";
+    if (btn.title !== t) btn.title = t;
   }
   function collectVisibleIds() {
     const ids = [];
@@ -1578,13 +1579,15 @@ var __morbis_feature = (() => {
       btn.disabled = false;
       btn.classList.remove("pending");
       if (marked) {
-        btn.classList.add("active");
-        btn.textContent = "\u2713 Pre-op";
-        btn.title = "Ditandai sebagai Pre-op (klik untuk batalkan)";
+        if (!btn.classList.contains("active")) btn.classList.add("active");
+        if (btn.textContent !== "\u2713 Pre-op") btn.textContent = "\u2713 Pre-op";
+        const t = "Ditandai sebagai Pre-op (klik untuk batalkan)";
+        if (btn.title !== t) btn.title = t;
       } else {
-        btn.classList.remove("active");
-        btn.textContent = "Pre-op";
-        btn.title = "Tandai pasien sebagai Pre-op (tersimpan 1 bulan)";
+        if (btn.classList.contains("active")) btn.classList.remove("active");
+        if (btn.textContent !== "Pre-op") btn.textContent = "Pre-op";
+        const t = "Tandai pasien sebagai Pre-op (tersimpan 1 bulan)";
+        if (btn.title !== t) btn.title = t;
       }
     }
     let badge = row.querySelector(".ext-preop-badge");
