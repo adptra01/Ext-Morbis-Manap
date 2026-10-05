@@ -515,6 +515,21 @@ var __morbis_feature = (() => {
     const done = new Set(migratedIds);
     return Object.keys(map).filter((id) => !done.has(id)).slice(0, BACKFILL_BATCH);
   }
+  function countPreOpPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    let n = 0;
+    for (const id of Object.keys(map)) {
+      if (!done.has(id)) n++;
+    }
+    return n;
+  }
+  function loadMigratedIds(store = defaultStore3()) {
+    const raw = readJson2(store, MIGRATED_PREOP_KEY);
+    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
+  }
+  function saveMigratedIds(store = defaultStore3(), ids) {
+    writeJson2(store, MIGRATED_PREOP_KEY, [...new Set(ids)]);
+  }
   function collectResumePending(list, sinceAt) {
     return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
   }
@@ -550,7 +565,7 @@ var __morbis_feature = (() => {
     if (!store) return res;
     try {
       const map = loadPreOpMap(store);
-      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
+      const migrated = loadMigratedIds(store);
       const pending = collectPreOpPending(map, migrated);
       for (const id of pending) {
         const item = map[id];
@@ -592,7 +607,7 @@ var __morbis_feature = (() => {
           }
         }
         if (kept.length !== migrated.length || res.preopUploaded > 0) {
-          writeJson2(store, MIGRATED_PREOP_KEY, kept);
+          saveMigratedIds(store, kept);
         }
       } catch {
       }
@@ -678,6 +693,15 @@ var __morbis_feature = (() => {
     let enriched = 0;
     let pulled = 0;
     let offline = false;
+    let pending = 0;
+    try {
+      const done = new Set(deps.readMigrated?.() ?? []);
+      for (const id of Object.keys(local)) {
+        if (!done.has(id)) pending++;
+      }
+    } catch {
+      pending = Object.keys(local).length;
+    }
     let central = {};
     const ids = [.../* @__PURE__ */ new Set([...Object.keys(local), ...visible.keys()])];
     if (ids.length > 0) {
@@ -704,15 +728,23 @@ var __morbis_feature = (() => {
     }
     const centralHas = (id) => offline && !(id in central) ? null : id in central;
     const isMarked = (id) => resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
+    const pushOk = [];
     for (const id of Object.keys(local)) {
       try {
         if (await deps.postToggle(id, true, visible.get(id))) {
           pushed++;
+          pushOk.push(id);
         } else {
           offline = true;
         }
       } catch {
         offline = true;
+      }
+    }
+    if (pushOk.length > 0) {
+      try {
+        deps.markMigrated?.(pushOk);
+      } catch {
       }
     }
     for (const [id, info] of visible) {
@@ -738,7 +770,7 @@ var __morbis_feature = (() => {
       } catch {
       }
     }
-    return { pushed, enriched, pulled, offline };
+    return { pushed, enriched, pulled, pending, offline };
   }
 
   // src/features/shared/whenIdle.ts
@@ -1191,10 +1223,53 @@ var __morbis_feature = (() => {
     return out;
   }
   var _syncRunning = false;
+  function localBackfillStore() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  function readMigratedIds() {
+    try {
+      return loadMigratedIds(localBackfillStore());
+    } catch {
+      return [];
+    }
+  }
+  function writeMigratedIds(ids) {
+    try {
+      const store = localBackfillStore();
+      saveMigratedIds(store, [...loadMigratedIds(store), ...ids]);
+    } catch {
+    }
+  }
+  function pendingSyncCount() {
+    try {
+      return countPreOpPending(loadPreOpMap(), readMigratedIds());
+    } catch {
+      return 0;
+    }
+  }
+  function updateSyncBadge() {
+    try {
+      const btn = document.getElementById("ext-preop-sync-btn");
+      const label = btn?.querySelector("[data-sync-label]");
+      if (!btn || !label) return;
+      const n = pendingSyncCount();
+      const text = n > 0 ? `Sinkron (${n})` : "Sinkron";
+      if (label.textContent !== text) label.textContent = text;
+      btn.title = n > 0 ? `Sinkron Pre-op sekarang: ${n} tanda belum terkirim ke pusat (+ ambil tanda PC lain)` : "Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain";
+    } catch {
+    }
+  }
   async function syncPreOpNow() {
     if (_syncRunning) return;
     _syncRunning = true;
-    showSyncToast("Menyinkronkan Pre-op dengan pusat\u2026");
+    const awaiting = pendingSyncCount();
+    showSyncToast(
+      awaiting > 0 ? `Menyinkronkan Pre-op dengan pusat\u2026 (${awaiting} menunggu kirim)` : "Menyinkronkan Pre-op dengan pusat\u2026"
+    );
     try {
       const user = (() => {
         try {
@@ -1206,6 +1281,8 @@ var __morbis_feature = (() => {
       const counts = await syncCasemixNow(gatherVisibleSyncRows(), {
         loadLocal: () => loadPreOpMap(),
         readUnmarks: () => ({ ..._localUnmarkAt }),
+        readMigrated: readMigratedIds,
+        markMigrated: writeMigratedIds,
         postToggle: async (id, marked, info) => {
           try {
             const res = await requestCentral("/api/casemix/pre-op/toggle", {
@@ -1249,9 +1326,15 @@ var __morbis_feature = (() => {
       if (counts.pushed > 0) parts.push(`${counts.pushed} terkirim`);
       if (counts.enriched > 0) parts.push(`${counts.enriched} dilengkapi`);
       if (counts.pulled > 0) parts.push(`${counts.pulled} baru dari pusat`);
+      const rest = pendingSyncCount();
       let msg = parts.length > 0 ? `Sinkron selesai: ${parts.join(", ")}.` : "Sinkron selesai: tidak ada perubahan.";
-      if (counts.offline) msg += " (sebagian gagal \u2014 server tak terjangkau, coba lagi nanti)";
+      if (counts.offline && rest > 0) {
+        msg += ` (${rest} masih menunggu \u2014 server tak terjangkau, coba lagi nanti)`;
+      } else if (counts.offline) {
+        msg += " (sebagian gagal \u2014 server tak terjangkau, coba lagi nanti)";
+      }
       showSyncToast(msg, 7e3);
+      updateSyncBadge();
       void logUsage("mKlaimPreOp", "sync_manual", !counts.offline, { ...counts });
     } finally {
       _syncRunning = false;
@@ -1279,7 +1362,10 @@ var __morbis_feature = (() => {
       btn.appendChild(icon.cloneNode(true));
       btn.appendChild(document.createTextNode(" "));
     }
-    btn.appendChild(document.createTextNode("Sinkron"));
+    const labelSpan = document.createElement("span");
+    labelSpan.setAttribute("data-sync-label", "1");
+    labelSpan.textContent = "Sinkron";
+    btn.appendChild(labelSpan);
     btn.title = "Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain";
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1294,6 +1380,7 @@ var __morbis_feature = (() => {
       const table = document.querySelector("table");
       table?.parentNode?.insertBefore(btn, table);
     }
+    updateSyncBadge();
   }
   function initPreOpMarker() {
     if (window.location.pathname.includes("/detail")) return;
@@ -1313,6 +1400,7 @@ var __morbis_feature = (() => {
         scanAndInjectPreOpButtons();
         refreshCentral();
         injectSyncButton();
+        updateSyncBadge();
       }, 1500);
     });
     window.addEventListener("pagehide", () => {

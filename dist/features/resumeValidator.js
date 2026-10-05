@@ -1285,6 +1285,13 @@ var __morbis_feature = (() => {
     const done = new Set(migratedIds);
     return Object.keys(map).filter((id) => !done.has(id)).slice(0, BACKFILL_BATCH);
   }
+  function loadMigratedIds(store = defaultStore3()) {
+    const raw = readJson2(store, MIGRATED_PREOP_KEY);
+    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
+  }
+  function saveMigratedIds(store = defaultStore3(), ids) {
+    writeJson2(store, MIGRATED_PREOP_KEY, [...new Set(ids)]);
+  }
   function collectResumePending(list, sinceAt) {
     return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
   }
@@ -1320,7 +1327,7 @@ var __morbis_feature = (() => {
     if (!store) return res;
     try {
       const map = loadPreOpMap(store);
-      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
+      const migrated = loadMigratedIds(store);
       const pending = collectPreOpPending(map, migrated);
       for (const id of pending) {
         const item = map[id];
@@ -1362,7 +1369,7 @@ var __morbis_feature = (() => {
           }
         }
         if (kept.length !== migrated.length || res.preopUploaded > 0) {
-          writeJson2(store, MIGRATED_PREOP_KEY, kept);
+          saveMigratedIds(store, kept);
         }
       } catch {
       }

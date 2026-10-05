@@ -48,6 +48,15 @@ export interface SyncDeps {
   /** Discovery: semua tanda pusat rentang terakhir (tanpa harus tahu id). */
   fetchRecent(): Promise<SyncFetchResult>;
   saveMark(idVisit: string): void;
+  /** Watermark id yang sudah terkirim (opsional — bila tak ada, pending = semua id lokal). */
+  readMigrated?(): string[];
+  /**
+   * Tandai id-id sebagai sudah terkirim. HANYA dipanggil untuk id lokal
+   * yang sukses di-push — JANGAN untuk id hasil enrich/pull yang bukan
+   * anggota map lokal, supaya sapuan unmark backfill tidak mengirim
+   * marked:false untuk tanda milik PC lain.
+   */
+  markMigrated?(ids: string[]): void;
   now?: number;
 }
 
@@ -55,6 +64,8 @@ export interface SyncCounts {
   pushed: number;
   enriched: number;
   pulled: number;
+  /** Id lokal yang BELUM terkirim saat sinkron dimulai (untuk badge tombol). */
+  pending: number;
   offline: boolean;
 }
 
@@ -74,6 +85,18 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
   let enriched = 0;
   let pulled = 0;
   let offline = false;
+
+  // 0. Hitung yang belum terkirim (untuk badge tombol): id lokal yang
+  //    belum ada di watermark migrated.
+  let pending = 0;
+  try {
+    const done = new Set(deps.readMigrated?.() ?? []);
+    for (const id of Object.keys(local)) {
+      if (!done.has(id)) pending++;
+    }
+  } catch {
+    pending = Object.keys(local).length;
+  }
 
   // 1. Pull dulu (acuan langkah enrich + merge): batch id yang dikenal
   //    + discovery rentang terakhir (tanda PC lain yang id-nya tak dikenal).
@@ -108,15 +131,28 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
     resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
 
   // 2. Push semua id lokal (identitas bila barisnya terlihat).
+  const pushOk: string[] = [];
   for (const id of Object.keys(local)) {
     try {
       if (await deps.postToggle(id, true, visible.get(id))) {
         pushed++;
+        pushOk.push(id);
       } else {
         offline = true;
       }
     } catch {
       offline = true;
+    }
+  }
+  // Majukan watermark migrated HANYA untuk id lokal yang sukses — supaya
+  // badge "belum terkirim" turun dan backfill tak mengulang. Id hasil
+  // enrich/pull yang bukan anggota map lokal SENGAJA tak ditandai (lihat
+  // kontrak markMigrated di atas).
+  if (pushOk.length > 0) {
+    try {
+      deps.markMigrated?.(pushOk);
+    } catch {
+      /* watermark gagal disimpan — backfill mencoba lagi nanti */
     }
   }
 
@@ -148,5 +184,5 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
     }
   }
 
-  return { pushed, enriched, pulled, offline };
+  return { pushed, enriched, pulled, pending, offline };
 }

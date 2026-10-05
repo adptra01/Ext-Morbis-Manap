@@ -98,6 +98,27 @@ export function collectPreOpPending(map: PreOpMap, migratedIds: string[]): strin
     .slice(0, BACKFILL_BATCH);
 }
 
+/** Jumlah id lokal yang BELUM terkirim ke pusat (tanpa cap batch — untuk badge tombol Sinkron). */
+export function countPreOpPending(map: PreOpMap, migratedIds: string[]): number {
+  const done = new Set(migratedIds);
+  let n = 0;
+  for (const id of Object.keys(map)) {
+    if (!done.has(id)) n++;
+  }
+  return n;
+}
+
+/** Baca watermark id yang sudah diunggah (tombol Sinkron + badge memakai ini). */
+export function loadMigratedIds(store: KVStore | null = defaultStore()): string[] {
+  const raw = readJson<string[]>(store, MIGRATED_PREOP_KEY);
+  return Array.isArray(raw) ? raw.filter((s) => typeof s === 'string') : [];
+}
+
+/** Simpan watermark id yang sudah diunggah. */
+export function saveMigratedIds(store: KVStore | null = defaultStore(), ids: string[]): void {
+  writeJson(store, MIGRATED_PREOP_KEY, [...new Set(ids)]);
+}
+
 /* ── Resume: pure helpers (unit-tested) ── */
 
 /** Entri lokal yang `at`-nya lebih baru dari penanda migrasi key tersebut. */
@@ -158,7 +179,7 @@ export async function runCasemixBackfill(
   // 1. Pre-op map → pusat
   try {
     const map = loadPreOpMap(store);
-    const migrated = readJson<string[]>(store, MIGRATED_PREOP_KEY) ?? [];
+    const migrated = loadMigratedIds(store);
     const pending = collectPreOpPending(map, migrated);
     for (const id of pending) {
       const item = map[id];
@@ -207,7 +228,7 @@ export async function runCasemixBackfill(
         }
       }
       if (kept.length !== migrated.length || res.preopUploaded > 0) {
-        writeJson(store, MIGRATED_PREOP_KEY, kept);
+        saveMigratedIds(store, kept);
       }
     } catch {
       /* ignore */

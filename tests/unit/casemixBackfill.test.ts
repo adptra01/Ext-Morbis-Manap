@@ -168,3 +168,29 @@ describe('runCasemixBackfill', () => {
     expect(r2.preopUploaded).toBe(0);
   });
 });
+
+describe('migrated watermark helpers', () => {
+  it('countPreOpPending menghitung tanpa cap batch', async () => {
+    const { countPreOpPending } = await import('../../src/features/shared/casemixBackfill.js');
+    const map: Record<string, { idVisit: string; markedAt: number }> = {};
+    for (let i = 0; i < 50; i++) map[`V-${i}`] = { idVisit: `V-${i}`, markedAt: 1 };
+    expect(countPreOpPending(map, [])).toBe(50);
+    expect(countPreOpPending(map, ['V-0', 'V-1'])).toBe(48);
+    expect(countPreOpPending({}, [])).toBe(0);
+  });
+
+  it('load/saveMigratedIds roundtrip + dedup', async () => {
+    const { loadMigratedIds, saveMigratedIds } =
+      await import('../../src/features/shared/casemixBackfill.js');
+    const data = new Map<string, string>();
+    const store = {
+      getItem: (k: string) => data.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        data.set(k, v);
+      },
+    };
+    expect(loadMigratedIds(store)).toEqual([]);
+    saveMigratedIds(store, ['A', 'B', 'A']);
+    expect(loadMigratedIds(store)).toEqual(['A', 'B']);
+  });
+});

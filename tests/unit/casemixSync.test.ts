@@ -57,7 +57,7 @@ describe('syncCasemixNow push', () => {
     const fetchRecent = vi.fn(async () => ({ ok: true, marks: {} }));
     const d = deps({ fetchMarks, fetchRecent });
     const c = await syncCasemixNow([], d);
-    expect(c).toEqual({ pushed: 0, enriched: 0, pulled: 0, offline: false });
+    expect(c).toEqual({ pushed: 0, enriched: 0, pulled: 0, pending: 0, offline: false });
     expect(fetchMarks).not.toHaveBeenCalled();
     expect(fetchRecent).toHaveBeenCalledOnce();
   });
@@ -140,5 +140,56 @@ describe('syncCasemixNow pull-merge', () => {
     expect(c.offline).toBe(true);
     expect(c.pushed).toBe(1);
     expect(c.pulled).toBe(0);
+  });
+});
+
+describe('syncCasemixNow watermark belum-terkirim', () => {
+  it('pending = id lokal yang belum ada di watermark', async () => {
+    const d = deps({
+      loadLocal: () => localMap(['A', 'B', 'C']),
+      readMigrated: () => ['A'],
+    });
+    const c = await syncCasemixNow([], d);
+    expect(c.pending).toBe(2);
+  });
+
+  it('tanpa readMigrated: pending = semua id lokal', async () => {
+    const d = deps({ loadLocal: () => localMap(['A', 'B']) });
+    const c = await syncCasemixNow([], d);
+    expect(c.pending).toBe(2);
+  });
+
+  it('markMigrated hanya untuk id lokal yang sukses di-push', async () => {
+    const marked: string[][] = [];
+    const d = deps({
+      loadLocal: () => localMap(['A', 'B']),
+      postToggle: async (id) => id === 'A',
+      markMigrated: (ids: string[]) => {
+        marked.push(ids);
+      },
+    });
+    const c = await syncCasemixNow([], d);
+    expect(c.pushed).toBe(1);
+    expect(c.offline).toBe(true);
+    expect(marked).toEqual([['A']]);
+  });
+
+  it('id hasil enrich/pull yang bukan anggota lokal TAK ditandai migrated', async () => {
+    const marked: string[][] = [];
+    const d = deps({
+      // C terlihat + ditandai pusat (enrich), X ditemukan via discovery (pull).
+      fetchMarks: async () => ({ ok: true, marks: { C: {} } }),
+      fetchRecent: async () => ({ ok: true, marks: { X: {} } }),
+      markMigrated: (ids: string[]) => {
+        marked.push(ids);
+      },
+    });
+    const rows: SyncRow[] = [{ idVisit: 'C', info: { norm: '0002' } }];
+    const c = await syncCasemixNow(rows, d);
+    expect(c.enriched).toBe(1);
+    expect(c.pulled).toBe(2); // C (pusat, belum lokal) + X (discovery) sama-sama di-pull
+    // C dan X bukan anggota map lokal → watermark tak boleh tersentuh
+    // (kalau tersentuh, sapuan unmark backfill akan menghapus tanda PC lain).
+    expect(marked).toEqual([]);
   });
 });

@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-10-05
+
+### ✨ feat
+
+- **preop** — hapus tombol Export PDF + sinkron dua arah + perbaiki identitas (`eb4585b`)
+
+### 🐛 fix
+
+- **antrolKirim** — hentikan polling saat konteks extension mati (`e032dea`)
+
 ## 2026-10-02
 
 ### ✨ feat
@@ -1720,4 +1730,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 982600b81dac65b97537f3cf25957798389ae384 -->
+<!-- changelog-upto: e032dead3ab0b3224e996d20ded13f9074ea7d1b -->

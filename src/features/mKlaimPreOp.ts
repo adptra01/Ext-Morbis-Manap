@@ -11,6 +11,12 @@ import {
   type CentralPreOpMark,
 } from './shared/casemixApi.js';
 import { initCasemixBackfill } from './shared/casemixBackfill.js';
+import {
+  countPreOpPending,
+  loadMigratedIds,
+  saveMigratedIds,
+  type KVStore as BackfillStore,
+} from './shared/casemixBackfill.js';
 import { syncCasemixNow, type SyncRow } from './shared/casemixSync.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 import { logUsage } from './shared/usageLog.js';
@@ -588,6 +594,61 @@ function gatherVisibleSyncRows(): SyncRow[] {
 
 let _syncRunning = false;
 
+/** Store localStorage yang aman (bisa diblokir → null, semua pemanggil sudah tahan null). */
+function localBackfillStore(): BackfillStore | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+  } catch {
+    /* abaikan */
+  }
+  return null;
+}
+
+/** Watermark id yang sudah terkirim (format SAMA dengan versi lama — baca tulis kompatibel). */
+function readMigratedIds(): string[] {
+  try {
+    return loadMigratedIds(localBackfillStore());
+  } catch {
+    return [];
+  }
+}
+
+function writeMigratedIds(ids: string[]): void {
+  try {
+    const store = localBackfillStore();
+    saveMigratedIds(store, [...loadMigratedIds(store), ...ids]);
+  } catch {
+    /* watermark gagal disimpan — backfill mencoba lagi nanti */
+  }
+}
+
+/** Jumlah id lokal yang belum terkirim (untuk badge tombol). */
+function pendingSyncCount(): number {
+  try {
+    return countPreOpPending(loadPreOpMap(), readMigratedIds());
+  } catch {
+    return 0;
+  }
+}
+
+/** Perbarui badge "Sinkron (n)" — n = belum terkirim; 0 = tanpa badge. */
+function updateSyncBadge(): void {
+  try {
+    const btn = document.getElementById('ext-preop-sync-btn');
+    const label = btn?.querySelector('[data-sync-label]');
+    if (!btn || !label) return;
+    const n = pendingSyncCount();
+    const text = n > 0 ? `Sinkron (${n})` : 'Sinkron';
+    if (label.textContent !== text) label.textContent = text;
+    btn.title =
+      n > 0
+        ? `Sinkron Pre-op sekarang: ${n} tanda belum terkirim ke pusat (+ ambil tanda PC lain)`
+        : 'Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * Sinkron dua arah sekarang: push localStorage → pusat (beridentitas bila
  * barisnya terlihat), enrich baris kosong, pull tanda PC lain → lokal +
@@ -596,7 +657,12 @@ let _syncRunning = false;
 export async function syncPreOpNow(): Promise<void> {
   if (_syncRunning) return;
   _syncRunning = true;
-  showSyncToast('Menyinkronkan Pre-op dengan pusat…');
+  const awaiting = pendingSyncCount();
+  showSyncToast(
+    awaiting > 0
+      ? `Menyinkronkan Pre-op dengan pusat… (${awaiting} menunggu kirim)`
+      : 'Menyinkronkan Pre-op dengan pusat…',
+  );
   try {
     const user = (() => {
       try {
@@ -608,6 +674,8 @@ export async function syncPreOpNow(): Promise<void> {
     const counts = await syncCasemixNow(gatherVisibleSyncRows(), {
       loadLocal: () => loadPreOpMap(),
       readUnmarks: () => ({ ..._localUnmarkAt }),
+      readMigrated: readMigratedIds,
+      markMigrated: writeMigratedIds,
       postToggle: async (id, marked, info) => {
         try {
           const res = await requestCentral('/api/casemix/pre-op/toggle', {
@@ -654,12 +722,18 @@ export async function syncPreOpNow(): Promise<void> {
     if (counts.pushed > 0) parts.push(`${counts.pushed} terkirim`);
     if (counts.enriched > 0) parts.push(`${counts.enriched} dilengkapi`);
     if (counts.pulled > 0) parts.push(`${counts.pulled} baru dari pusat`);
+    const rest = pendingSyncCount();
     let msg =
       parts.length > 0
         ? `Sinkron selesai: ${parts.join(', ')}.`
         : 'Sinkron selesai: tidak ada perubahan.';
-    if (counts.offline) msg += ' (sebagian gagal — server tak terjangkau, coba lagi nanti)';
+    if (counts.offline && rest > 0) {
+      msg += ` (${rest} masih menunggu — server tak terjangkau, coba lagi nanti)`;
+    } else if (counts.offline) {
+      msg += ' (sebagian gagal — server tak terjangkau, coba lagi nanti)';
+    }
     showSyncToast(msg, 7000);
+    updateSyncBadge();
     void logUsage('mKlaimPreOp', 'sync_manual', !counts.offline, { ...counts });
   } finally {
     _syncRunning = false;
@@ -695,7 +769,10 @@ function injectSyncButton(): void {
     btn.appendChild(icon.cloneNode(true));
     btn.appendChild(document.createTextNode(' '));
   }
-  btn.appendChild(document.createTextNode('Sinkron'));
+  const labelSpan = document.createElement('span');
+  labelSpan.setAttribute('data-sync-label', '1');
+  labelSpan.textContent = 'Sinkron';
+  btn.appendChild(labelSpan);
   btn.title = 'Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
   btn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -711,6 +788,7 @@ function injectSyncButton(): void {
     const table = document.querySelector('table');
     table?.parentNode?.insertBefore(btn, table);
   }
+  updateSyncBadge();
 }
 
 export function initPreOpMarker(): void {
@@ -736,6 +814,7 @@ export function initPreOpMarker(): void {
       scanAndInjectPreOpButtons();
       refreshCentral();
       injectSyncButton(); // pasang ulang bila SPA render ulang form
+      updateSyncBadge(); // angka "belum terkirim" ikut segar
     }, 1500);
   });
 
