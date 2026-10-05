@@ -4,8 +4,8 @@ import {
   buildKlaimParams,
   buildKlaimUrl,
   toIsoDate,
+  type KlaimFilter,
 } from '../../src/features/mKlaimLaporanLinks.js';
-import type { KlaimFilter } from '../../src/features/mKlaimCasemixExport.js';
 
 function klaim(over: Partial<KlaimFilter> = {}): KlaimFilter {
   return {

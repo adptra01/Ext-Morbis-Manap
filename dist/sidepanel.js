@@ -1481,12 +1481,6 @@ var FALLBACK_FEATURES = [
 		]
 	},
 	{
-		key: "casemixExport",
-		name: "Export Pre-op & Revisi",
-		desc: "Export PDF Pre-op & Revisi mengikuti filter klaim",
-		roles: ["casemix", "admin"]
-	},
-	{
 		key: "laporanLinks",
 		name: "Tautan Laporan Klaim BPJS",
 		desc: "Tombol buka laporan gabungan Pre-op & Revisi di Reports dengan filter terbawa",

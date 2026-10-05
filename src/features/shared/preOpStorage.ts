@@ -4,9 +4,8 @@
  *
  * Privasi: hanya idVisit + markedAt yang ditulis ke localStorage (PC bersama,
  * terbaca skrip halaman). Identitas pasien (norm/nama/noReg) TIDAK disimpan —
- * konsumen membaca ulang dari baris tabel (mKlaimPreOp.extractPatientInfo);
- * ekspor (mKlaimCasemixExport) hanya memakai markedAt. Entry lama yang masih
- * membawa PII di-scrub otomatis saat dibaca (loadPreOpMap).
+ * konsumen membaca ulang dari baris tabel (mKlaimPreOp.extractPatientInfo).
+ * Entry lama yang masih membawa PII di-scrub otomatis saat dibaca (loadPreOpMap).
  */
 
 export interface PreOpItem {
@@ -82,8 +81,8 @@ export function purgeExpiredPreOp(
 /**
  * Baca seluruh PreOpMap dari storage, otomatis purge data > 30 hari.
  * Sekaligus scrub PII lama (norm/nama/noReg) — localStorage di PC bersama
- * bisa dibaca skrip halaman; konsumen (mKlaimPreOp / mKlaimCasemixExport)
- * membaca ulang identitas pasien dari baris tabel — hanya markedAt dipakai.
+ * bisa dibaca skrip halaman; konsumen membaca ulang identitas pasien dari
+ * baris tabel — hanya markedAt dipakai.
  */
 export function loadPreOpMap(
   store: KVStore | null = defaultStore(),

@@ -20,7 +20,7 @@ import {
   type ResumeHistoryEntry,
   type TipeResume,
 } from './resumeHistory.js';
-import { resolveCasemixBase, casemixTransportBlockReason } from './casemixApi.js';
+import { requestCentral } from './casemixApi.js';
 
 export type KVStore = {
   getItem(k: string): string | null;
@@ -69,22 +69,20 @@ async function postCentral(
   payload: Record<string, unknown>,
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
-  const base = resolveCasemixBase();
-  const locked = casemixTransportBlockReason(base);
-  if (locked) {
-    // Kill-switch PHI (konsisten dgn casemixApi.postFireForget): jangan
-    // cukupkan payload biasa lewat HTTP ke pusat — resep/pre-op ditahan lokal.
-    console.warn('[casemixBackfill]', locked, '— backfill dilewati:', path);
-    return false;
-  }
+  // requestCentral: kill-switch PHI + fallback-otomatis ke base sehat
+  // (override per-PC yang mati tidak lagi membuat antrean ini macet).
   try {
-    const res = await fetcher(base + path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(payload),
-      credentials: 'omit',
-    });
-    return res.ok;
+    const res = await requestCentral(
+      path,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'omit',
+      },
+      fetcher,
+    );
+    return !!res && res.ok;
   } catch {
     return false;
   }
@@ -165,16 +163,13 @@ export async function runCasemixBackfill(
     for (const id of pending) {
       const item = map[id];
       if (!item) continue;
+      // HANYA id_visit + marked yang dikirim: identitas (norm/nama/no_reg)
+      // tidak tersimpan lokal (di-scrub demi privasi) dan server TIDAK
+      // menimpa field yang tak dikirim — jadi data baik dari klik langsung
+      // tidak akan tertimpa null oleh sapuan ini (regresi laporan kosong).
       const ok = await postCentral(
         '/api/casemix/pre-op/toggle',
-        {
-          id_visit: id,
-          marked: true,
-          norm: item.norm ?? null,
-          nama: item.nama ?? null,
-          no_reg: item.noReg ?? null,
-          user: null,
-        },
+        { id_visit: id, marked: true },
         fetcher,
       );
       if (!ok) {

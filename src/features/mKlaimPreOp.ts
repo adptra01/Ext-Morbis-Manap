@@ -3,8 +3,15 @@ import { whenFeatureEnabled } from './shared/featureGate.js';
 import { injectCSS } from '../shared/ui/index.js';
 import { togglePreOp, loadPreOpMap, setPreOp, resolvePreOpMarked } from './shared/preOpStorage.js';
 import { readPetugas } from './shared/resumeHistory.js';
-import { fetchPreOpBatch, togglePreOpCentral, type CentralPreOpMark } from './shared/casemixApi.js';
+import {
+  fetchPreOpBatch,
+  fetchPreOpRecent,
+  requestCentral,
+  togglePreOpCentral,
+  type CentralPreOpMark,
+} from './shared/casemixApi.js';
 import { initCasemixBackfill } from './shared/casemixBackfill.js';
+import { syncCasemixNow, type SyncRow } from './shared/casemixSync.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 import { logUsage } from './shared/usageLog.js';
 
@@ -205,27 +212,109 @@ function extractIdVisitFromRow(row: HTMLTableRowElement): string | null {
     if (m) return m[1];
   }
 
+  // 3. Fallback: kolom "ID Visit"/"Kunjungan" via header (bila tombol
+  //    detail tidak ada di baris ini).
+  const idx = patientFieldIndexFromHeaders(headersOfRow(row));
+  if (idx.idVisit !== undefined && idx.idVisit < row.cells.length) {
+    const t = row.cells[idx.idVisit].textContent?.trim() || '';
+    const m = t.match(/(\d{4,})/);
+    if (m) return m[1];
+  }
+
   return null;
 }
 
-function extractPatientInfo(row: HTMLTableRowElement): {
+export interface PatientInfo {
   norm?: string;
   nama?: string;
   noReg?: string;
-} {
-  const cells = Array.from(row.querySelectorAll('td'));
+}
+
+/**
+ * Peta alias header kolom → field identitas, dicek berurutan (spesifik
+ * dulu). Kosakata dari tabel M-KLAIM asli (`collectKlaimRows` lama memakai
+ * pola yang sama: norm/nama/registrasi/poli).
+ */
+const HEADER_FIELD_PATTERNS: Array<{ field: keyof PatientInfo | 'idVisit'; re: RegExp }> = [
+  { field: 'idVisit', re: /id[_ ]?visit|no\.?\s*kunjungan/i },
+  {
+    field: 'noReg',
+    re: /(?:no\.?\s*)?registrasi\b|no\.?\s*reg\b|no\.?\s*daftar|no\.?\s*transaksi/i,
+  },
+  { field: 'norm', re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
+  { field: 'nama', re: /nama(\s*pasien)?/i },
+];
+
+/**
+ * Resolve indeks kolom identitas dari teks header (`thead th`), 0-based.
+ * Satu header hanya menang untuk satu field (dicoba berurutan) supaya
+ * "No RM" dan "No Registrasi" tidak saling menelan.
+ */
+export function patientFieldIndexFromHeaders(
+  headers: string[],
+): Partial<Record<keyof PatientInfo | 'idVisit', number>> {
+  const out: Partial<Record<keyof PatientInfo | 'idVisit', number>> = {};
+  const used = new Set<number>();
+  for (const { field, re } of HEADER_FIELD_PATTERNS) {
+    for (let i = 0; i < headers.length; i++) {
+      if (!used.has(i) && re.test((headers[i] || '').trim())) {
+        out[field] = i;
+        used.add(i);
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+/** Ambil teks header tabel induk baris (kosong bila tak ada thead). */
+function headersOfRow(row: HTMLTableRowElement): string[] {
+  const table = row.closest('table');
+  if (!table) return [];
+  return Array.from(table.querySelectorAll<HTMLElement>('thead th')).map(
+    (th) => th.textContent?.trim() ?? '',
+  );
+}
+
+function cellTextEmpty(t: string): boolean {
+  return t === '' || t === '-' || t === '—';
+}
+
+/**
+ * Baca identitas dari sel berdasarkan peta header (murni, unit-tested).
+ * Nilai '-', '—', kosong dianggap tidak ada.
+ */
+export function pickPatientInfo(headers: string[], cells: string[]): PatientInfo {
+  const idx = patientFieldIndexFromHeaders(headers);
+  const pick = (i: number | undefined): string | undefined => {
+    if (i === undefined || i < 0 || i >= cells.length) return undefined;
+    const t = (cells[i] ?? '').trim();
+    return cellTextEmpty(t) ? undefined : t;
+  };
+  return { norm: pick(idx.norm), nama: pick(idx.nama), noReg: pick(idx.noReg) };
+}
+
+/**
+ * Tebakan regex lama bila tabel tak punya thead/header yang dikenali
+ * (murni, unit-tested). SENGAJA lebih ketat dari versi lama: cabang
+ * `\d{8,}` pada noReg dibuang — angka 8+ digit adalah format norm
+ * (mis. 00050927, 2609280034), bukan no registrasi; cabang itu yang
+ * membuat norm nyasar ke kolom NO_REG di laporan.
+ */
+export function guessPatientInfo(cells: string[]): PatientInfo {
   let norm: string | undefined;
   let nama: string | undefined;
   let noReg: string | undefined;
 
-  cells.forEach((td) => {
-    const t = td.textContent?.trim() || '';
-    // No RM format 6 digit angka
-    if (!norm && /^\d{6}$/.test(t)) {
+  cells.forEach((raw) => {
+    const t = (raw ?? '').trim();
+    // No RM: 6–10 digit angka (00050927, 2609280034). BUKAN 13 digit
+    // (itu nomor kartu BPJS/SEP — jangan jadi norm).
+    if (!norm && /^\d{6,10}$/.test(t)) {
       norm = t;
     }
-    // No Registrasi format REG/RJ/... atau mirip
-    if (!noReg && /^(REG|RJ|RI|IGD|\d{8,})/i.test(t)) {
+    // No Registrasi: awalan REG/RJ/RI/IGD (tanpa cabang angka polos).
+    if (!noReg && /^(REG|RJ|RI|IGD)/i.test(t)) {
       noReg = t;
     }
     // Nama pasien biasanya ada di cell dengan teks huruf > 3 karakter tanpa angka banyak
@@ -239,6 +328,15 @@ function extractPatientInfo(row: HTMLTableRowElement): {
   });
 
   return { norm, nama, noReg };
+}
+
+function extractPatientInfo(row: HTMLTableRowElement): PatientInfo {
+  const cells = Array.from(row.querySelectorAll('td')).map((td) => td.textContent?.trim() ?? '');
+  const byHeader = pickPatientInfo(headersOfRow(row), cells);
+  if (byHeader.norm !== undefined || byHeader.nama !== undefined || byHeader.noReg !== undefined) {
+    return byHeader;
+  }
+  return guessPatientInfo(cells);
 }
 
 /** Resolve indeks kolom "Status Revisi" dari daftar teks header tabel (0-based);
@@ -449,6 +547,172 @@ function debouncedScan(): void {
   }, 100);
 }
 
+/* ── Sinkron eksplisit (tombol "Sinkron") ── */
+
+function showSyncToast(msg: string, ms = 5000): void {
+  try {
+    let t = document.getElementById('ext-preop-sync-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'ext-preop-sync-toast';
+      t.style.cssText =
+        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;' +
+        'border-radius:8px;background:#e8f0fd;color:#175cd3;border-left:5px solid #175cd3;' +
+        'font-weight:600;font-size:15px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.15);' +
+        "font-family:'Roboto','Segoe UI',system-ui,sans-serif;max-width:420px;";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    window.clearTimeout((t as unknown as { _t?: number })._t);
+    (t as unknown as { _t?: number })._t = window.setTimeout(() => t?.remove(), ms);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Baris terlihat + identitasnya (untuk push beridentitas & enrich). */
+function gatherVisibleSyncRows(): SyncRow[] {
+  const out: SyncRow[] = [];
+  const seen = new Set<string>();
+  for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
+    for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
+      if (row.classList.contains('dataTables_empty')) continue;
+      const id = extractIdVisitFromRow(row);
+      if (!id || seen.has(id) || _pendingToggle.has(id)) continue;
+      seen.add(id);
+      out.push({ idVisit: id, info: extractPatientInfo(row) });
+    }
+  }
+  return out;
+}
+
+let _syncRunning = false;
+
+/**
+ * Sinkron dua arah sekarang: push localStorage → pusat (beridentitas bila
+ * barisnya terlihat), enrich baris kosong, pull tanda PC lain → lokal +
+ * gambar ulang. Dipicu tombol "Sinkron" (bukan interval diam-diam).
+ */
+export async function syncPreOpNow(): Promise<void> {
+  if (_syncRunning) return;
+  _syncRunning = true;
+  showSyncToast('Menyinkronkan Pre-op dengan pusat…');
+  try {
+    const user = (() => {
+      try {
+        return readPetugas();
+      } catch {
+        return undefined;
+      }
+    })();
+    const counts = await syncCasemixNow(gatherVisibleSyncRows(), {
+      loadLocal: () => loadPreOpMap(),
+      readUnmarks: () => ({ ..._localUnmarkAt }),
+      postToggle: async (id, marked, info) => {
+        try {
+          const res = await requestCentral('/api/casemix/pre-op/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+              id_visit: id,
+              marked,
+              norm: info?.norm ?? null,
+              nama: info?.nama ?? null,
+              no_reg: info?.noReg ?? null,
+              user: user ?? null,
+            }),
+            credentials: 'omit',
+          });
+          return !!res && res.ok;
+        } catch {
+          return false;
+        }
+      },
+      fetchMarks: async (ids) => {
+        const marks = await fetchPreOpBatch(ids);
+        return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+      },
+      fetchRecent: async () => {
+        const marks = await fetchPreOpRecent(30);
+        return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+      },
+      saveMark: (id) => {
+        try {
+          setPreOp(id, {});
+        } catch {
+          /* storage penuh */
+        }
+      },
+    });
+    // Gambar ulang dari map lokal yang baru (sapuan 1,5 dtk juga mengejar).
+    try {
+      scanAndInjectPreOpButtons();
+    } catch {
+      /* ignore */
+    }
+    const parts: string[] = [];
+    if (counts.pushed > 0) parts.push(`${counts.pushed} terkirim`);
+    if (counts.enriched > 0) parts.push(`${counts.enriched} dilengkapi`);
+    if (counts.pulled > 0) parts.push(`${counts.pulled} baru dari pusat`);
+    let msg =
+      parts.length > 0
+        ? `Sinkron selesai: ${parts.join(', ')}.`
+        : 'Sinkron selesai: tidak ada perubahan.';
+    if (counts.offline) msg += ' (sebagian gagal — server tak terjangkau, coba lagi nanti)';
+    showSyncToast(msg, 7000);
+    void logUsage('mKlaimPreOp', 'sync_manual', !counts.offline, { ...counts });
+  } finally {
+    _syncRunning = false;
+  }
+}
+
+function injectSyncButton(): void {
+  if (document.getElementById('ext-preop-sync-btn')) return;
+
+  // Jangkar: tombol Laporan Klaim BPJS bila ada, kalau tidak tombol
+  // Cari/Tampil form filter; fallback tabel pertama.
+  const anchor =
+    (document.getElementById('ext-laporan-klaim-btn') as HTMLElement | null) ??
+    (Array.from(
+      document.querySelectorAll('button, input[type="button"], input[type="submit"]'),
+    ).find((b) => {
+      const t = ((b as HTMLInputElement).value || b.textContent || '').trim().toLowerCase();
+      return /^(cari|tampil|tampilkan|filter)$/.test(t);
+    }) as HTMLElement | undefined);
+  const refBtn =
+    anchor ?? (document.querySelector('button[onclick*="loadTableExcel"]') as HTMLElement | null);
+
+  const btn = document.createElement('button');
+  btn.id = 'ext-preop-sync-btn';
+  btn.type = 'button';
+  btn.className = refBtn?.className || 'btn btn-info';
+  const refStyle = refBtn?.getAttribute('style');
+  if (refStyle) btn.setAttribute('style', refStyle);
+  btn.style.display = 'inline-block';
+  btn.style.marginLeft = '8px';
+  const icon = refBtn?.querySelector('i');
+  if (icon) {
+    btn.appendChild(icon.cloneNode(true));
+    btn.appendChild(document.createTextNode(' '));
+  }
+  btn.appendChild(document.createTextNode('Sinkron'));
+  btn.title = 'Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void syncPreOpNow().catch((err) => {
+      window.console.warn('[mKlaimPreOp] sinkron manual gagal:', err);
+    });
+  });
+
+  if (anchor?.parentNode) {
+    anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+  } else {
+    const table = document.querySelector('table');
+    table?.parentNode?.insertBefore(btn, table);
+  }
+}
+
 export function initPreOpMarker(): void {
   if (window.location.pathname.includes('/detail')) return; // Jangan inject di halaman detail
 
@@ -466,10 +730,12 @@ export function initPreOpMarker(): void {
     scanAndInjectPreOpButtons();
     refreshCentral();
     initCasemixBackfill(); // migrasi diam-diam log lokal lama → DB pusat
+    injectSyncButton(); // tombol "Sinkron" manual (push + pull eksplisit)
     if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
     _scanIntervalId = window.setInterval(() => {
       scanAndInjectPreOpButtons();
       refreshCentral();
+      injectSyncButton(); // pasang ulang bila SPA render ulang form
     }, 1500);
   });
 

@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **laporanLinks** — satu tombol "Laporan Klaim BPJS" (halaman digabung) (`5074bc8`)
 - **laporanLinks** — tombol buka laporan Pre-op & Revisi BPJS di Reports (W-7.19) (`0d37acc`)
 
 ### 🐛 fix
@@ -1719,4 +1720,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: bbb2058a504c9ba23388dab9b3810e719035a6ca -->
+<!-- changelog-upto: 982600b81dac65b97537f3cf25957798389ae384 -->

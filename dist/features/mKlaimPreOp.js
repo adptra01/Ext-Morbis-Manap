@@ -21,8 +21,12 @@ var __morbis_feature = (() => {
   // src/features/mKlaimPreOp.ts
   var mKlaimPreOp_exports = {};
   __export(mKlaimPreOp_exports, {
+    guessPatientInfo: () => guessPatientInfo,
     initPreOpMarker: () => initPreOpMarker,
-    statusRevisiIndexFromHeaders: () => statusRevisiIndexFromHeaders
+    patientFieldIndexFromHeaders: () => patientFieldIndexFromHeaders,
+    pickPatientInfo: () => pickPatientInfo,
+    statusRevisiIndexFromHeaders: () => statusRevisiIndexFromHeaders,
+    syncPreOpNow: () => syncPreOpNow
   });
 
   // src/features/shared/types.ts
@@ -227,6 +231,74 @@ var __morbis_feature = (() => {
     }
     return CASEMIX_BASE_FALLBACK;
   }
+  function readOverrideBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) {
+        const b = ov.replace(/\/+$/, "");
+        return b === CASEMIX_BASE_FALLBACK ? null : b;
+      }
+    } catch {
+    }
+    return null;
+  }
+  function effectiveCasemixBase() {
+    if (pinnedFallbackBase) return CASEMIX_BASE_FALLBACK;
+    return resolveCasemixBase();
+  }
+  var pinnedFallbackBase = false;
+  async function isCasemixBaseAlive(base, fetcher = fetch, timeoutMs = 8e3) {
+    if (casemixTransportBlockReason(base)) return false;
+    try {
+      const ctrl = new AbortController();
+      const t = globalThis.setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const res = await fetcher(base + "/api/casemix/pre-op/list?ids=", {
+          cache: "no-store",
+          credentials: "omit",
+          headers: { Accept: "application/json" },
+          signal: ctrl.signal
+        });
+        if (!res.ok) return false;
+        const j = await res.json();
+        return j?.ok === true;
+      } finally {
+        globalThis.clearTimeout(t);
+      }
+    } catch {
+      return false;
+    }
+  }
+  async function requestCentral(path, init, fetcher = fetch) {
+    const first = effectiveCasemixBase();
+    const locked = casemixTransportBlockReason(first);
+    if (locked) {
+      console.warn("[casemixApi]", locked, "\u2014 request dilewati:", path);
+      return null;
+    }
+    let res;
+    try {
+      res = await fetchTimeout(first + path, init, fetcher);
+    } catch {
+      res = null;
+    }
+    if (res && res.ok) return res;
+    const looksBroken = !res || res.status === 404;
+    if (!looksBroken) return res;
+    const ov = readOverrideBase();
+    if (!ov || pinnedFallbackBase) return res ?? null;
+    if (casemixTransportBlockReason(CASEMIX_BASE_FALLBACK)) return res ?? null;
+    if (!await isCasemixBaseAlive(CASEMIX_BASE_FALLBACK, fetcher)) return res ?? null;
+    pinnedFallbackBase = true;
+    console.warn("[casemixApi] base override tak terjangkau, pakai fallback sesi ini:", ov);
+    try {
+      const { signal: _dropped, ...retryInit } = init;
+      void _dropped;
+      return await fetchTimeout(CASEMIX_BASE_FALLBACK + path, retryInit, fetcher);
+    } catch {
+      return null;
+    }
+  }
   function normalizeIds(ids) {
     return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
   }
@@ -241,46 +313,34 @@ var __morbis_feature = (() => {
   }
   async function getJson(path, fetcher = fetch) {
     try {
-      const base = resolveCasemixBase();
-      const locked = casemixTransportBlockReason(base);
-      if (locked) {
-        console.warn("[casemixApi]", locked, "\u2014 baca pusat dilewati:", path);
-        return null;
-      }
-      const res = await fetchTimeout(
-        base + path,
+      const res = await requestCentral(
+        path,
         { cache: "no-store", credentials: "omit", headers: { Accept: "application/json" } },
         fetcher
       );
-      if (!res.ok) return null;
+      if (!res || !res.ok) return null;
       return await res.json();
     } catch {
       return null;
     }
   }
   function postFireForget(path, payload, fetcher = fetch) {
-    try {
-      const base = resolveCasemixBase();
-      const locked = casemixTransportBlockReason(base);
-      if (locked) {
-        console.warn("[casemixApi]", locked, "\u2014 kirim pusat dilewati:", path);
-        return Promise.resolve();
-      }
-      const ctrl = new AbortController();
-      const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-      return fetcher(base + path, {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    return requestCentral(
+      path,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
         keepalive: true,
         credentials: "omit",
         signal: ctrl.signal
-      }).then(() => {
-      }).catch(() => {
-      }).finally(() => globalThis.clearTimeout(t));
-    } catch {
-      return Promise.resolve();
-    }
+      },
+      fetcher
+    ).then(() => {
+    }).catch(() => {
+    }).finally(() => globalThis.clearTimeout(t));
   }
   function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
     if (!idVisit) return Promise.resolve();
@@ -289,13 +349,13 @@ var __morbis_feature = (() => {
       {
         id_visit: idVisit,
         marked,
-        // PII diminimalkan: nama & no_reg TIDAK dikirim — konsumen klien
-        // (mKlaimCasemixExport) hanya memakai marked_at/user, dan identitas
-        // pasien dibaca ulang dari baris tabel (mKlaimPreOp.extractPatientInfo).
+        // Identitas pasien (norm/nama/no_reg) SELALU dikirim bila diketahui:
+        // halaman laporan Reports menampilkannya sebagai kolom, dan server
+        // hanya menimpa field yang non-null (tidak menghapus data baik).
         norm: info.norm ?? null,
+        nama: info.nama ?? null,
+        no_reg: info.noReg ?? null,
         user: info.user ?? null
-        // TODO(server): remove PII from payload — norm & user masih penciri
-        // pasien/petugas; hapus setelah kontrak server mengizinkan.
       },
       fetcher
     );
@@ -310,6 +370,23 @@ var __morbis_feature = (() => {
     if (j === null) return null;
     if (!j.ok || !j.marks) return {};
     return j.marks;
+  }
+  async function fetchPreOpRecent(daysBack = 30, fetcher = fetch) {
+    const end = /* @__PURE__ */ new Date();
+    const start = new Date(end.getTime() - Math.max(1, daysBack) * 24 * 60 * 60 * 1e3);
+    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const j = await getJson(
+      "/api/casemix/pre-op/export?tanggalAwal=" + encodeURIComponent(fmt(start)) + "&tanggalAkhir=" + encodeURIComponent(fmt(end)),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !Array.isArray(j.data)) return {};
+    const out = {};
+    for (const r of j.data) {
+      const id = String(r?.id_visit ?? "").trim();
+      if (id) out[id] = r;
+    }
+    return out;
   }
 
   // src/features/shared/resumeHistory.ts
@@ -418,20 +495,18 @@ var __morbis_feature = (() => {
     return null;
   }
   async function postCentral(path, payload, fetcher = fetch) {
-    const base = resolveCasemixBase();
-    const locked = casemixTransportBlockReason(base);
-    if (locked) {
-      console.warn("[casemixBackfill]", locked, "\u2014 backfill dilewati:", path);
-      return false;
-    }
     try {
-      const res = await fetcher(base + path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "omit"
-      });
-      return res.ok;
+      const res = await requestCentral(
+        path,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(payload),
+          credentials: "omit"
+        },
+        fetcher
+      );
+      return !!res && res.ok;
     } catch {
       return false;
     }
@@ -482,14 +557,7 @@ var __morbis_feature = (() => {
         if (!item) continue;
         const ok = await postCentral(
           "/api/casemix/pre-op/toggle",
-          {
-            id_visit: id,
-            marked: true,
-            norm: item.norm ?? null,
-            nama: item.nama ?? null,
-            no_reg: item.noReg ?? null,
-            user: null
-          },
+          { id_visit: id, marked: true },
           fetcher
         );
         if (!ok) {
@@ -592,6 +660,85 @@ var __morbis_feature = (() => {
     };
     window.setTimeout(tick, 5e3);
     _backfillTimer = window.setInterval(tick, 3e4);
+  }
+
+  // src/features/shared/casemixSync.ts
+  function infoPresent(info) {
+    return !!info && (info.norm !== void 0 || info.nama !== void 0 || info.noReg !== void 0);
+  }
+  async function syncCasemixNow(rows, deps) {
+    const now = deps.now ?? Date.now();
+    const visible = /* @__PURE__ */ new Map();
+    for (const r of rows) {
+      if (r.idVisit && !visible.has(r.idVisit)) visible.set(r.idVisit, r.info ?? {});
+    }
+    const local = deps.loadLocal();
+    const unmarks = deps.readUnmarks();
+    let pushed = 0;
+    let enriched = 0;
+    let pulled = 0;
+    let offline = false;
+    let central = {};
+    const ids = [.../* @__PURE__ */ new Set([...Object.keys(local), ...visible.keys()])];
+    if (ids.length > 0) {
+      try {
+        const res = await deps.fetchMarks(ids);
+        if (res.ok) {
+          central = res.marks ?? {};
+        } else {
+          offline = true;
+        }
+      } catch {
+        offline = true;
+      }
+    }
+    try {
+      const recent = await deps.fetchRecent();
+      if (recent.ok) {
+        central = { ...recent.marks ?? {}, ...central };
+      } else {
+        offline = true;
+      }
+    } catch {
+      offline = true;
+    }
+    const centralHas = (id) => offline && !(id in central) ? null : id in central;
+    const isMarked = (id) => resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
+    for (const id of Object.keys(local)) {
+      try {
+        if (await deps.postToggle(id, true, visible.get(id))) {
+          pushed++;
+        } else {
+          offline = true;
+        }
+      } catch {
+        offline = true;
+      }
+    }
+    for (const [id, info] of visible) {
+      if (id in local && infoPresent(info)) continue;
+      if (!isMarked(id)) continue;
+      if (!infoPresent(info)) continue;
+      try {
+        if (await deps.postToggle(id, true, info)) {
+          enriched++;
+        } else {
+          offline = true;
+        }
+      } catch {
+        offline = true;
+      }
+    }
+    for (const id of Object.keys(central)) {
+      if (id in local) continue;
+      if (!resolvePreOpMarked(false, true, unmarks[id], now)) continue;
+      try {
+        deps.saveMark(id);
+        pulled++;
+      } catch {
+      }
+    }
+    return { pushed, enriched, pulled, offline };
   }
 
   // src/features/shared/whenIdle.ts
@@ -788,19 +935,66 @@ var __morbis_feature = (() => {
       const m = anyLink.href.match(/id_visit=(\d+)/);
       if (m) return m[1];
     }
+    const idx = patientFieldIndexFromHeaders(headersOfRow(row));
+    if (idx.idVisit !== void 0 && idx.idVisit < row.cells.length) {
+      const t = row.cells[idx.idVisit].textContent?.trim() || "";
+      const m = t.match(/(\d{4,})/);
+      if (m) return m[1];
+    }
     return null;
   }
-  function extractPatientInfo(row) {
-    const cells = Array.from(row.querySelectorAll("td"));
+  var HEADER_FIELD_PATTERNS = [
+    { field: "idVisit", re: /id[_ ]?visit|no\.?\s*kunjungan/i },
+    {
+      field: "noReg",
+      re: /(?:no\.?\s*)?registrasi\b|no\.?\s*reg\b|no\.?\s*daftar|no\.?\s*transaksi/i
+    },
+    { field: "norm", re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
+    { field: "nama", re: /nama(\s*pasien)?/i }
+  ];
+  function patientFieldIndexFromHeaders(headers) {
+    const out = {};
+    const used = /* @__PURE__ */ new Set();
+    for (const { field, re } of HEADER_FIELD_PATTERNS) {
+      for (let i = 0; i < headers.length; i++) {
+        if (!used.has(i) && re.test((headers[i] || "").trim())) {
+          out[field] = i;
+          used.add(i);
+          break;
+        }
+      }
+    }
+    return out;
+  }
+  function headersOfRow(row) {
+    const table = row.closest("table");
+    if (!table) return [];
+    return Array.from(table.querySelectorAll("thead th")).map(
+      (th) => th.textContent?.trim() ?? ""
+    );
+  }
+  function cellTextEmpty(t) {
+    return t === "" || t === "-" || t === "\u2014";
+  }
+  function pickPatientInfo(headers, cells) {
+    const idx = patientFieldIndexFromHeaders(headers);
+    const pick = (i) => {
+      if (i === void 0 || i < 0 || i >= cells.length) return void 0;
+      const t = (cells[i] ?? "").trim();
+      return cellTextEmpty(t) ? void 0 : t;
+    };
+    return { norm: pick(idx.norm), nama: pick(idx.nama), noReg: pick(idx.noReg) };
+  }
+  function guessPatientInfo(cells) {
     let norm;
     let nama;
     let noReg;
-    cells.forEach((td) => {
-      const t = td.textContent?.trim() || "";
-      if (!norm && /^\d{6}$/.test(t)) {
+    cells.forEach((raw) => {
+      const t = (raw ?? "").trim();
+      if (!norm && /^\d{6,10}$/.test(t)) {
         norm = t;
       }
-      if (!noReg && /^(REG|RJ|RI|IGD|\d{8,})/i.test(t)) {
+      if (!noReg && /^(REG|RJ|RI|IGD)/i.test(t)) {
         noReg = t;
       }
       if (!nama && /^[A-Z\s.,']{3,}$/i.test(t) && !/^(RAWAT|JALAN|INAP|BPJS|UMUM|SELESAI|BELUM|VERIF)/i.test(t)) {
@@ -808,6 +1002,14 @@ var __morbis_feature = (() => {
       }
     });
     return { norm, nama, noReg };
+  }
+  function extractPatientInfo(row) {
+    const cells = Array.from(row.querySelectorAll("td")).map((td) => td.textContent?.trim() ?? "");
+    const byHeader = pickPatientInfo(headersOfRow(row), cells);
+    if (byHeader.norm !== void 0 || byHeader.nama !== void 0 || byHeader.noReg !== void 0) {
+      return byHeader;
+    }
+    return guessPatientInfo(cells);
   }
   function statusRevisiIndexFromHeaders(headers) {
     for (let i = 0; i < headers.length; i++) {
@@ -959,6 +1161,140 @@ var __morbis_feature = (() => {
       scanAndInjectPreOpButtons();
     }, 100);
   }
+  function showSyncToast(msg, ms = 5e3) {
+    try {
+      let t = document.getElementById("ext-preop-sync-toast");
+      if (!t) {
+        t = document.createElement("div");
+        t.id = "ext-preop-sync-toast";
+        t.style.cssText = "position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#e8f0fd;color:#175cd3;border-left:5px solid #175cd3;font-weight:600;font-size:15px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.15);font-family:'Roboto','Segoe UI',system-ui,sans-serif;max-width:420px;";
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      window.clearTimeout(t._t);
+      t._t = window.setTimeout(() => t?.remove(), ms);
+    } catch {
+    }
+  }
+  function gatherVisibleSyncRows() {
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const table of document.querySelectorAll("table")) {
+      for (const row of table.querySelectorAll("tbody tr")) {
+        if (row.classList.contains("dataTables_empty")) continue;
+        const id = extractIdVisitFromRow(row);
+        if (!id || seen.has(id) || _pendingToggle.has(id)) continue;
+        seen.add(id);
+        out.push({ idVisit: id, info: extractPatientInfo(row) });
+      }
+    }
+    return out;
+  }
+  var _syncRunning = false;
+  async function syncPreOpNow() {
+    if (_syncRunning) return;
+    _syncRunning = true;
+    showSyncToast("Menyinkronkan Pre-op dengan pusat\u2026");
+    try {
+      const user = (() => {
+        try {
+          return readPetugas();
+        } catch {
+          return void 0;
+        }
+      })();
+      const counts = await syncCasemixNow(gatherVisibleSyncRows(), {
+        loadLocal: () => loadPreOpMap(),
+        readUnmarks: () => ({ ..._localUnmarkAt }),
+        postToggle: async (id, marked, info) => {
+          try {
+            const res = await requestCentral("/api/casemix/pre-op/toggle", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                id_visit: id,
+                marked,
+                norm: info?.norm ?? null,
+                nama: info?.nama ?? null,
+                no_reg: info?.noReg ?? null,
+                user: user ?? null
+              }),
+              credentials: "omit"
+            });
+            return !!res && res.ok;
+          } catch {
+            return false;
+          }
+        },
+        fetchMarks: async (ids) => {
+          const marks = await fetchPreOpBatch(ids);
+          return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+        },
+        fetchRecent: async () => {
+          const marks = await fetchPreOpRecent(30);
+          return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+        },
+        saveMark: (id) => {
+          try {
+            setPreOp(id, {});
+          } catch {
+          }
+        }
+      });
+      try {
+        scanAndInjectPreOpButtons();
+      } catch {
+      }
+      const parts = [];
+      if (counts.pushed > 0) parts.push(`${counts.pushed} terkirim`);
+      if (counts.enriched > 0) parts.push(`${counts.enriched} dilengkapi`);
+      if (counts.pulled > 0) parts.push(`${counts.pulled} baru dari pusat`);
+      let msg = parts.length > 0 ? `Sinkron selesai: ${parts.join(", ")}.` : "Sinkron selesai: tidak ada perubahan.";
+      if (counts.offline) msg += " (sebagian gagal \u2014 server tak terjangkau, coba lagi nanti)";
+      showSyncToast(msg, 7e3);
+      void logUsage("mKlaimPreOp", "sync_manual", !counts.offline, { ...counts });
+    } finally {
+      _syncRunning = false;
+    }
+  }
+  function injectSyncButton() {
+    if (document.getElementById("ext-preop-sync-btn")) return;
+    const anchor = document.getElementById("ext-laporan-klaim-btn") ?? Array.from(
+      document.querySelectorAll('button, input[type="button"], input[type="submit"]')
+    ).find((b) => {
+      const t = (b.value || b.textContent || "").trim().toLowerCase();
+      return /^(cari|tampil|tampilkan|filter)$/.test(t);
+    });
+    const refBtn = anchor ?? document.querySelector('button[onclick*="loadTableExcel"]');
+    const btn = document.createElement("button");
+    btn.id = "ext-preop-sync-btn";
+    btn.type = "button";
+    btn.className = refBtn?.className || "btn btn-info";
+    const refStyle = refBtn?.getAttribute("style");
+    if (refStyle) btn.setAttribute("style", refStyle);
+    btn.style.display = "inline-block";
+    btn.style.marginLeft = "8px";
+    const icon = refBtn?.querySelector("i");
+    if (icon) {
+      btn.appendChild(icon.cloneNode(true));
+      btn.appendChild(document.createTextNode(" "));
+    }
+    btn.appendChild(document.createTextNode("Sinkron"));
+    btn.title = "Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain";
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      void syncPreOpNow().catch((err) => {
+        window.console.warn("[mKlaimPreOp] sinkron manual gagal:", err);
+      });
+    });
+    if (anchor?.parentNode) {
+      anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    } else {
+      const table = document.querySelector("table");
+      table?.parentNode?.insertBefore(btn, table);
+    }
+  }
   function initPreOpMarker() {
     if (window.location.pathname.includes("/detail")) return;
     if (_observer) _observer.disconnect();
@@ -971,10 +1307,12 @@ var __morbis_feature = (() => {
       scanAndInjectPreOpButtons();
       refreshCentral();
       initCasemixBackfill();
+      injectSyncButton();
       if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
       _scanIntervalId = window.setInterval(() => {
         scanAndInjectPreOpButtons();
         refreshCentral();
+        injectSyncButton();
       }, 1500);
     });
     window.addEventListener("pagehide", () => {

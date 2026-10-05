@@ -24320,6 +24320,74 @@ var __morbis_feature = (() => {
     }
     return CASEMIX_BASE_FALLBACK;
   }
+  function readOverrideBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) {
+        const b = ov.replace(/\/+$/, "");
+        return b === CASEMIX_BASE_FALLBACK ? null : b;
+      }
+    } catch {
+    }
+    return null;
+  }
+  function effectiveCasemixBase() {
+    if (pinnedFallbackBase) return CASEMIX_BASE_FALLBACK;
+    return resolveCasemixBase();
+  }
+  var pinnedFallbackBase = false;
+  async function isCasemixBaseAlive(base, fetcher = fetch, timeoutMs = 8e3) {
+    if (casemixTransportBlockReason(base)) return false;
+    try {
+      const ctrl = new AbortController();
+      const t = globalThis.setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const res = await fetcher(base + "/api/casemix/pre-op/list?ids=", {
+          cache: "no-store",
+          credentials: "omit",
+          headers: { Accept: "application/json" },
+          signal: ctrl.signal
+        });
+        if (!res.ok) return false;
+        const j = await res.json();
+        return j?.ok === true;
+      } finally {
+        globalThis.clearTimeout(t);
+      }
+    } catch {
+      return false;
+    }
+  }
+  async function requestCentral(path, init, fetcher = fetch) {
+    const first = effectiveCasemixBase();
+    const locked = casemixTransportBlockReason(first);
+    if (locked) {
+      console.warn("[casemixApi]", locked, "\u2014 request dilewati:", path);
+      return null;
+    }
+    let res;
+    try {
+      res = await fetchTimeout(first + path, init, fetcher);
+    } catch {
+      res = null;
+    }
+    if (res && res.ok) return res;
+    const looksBroken = !res || res.status === 404;
+    if (!looksBroken) return res;
+    const ov = readOverrideBase();
+    if (!ov || pinnedFallbackBase) return res ?? null;
+    if (casemixTransportBlockReason(CASEMIX_BASE_FALLBACK)) return res ?? null;
+    if (!await isCasemixBaseAlive(CASEMIX_BASE_FALLBACK, fetcher)) return res ?? null;
+    pinnedFallbackBase = true;
+    console.warn("[casemixApi] base override tak terjangkau, pakai fallback sesi ini:", ov);
+    try {
+      const { signal: _dropped, ...retryInit } = init;
+      void _dropped;
+      return await fetchTimeout(CASEMIX_BASE_FALLBACK + path, retryInit, fetcher);
+    } catch {
+      return null;
+    }
+  }
   async function fetchTimeout(url, init, fetcher = fetch) {
     const ctrl = new AbortController();
     const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
@@ -24331,18 +24399,12 @@ var __morbis_feature = (() => {
   }
   async function getJson(path, fetcher = fetch) {
     try {
-      const base = resolveCasemixBase();
-      const locked = casemixTransportBlockReason(base);
-      if (locked) {
-        console.warn("[casemixApi]", locked, "\u2014 baca pusat dilewati:", path);
-        return null;
-      }
-      const res = await fetchTimeout(
-        base + path,
+      const res = await requestCentral(
+        path,
         { cache: "no-store", credentials: "omit", headers: { Accept: "application/json" } },
         fetcher
       );
-      if (!res.ok) return null;
+      if (!res || !res.ok) return null;
       return await res.json();
     } catch {
       return null;

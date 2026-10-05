@@ -183,12 +183,6 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Batalkan request menggantung + tutup modal loading macet (infrastruktur, aman dimatikan)',
     },
-    casemixExport: {
-      enabled: true,
-      allowedRoles: ['casemix', 'admin'],
-      name: 'Export Pre-op & Revisi (M-KLAIM)',
-      description: 'Export PDF Pre-op & Revisi mengikuti filter halaman klaim (data DB pusat)',
-    },
     laporanLinks: {
       enabled: true,
       allowedRoles: ['casemix', 'admin'],

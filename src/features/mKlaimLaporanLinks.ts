@@ -24,11 +24,69 @@
  */
 import { getMorbisGlobals } from './shared/types.js';
 import { whenFeatureEnabled } from './shared/featureGate.js';
-import { readKlaimFilter, type KlaimFilter } from './mKlaimCasemixExport.js';
-import { resolveCasemixBase } from './shared/casemixApi.js';
+import { ensureCasemixBase } from './shared/casemixApi.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 
 const g = getMorbisGlobals();
+
+/** Filter form halaman klaim M-KLAIM (dipindahkan dari mKlaimCasemixExport
+ *  yang sudah dihapus — tombol Export PDF-nya tidak dipakai lagi karena
+ *  data laporan pindah ke halaman Reports). */
+export interface KlaimFilter {
+  tanggalAwal: string;
+  tanggalAkhir: string;
+  norm: string;
+  nama: string;
+  reg: string;
+  billing: string;
+  status: string;
+  idPoli: string;
+  poli: string;
+}
+
+const FILTER_KEYS: Array<[keyof KlaimFilter, string[]]> = [
+  ['tanggalAwal', ['tanggalAwal']],
+  ['tanggalAkhir', ['tanggalAkhir']],
+  ['norm', ['norm']],
+  ['nama', ['nama']],
+  ['reg', ['reg']],
+  ['billing', ['billing']],
+  ['status', ['status']],
+  ['idPoli', ['id_poli_cari', 'idPoli']],
+  ['poli', ['poli_cari', 'poli']],
+];
+
+/** Baca nilai field dari form (by id/name) lalu fallback query URL. */
+export function readKlaimFilter(doc: Document = document): KlaimFilter {
+  const qs = new URLSearchParams(window.location.search);
+  const out = {} as KlaimFilter;
+  for (const [key, names] of FILTER_KEYS) {
+    let v = '';
+    for (const n of names) {
+      const el = doc.getElementById(n) as HTMLInputElement | HTMLSelectElement | null;
+      if (el?.value !== undefined && el.value !== '') {
+        v = el.value;
+        break;
+      }
+      const byName = doc.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${n}"]`);
+      if (byName?.value !== undefined && byName.value !== '') {
+        v = byName.value;
+        break;
+      }
+    }
+    if (!v) {
+      for (const n of names) {
+        const q = qs.get(n);
+        if (q !== null && q !== '' && q !== 'undefined') {
+          v = q;
+          break;
+        }
+      }
+    }
+    out[key] = v;
+  }
+  return out;
+}
 
 /** Halaman laporan gabungan di Reports ( Reports SIMRS, W-7.19 ). */
 export const LAPORAN_KLAIM_PATH = '/laporan-klaim-bpjs';
@@ -105,13 +163,17 @@ function emptyFilter(): KlaimFilter {
   };
 }
 
-/** Buka halaman laporan gabungan di tab baru dengan filter form saat ini. */
+/** Buka halaman laporan gabungan di tab baru dengan filter form saat ini.
+ *
+ *  Tab dibuka SEBELUM menunggu jaringan (window.open sinkron di dalam
+ *  handler klik — kalau menunggu await dulu, popup-blocker menutupnya).
+ *  Base dipastikan via ensureCasemixBase (override per-PC yang mati
+ *  otomatis diganti fallback); tanpa override, URL langsung jadi.
+ */
 function openLaporan(): void {
-  let base: string;
-  try {
-    base = resolveCasemixBase();
-  } catch {
-    window.alert('Base URL Reports belum dikonfigurasi.');
+  const w = window.open('about:blank', '_blank');
+  if (!w) {
+    window.alert('Popup diblokir — izinkan popup untuk halaman ini lalu ulangi.');
     return;
   }
   let filter: KlaimFilter;
@@ -120,9 +182,21 @@ function openLaporan(): void {
   } catch {
     filter = emptyFilter();
   }
-  const url = buildKlaimUrl(base, filter);
-  window.console.info('[mKlaimLaporanLinks] buka laporan klaim →', url);
-  window.open(url, '_blank', 'noopener');
+  void Promise.resolve()
+    .then(() => ensureCasemixBase())
+    .then((base) => {
+      const url = buildKlaimUrl(base, filter);
+      window.console.info('[mKlaimLaporanLinks] buka laporan klaim →', url);
+      w.location.href = url;
+    })
+    .catch(() => {
+      try {
+        w.close();
+      } catch {
+        /* ignore */
+      }
+      window.alert('Gagal menyiapkan koneksi Reports — coba lagi.');
+    });
 }
 
 function makeLinkButton(
@@ -158,11 +232,16 @@ function makeLinkButton(
 export function injectLaporanButtons(): void {
   if (document.getElementById('ext-laporan-klaim-btn')) return;
 
-  const exportBtn = document.getElementById('ext-casemix-export-btn') as HTMLElement | null;
-  const anchor = exportBtn?.parentNode ? exportBtn : null;
+  // Jangkar: tombol Cari/Tampil pada form filter; fallback tombol asli
+  // MORBIS, terakhir tabel pertama.
+  const anchor = Array.from(
+    document.querySelectorAll('button, input[type="button"], input[type="submit"]'),
+  ).find((b) => {
+    const t = ((b as HTMLInputElement).value || b.textContent || '').trim().toLowerCase();
+    return /^(cari|tampil|tampilkan|filter)$/.test(t);
+  }) as HTMLElement | undefined;
   const refBtn =
-    (document.getElementById('ext-casemix-export-btn') as HTMLElement | null) ||
-    (document.querySelector('button[onclick*="loadTableExcel"]') as HTMLElement | null);
+    anchor ?? (document.querySelector('button[onclick*="loadTableExcel"]') as HTMLElement | null);
 
   const btnKlaim = makeLinkButton(
     'ext-laporan-klaim-btn',
