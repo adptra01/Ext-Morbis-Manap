@@ -539,6 +539,7 @@ function ensurePreOpButton(row: HTMLTableRowElement, idVisit: string): HTMLButto
           nama: info.nama,
           noReg: info.noReg,
           user: readPetugas(),
+          visitDatetime: info.visitDatetime,
         }),
       ).then(settle, settle);
     } catch {

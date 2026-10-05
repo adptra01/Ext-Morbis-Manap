@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **pre-op** — send visit_datetime from M-KLAIM endpoint (`31a5228`)
 - **pre-op** — fetch patient identity from M-KLAIM data endpoint (`6f77c3e`)
 - **preop** — sinkron baca data lokal versi lama + badge belum-terkirim (`e6c0ac0`)
 - **preop** — tombol Sinkron tampilkan jumlah belum terkirim (`0f49a60`)
@@ -21,6 +22,10 @@
 - **pre-op** — prevent stale unmark wiping old marks + fix cross-PC toggle (`cbdae89`)
 - **laporanLinks** — kirim ID unit sebagai id_poli, bukan nama saja (`b57a16a`)
 - **antrolKirim** — hentikan polling saat konteks extension mati (`8896393`)
+
+### 📌 misc
+
+- Bump version to 1.5.134 in manifest.json (`b479775`)
 
 ## 2026-10-02
 
@@ -1735,4 +1740,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6f77c3e675e06ddd4a487300c006847ae2e5bb62 -->
+<!-- changelog-upto: b479775fb61add156422aef684a326abf5af19a0 -->

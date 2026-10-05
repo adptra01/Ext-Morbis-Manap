@@ -344,7 +344,13 @@ export interface CentralPreOpMark {
 export function togglePreOpCentral(
   idVisit: string,
   marked: boolean,
-  info: { norm?: string; nama?: string; noReg?: string; user?: string } = {},
+  info: {
+    norm?: string;
+    nama?: string;
+    noReg?: string;
+    user?: string;
+    visitDatetime?: string;
+  } = {},
   fetcher: typeof fetch = fetch,
 ): Promise<void> {
   if (!idVisit) return Promise.resolve();
@@ -360,6 +366,7 @@ export function togglePreOpCentral(
       nama: info.nama ?? null,
       no_reg: info.noReg ?? null,
       user: info.user ?? null,
+      visit_datetime: info.visitDatetime ?? null,
     },
     fetcher,
   );
