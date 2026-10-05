@@ -2254,7 +2254,8 @@ var __morbis_feature = (() => {
   injectCSS(
     "ext-telaah-styles",
     `@media print { .ext-telaah-btn { display: none !important; } }
-  .ext-telaah-btn {
+  /* Tombol kecil (list): gaya custom mungil agar muat di sel tabel. */
+  .ext-telaah-btn:not(.ext-telaah-large) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2273,21 +2274,34 @@ var __morbis_feature = (() => {
     user-select: none;
     text-decoration: none !important;
   }
-  .ext-telaah-btn:hover {
+  .ext-telaah-btn:not(.ext-telaah-large):hover {
     background: #f1f5f9;
     border-color: #94a3b8;
     color: #1e293b;
     transform: translateY(-1px);
   }
-  .ext-telaah-btn.active {
+  .ext-telaah-btn:not(.ext-telaah-large).active {
     background: #0d9488 !important;
     border-color: #0f766e !important;
     color: #ffffff !important;
     font-weight: 700;
     box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
   }
-  .ext-telaah-btn.active:hover {
+  .ext-telaah-btn:not(.ext-telaah-large).active:hover {
     background: #0f766e !important;
+  }
+  /* Varian footer detail: andalkan btn/btn-primary Bootstrap (ukuran +
+   * biru samakan tombol MORBIS) \u2014 hanya margin + active gelap. */
+  .ext-telaah-btn.ext-telaah-large {
+    margin-left: 8px;
+  }
+  .ext-telaah-btn.ext-telaah-large.active {
+    background: #286090 !important;
+    border-color: #204d74 !important;
+    box-shadow: 0 2px 6px rgba(40, 96, 144, 0.35);
+  }
+  .ext-telaah-btn.ext-telaah-large.active:hover {
+    background: #204d74 !important;
   }
   .ext-telaah-btn:disabled { opacity: 0.6; cursor: wait; }`
   );
@@ -2401,10 +2415,10 @@ var __morbis_feature = (() => {
     btn.setAttribute("data-ext-telaah-marked", marked ? "true" : "false");
     btn.title = marked ? "Telaah Berkas: SUDAH ditandai (klik untuk batal)" : "Tandai Telaah Berkas";
   }
-  function makeTelaahButton(idVisit, marked) {
+  function makeTelaahButton(idVisit, marked, large = false) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "ext-telaah-btn";
+    btn.className = large ? "btn btn-primary ext-telaah-btn ext-telaah-large" : "ext-telaah-btn";
     btn.setAttribute("data-ext-telaah-btn", idVisit);
     btn.textContent = "Telaah";
     paintTelaah(btn, marked);
@@ -2535,9 +2549,8 @@ var __morbis_feature = (() => {
     if (!id || document.getElementById("ext-telaah-detail-btn")) return;
     const footer = findDetailFooter(document);
     if (!footer) return;
-    const btn = makeTelaahButton(id, false);
+    const btn = makeTelaahButton(id, false, true);
     btn.id = "ext-telaah-detail-btn";
-    btn.style.marginLeft = "8px";
     const actions = Array.from(
       footer.querySelectorAll('button, a.btn, input[type="button"], input[type="submit"]')
     );

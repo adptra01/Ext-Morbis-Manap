@@ -30,8 +30,13 @@
 - **laporanLinks** — kirim ID unit sebagai id_poli, bukan nama saja (`b57a16a`)
 - **antrolKirim** — hentikan polling saat konteks extension mati (`8896393`)
 
+### 🎨 style
+
+- **telaah** — tombol footer detail ukuran + biru samakan tombol MORBIS (`c0c44fe`)
+
 ### 🧹 chore
 
+- rebuild dist (telaah berkas list + footer detail) (`fe3c2c9`)
 - rebuild dist (anti-resurrect + reconcile unmark lintas-PC) (`ceb04f7`)
 - rebuild dist (poli + backfill full-field + laporan polos) (`3dbab55`)
 
@@ -1752,4 +1757,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 98761f75c6848ffeb1f5d817bb04182cc8e071c2 -->
+<!-- changelog-upto: c0c44fea4b96bb81bae625a0f8df91ef5644ca50 -->

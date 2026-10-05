@@ -1,4 +1,4 @@
-import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-CTJMvF44.js";
+import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-DaeLTaMD.js";
 //#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
