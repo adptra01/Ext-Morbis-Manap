@@ -162,3 +162,59 @@ describe('mKlaimTelaah — footer detail', () => {
     expect(collectDetailPairs(doc)).toEqual([['Nama Pasien', 'REVAN HAIKAL AHMAD']]);
   });
 });
+
+describe('mKlaimTelaah — paintTelaah anti-glitch', () => {
+  const fakeBtn = () => {
+    const cls = new Set<string>();
+    const attrs = new Map<string, string>();
+    let textWrites = 0;
+    let attrWrites = 0;
+    let lastText = '';
+    return {
+      writes: () => ({ textWrites, attrWrites }),
+      btn: {
+        classList: {
+          contains: (c: string) => cls.has(c),
+          toggle: (c: string, f?: boolean) => {
+            const on = f ?? !cls.has(c);
+            if (on) cls.add(c);
+            else cls.delete(c);
+          },
+          add: (c: string) => cls.add(c),
+          remove: (c: string) => cls.delete(c),
+        },
+        getAttribute: (k: string) => attrs.get(k) ?? null,
+        setAttribute: (k: string, v: string) => {
+          attrWrites++;
+          attrs.set(k, v);
+        },
+        get textContent() {
+          return lastText;
+        },
+        set textContent(v: string | null) {
+          textWrites++;
+          lastText = v ?? '';
+        },
+        title: '',
+      } as unknown as HTMLButtonElement,
+    };
+  };
+
+  it('tulis ulang hanya bila status berubah (scan berulang diam)', async () => {
+    const { paintTelaah } = await import('../../src/features/mKlaimTelaah.js');
+    const f = fakeBtn();
+    paintTelaah(f.btn, true);
+    const afterFirst = f.writes();
+    expect(afterFirst.textWrites).toBeGreaterThan(0);
+    paintTelaah(f.btn, true);
+    paintTelaah(f.btn, true);
+    // Repeat paint status sama: nol tulis teks tambahan, maksimal 0 attr.
+    expect(f.writes().textWrites).toBe(afterFirst.textWrites);
+    expect(f.writes().attrWrites).toBe(afterFirst.attrWrites);
+    expect(f.btn.textContent).toBe('✓ Telaah');
+    // Transisi benar tetap ditulis.
+    paintTelaah(f.btn, false);
+    expect(f.btn.textContent).toBe('Telaah');
+    expect(f.writes().textWrites).toBeGreaterThan(afterFirst.textWrites);
+  });
+});

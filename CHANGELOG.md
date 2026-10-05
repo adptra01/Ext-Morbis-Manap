@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **telaah** — badge kolom Status Revisi + konfirmasi detail + anti-sampah DOM (`e703bc3`)
 - **telaah** — mark Telaah Berkas list + footer detail, konsep sama pre-op (`98761f7`)
 - **pre-op** — unmark lintas-PC direkonsiliasi, semua PC tampil sama (`15183c8`)
 - **pre-op** — poli ikut terkirim + backfill otomatis field lengkap (`0bab2d3`)
@@ -36,6 +37,7 @@
 
 ### 🧹 chore
 
+- rebuild dist (badge telaah + konfirmasi detail) (`dead5e9`)
 - rebuild dist (tombol telaah footer biru Bootstrap) (`db9ec10`)
 - rebuild dist (telaah berkas list + footer detail) (`fe3c2c9`)
 - rebuild dist (anti-resurrect + reconcile unmark lintas-PC) (`ceb04f7`)
@@ -1758,4 +1760,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: db9ec10ddd2147f1a5271c505488583b1f452ab7 -->
+<!-- changelog-upto: dead5e951341afc46b38303dd46adb9ff6afe2d1 -->

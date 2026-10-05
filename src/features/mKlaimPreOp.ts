@@ -145,8 +145,9 @@ function effectiveMarked(
 function paintPending(btn: HTMLButtonElement): void {
   btn.disabled = true;
   if (!btn.classList.contains('pending')) btn.classList.add('pending');
-  btn.textContent = '⏳ Menyimpan…';
-  btn.title = 'Menyimpan ke server pusat…';
+  if (btn.textContent !== '⏳ Menyimpan…') btn.textContent = '⏳ Menyimpan…';
+  const t = 'Menyimpan ke server pusat…';
+  if (btn.title !== t) btn.title = t;
 }
 
 /** Ambil semua id_visit yang terlihat di tabel halaman ini. */
@@ -435,16 +436,19 @@ function updateRowVisual(
   const btn = row.querySelector<HTMLButtonElement>(`button[data-ext-preop-btn="${idVisit}"]`);
   if (btn) {
     // Ganti penuh status final (non-pending): buka kunci + lepas spinner.
+    // Tulis DOM hanya bila berubah (anti glitch — lihat paintTelaah).
     btn.disabled = false;
     btn.classList.remove('pending');
     if (marked) {
-      btn.classList.add('active');
-      btn.textContent = '✓ Pre-op';
-      btn.title = 'Ditandai sebagai Pre-op (klik untuk batalkan)';
+      if (!btn.classList.contains('active')) btn.classList.add('active');
+      if (btn.textContent !== '✓ Pre-op') btn.textContent = '✓ Pre-op';
+      const t = 'Ditandai sebagai Pre-op (klik untuk batalkan)';
+      if (btn.title !== t) btn.title = t;
     } else {
-      btn.classList.remove('active');
-      btn.textContent = 'Pre-op';
-      btn.title = 'Tandai pasien sebagai Pre-op (tersimpan 1 bulan)';
+      if (btn.classList.contains('active')) btn.classList.remove('active');
+      if (btn.textContent !== 'Pre-op') btn.textContent = 'Pre-op';
+      const t = 'Tandai pasien sebagai Pre-op (tersimpan 1 bulan)';
+      if (btn.title !== t) btn.title = t;
     }
   }
 

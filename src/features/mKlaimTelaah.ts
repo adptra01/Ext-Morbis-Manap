@@ -290,13 +290,22 @@ function userNow(): string | undefined {
   }
 }
 
-function paintTelaah(btn: HTMLButtonElement, marked: boolean): void {
-  btn.classList.toggle('active', marked);
-  btn.setAttribute('data-ext-telaah-marked', marked ? 'true' : 'false');
+/** Diekspor untuk unit test (anti-glitch: tulis DOM hanya bila berubah). */
+export function paintTelaah(btn: HTMLButtonElement, marked: boolean): void {
+  // Tulis DOM hanya bila berubah (anti glitch: scan 3 dtk + refresh 15 dtk
+  // jalan terus; tulis redundan = flicker + pemicu MutationObserver).
+  if (btn.classList.contains('active') !== marked) btn.classList.toggle('active', marked);
+  const wantMarked = marked ? 'true' : 'false';
+  if (btn.getAttribute('data-ext-telaah-marked') !== wantMarked)
+    btn.setAttribute('data-ext-telaah-marked', wantMarked);
   if (!btn.classList.contains('ext-telaah-large')) {
-    btn.textContent = marked ? '✓ Telaah' : 'Telaah';
+    const wantText = marked ? '✓ Telaah' : 'Telaah';
+    if (btn.textContent !== wantText) btn.textContent = wantText;
   }
-  btn.title = marked ? 'Telaah Berkas: SUDAH ditandai (klik untuk batal)' : 'Tandai Telaah Berkas';
+  const wantTitle = marked
+    ? 'Telaah Berkas: SUDAH ditandai (klik untuk batal)'
+    : 'Tandai Telaah Berkas';
+  if (btn.title !== wantTitle) btn.title = wantTitle;
 }
 
 /** Badge TELAAH di kolom "Status Revisi" (sama seperti badge PRE-OP —
@@ -474,8 +483,14 @@ function scanListRows(): void {
       }
       if (btn.getAttribute('data-ext-telaah-btn') !== id)
         btn.setAttribute('data-ext-telaah-btn', id);
-      if (!_pendingTelaah.has(id)) {
-        const marked = telaahEffectiveMarked(id, localMap);
+      // Jalur cepat: visual sudah benar → tanpa tulis DOM (anti glitch).
+      const want = String(telaahEffectiveMarked(id, localMap));
+      if (
+        !_pendingTelaah.has(id) &&
+        (btn.getAttribute('data-ext-telaah-marked') !== want ||
+          btn.classList.contains('active') !== (want === 'true'))
+      ) {
+        const marked = want === 'true';
         paintTelaah(btn, marked);
         updateTelaahBadge(row, marked);
       }
