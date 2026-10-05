@@ -16,6 +16,11 @@ export interface PreOpItem {
   norm?: string;
   nama?: string;
   noReg?: string;
+  /** true bila entry disimpan dari hasil pull pusat (tanda milik PC lain),
+   *  BUKAN dari klik user di PC ini. Hanya entry ini yang boleh dihapus
+   *  otomatis oleh rekonsiliasi (unmark PC lain); klik user tak pernah
+   *  dihapus otomatis. Bukan PII → aman disimpan di localStorage. */
+  fromCentral?: boolean;
 }
 
 export type PreOpMap = Record<string, PreOpItem>;
@@ -117,10 +122,14 @@ export function loadPreOpMap(
 /** Bentuk entry yang boleh disimpan: PII sengaja TIDAK ditulis ke
  *  localStorage (PC bersama, terbaca skrip halaman). Satu-satunya titik
  *  tulis — dipakai `savePreOpMap`, jadi data lama versi lama ikut bersih
- *  setelah tulis pertama (sesudah sempat diunggah sinkron). */
+ *  setelah tulis pertama (sesudah sempat diunggah sinkron).
+ *  `fromCentral` dipertahankan (bukan PII, penanda asal entry untuk
+ *  rekonsiliasi unmark lintas-PC). */
 function minimalPreOpItem(raw: PreOpItem): PreOpItem {
   if (!raw || typeof raw !== 'object') return { idVisit: '', markedAt: 0 };
-  return { idVisit: raw.idVisit, markedAt: raw.markedAt };
+  const out: PreOpItem = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+  if (raw.fromCentral === true) out.fromCentral = true;
+  return out;
 }
 
 /**
@@ -160,16 +169,21 @@ export function isPreOp(
  * Tandai visit sebagai Pre-op. `info` (norm/nama/noReg) diterima demi
  * kompatibilitas pemanggil (mKlaimPreOp), tapi TIDAK disimpan: konsumen
  * membaca ulang identitas pasien dari baris tabel saat dibutuhkan.
+ * `fromCentral=true` untuk entry hasil pull pusat (tanda PC lain) —
+ * hanya entry ini yang boleh dihapus rekonsiliasi unmark lintas-PC.
  */
 export function setPreOp(
   idVisit: string,
   _info: { norm?: string; nama?: string; noReg?: string } = {},
   store: KVStore | null = defaultStore(),
   now: number = Date.now(),
+  fromCentral = false,
 ): void {
   if (!idVisit) return;
   const map = loadPreOpMap(store, now);
-  map[idVisit] = { idVisit, markedAt: now };
+  map[idVisit] = fromCentral
+    ? { idVisit, markedAt: now, fromCentral: true }
+    : { idVisit, markedAt: now };
   savePreOpMap(map, store);
 }
 
@@ -210,6 +224,59 @@ export function removePreOp(idVisit: string, store: KVStore | null = defaultStor
   }
   const q = loadUnmarkQueue(store);
   if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
+}
+
+/** Tenggang rekonsiliasi: entry fromCentral yang baru disimpan (< ini)
+ *  jangan dihapus walau tak ada di pusat — lindungi dari baca pusat
+ *  yang basi/inkonsisten sesaat. Konvergensi unmark lintas-PC ≈
+ *  interval refresh (15 dtk) + tenggang ini. */
+export const RECONCILE_GRACE_MS = 60000;
+
+/**
+ * Id lokal yang BASI dari pusat: disimpan dari pull (fromCentral), sudah
+ * lebih tua dari tenggang, tapi tak ada di peta pusat — artinya PC lain
+ * meng-unmark (baris pusat dihapus). Murni, unit-tested.
+ *
+ * Hanya dipakai bila fetch pusat SUKSES (offline → jangan panggil:
+ * ketidakadaan tak bisa dibedakan dari jaringan mati) dan daftar id yang
+ * di-fetch tidak terpotong limit batch server.
+ */
+export function collectStaleCentralMarks(
+  map: PreOpMap,
+  centralHas: (id: string) => boolean,
+  now: number = Date.now(),
+  graceMs: number = RECONCILE_GRACE_MS,
+): string[] {
+  const out: string[] = [];
+  for (const [id, item] of Object.entries(map)) {
+    if (!item || item.fromCentral !== true) continue; // klik user: tak pernah dihapus otomatis
+    if (centralHas(id)) continue;
+    if (now - item.markedAt < graceMs) continue; // baru ditarik — beri kesempatan
+    out.push(id);
+  }
+  return out;
+}
+
+/**
+ * Lupakan entry fromCentral TANPA antre unmark (rekonsiliasi, bukan aksi
+ * user: baris pusatnya sudah tidak ada, tak ada yang perlu dikirim).
+ * Entry klik user / id tak dikenal → tak disentuh (return false).
+ */
+export function forgetCentralMark(
+  idVisit: string,
+  store: KVStore | null = defaultStore(),
+): boolean {
+  if (!idVisit || !store) return false;
+  try {
+    const map = loadPreOpMap(store);
+    const item = map[idVisit];
+    if (!item || item.fromCentral !== true) return false;
+    delete map[idVisit];
+    savePreOpMap(map, store);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

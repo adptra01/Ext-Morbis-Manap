@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **pre-op** — poli ikut terkirim + backfill otomatis field lengkap (`0bab2d3`)
 - **laporan** — tombol buka halaman polos tanpa prefill filter (`51b450a`)
 - **pre-op** — realtime toggle now sends visit_datetime (`adc491d`)
 - **pre-op** — send visit_datetime from M-KLAIM endpoint (`31a5228`)
@@ -25,6 +26,10 @@
 - **pre-op** — prevent stale unmark wiping old marks + fix cross-PC toggle (`cbdae89`)
 - **laporanLinks** — kirim ID unit sebagai id_poli, bukan nama saja (`b57a16a`)
 - **antrolKirim** — hentikan polling saat konteks extension mati (`8896393`)
+
+### 🧹 chore
+
+- rebuild dist (poli + backfill full-field + laporan polos) (`3dbab55`)
 
 ### 📌 misc
 
@@ -1743,4 +1748,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 51b450a43b9fe594423c090ef2ae8d7367487d2a -->
+<!-- changelog-upto: 3dbab55c9fecd810be26b4cef9c4bdef70a0e161 -->

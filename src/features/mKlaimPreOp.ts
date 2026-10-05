@@ -1,7 +1,14 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { whenFeatureEnabled } from './shared/featureGate.js';
 import { injectCSS } from '../shared/ui/index.js';
-import { removePreOp, loadPreOpMap, setPreOp, resolvePreOpMarked } from './shared/preOpStorage.js';
+import {
+  removePreOp,
+  loadPreOpMap,
+  setPreOp,
+  resolvePreOpMarked,
+  collectStaleCentralMarks,
+  forgetCentralMark,
+} from './shared/preOpStorage.js';
 import { readPetugas } from './shared/resumeHistory.js';
 import {
   fetchPreOpBatch,
@@ -175,9 +182,17 @@ function refreshCentral(): void {
     }
     // Status tunggal via effectiveMarked: klik lokal menang seketika,
     // unmark lokal menutupi mark pusat basi, mark PC lain ikut tampil.
+    // Rekonsiliasi unmark lintas-PC: entry yang dulu ditarik dari pusat
+    // (fromCentral) tapi kini tak ada di pusat = PC lain meng-unmark →
+    // lupakan lokal supaya tampilan semua PC sama. Klik user tak tersentuh.
     // Baris yang sedang kirim (pending) dilewati — visual spinner milik klik.
     const localMap = loadPreOpMap();
     const now = Date.now();
+    const hasCentral = (id: string): boolean => !!marks[id];
+    for (const id of collectStaleCentralMarks(localMap, hasCentral, now)) {
+      if (_pendingToggle.has(id)) continue;
+      if (forgetCentralMark(id)) delete localMap[id];
+    }
     for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
       for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
         const id = extractIdVisitFromRow(row);
@@ -185,7 +200,7 @@ function refreshCentral(): void {
         const marked = effectiveMarked(id, localMap, now);
         if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
           if (marked && !localMap[id]) {
-            setPreOp(id, extractPatientInfo(row));
+            setPreOp(id, extractPatientInfo(row), undefined, Date.now(), true);
           }
           updateRowVisual(row, id, marked, resolveBadgeCell(row, table));
         }
@@ -766,9 +781,18 @@ export async function syncPreOpNow(): Promise<void> {
       },
       saveMark: (id) => {
         try {
-          setPreOp(id, {});
+          setPreOp(id, {}, undefined, Date.now(), true);
         } catch {
           /* storage penuh */
+        }
+      },
+      // Rekonsiliasi unmark lintas-PC (langkah 4 sinkron): lupakan entry
+      // fromCentral yang sudah tak ada di pusat — tanpa antre unmark.
+      forgetMark: (id) => {
+        try {
+          forgetCentralMark(id);
+        } catch {
+          /* abaikan */
         }
       },
       // Tabel hanya merender halaman aktif (DataTables, 10 baris/halaman) →

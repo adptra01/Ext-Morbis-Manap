@@ -20,7 +20,7 @@
  * Murni + dependensi injeksi → unit-testable penuh di env node (tanpa DOM).
  * Lapisan DOM (kumpul baris terlihat, tombol, toast) ada di mKlaimPreOp.ts.
  */
-import { resolvePreOpMarked, type PreOpMap } from './preOpStorage.js';
+import { resolvePreOpMarked, RECONCILE_GRACE_MS, type PreOpMap } from './preOpStorage.js';
 import type { CentralPreOpMark } from './casemixApi.js';
 
 export interface SyncRowInfo {
@@ -55,6 +55,10 @@ export interface SyncDeps {
   /** Discovery: semua tanda pusat rentang terakhir (tanpa harus tahu id). */
   fetchRecent(): Promise<SyncFetchResult>;
   saveMark(idVisit: string): void;
+  /** Lupakan entry fromCentral yang basi dari pusat (rekonsiliasi unmark
+   *  lintas-PC). Opsional — tanpa ini Sinkron hanya menambah, tak menghapus;
+   *  refresh 15 dtk tetap merekonsiliasi baris terlihat. */
+  forgetMark?(idVisit: string): void;
   /** Watermark id yang sudah terkirim (opsional — bila tak ada, pending = semua id lokal). */
   readMigrated?(): string[];
   /**
@@ -270,7 +274,11 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
     }
   }
 
-  // 4. Pull-merge ke lokal (hormati unmark segar).
+  // 4. Pull-merge ke lokal (hormati unmark segar) + rekonsiliasi unmark
+  //    lintas-PC: entry fromCentral yang tak ada lagi di pusat = PC lain
+  //    meng-unmark → lupakan lokal supaya semua PC menampilkan data sama.
+  //    Syarat ketat (jangan hapus saat ragu): kedua fetch sukses
+  //    (!offline) DAN daftar id tak terpotong limit batch server (500).
   for (const id of Object.keys(central)) {
     if (id in local) continue;
     if (!resolvePreOpMarked(false, true, unmarks[id], now)) continue;
@@ -279,6 +287,19 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
       pulled++;
     } catch {
       /* storage penuh — lewati */
+    }
+  }
+  if (!offline && ids.length <= 400 && deps.forgetMark) {
+    for (const [id, item] of Object.entries(local)) {
+      if (!item || item.fromCentral !== true) continue; // klik user: tak tersentuh
+      if (ids.includes(id) && central[id]) continue; // masih ada di pusat
+      if (!ids.includes(id)) continue; // tak di-fetch (di luar batch) → jangan hapus
+      if (now - item.markedAt < RECONCILE_GRACE_MS) continue;
+      try {
+        deps.forgetMark(id);
+      } catch {
+        /* abaikan */
+      }
     }
   }
 

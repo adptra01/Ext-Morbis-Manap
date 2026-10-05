@@ -385,3 +385,74 @@ describe('syncCasemixNow resolveIdentity (baris di luar DOM)', () => {
     expect(c.offline).toBe(false);
   });
 });
+
+describe('syncCasemixNow reconcile unmark lintas-PC (langkah 4)', () => {
+  const central = (m: Record<string, unknown>) => ({ ok: true, marks: m as never });
+  const depForget = (over: Record<string, unknown> = {}) => {
+    const forgotten: string[] = [];
+    return {
+      forgotten,
+      forgetMark: (id: string) => {
+        forgotten.push(id);
+      },
+      ...over,
+    };
+  };
+
+  it('melupakan fromCentral tua yang hilang dari pusat; klik user dipertahankan', async () => {
+    const f = depForget();
+    const old = 1000000 - 120000;
+    const d = deps({
+      loadLocal: () => ({
+        STALE: { idVisit: 'STALE', markedAt: old, fromCentral: true },
+        USER: { idVisit: 'USER', markedAt: old },
+      }),
+      fetchMarks: async () => central({}),
+      fetchRecent: async () => central({}),
+      ...f,
+    });
+    await syncCasemixNow([], d);
+    expect(f.forgotten).toEqual(['STALE']);
+  });
+
+  it('fromCentral segar (dalam tenggang) tidak dilupakan', async () => {
+    const f = depForget();
+    const d = deps({
+      loadLocal: () => ({
+        FRESH: { idVisit: 'FRESH', markedAt: 1000000 - 1000, fromCentral: true },
+      }),
+      fetchMarks: async () => central({}),
+      fetchRecent: async () => central({}),
+      ...f,
+    });
+    await syncCasemixNow([], d);
+    expect(f.forgotten).toEqual([]);
+  });
+
+  it('offline (fetch gagal) → tidak melupakan apa pun', async () => {
+    const f = depForget();
+    const old = 1000000 - 120000;
+    const d = deps({
+      loadLocal: () => ({
+        STALE: { idVisit: 'STALE', markedAt: old, fromCentral: true },
+      }),
+      fetchMarks: async () => ({ ok: false, marks: {} }),
+      fetchRecent: async () => central({}),
+      ...f,
+    });
+    await syncCasemixNow([], d);
+    expect(f.forgotten).toEqual([]);
+  });
+
+  it('tanpa forgetMark (dep lama) → langkah dilewati tanpa error', async () => {
+    const d = deps({
+      loadLocal: () => ({
+        STALE: { idVisit: 'STALE', markedAt: 1000000 - 120000, fromCentral: true },
+      }),
+      fetchMarks: async () => central({}),
+      fetchRecent: async () => central({}),
+    });
+    const c = await syncCasemixNow([], d);
+    expect(c.offline).toBe(false);
+  });
+});

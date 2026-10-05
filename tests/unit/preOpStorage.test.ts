@@ -2,9 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   PRE_OP_STORAGE_KEY,
   PRE_OP_TTL_MS,
+  RECONCILE_GRACE_MS,
   loadPreOpMap,
   setPreOp,
   removePreOp,
+  forgetCentralMark,
+  collectStaleCentralMarks,
   isPreOp,
   togglePreOp,
   resolvePreOpMarked,
@@ -173,5 +176,56 @@ describe('removePreOp — antrean unmark eksplisit', () => {
     removePreOp('777', store);
     removePreOp('777', store); // idempoten
     expect(loadUnmarkQueue(store)).toEqual(['777']);
+  });
+});
+
+describe('rekonsiliasi unmark lintas-PC (fromCentral)', () => {
+  it('setPreOp fromCentral=true bertahan di storage; klik user tidak', async () => {
+    const data: Record<string, string> = {};
+    const store = {
+      getItem: (k: string) => data[k] ?? null,
+      setItem: (k: string, v: string) => {
+        data[k] = v;
+      },
+    };
+    setPreOp('A', {}, store, 1000000, true);
+    setPreOp('B', {}, store, 1000000);
+    const map = loadPreOpMap(store, 1000000);
+    expect(map['A'].fromCentral).toBe(true);
+    expect(map['B'].fromCentral).toBeUndefined();
+  });
+
+  it('collectStaleCentralMarks: hanya fromCentral tua yang hilang dari pusat', () => {
+    const now = 1000000;
+    const old = now - RECONCILE_GRACE_MS - 1000;
+    const map = {
+      stale: { idVisit: 'stale', markedAt: old, fromCentral: true },
+      fresh: { idVisit: 'fresh', markedAt: now - 1000, fromCentral: true },
+      user: { idVisit: 'user', markedAt: old },
+      kept: { idVisit: 'kept', markedAt: old, fromCentral: true },
+    };
+    const has = (id: string) => id === 'kept';
+    expect(collectStaleCentralMarks(map, has, now)).toEqual(['stale']);
+  });
+
+  it('forgetCentralMark: hapus fromCentral tanpa antre unmark; klik user aman', async () => {
+    const { loadUnmarkQueue } = await import('../../src/features/shared/preOpStorage.js');
+    const data: Record<string, string> = {};
+    const store = {
+      getItem: (k: string) => data[k] ?? null,
+      setItem: (k: string, v: string) => {
+        data[k] = v;
+      },
+    };
+    const t = Date.now();
+    setPreOp('A', {}, store, t, true);
+    setPreOp('B', {}, store, t);
+    expect(forgetCentralMark('A', store)).toBe(true);
+    expect(forgetCentralMark('B', store)).toBe(false);
+    expect(forgetCentralMark('Z', store)).toBe(false);
+    const map = loadPreOpMap(store, t);
+    expect(map['A']).toBeUndefined();
+    expect(map['B']).toBeDefined();
+    expect(loadUnmarkQueue(store)).toEqual([]);
   });
 });
