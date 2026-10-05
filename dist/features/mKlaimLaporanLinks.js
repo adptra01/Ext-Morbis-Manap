@@ -240,17 +240,28 @@ var __morbis_feature = (() => {
     const v = cleanFilterValue(value);
     if (v !== "") params.set(key, v);
   }
-  function readPoliName(doc = document) {
+  function readUnitSelect(doc) {
     try {
       const sel = doc.querySelector?.("select#id_poli_cari, #id_poli_cari");
-      if (!sel || !sel.value) return "";
+      if (!sel) return null;
+      const value = (sel.value ?? "").trim();
       const opt = sel.selectedOptions?.[0];
-      const t = (opt?.textContent ?? opt?.text ?? "").trim();
-      if (!t || /pilih\s*unit/i.test(t)) return "";
-      return t;
+      const text = (opt?.textContent ?? opt?.text ?? "").trim();
+      return { value, text };
     } catch {
-      return "";
+      return null;
     }
+  }
+  function isUnitPlaceholder(value, text) {
+    if (value === "") return true;
+    if (/pilih\s*unit/i.test(text)) return true;
+    if (/^semua$/i.test(text)) return true;
+    return false;
+  }
+  function readPoliName(doc = document) {
+    const unit = readUnitSelect(doc);
+    if (!unit || isUnitPlaceholder(unit.value, unit.text)) return "";
+    return unit.text;
   }
   function resolveLaporanFilter(doc = document) {
     let filter;
@@ -260,9 +271,13 @@ var __morbis_feature = (() => {
       filter = emptyFilter();
     }
     try {
-      const namaPoli = readPoliName(doc);
-      if (namaPoli !== "") {
-        filter = { ...filter, poli: namaPoli };
+      const unit = readUnitSelect(doc);
+      if (unit !== null) {
+        if (isUnitPlaceholder(unit.value, unit.text)) {
+          filter = { ...filter, poli: "", idPoli: "" };
+        } else {
+          filter = { ...filter, poli: unit.text, idPoli: unit.value };
+        }
       }
     } catch {
     }
@@ -277,7 +292,8 @@ var __morbis_feature = (() => {
     setParam(params, "norm", filter.norm);
     setParam(params, "nama", filter.nama);
     setParam(params, "no_reg", filter.reg);
-    setParam(params, "poli", filter.poli || filter.idPoli);
+    setParam(params, "poli", filter.poli);
+    setParam(params, "id_poli", filter.idPoli);
     const st = cleanFilterValue(filter.status).toLowerCase();
     if (st === "pending" || st === "saved") params.set("status", st);
     return params;

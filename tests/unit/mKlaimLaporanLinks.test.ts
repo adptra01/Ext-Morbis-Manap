@@ -85,9 +85,14 @@ describe('mKlaimLaporanLinks — pemetaan filter gabungan', () => {
     expect(buildKlaimParams(klaim({ status: 'SAVED' })).get('status')).toBe('saved');
   });
 
-  it('poli fallback ke idPoli bila poli kosong', () => {
-    const p = buildKlaimParams(klaim({ idPoli: '7' }));
-    expect(p.get('poli')).toBe('7');
+  it('id numerik dikirim sebagai id_poli, bukan poli', () => {
+    const p = buildKlaimParams(klaim({ idPoli: '4026', poli: 'ARJUNA' }));
+    expect(p.get('id_poli')).toBe('4026');
+    expect(p.get('poli')).toBe('ARJUNA');
+  });
+
+  it('tanpa idPoli tidak ada param id_poli', () => {
+    expect(buildKlaimParams(klaim({})).get('id_poli')).toBeNull();
   });
 });
 
@@ -123,6 +128,22 @@ describe('mKlaimLaporanLinks — nama unit dari select', () => {
     const { readPoliName } = await import('../../src/features/mKlaimLaporanLinks.js');
     expect(readPoliName(fakeDoc({ value: '', text: 'Pilih Unit' }))).toBe('');
     expect(readPoliName(fakeDoc(null))).toBe('');
+  });
+
+  it('"Semua" bukan filter unit (ID 3382 jangan dikirim)', async () => {
+    const { readPoliName, resolveLaporanFilter } =
+      await import('../../src/features/mKlaimLaporanLinks.js');
+    expect(readPoliName(fakeDoc({ value: '3382', text: 'Semua' }))).toBe('');
+    const doc = {
+      getElementById: () => null,
+      querySelector: (s: string) =>
+        s.includes('id_poli_cari')
+          ? { value: '3382', selectedOptions: [{ textContent: 'Semua' }] }
+          : null,
+    } as unknown as Document;
+    const f = resolveLaporanFilter(doc);
+    expect(f.poli).toBe('');
+    expect(f.idPoli).toBe('');
   });
 
   it('resolveLaporanFilter memakai nama unit walau form tak terbaca', async () => {

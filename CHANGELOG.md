@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **preop** — sinkron baca data lokal versi lama + badge belum-terkirim (`59f9b67`)
+- **preop** — tombol Sinkron tampilkan jumlah belum terkirim (`b7ae7fc`)
 - **preop** — hapus tombol Export PDF + sinkron dua arah + perbaiki identitas (`eb4585b`)
 
 ### 🐛 fix
@@ -1730,4 +1732,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e032dead3ab0b3224e996d20ded13f9074ea7d1b -->
+<!-- changelog-upto: 59f9b670f51cffe8ea9f6984b6228b299cde89be -->

@@ -122,30 +122,53 @@ function setParam(params: URLSearchParams, key: string, value: string): void {
 }
 
 /**
+ * Select unit #id_poli_cari: value numerik + teks nama unit.
+ * null bila select tidak ada (konteks non-form, mis. unit test).
+ */
+function readUnitSelect(doc: Document | ParentNode): { value: string; text: string } | null {
+  try {
+    const sel = (doc as Document).querySelector?.('select#id_poli_cari, #id_poli_cari') as
+      HTMLSelectElement | null | undefined;
+    if (!sel) return null;
+    const value = (sel.value ?? '').trim();
+    const opt = sel.selectedOptions?.[0];
+    const text = (opt?.textContent ?? opt?.text ?? '').trim();
+    return { value, text };
+  } catch {
+    return null;
+  }
+}
+
+/** true bila option = placeholder/bukan pilihan unit ("Pilih Unit", "Semua"). */
+function isUnitPlaceholder(value: string, text: string): boolean {
+  if (value === '') return true;
+  if (/pilih\s*unit/i.test(text)) return true;
+  // Opsi "Semua" (value 3382) = TANPA filter unit — bukan ID untuk exact-match.
+  if (/^semua$/i.test(text)) return true;
+  return false;
+}
+
+/**
  * Nama unit terpilih dari select #id_poli_cari (teks option, BUKAN value).
  *
  * Value select adalah ID numerik (mis. 4029) sedangkan filter `poli` di
  * Reports mencocokkan NAMA (LIKE, mis. "ARJUNA") — mengirim ID numerik
- * tidak pernah cocok. Placeholder "Pilih Unit" / value kosong → ''.
+ * sebagai `poli` tidak pernah cocok (ID dikirim terpisah via `id_poli`).
+ * Placeholder/"Semua"/kosong → ''.
  */
 export function readPoliName(doc: Document | ParentNode = document): string {
-  try {
-    const sel = (doc as Document).querySelector?.('select#id_poli_cari, #id_poli_cari') as
-      HTMLSelectElement | null | undefined;
-    if (!sel || !sel.value) return '';
-    const opt = sel.selectedOptions?.[0];
-    const t = (opt?.textContent ?? opt?.text ?? '').trim();
-    if (!t || /pilih\s*unit/i.test(t)) return '';
-    return t;
-  } catch {
-    return '';
-  }
+  const unit = readUnitSelect(doc);
+  if (!unit || isUnitPlaceholder(unit.value, unit.text)) return '';
+  return unit.text;
 }
 
 /**
- * Filter laporan siap kirim: baca form + ganti `poli` dengan nama unit
- * terpilih (lihat readPoliName). Murni kecuali akses doc → unit-testable
- * dengan doc palsu.
+ * Filter laporan siap kirim: baca form + selaraskan filter unit dari select.
+ * - Unit terpilih valid → `poli` = nama unit, `idPoli` = ID numerik
+ *   (server exact-match id_poli; nama sebagai fallback LIKE).
+ * - Select kosong/placeholder/"Semua", atau select tak ada → filter unit
+ *   dikosongkan (jangan kirim ID "Semua"/sisa — TANPA filter unit).
+ * Murni kecuali akses doc → unit-testable dengan doc palsu.
  */
 export function resolveLaporanFilter(doc: Document | ParentNode = document): KlaimFilter {
   let filter: KlaimFilter;
@@ -155,9 +178,13 @@ export function resolveLaporanFilter(doc: Document | ParentNode = document): Kla
     filter = emptyFilter();
   }
   try {
-    const namaPoli = readPoliName(doc);
-    if (namaPoli !== '') {
-      filter = { ...filter, poli: namaPoli };
+    const unit = readUnitSelect(doc);
+    if (unit !== null) {
+      if (isUnitPlaceholder(unit.value, unit.text)) {
+        filter = { ...filter, poli: '', idPoli: '' };
+      } else {
+        filter = { ...filter, poli: unit.text, idPoli: unit.value };
+      }
     }
   } catch {
     /* abaikan — fallback ke nilai form mentah */
@@ -177,8 +204,10 @@ export function resolveLaporanFilter(doc: Document | ParentNode = document): Kla
  *   revisi — hanya pending/saved yang diteruskan, sisanya dibuang.
  * - `billing` (all/valid/belum) + `filter_tanggal` + `jenis_pasien` tidak
  *   punya padanan di Reports → dibuang.
- * - `id_poli_cari` bernilai ID numerik → diganti nama unit via
- *   resolveLaporanFilter sebelum membangun query (lihat readPoliName).
+ * - `id_poli_cari` bernilai ID numerik → dikirim apa adanya sebagai
+ *   `id_poli` (server exact-match, akurat); nama unit dibaca via
+ *   resolveLaporanFilter sebagai `poli` (fallback LIKE bila id tak cocok).
+ *   Opsi "Semua"/placeholder mengosongkan keduanya (= tanpa filter unit).
  */
 export function buildKlaimParams(filter: KlaimFilter): URLSearchParams {
   const params = new URLSearchParams();
@@ -189,7 +218,8 @@ export function buildKlaimParams(filter: KlaimFilter): URLSearchParams {
   setParam(params, 'norm', filter.norm);
   setParam(params, 'nama', filter.nama);
   setParam(params, 'no_reg', filter.reg);
-  setParam(params, 'poli', filter.poli || filter.idPoli);
+  setParam(params, 'poli', filter.poli);
+  setParam(params, 'id_poli', filter.idPoli);
   // Server hanya kenal pending/saved — nilai lain dibuang (bukan error).
   const st = cleanFilterValue(filter.status).toLowerCase();
   if (st === 'pending' || st === 'saved') params.set('status', st);
