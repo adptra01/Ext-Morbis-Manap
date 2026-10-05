@@ -42,7 +42,12 @@ import {
 } from './shared/klaimIdentity.js';
 import { initTelaahBackfill } from './shared/telaahBackfill.js';
 import { readPetugas } from './shared/resumeHistory.js';
-import { extractPatientInfo, pickPatientInfo, type PatientInfo } from './mKlaimPreOp.js';
+import {
+  extractPatientInfo,
+  pickPatientInfo,
+  badgeCellFor,
+  type PatientInfo,
+} from './mKlaimPreOp.js';
 
 const g = getMorbisGlobals();
 
@@ -98,7 +103,21 @@ injectCSS(
   .ext-telaah-btn.ext-telaah-large.active:hover {
     background: #204d74 !important;
   }
-  .ext-telaah-btn:disabled { opacity: 0.6; cursor: wait; }`,
+  .ext-telaah-btn:disabled { opacity: 0.6; cursor: wait; }
+  /* Badge di kolom "Status Revisi" — sama seperti badge PRE-OP, warna teal. */
+  .ext-telaah-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    border-radius: 4px;
+    background: #ccfbf1;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
+    margin-left: 6px;
+    vertical-align: middle;
+  }`,
 );
 
 /* ── Pure helpers (unit-tested) ── */
@@ -114,34 +133,72 @@ export function detailIdVisit(search: string): string | null {
   }
 }
 
-const DETAIL_LABEL_PATTERNS: Array<{ field: keyof PatientInfo; re: RegExp }> = [
-  { field: 'noReg', re: /no\.?\s*reg(istrasi)?\b|no\.?\s*daftar/i },
-  { field: 'norm', re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis/i },
-  { field: 'nama', re: /nama(\s*pasien)?/i },
-  {
-    field: 'visitDatetime',
-    re: /tgl\.?\s*masuk|tanggal\s*kunjungan|tanggal\s*masuk|waktu\s*kunjungan/i,
-  },
-  { field: 'poli', re: /unit(\s*\/\s*instalasi)?\b|\bpoli\b|ruang/i },
-];
+/**
+ * Label detail yang dikenal (normalisasi: huruf kecil, alfanumerik saja).
+ * SENGAJA exact-match, BUKAN substring: halaman detail penuh label mirip
+ * ("Nama Obat", "Telaah Resep", "Paraf dan Nama", "No.SEP",
+ * "Poliklinik/Penunjang") yang dulu nyasar jadi identitas sampah.
+ * "No Kartu BPJS" SENGAJA tak ada (bukan norm). "Tanggal" saja tak ada
+ * (ambigu — tanggal kunjungan dari endpoint).
+ */
+const DETAIL_LABEL_FIELDS: Record<string, keyof PatientInfo> = {
+  norm: 'norm',
+  nrm: 'norm',
+  norekammedis: 'norm',
+  no_rm: 'norm',
+  noregistrasi: 'noReg',
+  noreg: 'noReg',
+  nodaftar: 'noReg',
+  nama: 'nama',
+  namapasien: 'nama',
+  tglmasukrs: 'visitDatetime',
+  tanggalkunjungan: 'visitDatetime',
+  tanggalmasuk: 'visitDatetime',
+  waktukunjungan: 'visitDatetime',
+  unit: 'poli',
+  unitinstalasi: 'poli',
+  poli: 'poli',
+  ruangan: 'poli',
+  ruanganpoli: 'poli',
+};
 
-/** Pasangan [label, nilai] sel tabel detail → identitas (label alias). */
+function detailFieldOf(label: string): keyof PatientInfo | undefined {
+  return DETAIL_LABEL_FIELDS[(label ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')];
+}
+
+function cleanDetailValue(s: string): string {
+  // Buang ':'/'-'/spasi di pinggir (sel pemisah "Label : Nilai"), rapatkan spasi.
+  const t = (s ?? '')
+    .replace(/^[\s:—–-]+/, '')
+    .replace(/[\s:—–-]+$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (t === '' || /^[\s:—–-]+$/.test(t)) return '';
+  return t;
+}
+
+/** Pasangan [label, nilai] sel tabel detail → identitas (label exact-match). */
 export function parseDetailPairs(pairs: Array<[string, string]>): PatientInfo {
   const out: PatientInfo = {};
   for (const [rawLabel, rawValue] of pairs) {
-    const label = (rawLabel ?? '').trim();
-    const value = (rawValue ?? '').trim();
-    if (label === '' || value === '' || value === '-' || value === '—') continue;
-    for (const { field, re } of DETAIL_LABEL_PATTERNS) {
-      if (re.test(label)) {
-        if (field === 'visitDatetime') {
-          const v = normalizeVisitDatetime(value);
-          if (v !== undefined && out.visitDatetime === undefined) out.visitDatetime = v;
-        } else if (out[field] === undefined) {
-          (out[field] as string) = value;
-        }
-        break;
-      }
+    let label = (rawLabel ?? '').trim();
+    let value = (rawValue ?? '').trim();
+    // Bentuk satu sel "Ruangan/Poli : IGD" — belah, kanan jadi nilai.
+    if (label.includes(':')) {
+      const i = label.indexOf(':');
+      const after = label.slice(i + 1);
+      label = label.slice(0, i);
+      if (cleanDetailValue(value) === '') value = after;
+    }
+    const field = detailFieldOf(label);
+    if (!field) continue;
+    const v = cleanDetailValue(value);
+    if (v === '') continue;
+    if (field === 'visitDatetime') {
+      const t = normalizeVisitDatetime(v);
+      if (t !== undefined && out.visitDatetime === undefined) out.visitDatetime = t;
+    } else if (out[field] === undefined) {
+      (out[field] as string) = v;
     }
   }
   return out;
@@ -149,7 +206,10 @@ export function parseDetailPairs(pairs: Array<[string, string]>): PatientInfo {
 
 type DocLike = Pick<Document, 'querySelectorAll'>;
 
-/** Kumpulkan pasangan [label, nilai] dari sel td/th halaman detail. */
+/** Kumpulkan pasangan [label, nilai] dari sel td/th halaman detail.
+ *  Struktur MORBIS: sel label, sel ':' pemisah, sel nilai — sel pemisah
+ *  dilewati (lihat sampai 2 sel ke depan). Bentuk satu sel
+ *  "Label : nilai" diteruskan mentah (dipecah di parseDetailPairs). */
 export function collectDetailPairs(root: DocLike): Array<[string, string]> {
   const out: Array<[string, string]> = [];
   let cells: ArrayLike<Element>;
@@ -161,19 +221,19 @@ export function collectDetailPairs(root: DocLike): Array<[string, string]> {
   const arr = Array.from(cells);
   for (let i = 0; i < arr.length; i++) {
     const label = (arr[i].textContent ?? '').trim();
-    if (label === '') continue;
-    if (!DETAIL_LABEL_PATTERNS.some(({ re }) => re.test(label))) continue;
-    // Nilai = sel berikutnya, atau teks sesudah ':' dalam induk yang sama.
+    if (label === '' || !detailFieldOf(label)) continue;
+    // Nilai = sel berikutnya yang bukan pemisah ':' (maks 2 ke depan).
+    // Berhenti bila menemui label lain (jangan comot label baris berikut).
     let value = '';
-    const next = arr[i + 1];
-    if (next) value = (next.textContent ?? '').trim();
-    if (value === '' || value === '-' || value === '—') {
-      const parent = (arr[i] as HTMLElement).parentElement;
-      const full = ((parent as HTMLElement | null)?.innerText ?? '').replace(/\s+/g, ' ');
-      const m = full.match(/:\s*(.+)$/);
-      if (m) value = m[1].trim();
+    for (let j = i + 1; j < Math.min(i + 3, arr.length); j++) {
+      const t = (arr[j].textContent ?? '').trim();
+      if (t !== '' && t !== ':' && t !== '-' && t !== '—') {
+        if (detailFieldOf(t)) break;
+        value = t;
+        break;
+      }
     }
-    if (value !== '' && value !== '-' && value !== '—') out.push([label, value]);
+    out.push([label, value]);
   }
   return out;
 }
@@ -233,7 +293,45 @@ function userNow(): string | undefined {
 function paintTelaah(btn: HTMLButtonElement, marked: boolean): void {
   btn.classList.toggle('active', marked);
   btn.setAttribute('data-ext-telaah-marked', marked ? 'true' : 'false');
+  if (!btn.classList.contains('ext-telaah-large')) {
+    btn.textContent = marked ? '✓ Telaah' : 'Telaah';
+  }
   btn.title = marked ? 'Telaah Berkas: SUDAH ditandai (klik untuk batal)' : 'Tandai Telaah Berkas';
+}
+
+/** Badge TELAAH di kolom "Status Revisi" (sama seperti badge PRE-OP —
+ *  berdampingan bila baris ditandai keduanya). */
+function updateTelaahBadge(row: HTMLTableRowElement, marked: boolean): void {
+  let badgeCell: HTMLTableCellElement | null = null;
+  try {
+    badgeCell = badgeCellFor(row);
+  } catch {
+    /* abaikan */
+  }
+  let badge: HTMLElement | null = null;
+  try {
+    badge = row.querySelector<HTMLElement>('.ext-telaah-badge');
+  } catch {
+    /* abaikan */
+  }
+  if (marked && badgeCell) {
+    try {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'ext-telaah-badge';
+        badge.textContent = 'TELAAH';
+      }
+      if (badge.parentElement !== badgeCell) badgeCell.appendChild(badge);
+    } catch {
+      /* abaikan */
+    }
+  } else if (badge) {
+    try {
+      badge.remove();
+    } catch {
+      /* abaikan */
+    }
+  }
 }
 
 function makeTelaahButton(idVisit: string, marked: boolean, large = false): HTMLButtonElement {
@@ -269,7 +367,10 @@ async function toggleTelaah(
     _pendingTelaah.delete(idVisit);
     btn.disabled = false;
     try {
-      paintTelaah(btn, telaahEffectiveMarked(idVisit, loadTelaahMap()));
+      const marked = telaahEffectiveMarked(idVisit, loadTelaahMap());
+      paintTelaah(btn, marked);
+      const row = btn.closest('tr');
+      if (row) updateTelaahBadge(row as HTMLTableRowElement, marked);
     } catch {
       /* baris hilang — scan berikut yang urus */
     }
@@ -373,23 +474,10 @@ function scanListRows(): void {
       }
       if (btn.getAttribute('data-ext-telaah-btn') !== id)
         btn.setAttribute('data-ext-telaah-btn', id);
-      if (!_pendingTelaah.has(id)) paintTelaah(btn, telaahEffectiveMarked(id, localMap));
-      const b = btn;
-      if (!b.dataset.extTelaahBound) {
-        b.dataset.extTelaahBound = '1';
-        b.addEventListener(
-          'click',
-          () => {
-            // Info segar dari baris saat klik (bukan saat scan).
-            try {
-              const info = extractPatientInfo(row);
-              void toggleTelaah(id, b, info);
-            } catch {
-              void toggleTelaah(id, b);
-            }
-          },
-          { once: false },
-        );
+      if (!_pendingTelaah.has(id)) {
+        const marked = telaahEffectiveMarked(id, localMap);
+        paintTelaah(btn, marked);
+        updateTelaahBadge(row, marked);
       }
     }
   }
@@ -432,13 +520,40 @@ function scanDetailFooter(): void {
     }
   })();
   // Identitas lengkap di-cache untuk klik toggle (endpoint dulu, DOM fallback).
+  // Klik di detail SELALU konfirmasi dulu (alert OK/Batal) — tindakan
+  // eksplisit di halaman dalam, cegah klik tak sengaja.
   btn.addEventListener('click', () => {
     void (async () => {
       const dom = parseDetailPairs(collectDetailPairs(document));
       const info = await resolveDetailIdentity(id, dom);
+      let marked = false;
+      try {
+        marked = telaahEffectiveMarked(id, loadTelaahMap());
+      } catch {
+        /* abaikan — default tandai */
+      }
+      let ok = false;
+      try {
+        if (window.confirm(detailConfirmMessage(info.nama, id, marked))) ok = true;
+      } catch {
+        /* abaikan — batal */
+      }
+      if (!ok) return;
       await toggleTelaah(id, btn, info);
     })();
   });
+}
+
+/** Teks konfirmasi toggle di halaman detail (murni, unit-tested). */
+export function detailConfirmMessage(
+  nama: string | undefined,
+  idVisit: string,
+  marked: boolean,
+): string {
+  const siapa = nama && nama.trim() !== '' ? nama : `kunjungan ID ${idVisit}`;
+  return marked
+    ? `Batalkan tanda Telaah Berkas untuk ${siapa}?`
+    : `Tandai Telaah Berkas untuk ${siapa}?`;
 }
 
 /* ── Refresh pull 15 dtk (list): 1 request batch, cache TTL ── */
@@ -504,6 +619,8 @@ function refreshTelaahCentral(): void {
           }
           paintTelaah(btn, marked);
         }
+        // Badge selalu diselaraskan (redraw tabel bisa membuat cell baru tanpa badge).
+        updateTelaahBadge(row, marked);
       }
     }
   });

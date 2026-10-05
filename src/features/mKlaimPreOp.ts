@@ -417,8 +417,9 @@ function resolveBadgeCell(
   return null;
 }
 
-/** badgeCell untuk baris (dipakai dari handler klik, di mana hanya ada row). */
-function badgeCellFor(row: HTMLTableRowElement): HTMLTableCellElement | null {
+/** badgeCell untuk baris (dipakai dari handler klik, di mana hanya ada row).
+ *  Diekspor untuk modul Telaah (badge TELAAH menempati kolom yang sama). */
+export function badgeCellFor(row: HTMLTableRowElement): HTMLTableCellElement | null {
   const table = row.closest('table');
   return table ? resolveBadgeCell(row, table) : null;
 }

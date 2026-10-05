@@ -32,10 +32,11 @@
 
 ### 🎨 style
 
-- **telaah** — tombol footer detail ukuran + biru samakan tombol MORBIS (`c0c44fe`)
+- **telaah** — tombol footer detail ukuran + biru samakan tombol MORBIS (`3c96a0a`)
 
 ### 🧹 chore
 
+- rebuild dist (tombol telaah footer biru Bootstrap) (`db9ec10`)
 - rebuild dist (telaah berkas list + footer detail) (`fe3c2c9`)
 - rebuild dist (anti-resurrect + reconcile unmark lintas-PC) (`ceb04f7`)
 - rebuild dist (poli + backfill full-field + laporan polos) (`3dbab55`)
@@ -1757,4 +1758,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c0c44fea4b96bb81bae625a0f8df91ef5644ca50 -->
+<!-- changelog-upto: db9ec10ddd2147f1a5271c505488583b1f452ab7 -->

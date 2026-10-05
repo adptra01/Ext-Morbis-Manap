@@ -53,6 +53,52 @@ describe('mKlaimTelaah — parse identitas detail (pasangan label/nilai)', () =>
       visitDatetime: '2026-09-26 12:00:00',
     });
   });
+
+  it('REGRESI live 2026-10-05: label mirip tak jadi identitas sampah', () => {
+    expect(
+      parseDetailPairs([
+        ['No.SEP', 'No.SEP'],
+        ['Nama Obat', 'Qty'],
+        ['Telaah Resep', '10 (S 3 DD 1)'],
+        ['Paraf dan Nama', 'Pasien'],
+        ['No Kartu BPJS', '0001234567890'],
+        ['Poliklinik/Penunjang', 'IGD'],
+        ['Tanggal', '05/10/2026'],
+        ['Nama Pasien', 'REVAN HAIKAL AHMAD'],
+        ['No. RM', '00030762'],
+      ]),
+    ).toEqual({ nama: 'REVAN HAIKAL AHMAD', norm: '00030762' });
+  });
+
+  it("sel pemisah ':' dibersihkan; bentuk satu sel dipecah", () => {
+    expect(
+      parseDetailPairs([
+        ['Nama Pasien', ':'],
+        ['Nama Pasien', ': REVAN HAIKAL AHMAD'],
+        ['Ruangan/Poli : IGD', ''],
+        ['Unit', '-'],
+      ]),
+    ).toEqual({ nama: 'REVAN HAIKAL AHMAD', poli: 'IGD' });
+  });
+});
+
+describe('mKlaimTelaah — konfirmasi detail', () => {
+  it('pesan tandai vs batalkan memakai nama bila ada', async () => {
+    const { detailConfirmMessage } = await import('../../src/features/mKlaimTelaah.js');
+    expect(detailConfirmMessage('ANGGI PRATAMA', '207033', false)).toBe(
+      'Tandai Telaah Berkas untuk ANGGI PRATAMA?',
+    );
+    expect(detailConfirmMessage('ANGGI PRATAMA', '207033', true)).toBe(
+      'Batalkan tanda Telaah Berkas untuk ANGGI PRATAMA?',
+    );
+  });
+
+  it('tanpa nama → pakai ID kunjungan', async () => {
+    const { detailConfirmMessage } = await import('../../src/features/mKlaimTelaah.js');
+    expect(detailConfirmMessage(undefined, '207033', false)).toBe(
+      'Tandai Telaah Berkas untuk kunjungan ID 207033?',
+    );
+  });
 });
 
 describe('mKlaimTelaah — footer detail', () => {
@@ -102,5 +148,17 @@ describe('mKlaimTelaah — footer detail', () => {
       querySelectorAll: () => cells,
     } as unknown as Document;
     expect(collectDetailPairs(doc)).toEqual([['No. RM', '17333']]);
+  });
+
+  it("collectDetailPairs melewati sel pemisah ':'", () => {
+    const cells = [
+      { textContent: 'Nama Pasien', parentElement: null },
+      { textContent: ':', parentElement: null },
+      { textContent: 'REVAN HAIKAL AHMAD', parentElement: null },
+    ];
+    const doc = {
+      querySelectorAll: () => cells,
+    } as unknown as Document;
+    expect(collectDetailPairs(doc)).toEqual([['Nama Pasien', 'REVAN HAIKAL AHMAD']]);
   });
 });
