@@ -18,7 +18,7 @@ import {
   type KVStore as BackfillStore,
 } from './shared/casemixBackfill.js';
 import { syncCasemixNow, type SyncRow } from './shared/casemixSync.js';
-import { fetchKlaimIdentity } from './shared/klaimIdentity.js';
+import { fetchKlaimIdentity, normalizeVisitDatetime } from './shared/klaimIdentity.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 import { logUsage } from './shared/usageLog.js';
 
@@ -301,11 +301,12 @@ export function pickPatientInfo(headers: string[], cells: string[]): PatientInfo
     const t = (cells[i] ?? '').trim();
     return cellTextEmpty(t) ? undefined : t;
   };
+  const rawVisit = pick(idx.visitDatetime);
   return {
     norm: pick(idx.norm),
     nama: pick(idx.nama),
     noReg: pick(idx.noReg),
-    visitDatetime: pick(idx.visitDatetime),
+    visitDatetime: rawVisit ? normalizeVisitDatetime(rawVisit) : undefined,
   };
 }
 

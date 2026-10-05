@@ -68,6 +68,21 @@ export function buildKlaimDataQuery(
   });
 }
 
+/** Normalisasi format visit_datetime dari M-KLAIM ke ISO Y-m-d H:i:s. */
+export function normalizeVisitDatetime(v: string | undefined): string | undefined {
+  if (!v || v === '' || v === '-') return undefined;
+  // Format M-KLAIM: DD-MM-YYYY atau DD-MM-YYYY HH:mm:ss
+  let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
+  if (m) {
+    const iso = `${m[3]}-${m[2]}-${m[1]}`;
+    return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
+  }
+  // Sudah ISO?
+  m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
+  if (m) return v.replace('T', ' ');
+  return v;
+}
+
 /** Teks polos dari sel yang bisa berisi HTML. */
 export function stripHtml(s: unknown): string {
   return String(s ?? '')
@@ -113,7 +128,9 @@ function pickFromObject(o: Record<string, unknown>): { id: string | null; info: 
       norm: get('norm', 'no_rm', 'norm_pasien', 'id_pasien'),
       nama: get('nama', 'nama_pasien', 'pasien'),
       noReg: get('no_reg', 'noreg', 'no_registrasi', 'reg', 'registrasi'),
-      visitDatetime: get('tanggal_kunjungan', 'tgl_kunjungan', 'visit_datetime', 'visit_date'),
+      visitDatetime: normalizeVisitDatetime(
+        get('tanggal_kunjungan', 'tgl_kunjungan', 'visit_datetime', 'visit_date'),
+      ),
     },
   };
 }

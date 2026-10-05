@@ -96,7 +96,7 @@ describe('parseKlaimRows', () => {
           norm: '00052170',
           nama: 'MARSONO',
           noReg: '2609280034',
-          visitDatetime: '28-09-2026',
+          visitDatetime: '2026-09-28 00:00:00',
         },
       },
     ]);
@@ -136,7 +136,12 @@ describe('fetchKlaimIdentity', () => {
     expect(out).toEqual([
       {
         idVisit: '206767',
-        info: { norm: '00001111', nama: 'ASNAH', noReg: '2610030027', visitDatetime: '28-09-2026' },
+        info: {
+          norm: '00001111',
+          nama: 'ASNAH',
+          noReg: '2610030027',
+          visitDatetime: '2026-09-28 00:00:00',
+        },
       },
     ]);
     expect(f).toHaveBeenCalledTimes(1);

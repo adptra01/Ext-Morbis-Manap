@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **pre-op** — realtime toggle now sends visit_datetime (`adc491d`)
 - **pre-op** — send visit_datetime from M-KLAIM endpoint (`31a5228`)
 - **pre-op** — fetch patient identity from M-KLAIM data endpoint (`6f77c3e`)
 - **preop** — sinkron baca data lokal versi lama + badge belum-terkirim (`e6c0ac0`)
@@ -25,7 +26,7 @@
 
 ### 📌 misc
 
-- Bump version to 1.5.134 in manifest.json (`b479775`)
+- Bump version to 1.5.134 in manifest.json (`a7b33f6`)
 
 ## 2026-10-02
 
@@ -1740,4 +1741,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: b479775fb61add156422aef684a326abf5af19a0 -->
+<!-- changelog-upto: adc491da62c99eac314679ebdc0760f27bac1817 -->
