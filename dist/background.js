@@ -351,6 +351,12 @@ var __morbis_bg = (() => {
         name: "Pre-op Marker (M-KLAIM)",
         description: "Tandai pasien Pre-op di kolom aksi tabel M-KLAIM (tersimpan 1 bulan)"
       },
+      telaahBerkas: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Telaah Berkas (M-KLAIM)",
+        description: "Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC"
+      },
       mKlaimVerifLog: {
         enabled: true,
         allowedRoles: ["casemix", "admin"],

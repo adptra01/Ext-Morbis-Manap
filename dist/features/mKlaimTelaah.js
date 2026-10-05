@@ -4,6 +4,14 @@ var __morbis_feature = (() => {
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __esm = (fn, res, err) => function __init() {
+    if (err) throw err[0];
+    try {
+      return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+    } catch (e) {
+      throw err = [e], e;
+    }
+  };
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
@@ -18,217 +26,7 @@ var __morbis_feature = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/features/mKlaimPreOp.ts
-  var mKlaimPreOp_exports = {};
-  __export(mKlaimPreOp_exports, {
-    extractPatientInfo: () => extractPatientInfo,
-    guessPatientInfo: () => guessPatientInfo,
-    initPreOpMarker: () => initPreOpMarker,
-    patientFieldIndexFromHeaders: () => patientFieldIndexFromHeaders,
-    pickPatientInfo: () => pickPatientInfo,
-    statusRevisiIndexFromHeaders: () => statusRevisiIndexFromHeaders,
-    syncPreOpNow: () => syncPreOpNow
-  });
-
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
-    return window;
-  }
-
-  // src/features/shared/featureGate.ts
-  var STORAGE_KEY = "extensionConfig";
-  function decideFeatureGate(key, config, role) {
-    const entry = config?.features?.[key];
-    if (!entry) return true;
-    if (entry.enabled === false) return false;
-    const r = role ?? config?.currentRole ?? "admin";
-    if (r === "admin") return true;
-    const allowed = entry.allowedRoles;
-    if (!Array.isArray(allowed) || allowed.length === 0) return true;
-    return allowed.includes(r);
-  }
-  async function isFeatureEnabled(key) {
-    try {
-      const store = await chrome.storage.sync.get(STORAGE_KEY);
-      const cfg = store?.[STORAGE_KEY] ?? null;
-      return decideFeatureGate(key, cfg);
-    } catch {
-      return true;
-    }
-  }
-  function whenFeatureEnabled(key, fn) {
-    isFeatureEnabled(key).then((ok) => {
-      if (!ok) return;
-      try {
-        fn();
-      } catch (e) {
-        console.error(`[featureGate:${key}] gagal jalan:`, e);
-      }
-    });
-  }
-
-  // src/shared/ui/index.ts
-  var injectedSheets = /* @__PURE__ */ new Set();
-  function injectCSS(id, css) {
-    if (injectedSheets.has(id)) {
-      const existing = document.getElementById(id);
-      if (existing) return existing;
-    }
-    const style = document.createElement("style");
-    style.id = id;
-    style.textContent = css;
-    document.head.appendChild(style);
-    injectedSheets.add(id);
-    return style;
-  }
-  injectCSS(
-    "ext-shared-animations",
-    `
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-`
-  );
-
-  // src/features/shared/preOpStorage.ts
-  var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
-  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
-  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
-  function resolvePreOpMarked(localHas, centralHas, unmarkedAt, now = Date.now(), tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS) {
-    if (localHas) return true;
-    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
-    if (centralHas === null) return false;
-    return centralHas;
-  }
-  function defaultStore() {
-    try {
-      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
-    } catch {
-    }
-    return null;
-  }
-  function purgeExpiredPreOp(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
-  }
-  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
-    if (!store) return {};
-    try {
-      const raw = store.getItem(PRE_OP_STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== "object" || parsed === null) return {};
-      const { purged, count } = purgeExpiredPreOp(parsed, now);
-      if (count > 0) {
-        savePreOpMap(purged, store);
-      }
-      return purged;
-    } catch {
-      return {};
-    }
-  }
-  function minimalPreOpItem(raw) {
-    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
-    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
-    if (raw.fromCentral === true) out.fromCentral = true;
-    return out;
-  }
-  function savePreOpMap(map, store = defaultStore()) {
-    if (!store) return;
-    try {
-      const clean = {};
-      for (const [id, item] of Object.entries(map)) {
-        if (!item || typeof item !== "object" || !item.idVisit) continue;
-        clean[id] = minimalPreOpItem(item);
-      }
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
-    } catch {
-    }
-  }
-  function setPreOp(idVisit, _info = {}, store = defaultStore(), now = Date.now(), fromCentral = false) {
-    if (!idVisit) return;
-    const map = loadPreOpMap(store, now);
-    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
-    savePreOpMap(map, store);
-  }
-  function loadUnmarkQueue(store = defaultStore()) {
-    if (!store) return [];
-    try {
-      const raw = store.getItem(PRE_OP_UNMARK_QUEUE_KEY);
-      if (!raw) return [];
-      const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
-    } catch {
-      return [];
-    }
-  }
-  function saveUnmarkQueue(ids, store = defaultStore()) {
-    if (!store) return;
-    try {
-      store.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
-    } catch {
-    }
-  }
-  function removePreOp(idVisit, store = defaultStore()) {
-    if (!idVisit) return;
-    const map = loadPreOpMap(store);
-    if (map[idVisit]) {
-      delete map[idVisit];
-      savePreOpMap(map, store);
-    }
-    const q = loadUnmarkQueue(store);
-    if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
-  }
-  var RECONCILE_GRACE_MS = 6e4;
-  function collectStaleCentralMarks(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
-    const out = [];
-    for (const [id, item] of Object.entries(map)) {
-      if (!item || item.fromCentral !== true) continue;
-      if (centralHas(id)) continue;
-      if (now - item.markedAt < graceMs) continue;
-      out.push(id);
-    }
-    return out;
-  }
-  function forgetCentralMark(idVisit, store = defaultStore()) {
-    if (!idVisit || !store) return false;
-    try {
-      const map = loadPreOpMap(store);
-      const item = map[idVisit];
-      if (!item || item.fromCentral !== true) return false;
-      delete map[idVisit];
-      savePreOpMap(map, store);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   // src/features/shared/casemixApi.ts
-  var CASEMIX_BASE_FALLBACK = "http://dev.rsudkotajambi.id/rs";
-  var BASE_OVERRIDE_KEY = "ext-farmasi-app-base";
-  var BATCH_MAX = 500;
-  var CENTRAL_TIMEOUT_MS = 25e3;
-  var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
-  var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
-  var CASEMIX_HTTPS_REQUIRED = true;
-  var CASEMIX_HTTP_ALLOWED_HOSTS = [
-    "dev.rsudkotajambi.id",
-    "103.147.236.138",
-    "localhost",
-    "127.0.0.1"
-  ];
-  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
   function casemixTransportBlockReason(baseUrl) {
     if (!CASEMIX_HTTPS_REQUIRED) return null;
     try {
@@ -275,7 +73,6 @@ var __morbis_feature = (() => {
     if (pinnedFallbackBase) return CASEMIX_BASE_FALLBACK;
     return resolveCasemixBase();
   }
-  var pinnedFallbackBase = false;
   async function isCasemixBaseAlive(base, fetcher = fetch, timeoutMs = 8e3) {
     if (casemixTransportBlockReason(base)) return false;
     try {
@@ -420,21 +217,359 @@ var __morbis_feature = (() => {
     }
     return out;
   }
+  var CASEMIX_BASE_FALLBACK, BASE_OVERRIDE_KEY, BATCH_MAX, CENTRAL_TIMEOUT_MS, CASEMIX_ALLOWED_HOSTS, CASEMIX_ALLOWED_SUFFIX, CASEMIX_HTTPS_REQUIRED, CASEMIX_HTTP_ALLOWED_HOSTS, CASEMIX_HTTPS_LOCK_REASON, pinnedFallbackBase;
+  var init_casemixApi = __esm({
+    "src/features/shared/casemixApi.ts"() {
+      "use strict";
+      CASEMIX_BASE_FALLBACK = "http://dev.rsudkotajambi.id/rs";
+      BASE_OVERRIDE_KEY = "ext-farmasi-app-base";
+      BATCH_MAX = 500;
+      CENTRAL_TIMEOUT_MS = 25e3;
+      CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+      CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
+      CASEMIX_HTTPS_REQUIRED = true;
+      CASEMIX_HTTP_ALLOWED_HOSTS = [
+        "dev.rsudkotajambi.id",
+        "103.147.236.138",
+        "localhost",
+        "127.0.0.1"
+      ];
+      CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
+      pinnedFallbackBase = false;
+    }
+  });
 
-  // src/features/shared/resumeHistory.ts
-  function defaultStore2() {
+  // src/features/shared/telaahApi.ts
+  var telaahApi_exports = {};
+  __export(telaahApi_exports, {
+    fetchTelaahBatch: () => fetchTelaahBatch,
+    fetchTelaahRecent: () => fetchTelaahRecent,
+    telaahInfoFromRow: () => telaahInfoFromRow,
+    toggleTelaahCentral: () => toggleTelaahCentral
+  });
+  function toggleTelaahCentral(idVisit, marked, info = {}, fetcher = fetch) {
+    if (!idVisit) return Promise.resolve();
+    return postFireForget(
+      "/api/casemix/telaah-berkas/toggle",
+      {
+        id_visit: idVisit,
+        marked,
+        // Field SELALU dikirim bila diketahui; server hanya menimpa yang
+        // non-null — kiriman sebagian/gagal TIDAK menghapus data baik.
+        norm: info.norm ?? null,
+        nama: info.nama ?? null,
+        no_reg: info.noReg ?? null,
+        user: info.user ?? null,
+        visit_datetime: info.visitDatetime ?? null,
+        poli: info.poli ?? null
+      },
+      fetcher
+    );
+  }
+  function telaahInfoFromRow(info) {
+    return {
+      norm: info?.norm,
+      nama: info?.nama,
+      noReg: info?.noReg,
+      user: info?.user,
+      visitDatetime: info?.visitDatetime,
+      poli: info?.poli
+    };
+  }
+  async function getJsonTelaah(path, fetcher) {
+    return getJson(path, fetcher);
+  }
+  async function fetchTelaahBatch(ids, fetcher = fetch) {
+    const list = normalizeIds(ids);
+    if (!list.length) return {};
+    const j = await getJsonTelaah(
+      "/api/casemix/telaah-berkas/list?ids=" + encodeURIComponent(list.join(",")),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !j.marks) return {};
+    return j.marks;
+  }
+  async function fetchTelaahRecent(daysBack = 30, fetcher = fetch) {
+    const end = /* @__PURE__ */ new Date();
+    const start = new Date(end.getTime() - Math.max(1, daysBack) * 24 * 60 * 60 * 1e3);
+    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const j = await getJsonTelaah(
+      "/api/casemix/telaah-berkas/export?tanggalAwal=" + encodeURIComponent(fmt(start)) + "&tanggalAkhir=" + encodeURIComponent(fmt(end)),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !Array.isArray(j.data)) return {};
+    const out = {};
+    for (const r of j.data) {
+      const id = String(r?.id_visit ?? "").trim();
+      if (id) out[id] = r;
+    }
+    return out;
+  }
+  var init_telaahApi = __esm({
+    "src/features/shared/telaahApi.ts"() {
+      "use strict";
+      init_casemixApi();
+    }
+  });
+
+  // src/features/mKlaimTelaah.ts
+  var mKlaimTelaah_exports = {};
+  __export(mKlaimTelaah_exports, {
+    collectDetailPairs: () => collectDetailPairs,
+    detailIdVisit: () => detailIdVisit,
+    findDetailFooter: () => findDetailFooter,
+    initTelaah: () => initTelaah,
+    parseDetailPairs: () => parseDetailPairs
+  });
+
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
+    }
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
+  }
+  injectCSS(
+    "ext-shared-animations",
+    `
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`
+  );
+
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === "function") {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {
+    }
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
+  // src/features/shared/usageLog.ts
+  var KEY = "extUsageLog";
+  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
+  var MAX_ENTRIES = 2e3;
+  async function logUsage(feature, event, ok, detail) {
+    try {
+      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
+      const now = Date.now();
+      const entry = {
+        ts: now,
+        feature,
+        event,
+        ok,
+        detail: detail instanceof Error ? `${detail.name}: ${detail.message}` : detail !== void 0 ? String(detail) : void 0,
+        url: typeof location !== "undefined" ? location.href : void 0
+      };
+      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
+      const trimmed = kept.slice(-MAX_ENTRIES);
+      await chrome.storage.local.set({ [KEY]: trimmed });
+    } catch {
+    }
+  }
+
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
+  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
+  function resolvePreOpMarked(localHas, centralHas, unmarkedAt, now = Date.now(), tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS) {
+    if (localHas) return true;
+    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
+    if (centralHas === null) return false;
+    return centralHas;
+  }
+  function defaultStore() {
     try {
       if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
     } catch {
     }
     return null;
   }
-  var HIST_PREFIX = "ext_rv_history_";
-  var LEGACY_HIST_PREFIX = HIST_PREFIX;
-  var RV_MIGRATED_PREFIX = "ext_migrated_rv_";
-  var MAX_ENTRIES = 50;
-  function getHistoryKey(idVisit, tipe) {
-    return `${HIST_PREFIX}${tipe === "ranap" ? "ri" : "rj"}_${idVisit || "unknown"}`;
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const raw = store.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== "object" || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store);
+      }
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function minimalPreOpItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
+  }
+  function savePreOpMap(map, store = defaultStore()) {
+    if (!store) return;
+    try {
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalPreOpItem(item);
+      }
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setPreOp(idVisit, _info = {}, store = defaultStore(), now = Date.now(), fromCentral = false) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store, now);
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
+    savePreOpMap(map, store);
+  }
+  function loadUnmarkQueue(store = defaultStore()) {
+    if (!store) return [];
+    try {
+      const raw = store.getItem(PRE_OP_UNMARK_QUEUE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveUnmarkQueue(ids, store = defaultStore()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
+    } catch {
+    }
+  }
+  function removePreOp(idVisit, store = defaultStore()) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store);
+    if (map[idVisit]) {
+      delete map[idVisit];
+      savePreOpMap(map, store);
+    }
+    const q = loadUnmarkQueue(store);
+    if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
+  }
+  var RECONCILE_GRACE_MS = 6e4;
+  function collectStaleCentralMarks(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
+    const out = [];
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || item.fromCentral !== true) continue;
+      if (centralHas(id)) continue;
+      if (now - item.markedAt < graceMs) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function forgetCentralMark(idVisit, store = defaultStore()) {
+    if (!idVisit || !store) return false;
+    try {
+      const map = loadPreOpMap(store);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      savePreOpMap(map, store);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // src/features/shared/telaahStorage.ts
+  var TELAAH_STORAGE_KEY = "morbis_telaah_markers";
+  var TELAAH_UNMARK_QUEUE_KEY = "ext_telaah_unmark_queue";
+  var TELAAH_MIGRATED_KEY = "ext_migrated_telaah_ids";
+  var TELAAH_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var _telaahUnmarkAt = {};
+  function markTelaahUnmarked(idVisit) {
+    if (idVisit) _telaahUnmarkAt[idVisit] = Date.now();
+  }
+  function clearTelaahUnmark(idVisit) {
+    if (idVisit) delete _telaahUnmarkAt[idVisit];
+  }
+  function readTelaahUnmarks() {
+    return { ..._telaahUnmarkAt };
+  }
+  function pruneTelaahUnmarks(now = Date.now()) {
+    for (const k of Object.keys(_telaahUnmarkAt)) {
+      if (now - _telaahUnmarkAt[k] >= 6e4) delete _telaahUnmarkAt[k];
+    }
+  }
+  function defaultStore2() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
   }
   function readJson(store, key) {
     if (!store) return null;
@@ -453,11 +588,426 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
-  function loadHistory(idVisit, tipe, store = defaultStore2()) {
-    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+  function purgeExpiredTelaah(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= TELAAH_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadTelaahMap(store = defaultStore2(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const parsed = readJson(store, TELAAH_STORAGE_KEY);
+      if (typeof parsed !== "object" || parsed === null) return {};
+      const { purged, count } = purgeExpiredTelaah(parsed, now);
+      if (count > 0) saveTelaahMap(purged, store);
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function minimalTelaahItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
+  }
+  function saveTelaahMap(map, store = defaultStore2()) {
+    if (!store) return;
+    try {
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalTelaahItem(item);
+      }
+      store.setItem(TELAAH_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setTelaah(idVisit, store = defaultStore2(), now = Date.now(), fromCentral = false) {
+    if (!idVisit) return;
+    const map = loadTelaahMap(store, now);
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
+    saveTelaahMap(map, store);
+  }
+  function loadTelaahUnmarkQueue(store = defaultStore2()) {
+    if (!store) return [];
+    try {
+      const arr = readJson(store, TELAAH_UNMARK_QUEUE_KEY);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveTelaahUnmarkQueue(ids, store = defaultStore2()) {
+    if (!store) return;
+    writeJson(store, TELAAH_UNMARK_QUEUE_KEY, [...new Set(ids)]);
+  }
+  function removeTelaah(idVisit, store = defaultStore2()) {
+    if (!idVisit) return;
+    const map = loadTelaahMap(store);
+    if (map[idVisit]) {
+      delete map[idVisit];
+      saveTelaahMap(map, store);
+    }
+    const q = loadTelaahUnmarkQueue(store);
+    if (!q.includes(idVisit)) saveTelaahUnmarkQueue([...q, idVisit], store);
+  }
+  function countTelaahPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    let n = 0;
+    for (const id of Object.keys(map)) {
+      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
+    }
+    return n;
+  }
+  function loadTelaahMigratedIds(store = defaultStore2()) {
+    const raw = readJson(store, TELAAH_MIGRATED_KEY);
+    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
+  }
+  function saveTelaahMigratedIds(store = defaultStore2(), ids) {
+    writeJson(store, TELAAH_MIGRATED_KEY, [...new Set(ids)]);
+  }
+  function collectStaleTelaah(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
+    const out = [];
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || item.fromCentral !== true) continue;
+      if (centralHas(id)) continue;
+      if (now - item.markedAt < graceMs) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function forgetTelaahCentral(idVisit, store = defaultStore2()) {
+    if (!idVisit || !store) return false;
+    try {
+      const map = loadTelaahMap(store);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      saveTelaahMap(map, store);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // src/features/mKlaimTelaah.ts
+  init_telaahApi();
+
+  // src/features/shared/klaimIdentity.ts
+  var KLAIM_DATA_PATH = "/v2/m-klaim/data-tabel/data";
+  var KLAIM_LIST_HEADERS = [
+    "No",
+    "No Registrasi",
+    "No RM",
+    "Nama Pasien",
+    "Penjamin",
+    "Jenis Kunjungan",
+    "Unit",
+    "Tanggal Kunjungan",
+    "Tanggal Keluar",
+    "Total",
+    "Status Bayar",
+    "Status Revisi",
+    "Status BPJS",
+    "User Verif",
+    "User Upload",
+    "Aksi"
+  ];
+  var DAY_MS = 24 * 60 * 60 * 1e3;
+  function formatDmy(d) {
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}-${mm}-${d.getFullYear()}`;
+  }
+  function buildKlaimDataQuery(start, end, jenis, filterTanggal = "kunjungan") {
+    return new URLSearchParams({
+      tanggalAwal: formatDmy(start),
+      tanggalAkhir: formatDmy(end),
+      filter_tanggal: filterTanggal,
+      norm: "",
+      nama: "",
+      reg: "",
+      billing: "all",
+      status: "all",
+      id_poli_cari: "",
+      jenis_pasien: "all",
+      jenis
+    });
+  }
+  function normalizeVisitDatetime(v) {
+    if (!v || v === "" || v === "-") return void 0;
+    let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
+    if (m) {
+      const iso = `${m[3]}-${m[2]}-${m[1]}`;
+      return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
+    }
+    m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
+    if (m) return v.replace("T", " ");
+    return v;
+  }
+  function stripHtml(s) {
+    return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
+  }
+  function extractIdVisitFromCells(cellsRaw) {
+    for (let i = cellsRaw.length - 1; i >= 0; i--) {
+      const c = cellsRaw[i] ?? "";
+      const m = c.match(/detail\(\s*['"]?(\d+)/) || c.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  function infoPresent(i) {
+    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0 || i.visitDatetime !== void 0 || i.poli !== void 0);
+  }
+  function pickFromObject(o) {
+    const get = (...keys) => {
+      for (const k of Object.keys(o)) {
+        if (keys.includes(k.toLowerCase())) {
+          const t = stripHtml(o[k]);
+          if (t !== "" && t !== "-") return t;
+        }
+      }
+      return void 0;
+    };
+    const id = get("id_visit", "idvisit");
+    return {
+      id: id ?? null,
+      info: {
+        norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
+        nama: get("nama", "nama_pasien", "pasien"),
+        noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
+        visitDatetime: normalizeVisitDatetime(
+          get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
+        ),
+        poli: get("poli", "unit", "unit_kerja", "ruangan", "ruang", "bangsal")
+      }
+    };
+  }
+  function parseKlaimRows(json, headers, pick) {
+    const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : Array.isArray(json?.aaData) ? json.aaData : [];
+    const out = [];
+    for (const r of rows) {
+      if (Array.isArray(r)) {
+        const raw = r.map((c) => String(c ?? ""));
+        const id = extractIdVisitFromCells(raw);
+        if (!id) continue;
+        const info = pick(headers, raw.map(stripHtml));
+        if (infoPresent(info)) out.push({ idVisit: id, info });
+      } else if (r && typeof r === "object") {
+        const { id, info } = pickFromObject(r);
+        if (id && infoPresent(info)) out.push({ idVisit: id, info });
+      }
+    }
+    return out;
+  }
+  async function fetchKlaimIdentity(needIds, deps) {
+    const need = new Set(needIds.map((s) => String(s).trim()).filter(Boolean));
+    const found = /* @__PURE__ */ new Map();
+    if (need.size === 0) return [];
+    const fetcher = deps.fetcher ?? fetch;
+    const today = deps.now ?? /* @__PURE__ */ new Date();
+    const windowDays = Math.max(1, deps.windowDays ?? 31);
+    const maxWindows = Math.max(1, deps.maxWindows ?? 9);
+    const delayMs = deps.delayMs ?? 300;
+    const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+    const total = maxWindows * 2;
+    let request = 0;
+    let failStreak = 0;
+    outer: for (let w = 0; w < maxWindows; w++) {
+      const end = new Date(today.getTime() - w * windowDays * DAY_MS);
+      const start = new Date(end.getTime() - (windowDays - 1) * DAY_MS);
+      for (const jenis of ["n", "y"]) {
+        if (found.size >= need.size) break outer;
+        request++;
+        try {
+          const qs = buildKlaimDataQuery(start, end, jenis).toString();
+          const res = await fetcher(`${KLAIM_DATA_PATH}?${qs}`, {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
+          });
+          if (!res || !res.ok) throw new Error("HTTP " + (res?.status ?? "?"));
+          const json = await res.json();
+          for (const row of parseKlaimRows(json, deps.headers, deps.pick)) {
+            if (need.has(row.idVisit) && !found.has(row.idVisit)) found.set(row.idVisit, row);
+          }
+          failStreak = 0;
+        } catch {
+          failStreak++;
+          if (failStreak >= 3) break outer;
+        }
+        deps.onProgress?.({ request, total, found: found.size, need: need.size });
+        if (found.size < need.size) await sleep(delayMs);
+      }
+    }
+    return [...found.values()];
+  }
+
+  // src/features/shared/telaahBackfill.ts
+  init_casemixApi();
+  function defaultStore3() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage)
+        return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  async function postCentral(path, payload, fetcher = fetch) {
+    try {
+      const res = await requestCentral(
+        path,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(payload),
+          credentials: "omit"
+        },
+        fetcher
+      );
+      return !!res && res.ok;
+    } catch {
+      return false;
+    }
+  }
+  async function runTelaahBackfill(store = defaultStore3(), fetcher = fetch, resolveIdentity) {
+    const res = { uploaded: 0, offline: false };
+    if (!store) return res;
+    try {
+      const map = loadTelaahMap(store);
+      const migrated = loadTelaahMigratedIds(store);
+      const done = new Set(migrated);
+      const pending = Object.keys(map).filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true).slice(0, 20);
+      let ident = /* @__PURE__ */ new Map();
+      if (pending.length > 0 && resolveIdentity) {
+        try {
+          const rows = await resolveIdentity(pending) ?? [];
+          ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
+        } catch {
+        }
+      }
+      for (const id of pending) {
+        if (!map[id]) continue;
+        const info = ident.get(id);
+        const ok = await postCentral(
+          "/api/casemix/telaah-berkas/toggle",
+          {
+            id_visit: id,
+            marked: true,
+            norm: info?.norm ?? null,
+            nama: info?.nama ?? null,
+            no_reg: info?.noReg ?? null,
+            visit_datetime: info?.visitDatetime ?? null,
+            poli: info?.poli ?? null,
+            user: info?.user ?? null
+          },
+          fetcher
+        );
+        if (!ok) {
+          res.offline = true;
+          break;
+        }
+        migrated.push(id);
+        res.uploaded++;
+      }
+      if (res.uploaded > 0) saveTelaahMigratedIds(store, migrated);
+      try {
+        const alive = new Set(Object.keys(map));
+        const queue = loadTelaahUnmarkQueue(store);
+        const stillQueued = [];
+        for (const id of queue) {
+          if (alive.has(id)) continue;
+          if (res.offline) {
+            stillQueued.push(id);
+            continue;
+          }
+          const ok = await postCentral(
+            "/api/casemix/telaah-berkas/toggle",
+            { id_visit: id, marked: false },
+            fetcher
+          );
+          if (!ok) {
+            res.offline = true;
+            stillQueued.push(id);
+          } else {
+            res.uploaded++;
+          }
+        }
+        if (queue.length > 0) saveTelaahUnmarkQueue(stillQueued, store);
+        const keep = new Set(stillQueued);
+        const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
+        if (kept.length !== migrated.length) saveTelaahMigratedIds(store, kept);
+      } catch {
+      }
+    } catch {
+      res.offline = true;
+    }
+    return res;
+  }
+  var _telaahTimer = null;
+  var _telaahResolver;
+  function initTelaahBackfill(resolver) {
+    if (resolver) _telaahResolver = resolver;
+    if (_telaahTimer !== null) return;
+    const tick = () => {
+      try {
+        if (document.hidden) return;
+      } catch {
+      }
+      void runTelaahBackfill(void 0, void 0, _telaahResolver).catch(() => {
+      });
+    };
+    window.setTimeout(tick, 7e3);
+    _telaahTimer = window.setInterval(tick, 3e4);
+  }
+
+  // src/features/shared/resumeHistory.ts
+  init_casemixApi();
+  function defaultStore4() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  var HIST_PREFIX = "ext_rv_history_";
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var RV_MIGRATED_PREFIX = "ext_migrated_rv_";
+  var MAX_ENTRIES2 = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === "ranap" ? "ri" : "rj"}_${idVisit || "unknown"}`;
+  }
+  function readJson2(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson2(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {
+    }
+  }
+  function loadHistory(idVisit, tipe, store = defaultStore4()) {
+    const arr = readJson2(store, getHistoryKey(idVisit, tipe));
     const list = Array.isArray(arr) ? arr : [];
     if (tipe === "ranap") {
-      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      const legacy = readJson2(store, LEGACY_HIST_PREFIX + idVisit);
       if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
         const migrated = legacy.map((e) => ({ ...e, tipe: "ranap" }));
         saveHistory(migrated, idVisit, "ranap", store);
@@ -466,8 +1016,8 @@ var __morbis_feature = (() => {
     }
     return list;
   }
-  function saveHistory(list, idVisit, tipe, store = defaultStore2()) {
-    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  function saveHistory(list, idVisit, tipe, store = defaultStore4()) {
+    writeJson2(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES2));
   }
   function readPetugas() {
     try {
@@ -498,11 +1048,15 @@ var __morbis_feature = (() => {
     return "petugas";
   }
 
+  // src/features/mKlaimPreOp.ts
+  init_casemixApi();
+
   // src/features/shared/casemixBackfill.ts
+  init_casemixApi();
   var MIGRATED_PREOP_KEY = "ext_migrated_preop_ids";
   var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
   var BACKFILL_BATCH = 20;
-  function readJson2(store, key) {
+  function readJson3(store, key) {
     if (!store) return null;
     try {
       const raw = store.getItem(key);
@@ -512,21 +1066,21 @@ var __morbis_feature = (() => {
       return null;
     }
   }
-  function writeJson2(store, key, value) {
+  function writeJson3(store, key, value) {
     if (!store) return;
     try {
       store.setItem(key, JSON.stringify(value));
     } catch {
     }
   }
-  function defaultStore3() {
+  function defaultStore5() {
     try {
       if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
     } catch {
     }
     return null;
   }
-  async function postCentral(path, payload, fetcher = fetch) {
+  async function postCentral2(path, payload, fetcher = fetch) {
     try {
       const res = await requestCentral(
         path,
@@ -555,12 +1109,12 @@ var __morbis_feature = (() => {
     }
     return n;
   }
-  function loadMigratedIds(store = defaultStore3()) {
-    const raw = readJson2(store, MIGRATED_PREOP_KEY);
+  function loadMigratedIds(store = defaultStore5()) {
+    const raw = readJson3(store, MIGRATED_PREOP_KEY);
     return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
   }
-  function saveMigratedIds(store = defaultStore3(), ids) {
-    writeJson2(store, MIGRATED_PREOP_KEY, [...new Set(ids)]);
+  function saveMigratedIds(store = defaultStore5(), ids) {
+    writeJson3(store, MIGRATED_PREOP_KEY, [...new Set(ids)]);
   }
   function collectResumePending(list, sinceAt) {
     return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
@@ -592,7 +1146,7 @@ var __morbis_feature = (() => {
     }
     return out;
   }
-  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch, resolveIdentity) {
+  async function runCasemixBackfill(store = defaultStore5(), fetcher = fetch, resolveIdentity) {
     const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
     if (!store) return res;
     try {
@@ -611,7 +1165,7 @@ var __morbis_feature = (() => {
         const item = map[id];
         if (!item) continue;
         const info = ident.get(id);
-        const ok = await postCentral(
+        const ok = await postCentral2(
           "/api/casemix/pre-op/toggle",
           {
             id_visit: id,
@@ -643,7 +1197,7 @@ var __morbis_feature = (() => {
             stillQueued.push(id);
             continue;
           }
-          const ok = await postCentral(
+          const ok = await postCentral2(
             "/api/casemix/pre-op/toggle",
             { id_visit: id, marked: false },
             fetcher
@@ -671,12 +1225,12 @@ var __morbis_feature = (() => {
       for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
         if (!idVisit || idVisit === "unknown") continue;
         if (res.resumeUploaded >= BACKFILL_BATCH) break;
-        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
+        const sinceAt = readJson3(store, MIGRATED_RV_PREFIX + key) ?? 0;
         const list = loadHistory(idVisit, tipe, store);
         const pending = collectResumePending(list, sinceAt);
         let maxAt = sinceAt;
         for (const e of pending) {
-          const ok = await postCentral(
+          const ok = await postCentral2(
             "/api/reports/resume-history",
             {
               client_id: e.client_id ?? null,
@@ -699,7 +1253,7 @@ var __morbis_feature = (() => {
           maxAt = Math.max(maxAt, e.at);
           res.resumeUploaded++;
         }
-        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
+        if (maxAt > sinceAt) writeJson3(store, MIGRATED_RV_PREFIX + key, maxAt);
         if (res.offline) break;
       }
     } catch {
@@ -733,7 +1287,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/shared/casemixSync.ts
-  function infoPresent(info) {
+  function infoPresent2(info) {
     return !!info && (info.norm !== void 0 || info.nama !== void 0 || info.noReg !== void 0);
   }
   function repairLegacyInfo(stored) {
@@ -761,7 +1315,7 @@ var __morbis_feature = (() => {
       visitDatetime: visibleInfo?.visitDatetime,
       poli: visibleInfo?.poli
     };
-    return infoPresent(merged) ? merged : void 0;
+    return infoPresent2(merged) ? merged : void 0;
   }
   async function syncCasemixNow(rows, deps) {
     const now = deps.now ?? Date.now();
@@ -817,7 +1371,7 @@ var __morbis_feature = (() => {
         return !!(m && m.norm && m.nama && m.no_reg && m.visit_datetime && m.poli);
       };
       for (const id of /* @__PURE__ */ new Set([...Object.keys(local), ...Object.keys(central)])) {
-        if (infoPresent(visible.get(id))) continue;
+        if (infoPresent2(visible.get(id))) continue;
         if (centralComplete(id)) continue;
         if (!isMarked(id)) continue;
         need.add(id);
@@ -826,7 +1380,7 @@ var __morbis_feature = (() => {
         try {
           const extra = await deps.resolveIdentity([...need].slice(0, 500));
           for (const r of extra ?? []) {
-            if (r?.idVisit && infoPresent(r.info) && !infoPresent(visible.get(r.idVisit))) {
+            if (r?.idVisit && infoPresent2(r.info) && !infoPresent2(visible.get(r.idVisit))) {
               visible.set(r.idVisit, r.info);
             }
           }
@@ -856,9 +1410,9 @@ var __morbis_feature = (() => {
     }
     for (const [id, info] of visible) {
       const owned = id in local && local[id]?.fromCentral !== true;
-      if (owned && infoPresent(info)) continue;
+      if (owned && infoPresent2(info)) continue;
       if (!isMarked(id)) continue;
-      if (!infoPresent(info)) continue;
+      if (!infoPresent2(info)) continue;
       try {
         if (await deps.postToggle(id, true, info)) {
           enriched++;
@@ -893,160 +1447,10 @@ var __morbis_feature = (() => {
     return { pushed, enriched, pulled, pending, offline };
   }
 
-  // src/features/shared/telaahStorage.ts
-  var TELAAH_STORAGE_KEY = "morbis_telaah_markers";
-  var TELAAH_MIGRATED_KEY = "ext_migrated_telaah_ids";
-  var TELAAH_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  var _telaahUnmarkAt = {};
-  function readTelaahUnmarks() {
-    return { ..._telaahUnmarkAt };
-  }
-  function defaultStore4() {
-    try {
-      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
-    } catch {
-    }
-    return null;
-  }
-  function readJson3(store, key) {
-    if (!store) return null;
-    try {
-      const raw = store.getItem(key);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-  function writeJson3(store, key, value) {
-    if (!store) return;
-    try {
-      store.setItem(key, JSON.stringify(value));
-    } catch {
-    }
-  }
-  function purgeExpiredTelaah(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= TELAAH_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
-  }
-  function loadTelaahMap(store = defaultStore4(), now = Date.now()) {
-    if (!store) return {};
-    try {
-      const parsed = readJson3(store, TELAAH_STORAGE_KEY);
-      if (typeof parsed !== "object" || parsed === null) return {};
-      const { purged, count } = purgeExpiredTelaah(parsed, now);
-      if (count > 0) saveTelaahMap(purged, store);
-      return purged;
-    } catch {
-      return {};
-    }
-  }
-  function minimalTelaahItem(raw) {
-    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
-    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
-    if (raw.fromCentral === true) out.fromCentral = true;
-    return out;
-  }
-  function saveTelaahMap(map, store = defaultStore4()) {
-    if (!store) return;
-    try {
-      const clean = {};
-      for (const [id, item] of Object.entries(map)) {
-        if (!item || typeof item !== "object" || !item.idVisit) continue;
-        clean[id] = minimalTelaahItem(item);
-      }
-      store.setItem(TELAAH_STORAGE_KEY, JSON.stringify(clean));
-    } catch {
-    }
-  }
-  function setTelaah(idVisit, store = defaultStore4(), now = Date.now(), fromCentral = false) {
-    if (!idVisit) return;
-    const map = loadTelaahMap(store, now);
-    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
-    saveTelaahMap(map, store);
-  }
-  function countTelaahPending(map, migratedIds) {
-    const done = new Set(migratedIds);
-    let n = 0;
-    for (const id of Object.keys(map)) {
-      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
-    }
-    return n;
-  }
-  function loadTelaahMigratedIds(store = defaultStore4()) {
-    const raw = readJson3(store, TELAAH_MIGRATED_KEY);
-    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
-  }
-  function saveTelaahMigratedIds(store = defaultStore4(), ids) {
-    writeJson3(store, TELAAH_MIGRATED_KEY, [...new Set(ids)]);
-  }
-  function forgetTelaahCentral(idVisit, store = defaultStore4()) {
-    if (!idVisit || !store) return false;
-    try {
-      const map = loadTelaahMap(store);
-      const item = map[idVisit];
-      if (!item || item.fromCentral !== true) return false;
-      delete map[idVisit];
-      saveTelaahMap(map, store);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  // src/features/shared/telaahApi.ts
-  function telaahInfoFromRow(info) {
-    return {
-      norm: info?.norm,
-      nama: info?.nama,
-      noReg: info?.noReg,
-      user: info?.user,
-      visitDatetime: info?.visitDatetime,
-      poli: info?.poli
-    };
-  }
-  async function getJsonTelaah(path, fetcher) {
-    return getJson(path, fetcher);
-  }
-  async function fetchTelaahBatch(ids, fetcher = fetch) {
-    const list = normalizeIds(ids);
-    if (!list.length) return {};
-    const j = await getJsonTelaah(
-      "/api/casemix/telaah-berkas/list?ids=" + encodeURIComponent(list.join(",")),
-      fetcher
-    );
-    if (j === null) return null;
-    if (!j.ok || !j.marks) return {};
-    return j.marks;
-  }
-  async function fetchTelaahRecent(daysBack = 30, fetcher = fetch) {
-    const end = /* @__PURE__ */ new Date();
-    const start = new Date(end.getTime() - Math.max(1, daysBack) * 24 * 60 * 60 * 1e3);
-    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const j = await getJsonTelaah(
-      "/api/casemix/telaah-berkas/export?tanggalAwal=" + encodeURIComponent(fmt(start)) + "&tanggalAkhir=" + encodeURIComponent(fmt(end)),
-      fetcher
-    );
-    if (j === null) return null;
-    if (!j.ok || !Array.isArray(j.data)) return {};
-    const out = {};
-    for (const r of j.data) {
-      const id = String(r?.id_visit ?? "").trim();
-      if (id) out[id] = r;
-    }
-    return out;
-  }
-
   // src/features/shared/telaahSyncDeps.ts
-  function defaultStore5() {
+  init_telaahApi();
+  init_casemixApi();
+  function defaultStore6() {
     try {
       if (typeof window !== "undefined" && window.localStorage)
         return window.localStorage;
@@ -1055,7 +1459,7 @@ var __morbis_feature = (() => {
     return null;
   }
   async function runTelaahSync(input) {
-    const store = input.store ?? defaultStore5();
+    const store = input.store ?? defaultStore6();
     const fetcher = input.fetcher ?? fetch;
     const user = (() => {
       try {
@@ -1130,175 +1534,6 @@ var __morbis_feature = (() => {
       resolveIdentity: input.resolveIdentity,
       now: input.now
     });
-  }
-
-  // src/features/shared/klaimIdentity.ts
-  var KLAIM_DATA_PATH = "/v2/m-klaim/data-tabel/data";
-  var DAY_MS = 24 * 60 * 60 * 1e3;
-  function formatDmy(d) {
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    return `${dd}-${mm}-${d.getFullYear()}`;
-  }
-  function buildKlaimDataQuery(start, end, jenis, filterTanggal = "kunjungan") {
-    return new URLSearchParams({
-      tanggalAwal: formatDmy(start),
-      tanggalAkhir: formatDmy(end),
-      filter_tanggal: filterTanggal,
-      norm: "",
-      nama: "",
-      reg: "",
-      billing: "all",
-      status: "all",
-      id_poli_cari: "",
-      jenis_pasien: "all",
-      jenis
-    });
-  }
-  function normalizeVisitDatetime(v) {
-    if (!v || v === "" || v === "-") return void 0;
-    let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
-    if (m) {
-      const iso = `${m[3]}-${m[2]}-${m[1]}`;
-      return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
-    }
-    m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
-    if (m) return v.replace("T", " ");
-    return v;
-  }
-  function stripHtml(s) {
-    return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
-  }
-  function extractIdVisitFromCells(cellsRaw) {
-    for (let i = cellsRaw.length - 1; i >= 0; i--) {
-      const c = cellsRaw[i] ?? "";
-      const m = c.match(/detail\(\s*['"]?(\d+)/) || c.match(/id_visit=(\d+)/);
-      if (m) return m[1];
-    }
-    return null;
-  }
-  function infoPresent2(i) {
-    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0 || i.visitDatetime !== void 0 || i.poli !== void 0);
-  }
-  function pickFromObject(o) {
-    const get = (...keys) => {
-      for (const k of Object.keys(o)) {
-        if (keys.includes(k.toLowerCase())) {
-          const t = stripHtml(o[k]);
-          if (t !== "" && t !== "-") return t;
-        }
-      }
-      return void 0;
-    };
-    const id = get("id_visit", "idvisit");
-    return {
-      id: id ?? null,
-      info: {
-        norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
-        nama: get("nama", "nama_pasien", "pasien"),
-        noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
-        visitDatetime: normalizeVisitDatetime(
-          get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
-        ),
-        poli: get("poli", "unit", "unit_kerja", "ruangan", "ruang", "bangsal")
-      }
-    };
-  }
-  function parseKlaimRows(json, headers, pick) {
-    const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : Array.isArray(json?.aaData) ? json.aaData : [];
-    const out = [];
-    for (const r of rows) {
-      if (Array.isArray(r)) {
-        const raw = r.map((c) => String(c ?? ""));
-        const id = extractIdVisitFromCells(raw);
-        if (!id) continue;
-        const info = pick(headers, raw.map(stripHtml));
-        if (infoPresent2(info)) out.push({ idVisit: id, info });
-      } else if (r && typeof r === "object") {
-        const { id, info } = pickFromObject(r);
-        if (id && infoPresent2(info)) out.push({ idVisit: id, info });
-      }
-    }
-    return out;
-  }
-  async function fetchKlaimIdentity(needIds, deps) {
-    const need = new Set(needIds.map((s) => String(s).trim()).filter(Boolean));
-    const found = /* @__PURE__ */ new Map();
-    if (need.size === 0) return [];
-    const fetcher = deps.fetcher ?? fetch;
-    const today = deps.now ?? /* @__PURE__ */ new Date();
-    const windowDays = Math.max(1, deps.windowDays ?? 31);
-    const maxWindows = Math.max(1, deps.maxWindows ?? 9);
-    const delayMs = deps.delayMs ?? 300;
-    const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
-    const total = maxWindows * 2;
-    let request = 0;
-    let failStreak = 0;
-    outer: for (let w = 0; w < maxWindows; w++) {
-      const end = new Date(today.getTime() - w * windowDays * DAY_MS);
-      const start = new Date(end.getTime() - (windowDays - 1) * DAY_MS);
-      for (const jenis of ["n", "y"]) {
-        if (found.size >= need.size) break outer;
-        request++;
-        try {
-          const qs = buildKlaimDataQuery(start, end, jenis).toString();
-          const res = await fetcher(`${KLAIM_DATA_PATH}?${qs}`, {
-            method: "GET",
-            cache: "no-store",
-            credentials: "same-origin",
-            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
-          });
-          if (!res || !res.ok) throw new Error("HTTP " + (res?.status ?? "?"));
-          const json = await res.json();
-          for (const row of parseKlaimRows(json, deps.headers, deps.pick)) {
-            if (need.has(row.idVisit) && !found.has(row.idVisit)) found.set(row.idVisit, row);
-          }
-          failStreak = 0;
-        } catch {
-          failStreak++;
-          if (failStreak >= 3) break outer;
-        }
-        deps.onProgress?.({ request, total, found: found.size, need: need.size });
-        if (found.size < need.size) await sleep(delayMs);
-      }
-    }
-    return [...found.values()];
-  }
-
-  // src/features/shared/whenIdle.ts
-  function runWhenIdle(cb, timeoutMs = 8e3) {
-    try {
-      const ric = window.requestIdleCallback;
-      if (typeof ric === "function") {
-        ric.call(window, cb, { timeout: timeoutMs });
-        return;
-      }
-    } catch {
-    }
-    window.setTimeout(cb, Math.min(timeoutMs, 1500));
-  }
-
-  // src/features/shared/usageLog.ts
-  var KEY = "extUsageLog";
-  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
-  var MAX_ENTRIES2 = 2e3;
-  async function logUsage(feature, event, ok, detail) {
-    try {
-      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
-      const now = Date.now();
-      const entry = {
-        ts: now,
-        feature,
-        event,
-        ok,
-        detail: detail instanceof Error ? `${detail.name}: ${detail.message}` : detail !== void 0 ? String(detail) : void 0,
-        url: typeof location !== "undefined" ? location.href : void 0
-      };
-      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
-      const trimmed = kept.slice(-MAX_ENTRIES2);
-      await chrome.storage.local.set({ [KEY]: trimmed });
-    } catch {
-    }
   }
 
   // src/features/mKlaimPreOp.ts
@@ -2013,6 +2248,478 @@ var __morbis_feature = (() => {
       }
     }
   });
-  return __toCommonJS(mKlaimPreOp_exports);
+
+  // src/features/mKlaimTelaah.ts
+  var g2 = getMorbisGlobals();
+  injectCSS(
+    "ext-telaah-styles",
+    `@media print { .ext-telaah-btn { display: none !important; } }
+  .ext-telaah-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-left: 4px;
+    vertical-align: middle;
+    user-select: none;
+    text-decoration: none !important;
+  }
+  .ext-telaah-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+    transform: translateY(-1px);
+  }
+  .ext-telaah-btn.active {
+    background: #0d9488 !important;
+    border-color: #0f766e !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+  }
+  .ext-telaah-btn.active:hover {
+    background: #0f766e !important;
+  }
+  .ext-telaah-btn:disabled { opacity: 0.6; cursor: wait; }`
+  );
+  function detailIdVisit(search) {
+    try {
+      const v = new URLSearchParams(search).get("id_visit");
+      const t = (v ?? "").trim();
+      return /^\d{1,20}$/.test(t) ? t : null;
+    } catch {
+      return null;
+    }
+  }
+  var DETAIL_LABEL_PATTERNS = [
+    { field: "noReg", re: /no\.?\s*reg(istrasi)?\b|no\.?\s*daftar/i },
+    { field: "norm", re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis/i },
+    { field: "nama", re: /nama(\s*pasien)?/i },
+    {
+      field: "visitDatetime",
+      re: /tgl\.?\s*masuk|tanggal\s*kunjungan|tanggal\s*masuk|waktu\s*kunjungan/i
+    },
+    { field: "poli", re: /unit(\s*\/\s*instalasi)?\b|\bpoli\b|ruang/i }
+  ];
+  function parseDetailPairs(pairs) {
+    const out = {};
+    for (const [rawLabel, rawValue] of pairs) {
+      const label = (rawLabel ?? "").trim();
+      const value = (rawValue ?? "").trim();
+      if (label === "" || value === "" || value === "-" || value === "\u2014") continue;
+      for (const { field, re } of DETAIL_LABEL_PATTERNS) {
+        if (re.test(label)) {
+          if (field === "visitDatetime") {
+            const v = normalizeVisitDatetime(value);
+            if (v !== void 0 && out.visitDatetime === void 0) out.visitDatetime = v;
+          } else if (out[field] === void 0) {
+            out[field] = value;
+          }
+          break;
+        }
+      }
+    }
+    return out;
+  }
+  function collectDetailPairs(root) {
+    const out = [];
+    let cells;
+    try {
+      cells = root.querySelectorAll("td, th");
+    } catch {
+      return out;
+    }
+    const arr = Array.from(cells);
+    for (let i = 0; i < arr.length; i++) {
+      const label = (arr[i].textContent ?? "").trim();
+      if (label === "") continue;
+      if (!DETAIL_LABEL_PATTERNS.some(({ re }) => re.test(label))) continue;
+      let value = "";
+      const next = arr[i + 1];
+      if (next) value = (next.textContent ?? "").trim();
+      if (value === "" || value === "-" || value === "\u2014") {
+        const parent = arr[i].parentElement;
+        const full = (parent?.innerText ?? "").replace(/\s+/g, " ");
+        const m = full.match(/:\s*(.+)$/);
+        if (m) value = m[1].trim();
+      }
+      if (value !== "" && value !== "-" && value !== "\u2014") out.push([label, value]);
+    }
+    return out;
+  }
+  var DETAIL_FOOTER_BUTTON_RE = /^(print|cetak|kembali|verif\w*|batal verif|revisi.*)$/i;
+  function findDetailFooter(doc) {
+    let cands;
+    try {
+      cands = Array.from(doc.querySelectorAll("div.form-gorup, div.form-group"));
+    } catch {
+      return null;
+    }
+    const hits = cands.filter((d) => {
+      try {
+        const btns = Array.from(
+          d.querySelectorAll('button, a.btn, input[type="button"], input[type="submit"]')
+        );
+        return btns.some(
+          (b) => DETAIL_FOOTER_BUTTON_RE.test(
+            (b.textContent || b.value || "").trim()
+          )
+        );
+      } catch {
+        return false;
+      }
+    });
+    return hits[hits.length - 1] ?? null;
+  }
+  var _telaahCentralMap = null;
+  var _telaahCentralAt = 0;
+  var TELAAH_CENTRAL_TTL_MS = 15e3;
+  var _pendingTelaah = /* @__PURE__ */ new Set();
+  function telaahEffectiveMarked(idVisit, localMap) {
+    const centralHas = _telaahCentralMap ? !!_telaahCentralMap[idVisit] : null;
+    return resolvePreOpMarked(idVisit in localMap, centralHas, readTelaahUnmarks()[idVisit]);
+  }
+  function userNow() {
+    try {
+      const u = readPetugas();
+      return u && u.trim() !== "" ? u : void 0;
+    } catch {
+      return void 0;
+    }
+  }
+  function paintTelaah(btn, marked) {
+    btn.classList.toggle("active", marked);
+    btn.setAttribute("data-ext-telaah-marked", marked ? "true" : "false");
+    btn.title = marked ? "Telaah Berkas: SUDAH ditandai (klik untuk batal)" : "Tandai Telaah Berkas";
+  }
+  function makeTelaahButton(idVisit, marked) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ext-telaah-btn";
+    btn.setAttribute("data-ext-telaah-btn", idVisit);
+    btn.textContent = "Telaah";
+    paintTelaah(btn, marked);
+    return btn;
+  }
+  async function toggleTelaah(idVisit, btn, info) {
+    if (!idVisit || _pendingTelaah.has(idVisit) || btn.disabled) return;
+    const nextState = !telaahEffectiveMarked(idVisit, loadTelaahMap());
+    if (nextState) setTelaah(idVisit);
+    else removeTelaah(idVisit);
+    if (nextState) clearTelaahUnmark(idVisit);
+    else markTelaahUnmarked(idVisit);
+    paintTelaah(btn, nextState);
+    _pendingTelaah.add(idVisit);
+    btn.disabled = true;
+    const settle = () => {
+      _pendingTelaah.delete(idVisit);
+      btn.disabled = false;
+      try {
+        paintTelaah(btn, telaahEffectiveMarked(idVisit, loadTelaahMap()));
+      } catch {
+      }
+    };
+    try {
+      await toggleTelaahCentral(idVisit, nextState, {
+        norm: info?.norm,
+        nama: info?.nama,
+        noReg: info?.noReg,
+        visitDatetime: info?.visitDatetime,
+        poli: info?.poli,
+        user: userNow()
+      });
+    } catch {
+    } finally {
+      settle();
+    }
+    window.setTimeout(() => {
+      if (_pendingTelaah.has(idVisit)) settle();
+    }, 1e4);
+    void logUsage("mKlaimTelaah", nextState ? "mark_telaah" : "unmark_telaah", true, { idVisit });
+  }
+  async function resolveDetailIdentity(idVisit, info) {
+    const base = { ...info ?? {} };
+    const needMore = base.norm === void 0 || base.nama === void 0 || base.visitDatetime === void 0;
+    if (needMore) {
+      try {
+        const rows = await fetchKlaimIdentity([idVisit], {
+          headers: KLAIM_LIST_HEADERS,
+          pick: (h, c) => {
+            void h;
+            void c;
+            return {};
+          }
+        });
+        const found = rows[0]?.info;
+        if (found) {
+          return {
+            norm: base.norm ?? found.norm,
+            nama: base.nama ?? found.nama,
+            noReg: base.noReg ?? found.noReg,
+            visitDatetime: base.visitDatetime ?? found.visitDatetime,
+            poli: base.poli ?? found.poli
+          };
+        }
+      } catch {
+      }
+    }
+    return base;
+  }
+  function extractIdVisitFromRow2(row) {
+    const html = row.innerHTML;
+    const m = html.match(/detail[^(]*\(\s*['"]?(\d+)/i) || html.match(/id_visit=(\d+)/) || row.getAttribute("data-id-visit")?.match(/(\d+)/);
+    return m ? m[1] : null;
+  }
+  function scanListRows() {
+    let localMap;
+    try {
+      localMap = loadTelaahMap();
+    } catch {
+      return;
+    }
+    for (const table of document.querySelectorAll("table")) {
+      for (const row of table.querySelectorAll("tbody tr")) {
+        if (row.classList.contains("dataTables_empty")) continue;
+        const id = extractIdVisitFromRow2(row);
+        if (!id) continue;
+        let btn = row.querySelector("[data-ext-telaah-btn]");
+        if (!btn) {
+          const anchor = row.querySelector("[data-ext-preop-btn]");
+          btn = makeTelaahButton(id, false);
+          if (anchor?.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+          else row.querySelector("td:last-child")?.appendChild(btn);
+          const b2 = btn;
+          b2.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              void toggleTelaah(id, b2, extractPatientInfo(row));
+            } catch {
+              void toggleTelaah(id, b2);
+            }
+          });
+        }
+        if (btn.getAttribute("data-ext-telaah-btn") !== id)
+          btn.setAttribute("data-ext-telaah-btn", id);
+        if (!_pendingTelaah.has(id)) paintTelaah(btn, telaahEffectiveMarked(id, localMap));
+        const b = btn;
+        if (!b.dataset.extTelaahBound) {
+          b.dataset.extTelaahBound = "1";
+          b.addEventListener(
+            "click",
+            () => {
+              try {
+                const info = extractPatientInfo(row);
+                void toggleTelaah(id, b, info);
+              } catch {
+                void toggleTelaah(id, b);
+              }
+            },
+            { once: false }
+          );
+        }
+      }
+    }
+  }
+  function scanDetailFooter() {
+    const id = detailIdVisit(window.location.search);
+    if (!id || document.getElementById("ext-telaah-detail-btn")) return;
+    const footer = findDetailFooter(document);
+    if (!footer) return;
+    const btn = makeTelaahButton(id, false);
+    btn.id = "ext-telaah-detail-btn";
+    btn.style.marginLeft = "8px";
+    const actions = Array.from(
+      footer.querySelectorAll('button, a.btn, input[type="button"], input[type="submit"]')
+    );
+    const last = actions[actions.length - 1];
+    if (last?.parentNode === footer) footer.insertBefore(btn, last.nextSibling);
+    else footer.appendChild(btn);
+    try {
+      paintTelaah(btn, telaahEffectiveMarked(id, loadTelaahMap()));
+    } catch {
+    }
+    void (async () => {
+      try {
+        const { fetchTelaahBatch: fetchTelaahBatch2 } = await Promise.resolve().then(() => (init_telaahApi(), telaahApi_exports));
+        const marks = await fetchTelaahBatch2([id]);
+        if (marks === null) return;
+        _telaahCentralMap = marks;
+        _telaahCentralAt = Date.now();
+        if (!_pendingTelaah.has(id)) paintTelaah(btn, telaahEffectiveMarked(id, loadTelaahMap()));
+        if (marks[id] && !loadTelaahMap()[id]) setTelaah(id, void 0, Date.now(), true);
+      } catch {
+      }
+    })();
+    btn.addEventListener("click", () => {
+      void (async () => {
+        const dom = parseDetailPairs(collectDetailPairs(document));
+        const info = await resolveDetailIdentity(id, dom);
+        await toggleTelaah(id, btn, info);
+      })();
+    });
+  }
+  function refreshTelaahCentral() {
+    const now = Date.now();
+    if (now - _telaahCentralAt < TELAAH_CENTRAL_TTL_MS) return;
+    _telaahCentralAt = now;
+    try {
+      if (document.hidden) return;
+    } catch {
+    }
+    if (window.location.pathname.includes("/detail")) {
+      const id = detailIdVisit(window.location.search);
+      if (!id) return;
+      void fetchTelaahBatch([id]).then((marks) => {
+        if (marks === null) return;
+        _telaahCentralMap = marks;
+        pruneTelaahUnmarks();
+        const localMap = loadTelaahMap();
+        for (const sid of collectStaleTelaah(localMap, (x) => !!marks[x])) {
+          if (forgetTelaahCentral(sid)) delete localMap[sid];
+        }
+        const btn = document.getElementById("ext-telaah-detail-btn");
+        if (btn && !_pendingTelaah.has(id)) paintTelaah(btn, telaahEffectiveMarked(id, localMap));
+      });
+      return;
+    }
+    const ids = [];
+    for (const table of document.querySelectorAll("table")) {
+      for (const row of table.querySelectorAll("tbody tr")) {
+        if (row.classList.contains("dataTables_empty")) continue;
+        const id = extractIdVisitFromRow2(row);
+        if (id) ids.push(id);
+      }
+    }
+    if (!ids.length) return;
+    void fetchTelaahBatch(ids).then((marks) => {
+      if (marks === null) return;
+      _telaahCentralMap = marks;
+      pruneTelaahUnmarks();
+      const localMap = loadTelaahMap();
+      for (const sid of collectStaleTelaah(localMap, (x) => !!marks[x])) {
+        if (_pendingTelaah.has(sid)) continue;
+        if (forgetTelaahCentral(sid)) delete localMap[sid];
+      }
+      for (const table of document.querySelectorAll("table")) {
+        for (const row of table.querySelectorAll("tbody tr")) {
+          const id = extractIdVisitFromRow2(row);
+          if (!id || _pendingTelaah.has(id)) continue;
+          const marked = telaahEffectiveMarked(id, localMap);
+          const btn = row.querySelector("[data-ext-telaah-btn]");
+          if (!btn) continue;
+          if (btn.getAttribute("data-ext-telaah-marked") !== String(marked)) {
+            if (marked && !localMap[id]) {
+              try {
+                setTelaah(id, void 0, Date.now(), true);
+              } catch {
+              }
+            }
+            paintTelaah(btn, marked);
+          }
+        }
+      }
+    });
+  }
+  function isDetailPage() {
+    try {
+      return window.location.pathname.includes("/detail");
+    } catch {
+      return false;
+    }
+  }
+  function scanOnce() {
+    try {
+      if (isDetailPage()) scanDetailFooter();
+      else scanListRows();
+    } catch {
+    }
+  }
+  var _scanIntervalId2 = null;
+  async function resolveTelaahSilent(ids) {
+    let headers = KLAIM_LIST_HEADERS;
+    try {
+      if (!isDetailPage()) {
+        const found = Array.from(document.querySelectorAll("#data-table thead th")).filter((th) => th.getAttribute("data-ext-bv-header") !== "1").map((th) => th.textContent?.trim() ?? "");
+        if (found.length > 0) headers = found;
+      }
+    } catch {
+    }
+    const rows = await fetchKlaimIdentity(ids, { headers, pick: pickPatientInfo });
+    let user;
+    try {
+      const u = readPetugas();
+      if (u && u.trim() !== "") user = u;
+    } catch {
+    }
+    if (!user) return rows;
+    return rows.map((r) => ({ ...r, info: { ...r.info, user } }));
+  }
+  function initTelaah() {
+    runWhenIdle(scanOnce);
+    try {
+      initTelaahBackfill((ids) => resolveTelaahSilent(ids));
+    } catch {
+    }
+    if (_scanIntervalId2 !== null) return;
+    _scanIntervalId2 = window.setInterval(() => {
+      try {
+        if (document.hidden) return;
+      } catch {
+      }
+      scanOnce();
+      refreshTelaahCentral();
+      try {
+        document.dispatchEvent(new CustomEvent("ext:telaah-tick"));
+      } catch {
+      }
+    }, 3e3);
+    window.addEventListener("pagehide", () => {
+      try {
+        if (_scanIntervalId2 !== null) {
+          window.clearInterval(_scanIntervalId2);
+          _scanIntervalId2 = null;
+        }
+      } catch {
+      }
+    });
+  }
+  if (typeof g2.featureModules !== "undefined") {
+    g2.featureModules.telaahBerkas = {
+      id: "telaahBerkas",
+      name: "Telaah Berkas (M-KLAIM)",
+      description: "Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC",
+      match: {
+        oneOf: [
+          { pathname: "/v2/m-klaim" },
+          { pathname: "/v2/m-klaim/" },
+          { pathname: "/v2/m-klaim/index" },
+          // Halaman detail klaim (prefix) — footer Print/Kembali/Verif/Revisi.
+          { prefix: "/v2/m-klaim/detail" }
+        ]
+      },
+      run: initTelaah
+    };
+  }
+  whenFeatureEnabled("telaahBerkas", () => {
+    const p = window.location?.pathname ?? "";
+    if (p.startsWith("/v2/m-klaim")) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTelaah);
+      } else {
+        initTelaah();
+      }
+    }
+  });
+  return __toCommonJS(mKlaimTelaah_exports);
 })();
-//# sourceMappingURL=mKlaimPreOp.js.map
+//# sourceMappingURL=mKlaimTelaah.js.map

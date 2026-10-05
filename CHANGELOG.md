@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **telaah** — mark Telaah Berkas list + footer detail, konsep sama pre-op (`98761f7`)
 - **pre-op** — unmark lintas-PC direkonsiliasi, semua PC tampil sama (`15183c8`)
 - **pre-op** — poli ikut terkirim + backfill otomatis field lengkap (`0bab2d3`)
 - **laporan** — tombol buka halaman polos tanpa prefill filter (`51b450a`)
@@ -31,6 +32,7 @@
 
 ### 🧹 chore
 
+- rebuild dist (anti-resurrect + reconcile unmark lintas-PC) (`ceb04f7`)
 - rebuild dist (poli + backfill full-field + laporan polos) (`3dbab55`)
 
 ### 📌 misc
@@ -1750,4 +1752,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 10fa4a388b2fe03ab4cde22db052ed57d29bf55e -->
+<!-- changelog-upto: 98761f75c6848ffeb1f5d817bb04182cc8e071c2 -->
