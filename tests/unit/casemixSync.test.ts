@@ -238,6 +238,22 @@ describe('repairLegacyInfo + mergePushInfo (kompatibilitas versi lama)', () => {
     expect(mergePushInfo(undefined, undefined)).toBeUndefined();
   });
 
+  it('meneruskan visitDatetime + poli dari baris terlihat (untuk kolom laporan)', async () => {
+    const { mergePushInfo } = await import('../../src/features/shared/casemixSync.js');
+    expect(
+      mergePushInfo(
+        { norm: '00052667', visitDatetime: '2026-09-26 12:00:00', poli: 'KLINIK MATA' },
+        { norm: '111', nama: 'Lama', noReg: 'R-9' },
+      ),
+    ).toEqual({
+      norm: '00052667',
+      nama: 'Lama',
+      noReg: 'R-9',
+      visitDatetime: '2026-09-26 12:00:00',
+      poli: 'KLINIK MATA',
+    });
+  });
+
   it('push memakai identitas warisan untuk baris yang tak terlihat', async () => {
     const d = deps({
       loadLocal: () =>
@@ -304,11 +320,57 @@ describe('syncCasemixNow resolveIdentity (baris di luar DOM)', () => {
     const resolve = vi.fn(async () => []);
     const d = deps({
       loadLocal: () => localMap(['A', 'B']),
-      fetchMarks: async () => central({ A: { norm: '1', nama: 'X', no_reg: 'R' }, B: {} }),
+      fetchMarks: async () =>
+        central({
+          A: {
+            norm: '1',
+            nama: 'X',
+            no_reg: 'R',
+            visit_datetime: '2026-09-01 10:00:00',
+            poli: 'IGD',
+          },
+          B: {},
+        }),
       resolveIdentity: resolve,
     });
     await syncCasemixNow([{ idVisit: 'B', info: { nama: 'BUDI' } }], d);
     expect(resolve).not.toHaveBeenCalled();
+  });
+
+  it('mencari id beridentitas tapi visit_datetime/poli-nya null di pusat', async () => {
+    const resolve = vi.fn(async (ids: string[]) =>
+      ids.map((id) => ({
+        idVisit: id,
+        info: {
+          norm: '00' + id,
+          nama: 'N' + id,
+          noReg: 'R' + id,
+          visitDatetime: '2026-09-02 11:00:00',
+          poli: 'KLINIK MATA',
+        },
+      })),
+    );
+    const d = deps({
+      loadLocal: () => localMap(['A']),
+      fetchMarks: async () => central({ A: { norm: '1', nama: 'X', no_reg: 'R' } }),
+      resolveIdentity: resolve,
+    });
+    const c = await syncCasemixNow([], d);
+    expect(resolve).toHaveBeenCalledTimes(1);
+    expect(resolve.mock.calls[0][0]).toEqual(['A']);
+    // push melengkapi visit_datetime + poli (bukan hanya identitas)
+    expect(d.posts).toContainEqual({
+      id: 'A',
+      marked: true,
+      info: {
+        norm: '00A',
+        nama: 'NA',
+        noReg: 'RA',
+        visitDatetime: '2026-09-02 11:00:00',
+        poli: 'KLINIK MATA',
+      },
+    });
+    expect(c.pushed).toBe(1);
   });
 
   it('resolveIdentity melempar → sinkron tetap jalan', async () => {

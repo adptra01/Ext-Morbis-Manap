@@ -32,6 +32,9 @@ export interface SyncRowInfo {
    *  Diambil dari kolom "Tanggal Kunjungan" endpoint M-KLAIM.
    *  Opsional — server yang belum punya kolom abaikan. */
   visitDatetime?: string;
+  /** Unit/poli pasien (mis. KLINIK MATA) dari kolom "Unit".
+   *  Opsional — server yang belum punya kolom abaikan. */
+  poli?: string;
 }
 
 export interface SyncRow {
@@ -114,6 +117,9 @@ export function repairLegacyInfo(stored?: {
 /**
  * Gabung identitas baris terlihat (segar, berbasis header — utama) dengan
  * warisan versi lama (cadangan). Kembalikan undefined bila tak ada apa pun.
+ * visitDatetime hanya datang dari baris terlihat/endpoint (storage lokal
+ * tidak menyimpannya) — wajib diteruskan agar push Sinkron melengkapi
+ * kolom Waktu Kunjungan di laporan, bukan hanya norm/nama/no_reg.
  */
 export function mergePushInfo(
   visibleInfo: SyncRowInfo | undefined,
@@ -124,6 +130,8 @@ export function mergePushInfo(
     norm: visibleInfo?.norm ?? legacy?.norm,
     nama: visibleInfo?.nama ?? legacy?.nama,
     noReg: visibleInfo?.noReg ?? legacy?.noReg,
+    visitDatetime: visibleInfo?.visitDatetime,
+    poli: visibleInfo?.poli,
   };
   return infoPresent(merged) ? merged : undefined;
 }
@@ -188,12 +196,15 @@ export async function syncCasemixNow(rows: SyncRow[], deps: SyncDeps): Promise<S
   // 1b. Identitas untuk id yang tak terlihat di DOM: tabel M-KLAIM hanya
   //     merender halaman aktif, jadi tanpa ini id lain terkirim hanya-id
   //     dan baris laporan tetap kosong. Hanya id yang ditandai dan belum
-  //     lengkap di pusat (norm+nama+no_reg) yang dicari.
+  //     lengkap di pusat yang dicari — lengkap = norm+nama+no_reg DAN
+  //     visit_datetime (kolom Waktu Kunjungan) DAN poli (kolom Poli);
+  //     baris beridentitas tapi visit_datetime/poli-nya null TETAP dicari
+  //     supaya Sinkron melengkapi semua field, bukan hanya identitas).
   if (deps.resolveIdentity) {
     const need = new Set<string>();
     const centralComplete = (id: string): boolean => {
       const m = central[id];
-      return !!(m && m.norm && m.nama && m.no_reg);
+      return !!(m && m.norm && m.nama && m.no_reg && m.visit_datetime && m.poli);
     };
     for (const id of new Set([...Object.keys(local), ...Object.keys(central)])) {
       if (infoPresent(visible.get(id))) continue;

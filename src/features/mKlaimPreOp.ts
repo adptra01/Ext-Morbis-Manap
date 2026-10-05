@@ -237,6 +237,8 @@ export interface PatientInfo {
   noReg?: string;
   /** Waktu kunjungan dari kolom "Tanggal Kunjungan" (format: YYYY-MM-DD HH:MM:SS). */
   visitDatetime?: string;
+  /** Unit/poli dari kolom "Unit" (mis. KLINIK MATA) — dikirim ke server apa adanya. */
+  poli?: string;
 }
 
 /**
@@ -253,6 +255,7 @@ const HEADER_FIELD_PATTERNS: Array<{ field: keyof PatientInfo | 'idVisit'; re: R
   { field: 'norm', re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
   { field: 'nama', re: /nama(\s*pasien)?/i },
   { field: 'visitDatetime', re: /tanggal\s*kunjungan|waktu\s*kunjungan/i },
+  { field: 'poli', re: /\bunit\b|\bpoli\b/i },
 ];
 
 /**
@@ -307,6 +310,7 @@ export function pickPatientInfo(headers: string[], cells: string[]): PatientInfo
     nama: pick(idx.nama),
     noReg: pick(idx.noReg),
     visitDatetime: rawVisit ? normalizeVisitDatetime(rawVisit) : undefined,
+    poli: pick(idx.poli),
   };
 }
 
@@ -349,7 +353,13 @@ export function guessPatientInfo(cells: string[]): PatientInfo {
 function extractPatientInfo(row: HTMLTableRowElement): PatientInfo {
   const cells = Array.from(row.querySelectorAll('td')).map((td) => td.textContent?.trim() ?? '');
   const byHeader = pickPatientInfo(headersOfRow(row), cells);
-  if (byHeader.norm !== undefined || byHeader.nama !== undefined || byHeader.noReg !== undefined) {
+  if (
+    byHeader.norm !== undefined ||
+    byHeader.nama !== undefined ||
+    byHeader.noReg !== undefined ||
+    byHeader.visitDatetime !== undefined ||
+    byHeader.poli !== undefined
+  ) {
     return byHeader;
   }
   return guessPatientInfo(cells);
@@ -541,6 +551,7 @@ function ensurePreOpButton(row: HTMLTableRowElement, idVisit: string): HTMLButto
           noReg: info.noReg,
           user: readPetugas(),
           visitDatetime: info.visitDatetime,
+          poli: info.poli,
         }),
       ).then(settle, settle);
     } catch {
@@ -665,6 +676,37 @@ function updateSyncBadge(): void {
   }
 }
 
+/** Cari identitas pasien dari endpoint data M-KLAIM (norm/nama/no_reg/
+ *  visit_datetime/poli + user petugas). Dipakai Sinkron manual DAN sapuan
+ *  backfill otomatis — kedua jalur mengirim field yang SAMA lengkapnya.
+ *  `silent=true` untuk backfill (tanpa toast, tanpa progress). */
+async function resolveKlaimIdentities(ids: string[], silent = false): Promise<SyncRow[]> {
+  if (!silent) showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM…`, 120000);
+  // Buang kolom checkbox tambahan BulkVerif: baris respons tak memilikinya.
+  const headers = Array.from(document.querySelectorAll<HTMLElement>('#data-table thead th'))
+    .filter((th) => th.getAttribute('data-ext-bv-header') !== '1')
+    .map((th) => th.textContent?.trim() ?? '');
+  const rows = await fetchKlaimIdentity(ids, {
+    headers,
+    pick: pickPatientInfo,
+    onProgress: silent
+      ? undefined
+      : (p) =>
+          showSyncToast(
+            `Mencari identitas pasien… ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
+            120000,
+          ),
+  });
+  let user: string | undefined;
+  try {
+    user = readPetugas();
+  } catch {
+    /* abaikan */
+  }
+  if (!user) return rows;
+  return rows.map((r) => ({ ...r, info: { ...r.info, user } }));
+}
+
 /**
  * Sinkron dua arah sekarang: push localStorage → pusat (beridentitas bila
  * barisnya terlihat), enrich baris kosong, pull tanda PC lain → lokal +
@@ -704,6 +746,7 @@ export async function syncPreOpNow(): Promise<void> {
               nama: info?.nama ?? null,
               no_reg: info?.noReg ?? null,
               visit_datetime: info?.visitDatetime ?? null,
+              poli: info?.poli ?? null,
               user: user ?? null,
             }),
             credentials: 'omit',
@@ -730,23 +773,7 @@ export async function syncPreOpNow(): Promise<void> {
       },
       // Tabel hanya merender halaman aktif (DataTables, 10 baris/halaman) →
       // identitas id lain diambil dari endpoint data M-KLAIM yang sama.
-      resolveIdentity: async (ids) => {
-        showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM…`, 120000);
-        // Buang kolom checkbox tambahan BulkVerif: baris respons tak memilikinya.
-        const headers = Array.from(document.querySelectorAll<HTMLElement>('#data-table thead th'))
-          .filter((th) => th.getAttribute('data-ext-bv-header') !== '1')
-          .map((th) => th.textContent?.trim() ?? '');
-        const rows = await fetchKlaimIdentity(ids, {
-          headers,
-          pick: pickPatientInfo,
-          onProgress: (p) =>
-            showSyncToast(
-              `Mencari identitas pasien… ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
-              120000,
-            ),
-        });
-        return rows;
-      },
+      resolveIdentity: async (ids) => resolveKlaimIdentities(ids),
     });
     // Gambar ulang dari map lokal yang baru (sapuan 1,5 dtk juga mengejar).
     try {
@@ -843,7 +870,9 @@ export function initPreOpMarker(): void {
     _booted = true;
     scanAndInjectPreOpButtons();
     refreshCentral();
-    initCasemixBackfill(); // migrasi diam-diam log lokal lama → DB pusat
+    // Backfill otomatis memakai resolver identitas yang SAMA dengan Sinkron
+    // manual (endpoint M-KLAIM, silent) → field terkirim sama lengkapnya.
+    initCasemixBackfill((ids) => resolveKlaimIdentities(ids, true));
     injectSyncButton(); // tombol "Sinkron" manual (push + pull eksplisit)
     if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
     _scanIntervalId = window.setInterval(() => {

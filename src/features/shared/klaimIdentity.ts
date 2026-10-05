@@ -108,7 +108,14 @@ export function extractIdVisitFromCells(cellsRaw: string[]): string | null {
 }
 
 function infoPresent(i: SyncRowInfo | undefined): i is SyncRowInfo {
-  return !!i && (i.norm !== undefined || i.nama !== undefined || i.noReg !== undefined);
+  return (
+    !!i &&
+    (i.norm !== undefined ||
+      i.nama !== undefined ||
+      i.noReg !== undefined ||
+      i.visitDatetime !== undefined ||
+      i.poli !== undefined)
+  );
 }
 
 function pickFromObject(o: Record<string, unknown>): { id: string | null; info: SyncRowInfo } {
@@ -131,6 +138,7 @@ function pickFromObject(o: Record<string, unknown>): { id: string | null; info: 
       visitDatetime: normalizeVisitDatetime(
         get('tanggal_kunjungan', 'tgl_kunjungan', 'visit_datetime', 'visit_date'),
       ),
+      poli: get('poli', 'unit', 'unit_kerja', 'ruangan', 'ruang', 'bangsal'),
     },
   };
 }

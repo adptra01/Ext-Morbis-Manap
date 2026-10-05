@@ -11,6 +11,14 @@
  *   POST /api/reports/resume-history
  * - Riwayat revisi BPJS bersifat session (history.state) → tidak bisa
  *   di-backfill; revisi baru langsung ditulis ke pusat saat disimpan.
+ *
+ * Payload pre-op SELALU lengkap (norm/nama/no_reg/visit_datetime/poli/
+ * user bila diketahui — sama dengan tombol Sinkron manual), BUKAN hanya
+ * id_visit. Identitas diambil runtime via `resolveIdentity` injeksi
+ * (endpoint M-KLAIM, tak pernah disimpan lokal demi privasi); bila
+ * resolver tak ada/gagal → kirim null dan server MEMPERTAHANKAN field
+ * yang sudah ada (non-null overwrite W-7.20) — sapuan gagal/parsial
+ * tidak merusak data pusat.
  */
 
 import { loadPreOpMap, loadUnmarkQueue, saveUnmarkQueue, type PreOpMap } from './preOpStorage.js';
@@ -21,6 +29,12 @@ import {
   type TipeResume,
 } from './resumeHistory.js';
 import { requestCentral } from './casemixApi.js';
+import type { SyncRow, SyncRowInfo } from './casemixSync.js';
+
+/** Cari identitas pasien untuk id pending — injeksi dari lapisan DOM
+ *  (endpoint M-KLAIM). Opsional: tanpa ini backfill kirim null dan
+ *  server mempertahankan field lama (aman, tapi tak melengkapi). */
+export type BackfillIdentityResolver = (ids: string[]) => Promise<SyncRow[]>;
 
 export type KVStore = {
   getItem(k: string): string | null;
@@ -172,25 +186,43 @@ export interface BackfillResult {
 export async function runCasemixBackfill(
   store: KVStore | null = defaultStore(),
   fetcher: typeof fetch = fetch,
+  resolveIdentity?: BackfillIdentityResolver,
 ): Promise<BackfillResult> {
   const res: BackfillResult = { preopUploaded: 0, resumeUploaded: 0, offline: false };
   if (!store) return res;
 
-  // 1. Pre-op map → pusat
+  // 1. Pre-op map → pusat (payload LENGKAP bila resolver tersedia).
   try {
     const map = loadPreOpMap(store);
     const migrated = loadMigratedIds(store);
     const pending = collectPreOpPending(map, migrated);
+    // Identitas runtime (tak disimpan lokal): gagal → null, server
+    // mempertahankan field lama — sapuan tak pernah merusak data pusat.
+    let ident = new Map<string, SyncRowInfo>();
+    if (pending.length > 0 && resolveIdentity) {
+      try {
+        const rows = (await resolveIdentity(pending)) ?? [];
+        ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
+      } catch {
+        /* endpoint gagal — kirim null, server pertahankan yang ada */
+      }
+    }
     for (const id of pending) {
       const item = map[id];
       if (!item) continue;
-      // HANYA id_visit + marked yang dikirim: identitas (norm/nama/no_reg)
-      // tidak tersimpan lokal (di-scrub demi privasi) dan server TIDAK
-      // menimpa field yang tak dikirim — jadi data baik dari klik langsung
-      // tidak akan tertimpa null oleh sapuan ini (regresi laporan kosong).
+      const info = ident.get(id);
       const ok = await postCentral(
         '/api/casemix/pre-op/toggle',
-        { id_visit: id, marked: true },
+        {
+          id_visit: id,
+          marked: true,
+          norm: info?.norm ?? null,
+          nama: info?.nama ?? null,
+          no_reg: info?.noReg ?? null,
+          visit_datetime: info?.visitDatetime ?? null,
+          poli: info?.poli ?? null,
+          user: info?.user ?? null,
+        },
         fetcher,
       );
       if (!ok) {
@@ -302,9 +334,14 @@ export async function runCasemixBackfill(
 }
 
 let _backfillTimer: number | null = null;
+let _backfillResolver: BackfillIdentityResolver | undefined;
 
-/** Jalan tiap 30 dtk saat tab terlihat; berhenti otomatis bila halaman dibongkar. */
-export function initCasemixBackfill(): void {
+/** Jalan tiap 30 dtk saat tab terlihat; berhenti otomatis bila halaman dibongkar.
+ *  `resolveIdentity` opsional — bila ada, sapuan mengirim payload lengkap
+ *  (sama dengan Sinkron manual); bila tak ada/gagal, kirim null dan server
+ *  mempertahankan field lama. */
+export function initCasemixBackfill(resolver?: BackfillIdentityResolver): void {
+  if (resolver) _backfillResolver = resolver;
   if (_backfillTimer !== null) return;
   const tick = () => {
     try {
@@ -312,7 +349,7 @@ export function initCasemixBackfill(): void {
     } catch {
       /* ignore */
     }
-    void runCasemixBackfill().catch(() => {
+    void runCasemixBackfill(undefined, undefined, _backfillResolver).catch(() => {
       /* diam — coba lagi interval berikut */
     });
   };

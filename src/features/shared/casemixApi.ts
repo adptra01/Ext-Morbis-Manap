@@ -339,6 +339,10 @@ export interface CentralPreOpMark {
   no_reg?: string | null;
   user?: string | null;
   marked_at?: string | null;
+  /** Waktu kunjungan asli (server W-7.22+; undefined di server lama). */
+  visit_datetime?: string | null;
+  /** Unit/poli (server W-7.23+; undefined di server lama). */
+  poli?: string | null;
 }
 
 export function togglePreOpCentral(
@@ -350,6 +354,7 @@ export function togglePreOpCentral(
     noReg?: string;
     user?: string;
     visitDatetime?: string;
+    poli?: string;
   } = {},
   fetcher: typeof fetch = fetch,
 ): Promise<void> {
@@ -359,14 +364,16 @@ export function togglePreOpCentral(
     {
       id_visit: idVisit,
       marked,
-      // Identitas pasien (norm/nama/no_reg) SELALU dikirim bila diketahui:
-      // halaman laporan Reports menampilkannya sebagai kolom, dan server
-      // hanya menimpa field yang non-null (tidak menghapus data baik).
+      // Identitas pasien SELALU dikirim bila diketahui (norm/nama/no_reg/
+      // visit_datetime/poli): halaman laporan Reports menampilkannya
+      // sebagai kolom, dan server hanya menimpa field yang non-null —
+      // kiriman sebagian/gagal TIDAK menghapus data baik yang sudah ada.
       norm: info.norm ?? null,
       nama: info.nama ?? null,
       no_reg: info.noReg ?? null,
       user: info.user ?? null,
       visit_datetime: info.visitDatetime ?? null,
+      poli: info.poli ?? null,
     },
     fetcher,
   );

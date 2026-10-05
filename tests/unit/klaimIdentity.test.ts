@@ -97,6 +97,7 @@ describe('parseKlaimRows', () => {
           nama: 'MARSONO',
           noReg: '2609280034',
           visitDatetime: '2026-09-28 00:00:00',
+          poli: 'KLINIK JANTUNG',
         },
       },
     ]);
@@ -141,6 +142,7 @@ describe('fetchKlaimIdentity', () => {
           nama: 'ASNAH',
           noReg: '2610030027',
           visitDatetime: '2026-09-28 00:00:00',
+          poli: 'KLINIK JANTUNG',
         },
       },
     ]);

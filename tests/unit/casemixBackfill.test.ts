@@ -113,6 +113,64 @@ describe('runCasemixBackfill', () => {
     expect(r).toEqual({ preopUploaded: 0, resumeUploaded: 0, offline: false });
   });
 
+  it('backfill mengirim field lengkap yang SAMA dengan Sinkron manual', async () => {
+    const s = new MockStore();
+    s.setItem(
+      'morbis_preop_markers',
+      JSON.stringify({ '204987': { idVisit: '204987', markedAt: Date.now() } }),
+    );
+    const f = okFetch();
+    const resolve = vi.fn(async (ids: string[]) =>
+      ids.map((id) => ({
+        idVisit: id,
+        info: {
+          norm: '00052667',
+          nama: 'BUDI SANTOSO',
+          noReg: '2610050002',
+          visitDatetime: '2026-09-26 12:00:00',
+          poli: 'KLINIK MATA',
+          user: 'irfan',
+        },
+      })),
+    );
+    const r = await runCasemixBackfill(s, f, resolve);
+    expect(r.preopUploaded).toBe(1);
+    expect(resolve).toHaveBeenCalledTimes(1);
+    const [, opts] = (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0];
+    expect(JSON.parse(opts.body as string)).toMatchObject({
+      id_visit: '204987',
+      marked: true,
+      norm: '00052667',
+      nama: 'BUDI SANTOSO',
+      no_reg: '2610050002',
+      visit_datetime: '2026-09-26 12:00:00',
+      poli: 'KLINIK MATA',
+      user: 'irfan',
+    });
+  });
+
+  it('resolver gagal → kirim null (server pertahankan field lama, tak merusak)', async () => {
+    const s = new MockStore();
+    s.setItem(
+      'morbis_preop_markers',
+      JSON.stringify({ '7': { idVisit: '7', markedAt: Date.now() } }),
+    );
+    const f = okFetch();
+    const r = await runCasemixBackfill(s, f, async () => {
+      throw new Error('endpoint mati');
+    });
+    expect(r.preopUploaded).toBe(1);
+    expect(r.offline).toBe(false);
+    const [, opts] = (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0];
+    expect(JSON.parse(opts.body as string)).toMatchObject({
+      id_visit: '7',
+      marked: true,
+      norm: null,
+      visit_datetime: null,
+      poli: null,
+    });
+  });
+
   it('melewati bucket unknown (log tanpa id_visit tidak ke pusat)', async () => {
     // MockStore tanpa length/key → tambah dukungan enumerasi kunci.
     class KeyStore extends MockStore {

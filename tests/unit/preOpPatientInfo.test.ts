@@ -26,7 +26,12 @@ describe('patientFieldIndexFromHeaders', () => {
       'Poli',
       'Status Revisi',
     ]);
-    expect(idx).toEqual({ idVisit: 1, norm: 2, nama: 3, noReg: 4 });
+    expect(idx).toEqual({ idVisit: 1, norm: 2, nama: 3, noReg: 4, poli: 5 });
+  });
+
+  it('memetakan kolom Unit + Tanggal Kunjungan', () => {
+    const idx = patientFieldIndexFromHeaders(['No', 'Unit', 'Tanggal Kunjungan', 'Aksi']);
+    expect(idx).toEqual({ poli: 1, visitDatetime: 2 });
   });
 
   it('mengenali varian ejaan header', () => {
@@ -69,6 +74,19 @@ describe('pickPatientInfo (jalur header)', () => {
       norm: undefined,
       nama: undefined,
       noReg: undefined,
+    });
+  });
+
+  it('membaca poli dari kolom Unit + visit dari Tanggal Kunjungan', () => {
+    const h = ['No', 'No RM', 'Nama', 'Unit', 'Tanggal Kunjungan'];
+    expect(
+      pickPatientInfo(h, ['1', '00052667', 'BUDI SANTOSO', 'KLINIK MATA', '26-09-2026 12:00:00']),
+    ).toEqual({
+      norm: '00052667',
+      nama: 'BUDI SANTOSO',
+      noReg: undefined,
+      visitDatetime: '2026-09-26 12:00:00',
+      poli: 'KLINIK MATA',
     });
   });
 });

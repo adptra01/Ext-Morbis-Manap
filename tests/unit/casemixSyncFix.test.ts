@@ -140,7 +140,7 @@ describe('payload identitas pre-op', () => {
     });
   });
 
-  it('backfill TIDAK mengirim kunci identitas (anti-timpa data baik dengan null)', async () => {
+  it('backfill tanpa resolver mengirim null (server pertahankan field lama — anti-timpa)', async () => {
     const s = new MockStore();
     s.setItem(
       PRE_OP_STORAGE_KEY,
@@ -154,6 +154,17 @@ describe('payload identitas pre-op', () => {
     const r = await runCasemixBackfill(s, f);
     expect(r.preopUploaded).toBe(1);
     expect(bodies).toHaveLength(1);
-    expect(bodies[0]).toEqual({ id_visit: '205258', marked: true });
+    // Kunci identitas SELALU ada (kontrak field sama dengan manual);
+    // nilainya null → server W-7.20+ mengabaikan, data baik tidak tertimpa.
+    expect(bodies[0]).toEqual({
+      id_visit: '205258',
+      marked: true,
+      norm: null,
+      nama: null,
+      no_reg: null,
+      visit_datetime: null,
+      poli: null,
+      user: null,
+    });
   });
 });
