@@ -1,7 +1,7 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { whenFeatureEnabled } from './shared/featureGate.js';
 import { injectCSS } from '../shared/ui/index.js';
-import { togglePreOp, loadPreOpMap, setPreOp, resolvePreOpMarked } from './shared/preOpStorage.js';
+import { removePreOp, loadPreOpMap, setPreOp, resolvePreOpMarked } from './shared/preOpStorage.js';
 import { readPetugas } from './shared/resumeHistory.js';
 import {
   fetchPreOpBatch,
@@ -502,7 +502,12 @@ function ensurePreOpButton(row: HTMLTableRowElement, idVisit: string): HTMLButto
     if (_pendingToggle.has(idVisit) || btn.disabled) return;
 
     const info = extractPatientInfo(row);
-    const nextState = togglePreOp(idVisit, info);
+    // Status SAAT INI = status yang terlihat user (lokal + pusat), bukan
+    // hanya lokal: tanda milik PC lain tak ada di localStorage, sehingga
+    // toggle berbasis lokal akan menandai ulang saat user mau membatalkan.
+    const nextState = !effectiveMarked(idVisit, loadPreOpMap());
+    if (nextState) setPreOp(idVisit, info);
+    else removePreOp(idVisit);
     if (nextState) delete _localUnmarkAt[idVisit];
     else _localUnmarkAt[idVisit] = Date.now();
 

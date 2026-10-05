@@ -26,6 +26,11 @@ export interface KVStore {
 }
 
 export const PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
+/** Antrean unmark EKSPLISIT (klik user) yang belum dikonfirmasi pusat.
+ *  Hanya id di sini yang boleh dikirim `marked:false` oleh backfill —
+ *  entri yang sekadar kedaluwarsa (TTL 30 hari) hilang dari map lokal
+ *  TANPA boleh menghapus tanda di pusat. */
+export const PRE_OP_UNMARK_QUEUE_KEY = 'ext_preop_unmark_queue';
 export const PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 hari
 /** Unmark lokal menutupi mark pusat yang basi selama ini (2× TTL polling
  *  pusat 15 dtk) — mencegah visual "balik nyala" saat POST unmark belum
@@ -168,8 +173,33 @@ export function setPreOp(
   savePreOpMap(map, store);
 }
 
+/** Baca antrean unmark eksplisit (id_visit yang user batalkan). */
+export function loadUnmarkQueue(store: KVStore | null = defaultStore()): string[] {
+  if (!store) return [];
+  try {
+    const raw = store.getItem(PRE_OP_UNMARK_QUEUE_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as unknown;
+    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Simpan antrean unmark (unik). */
+export function saveUnmarkQueue(ids: string[], store: KVStore | null = defaultStore()): void {
+  if (!store) return;
+  try {
+    store.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
+  } catch {
+    /* storage full */
+  }
+}
+
 /**
- * Hapus tanda Pre-op dari visit.
+ * Hapus tanda Pre-op dari visit. SELALU mencatat unmark eksplisit di
+ * antrean (walau id tak ada di map lokal — mis. tanda milik PC lain yang
+ * hanya terlihat dari pusat), supaya backfill meneruskannya ke pusat.
  */
 export function removePreOp(idVisit: string, store: KVStore | null = defaultStore()): void {
   if (!idVisit) return;
@@ -178,6 +208,8 @@ export function removePreOp(idVisit: string, store: KVStore | null = defaultStor
     delete map[idVisit];
     savePreOpMap(map, store);
   }
+  const q = loadUnmarkQueue(store);
+  if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
 }
 
 /**

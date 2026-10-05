@@ -146,7 +146,12 @@ describe('runCasemixBackfill', () => {
     expect(JSON.parse(opts.body as string)).toMatchObject({ id_visit: '999' });
   });
 
-  it('sapuan unmark: id yang hilang dari map dikirim marked=false', async () => {
+  const bodiesOf = (f: typeof fetch): Array<{ id_visit: string; marked: boolean }> =>
+    (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls.map(
+      ([, o]) => JSON.parse(o.body as string) as { id_visit: string; marked: boolean },
+    );
+
+  it('sapuan unmark: HANYA id di antrean unmark eksplisit yang dikirim marked=false', async () => {
     const s = new MockStore();
     // Simulasi: id '1' pernah diunggah marked=true, lalu user batalkan offline.
     s.setItem(
@@ -154,18 +159,44 @@ describe('runCasemixBackfill', () => {
       JSON.stringify({ '2': { idVisit: '2', markedAt: Date.now() } }),
     );
     s.setItem('ext_migrated_preop_ids', JSON.stringify(['1', '2']));
+    s.setItem('ext_preop_unmark_queue', JSON.stringify(['1']));
     const f = okFetch();
     const r = await runCasemixBackfill(s, f);
     expect(r.offline).toBe(false);
-    const bodies = (f as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls.map(
-      ([, o]) => JSON.parse(o.body as string) as { id_visit: string; marked: boolean },
-    );
-    // Hanya unmark yang dikirim; '2' sudah termigrasi → dilewati (idempoten).
-    expect(bodies).toEqual([{ id_visit: '1', marked: false }]);
-    // Daftar migrated dipangkas → '1' tak dikirim ulang interval berikut.
+    // '2' sudah termigrasi → dilewati (idempoten); '1' di-unmark eksplisit.
+    expect(bodiesOf(f)).toEqual([{ id_visit: '1', marked: false }]);
     expect(JSON.parse(s.getItem('ext_migrated_preop_ids') ?? '[]')).toEqual(['2']);
+    expect(JSON.parse(s.getItem('ext_preop_unmark_queue') ?? '[]')).toEqual([]);
     const r2 = await runCasemixBackfill(s, okFetch());
     expect(r2.preopUploaded).toBe(0);
+  });
+
+  it('REGRESI: tanda kedaluwarsa TTL 30 hari TIDAK menghapus tanda di pusat', async () => {
+    const s = new MockStore();
+    const lama = Date.now() - 31 * 24 * 60 * 60 * 1000;
+    s.setItem('morbis_preop_markers', JSON.stringify({ '1': { idVisit: '1', markedAt: lama } }));
+    s.setItem('ext_migrated_preop_ids', JSON.stringify(['1']));
+    const f = okFetch();
+    await runCasemixBackfill(s, f);
+    expect(bodiesOf(f)).toEqual([]); // tak ada marked:false
+    // id kedaluwarsa dilepas dari watermark (tak menumpuk selamanya)
+    expect(JSON.parse(s.getItem('ext_migrated_preop_ids') ?? '[]')).toEqual([]);
+  });
+
+  it('unmark offline tetap antre sampai terkirim; ditandai lagi → unmark dibatalkan', async () => {
+    const s = new MockStore();
+    s.setItem(
+      'morbis_preop_markers',
+      JSON.stringify({ '3': { idVisit: '3', markedAt: Date.now() } }),
+    );
+    s.setItem('ext_migrated_preop_ids', JSON.stringify(['1', '3']));
+    s.setItem('ext_preop_unmark_queue', JSON.stringify(['1', '3']));
+    const gagal = vi.fn().mockResolvedValue({ ok: false, status: 500 }) as unknown as typeof fetch;
+    const r = await runCasemixBackfill(s, gagal);
+    expect(r.offline).toBe(true);
+    // '3' ada lagi di map → unmark batal (tak masuk antrean); '1' tetap menunggu.
+    expect(JSON.parse(s.getItem('ext_preop_unmark_queue') ?? '[]')).toEqual(['1']);
+    expect(JSON.parse(s.getItem('ext_migrated_preop_ids') ?? '[]')).toEqual(['1', '3']);
   });
 });
 

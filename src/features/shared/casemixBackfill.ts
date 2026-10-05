@@ -13,7 +13,7 @@
  *   di-backfill; revisi baru langsung ditulis ke pusat saat disimpan.
  */
 
-import { loadPreOpMap, type PreOpMap } from './preOpStorage.js';
+import { loadPreOpMap, loadUnmarkQueue, saveUnmarkQueue, type PreOpMap } from './preOpStorage.js';
 import {
   loadHistory,
   RV_MIGRATED_PREFIX,
@@ -200,19 +200,20 @@ export async function runCasemixBackfill(
       migrated.push(id);
       res.preopUploaded++;
     }
-    // Sapuan unmark: id yang PERNAH diunggah marked=true tapi kini hilang
-    // dari map lokal (user batalkan saat offline) → kirim marked=false agar
-    // server tak macet di status lama. Daftar migrated dipangkas sekalian.
+    // Sapuan unmark: HANYA id yang user batalkan secara eksplisit (antrean
+    // `ext_preop_unmark_queue`) yang dikirim marked:false. Id yang sekadar
+    // hilang dari map lokal karena kedaluwarsa TTL 30 hari TIDAK dikirim —
+    // dulu itu menghapus tanda pre-op lama di pusat (laporan bulan lalu
+    // kehilangan penanda). Id kedaluwarsa cukup dilepas dari watermark.
     try {
       const alive = new Set(Object.keys(map));
-      const kept: string[] = [];
-      for (const id of migrated) {
-        if (alive.has(id)) {
-          kept.push(id);
-          continue;
-        }
+      const queue = loadUnmarkQueue(store);
+      const stillQueued: string[] = [];
+      const sent = new Set<string>();
+      for (const id of queue) {
+        if (alive.has(id)) continue; // ditandai lagi setelah unmark → batal
         if (res.offline) {
-          kept.push(id); // tunda — coba lagi interval berikut
+          stillQueued.push(id);
           continue;
         }
         const ok = await postCentral(
@@ -222,12 +223,18 @@ export async function runCasemixBackfill(
         );
         if (!ok) {
           res.offline = true;
-          kept.push(id);
+          stillQueued.push(id);
         } else {
+          sent.add(id);
           res.preopUploaded++;
         }
       }
-      if (kept.length !== migrated.length || res.preopUploaded > 0) {
+      if (queue.length > 0) saveUnmarkQueue(stillQueued, store);
+      // Watermark: buang id yang sudah tak ada lokal (kedaluwarsa / sudah
+      // di-unmark) kecuali yang masih menunggu unmark terkirim.
+      const keep = new Set(stillQueued);
+      const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
+      if (kept.length !== migrated.length || res.preopUploaded > 0 || sent.size > 0) {
         saveMigratedIds(store, kept);
       }
     } catch {

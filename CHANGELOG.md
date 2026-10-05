@@ -11,13 +11,14 @@
 
 ### ✨ feat
 
-- **preop** — sinkron baca data lokal versi lama + badge belum-terkirim (`59f9b67`)
-- **preop** — tombol Sinkron tampilkan jumlah belum terkirim (`b7ae7fc`)
+- **preop** — sinkron baca data lokal versi lama + badge belum-terkirim (`e6c0ac0`)
+- **preop** — tombol Sinkron tampilkan jumlah belum terkirim (`0f49a60`)
 - **preop** — hapus tombol Export PDF + sinkron dua arah + perbaiki identitas (`eb4585b`)
 
 ### 🐛 fix
 
-- **antrolKirim** — hentikan polling saat konteks extension mati (`e032dea`)
+- **laporanLinks** — kirim ID unit sebagai id_poli, bukan nama saja (`b57a16a`)
+- **antrolKirim** — hentikan polling saat konteks extension mati (`8896393`)
 
 ## 2026-10-02
 
@@ -1732,4 +1733,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 59f9b670f51cffe8ea9f6984b6228b299cde89be -->
+<!-- changelog-upto: b57a16ab37f9eb9da697dd2fd732b6af6e2ab8d1 -->

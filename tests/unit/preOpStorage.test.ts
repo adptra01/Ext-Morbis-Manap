@@ -158,3 +158,20 @@ describe('resolvePreOpMarked — satu sumber kebenaran scan + refresh', () => {
     expect(resolvePreOpMarked(false, false, undefined, t0)).toBe(false);
   });
 });
+
+describe('removePreOp — antrean unmark eksplisit', () => {
+  it('mencatat unmark walau id tak ada di map lokal (tanda milik PC lain)', async () => {
+    const { removePreOp, loadUnmarkQueue } =
+      await import('../../src/features/shared/preOpStorage.js');
+    const data: Record<string, string> = {};
+    const store = {
+      getItem: (k: string) => data[k] ?? null,
+      setItem: (k: string, v: string) => {
+        data[k] = v;
+      },
+    };
+    removePreOp('777', store);
+    removePreOp('777', store); // idempoten
+    expect(loadUnmarkQueue(store)).toEqual(['777']);
+  });
+});
