@@ -2458,6 +2458,9 @@ var __morbis_feature = (() => {
     if (!btn.classList.contains("ext-telaah-large")) {
       const wantText = marked ? "\u2713 Telaah" : "Telaah";
       if (btn.textContent !== wantText) btn.textContent = wantText;
+    } else {
+      const wantText = marked ? "Batal Telaah" : "Telaah";
+      if (btn.textContent !== wantText) btn.textContent = wantText;
     }
     const wantTitle = marked ? "Telaah Berkas: SUDAH ditandai (klik untuk batal)" : "Tandai Telaah Berkas";
     if (btn.title !== wantTitle) btn.title = wantTitle;
