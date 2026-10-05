@@ -25,6 +25,13 @@ import {
   type KVStore as BackfillStore,
 } from './shared/casemixBackfill.js';
 import { syncCasemixNow, type SyncRow } from './shared/casemixSync.js';
+import { runTelaahSync } from './shared/telaahSyncDeps.js';
+import {
+  loadTelaahMap,
+  countTelaahPending,
+  loadTelaahMigratedIds,
+  readTelaahUnmarks,
+} from './shared/telaahStorage.js';
 import { fetchKlaimIdentity, normalizeVisitDatetime } from './shared/klaimIdentity.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 import { logUsage } from './shared/usageLog.js';
@@ -365,7 +372,8 @@ export function guessPatientInfo(cells: string[]): PatientInfo {
   return { norm, nama, noReg };
 }
 
-function extractPatientInfo(row: HTMLTableRowElement): PatientInfo {
+/** Dibaca extension lain (mKlaimTelaah) untuk identitas baris list. */
+export function extractPatientInfo(row: HTMLTableRowElement): PatientInfo {
   const cells = Array.from(row.querySelectorAll('td')).map((td) => td.textContent?.trim() ?? '');
   const byHeader = pickPatientInfo(headersOfRow(row), cells);
   if (
@@ -664,10 +672,17 @@ function writeMigratedIds(ids: string[]): void {
   }
 }
 
-/** Jumlah id lokal yang belum terkirim (untuk badge tombol). */
+/** Jumlah id lokal (pre-op + telaah) yang belum terkirim (untuk badge tombol). */
 function pendingSyncCount(): number {
   try {
-    return countPreOpPending(loadPreOpMap(), readMigratedIds());
+    const pre = countPreOpPending(loadPreOpMap(), readMigratedIds());
+    let tel = 0;
+    try {
+      tel = countTelaahPending(loadTelaahMap(), loadTelaahMigratedIds());
+    } catch {
+      /* abaikan */
+    }
+    return pre + tel;
   } catch {
     return 0;
   }
@@ -684,8 +699,8 @@ function updateSyncBadge(): void {
     if (label.textContent !== text) label.textContent = text;
     btn.title =
       n > 0
-        ? `Sinkron Pre-op sekarang: ${n} tanda belum terkirim ke pusat (+ ambil tanda PC lain)`
-        : 'Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
+        ? `Sinkron Casemix sekarang: ${n} tanda belum terkirim ke pusat (+ ambil tanda PC lain)`
+        : 'Sinkron Casemix sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
   } catch {
     /* ignore */
   }
@@ -733,8 +748,8 @@ export async function syncPreOpNow(): Promise<void> {
   const awaiting = pendingSyncCount();
   showSyncToast(
     awaiting > 0
-      ? `Menyinkronkan Pre-op dengan pusat… (${awaiting} menunggu kirim)`
-      : 'Menyinkronkan Pre-op dengan pusat…',
+      ? `Menyinkronkan Casemix dengan pusat… (${awaiting} menunggu kirim)`
+      : 'Menyinkronkan Casemix dengan pusat…',
   );
   try {
     const user = (() => {
@@ -805,6 +820,36 @@ export async function syncPreOpNow(): Promise<void> {
     } catch {
       /* ignore */
     }
+    // Fase 2 — Telaah Berkas (modul/controller terpisah, konsep sama):
+    // push/pull/enrich/rekonsiliasi via runTelaahSync. Toast digabung.
+    let telaahSummary = '';
+    try {
+      const t = await runTelaahSync({
+        rows: gatherVisibleSyncRows(),
+        resolveIdentity: (ids) => resolveKlaimIdentities(ids),
+        readUnmarks: readTelaahUnmarks,
+        getUser: () => {
+          try {
+            return readPetugas();
+          } catch {
+            return undefined;
+          }
+        },
+      });
+      counts.offline = counts.offline || t.offline;
+      const tp: string[] = [];
+      if (t.pushed > 0) tp.push(`${t.pushed} terkirim`);
+      if (t.enriched > 0) tp.push(`${t.enriched} dilengkapi`);
+      if (t.pulled > 0) tp.push(`${t.pulled} baru dari pusat`);
+      if (tp.length > 0) telaahSummary = ` Telaah: ${tp.join(', ')}.`;
+      try {
+        document.dispatchEvent(new CustomEvent('ext:telaah-synced'));
+      } catch {
+        /* ignore */
+      }
+    } catch {
+      /* fase telaah gagal — hasil pre-op tetap dilaporkan */
+    }
     const parts: string[] = [];
     if (counts.pushed > 0) parts.push(`${counts.pushed} terkirim`);
     if (counts.enriched > 0) parts.push(`${counts.enriched} dilengkapi`);
@@ -812,8 +857,8 @@ export async function syncPreOpNow(): Promise<void> {
     const rest = pendingSyncCount();
     let msg =
       parts.length > 0
-        ? `Sinkron selesai: ${parts.join(', ')}.`
-        : 'Sinkron selesai: tidak ada perubahan.';
+        ? `Sinkron selesai: ${parts.join(', ')}.${telaahSummary}`
+        : `Sinkron selesai: tidak ada perubahan.${telaahSummary}`;
     if (counts.offline && rest > 0) {
       msg += ` (${rest} masih menunggu — server tak terjangkau, coba lagi nanti)`;
     } else if (counts.offline) {
@@ -860,7 +905,7 @@ function injectSyncButton(): void {
   labelSpan.setAttribute('data-sync-label', '1');
   labelSpan.textContent = 'Sinkron';
   btn.appendChild(labelSpan);
-  btn.title = 'Sinkron Pre-op sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
+  btn.title = 'Sinkron Casemix sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain';
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();

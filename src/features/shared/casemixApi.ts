@@ -289,7 +289,7 @@ async function fetchTimeout(
   }
 }
 
-async function getJson<T>(path: string, fetcher: typeof fetch = fetch): Promise<T | null> {
+export async function getJson<T>(path: string, fetcher: typeof fetch = fetch): Promise<T | null> {
   try {
     const res = await requestCentral(
       path,
@@ -303,7 +303,7 @@ async function getJson<T>(path: string, fetcher: typeof fetch = fetch): Promise<
   }
 }
 
-function postFireForget(
+export function postFireForget(
   path: string,
   payload: Record<string, unknown>,
   fetcher: typeof fetch = fetch,

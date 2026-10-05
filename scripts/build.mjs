@@ -87,6 +87,7 @@ async function compileFeatureFiles() {
     'pindahOperasi/main.ts',
     'billingAdjustment.ts',
     'mKlaimPreOp.ts',
+    'mKlaimTelaah.ts',
     'mKlaimVerifLog.ts',
     'mKlaimLaporanLinks.ts',
     'mKlaimBulkVerif.ts',

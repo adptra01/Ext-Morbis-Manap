@@ -20,6 +20,28 @@ import type { SyncRow, SyncRowInfo } from './casemixSync.js';
 
 export const KLAIM_DATA_PATH = '/v2/m-klaim/data-tabel/data';
 
+/** Header kolom #data-table M-KLAIM (16 kolom, diverifikasi live 2026-10-05).
+ *  Dipakai halaman TANPA tabel (detail klaim) untuk mem-parse baris array
+ *  respons endpoint yang kolomnya mengikuti urutan ini. */
+export const KLAIM_LIST_HEADERS = [
+  'No',
+  'No Registrasi',
+  'No RM',
+  'Nama Pasien',
+  'Penjamin',
+  'Jenis Kunjungan',
+  'Unit',
+  'Tanggal Kunjungan',
+  'Tanggal Keluar',
+  'Total',
+  'Status Bayar',
+  'Status Revisi',
+  'Status BPJS',
+  'User Verif',
+  'User Upload',
+  'Aksi',
+];
+
 export interface KlaimIdentityDeps {
   /** Teks header kolom tabel (TANPA kolom checkbox tambahan extension). */
   headers: string[];
