@@ -104,3 +104,40 @@ describe('mKlaimLaporanLinks — URL laporan', () => {
     expect(buildKlaimUrl('http://x/rs/', klaim())).toBe('http://x/rs' + LAPORAN_KLAIM_PATH);
   });
 });
+
+describe('mKlaimLaporanLinks — nama unit dari select', () => {
+  // Fake doc minimal (node env tanpa DOM): hanya querySelector yang dipakai.
+  const fakeDoc = (sel: { value: string; text: string } | null) =>
+    ({
+      querySelector: () =>
+        sel ? { value: sel.value, selectedOptions: [{ textContent: sel.text }] } : null,
+      getElementById: () => null,
+    }) as unknown as Document;
+
+  it('memakai TEKS option, bukan value numerik', async () => {
+    const { readPoliName } = await import('../../src/features/mKlaimLaporanLinks.js');
+    expect(readPoliName(fakeDoc({ value: '4026', text: 'ARJUNA' }))).toBe('ARJUNA');
+  });
+
+  it('placeholder / kosong → string kosong', async () => {
+    const { readPoliName } = await import('../../src/features/mKlaimLaporanLinks.js');
+    expect(readPoliName(fakeDoc({ value: '', text: 'Pilih Unit' }))).toBe('');
+    expect(readPoliName(fakeDoc(null))).toBe('');
+  });
+
+  it('resolveLaporanFilter memakai nama unit walau form tak terbaca', async () => {
+    const { resolveLaporanFilter } = await import('../../src/features/mKlaimLaporanLinks.js');
+    // readKlaimFilter butuh window.location (tak ada di node) → jatuh ke
+    // filter kosong, tapi nama poli tetap ter-resolve dari select.
+    const doc = {
+      getElementById: () => null,
+      querySelector: (s: string) =>
+        s.includes('id_poli_cari')
+          ? { value: '4017', selectedOptions: [{ textContent: 'KLINIK ANAK' }] }
+          : null,
+    } as unknown as Document;
+    const f = resolveLaporanFilter(doc);
+    expect(f.poli).toBe('KLINIK ANAK');
+    expect(f.tanggalAwal).toBe('');
+  });
+});

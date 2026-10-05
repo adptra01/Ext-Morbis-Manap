@@ -185,6 +185,18 @@ var __morbis_feature = (() => {
     }
     return null;
   }
+  function isExtensionContextDead() {
+    try {
+      if (typeof chrome === "undefined") return false;
+      return chrome.runtime?.id === void 0;
+    } catch {
+      return true;
+    }
+  }
+  function isContextInvalidatedError(e) {
+    const msg = e instanceof Error ? e.message : typeof e === "object" && e !== null && "message" in e ? String(e.message ?? "") : String(e ?? "");
+    return /extension context invalidated/i.test(msg);
+  }
 
   // src/features/shared/farmasiQueueSync.ts
   var FARMASI_APP_BASE = "http://dev.rsudkotajambi.id/rs";
@@ -342,6 +354,7 @@ var __morbis_feature = (() => {
   g.__extAntrolKirim = true;
   var started = false;
   var timer = null;
+  var dead = false;
   var snapshot = null;
   var freshDone = /* @__PURE__ */ new Set();
   var lastSig = "";
@@ -547,7 +560,22 @@ var __morbis_feature = (() => {
     });
     return true;
   }
+  function stopWatchDead(reason) {
+    if (dead) return;
+    dead = true;
+    started = false;
+    if (timer !== null) {
+      clearInterval(timer);
+      timer = null;
+    }
+    console.info(LOG_PREFIX, "berhenti:", reason, "\u2014 muat ulang halaman untuk menjalankan lagi.");
+  }
   async function pollOnce() {
+    if (dead) return;
+    if (isExtensionContextDead()) {
+      stopWatchDead("konteks extension mati");
+      return;
+    }
     await refreshDayIfNeeded();
     const base = farmasiAppBase();
     const url = `${base}/api/queue/display${lastSig ? "?since=" + encodeURIComponent(lastSig) : ""}`;
@@ -555,6 +583,10 @@ var __morbis_feature = (() => {
     try {
       res = await queueApi(url, "GET");
     } catch (e) {
+      if (isContextInvalidatedError(e) || isExtensionContextDead()) {
+        stopWatchDead("konteks extension mati (extension diperbarui/dimuat ulang?)");
+        return;
+      }
       console.warn(LOG_PREFIX, "poll gagal (background):", e.message);
       return;
     }
@@ -590,6 +622,7 @@ var __morbis_feature = (() => {
     }
   }
   async function ensureWatch(shouldRun) {
+    if (dead) return;
     if (shouldRun && !started) {
       started = true;
       snapshot = null;

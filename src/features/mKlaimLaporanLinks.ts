@@ -122,11 +122,63 @@ function setParam(params: URLSearchParams, key: string, value: string): void {
 }
 
 /**
+ * Nama unit terpilih dari select #id_poli_cari (teks option, BUKAN value).
+ *
+ * Value select adalah ID numerik (mis. 4029) sedangkan filter `poli` di
+ * Reports mencocokkan NAMA (LIKE, mis. "ARJUNA") — mengirim ID numerik
+ * tidak pernah cocok. Placeholder "Pilih Unit" / value kosong → ''.
+ */
+export function readPoliName(doc: Document | ParentNode = document): string {
+  try {
+    const sel = (doc as Document).querySelector?.('select#id_poli_cari, #id_poli_cari') as
+      HTMLSelectElement | null | undefined;
+    if (!sel || !sel.value) return '';
+    const opt = sel.selectedOptions?.[0];
+    const t = (opt?.textContent ?? opt?.text ?? '').trim();
+    if (!t || /pilih\s*unit/i.test(t)) return '';
+    return t;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Filter laporan siap kirim: baca form + ganti `poli` dengan nama unit
+ * terpilih (lihat readPoliName). Murni kecuali akses doc → unit-testable
+ * dengan doc palsu.
+ */
+export function resolveLaporanFilter(doc: Document | ParentNode = document): KlaimFilter {
+  let filter: KlaimFilter;
+  try {
+    filter = readKlaimFilter(doc as Document);
+  } catch {
+    filter = emptyFilter();
+  }
+  try {
+    const namaPoli = readPoliName(doc);
+    if (namaPoli !== '') {
+      filter = { ...filter, poli: namaPoli };
+    }
+  } catch {
+    /* abaikan — fallback ke nilai form mentah */
+  }
+  return filter;
+}
+
+/**
  * Query string laporan gabungan dari filter form klaim.
  *
  * Union dari parameter pre-op dan revisi: halaman Reports sudah punya
  * semua kolom itu, dan kolom yang tidak berlaku bagi jenis tertentu
  * diabaikan di sana — jadi tidak perlu memilih jenis dari sini.
+ *
+ * Catatan semantik form M-KLAIM (hasil baca HTML asli 2026-10-05):
+ * - `status` = Status PASIEN (all/rj/ri = Rawat Jalan/Inap), BUKAN status
+ *   revisi — hanya pending/saved yang diteruskan, sisanya dibuang.
+ * - `billing` (all/valid/belum) + `filter_tanggal` + `jenis_pasien` tidak
+ *   punya padanan di Reports → dibuang.
+ * - `id_poli_cari` bernilai ID numerik → diganti nama unit via
+ *   resolveLaporanFilter sebelum membangun query (lihat readPoliName).
  */
 export function buildKlaimParams(filter: KlaimFilter): URLSearchParams {
   const params = new URLSearchParams();
@@ -178,7 +230,7 @@ function openLaporan(): void {
   }
   let filter: KlaimFilter;
   try {
-    filter = readKlaimFilter();
+    filter = resolveLaporanFilter(document);
   } catch {
     filter = emptyFilter();
   }

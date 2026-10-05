@@ -27,6 +27,8 @@ var __morbis_feature = (() => {
     initLaporanLinks: () => initLaporanLinks,
     injectLaporanButtons: () => injectLaporanButtons,
     readKlaimFilter: () => readKlaimFilter,
+    readPoliName: () => readPoliName,
+    resolveLaporanFilter: () => resolveLaporanFilter,
     toIsoDate: () => toIsoDate
   });
 
@@ -238,6 +240,34 @@ var __morbis_feature = (() => {
     const v = cleanFilterValue(value);
     if (v !== "") params.set(key, v);
   }
+  function readPoliName(doc = document) {
+    try {
+      const sel = doc.querySelector?.("select#id_poli_cari, #id_poli_cari");
+      if (!sel || !sel.value) return "";
+      const opt = sel.selectedOptions?.[0];
+      const t = (opt?.textContent ?? opt?.text ?? "").trim();
+      if (!t || /pilih\s*unit/i.test(t)) return "";
+      return t;
+    } catch {
+      return "";
+    }
+  }
+  function resolveLaporanFilter(doc = document) {
+    let filter;
+    try {
+      filter = readKlaimFilter(doc);
+    } catch {
+      filter = emptyFilter();
+    }
+    try {
+      const namaPoli = readPoliName(doc);
+      if (namaPoli !== "") {
+        filter = { ...filter, poli: namaPoli };
+      }
+    } catch {
+    }
+    return filter;
+  }
   function buildKlaimParams(filter) {
     const params = new URLSearchParams();
     const mulai = toIsoDate(filter.tanggalAwal);
@@ -277,7 +307,7 @@ var __morbis_feature = (() => {
     }
     let filter;
     try {
-      filter = readKlaimFilter();
+      filter = resolveLaporanFilter(document);
     } catch {
       filter = emptyFilter();
     }

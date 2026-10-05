@@ -46,6 +46,8 @@ import {
   extractIdVisit,
   buildClaimPayload,
   buildReportPayload,
+  isExtensionContextDead,
+  isContextInvalidatedError,
 } from './shared/antrolCore';
 import { farmasiAppBase } from './shared/farmasiQueueSync';
 
@@ -62,6 +64,9 @@ g.__extAntrolKirim = true;
 // --- State watcher ------------------------------------------------------
 let started = false;
 let timer: number | null = null;
+/** true setelah konteks extension dinyatakan mati — loop berhenti total dan
+ *  tidak boleh start lagi tanpa reload halaman (konteks mati tak bisa pulih). */
+let dead = false;
 /** Snapshot status poll sebelumnya; null saat belum ada baseline. */
 let snapshot: Record<string, string> | null = null;
 /** Antrian yang baru transisi → selesai, menunggu diproses (retry antar poll). */
@@ -328,7 +333,28 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
 }
 
 // --- Loop polling ----------------------------------------------------------
+/**
+ * Hentikan loop selamanya karena konteks extension mati (biasanya extension
+ * baru saja diperbarui/dimuat ulang selagi tab ini terbuka). Dipanggil
+ * maksimal sekali (flag `dead`) supaya console tidak di-spam tiap 5 detik.
+ */
+function stopWatchDead(reason: string): void {
+  if (dead) return;
+  dead = true;
+  started = false;
+  if (timer !== null) {
+    clearInterval(timer);
+    timer = null;
+  }
+  console.info(LOG_PREFIX, 'berhenti:', reason, '— muat ulang halaman untuk menjalankan lagi.');
+}
+
 async function pollOnce(): Promise<void> {
+  if (dead) return;
+  if (isExtensionContextDead()) {
+    stopWatchDead('konteks extension mati');
+    return;
+  }
   await refreshDayIfNeeded();
   const base = farmasiAppBase();
   const url = `${base}/api/queue/display${lastSig ? '?since=' + encodeURIComponent(lastSig) : ''}`;
@@ -337,6 +363,10 @@ async function pollOnce(): Promise<void> {
   try {
     res = await queueApi(url, 'GET');
   } catch (e) {
+    if (isContextInvalidatedError(e) || isExtensionContextDead()) {
+      stopWatchDead('konteks extension mati (extension diperbarui/dimuat ulang?)');
+      return;
+    }
     console.warn(LOG_PREFIX, 'poll gagal (background):', (e as Error).message);
     return;
   }
@@ -387,6 +417,7 @@ async function pollOnce(): Promise<void> {
 
 // --- Start/stop & gate ------------------------------------------------------
 async function ensureWatch(shouldRun: boolean): Promise<void> {
+  if (dead) return; // konteks mati — hanya reload halaman yang bisa memulihkan
   if (shouldRun && !started) {
     started = true;
     snapshot = null;

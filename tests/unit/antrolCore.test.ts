@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   ANTRL_FEATURE_KEY,
   DONE_STATUS,
@@ -12,6 +12,8 @@ import {
   extractIdVisit,
   buildClaimPayload,
   buildReportPayload,
+  isExtensionContextDead,
+  isContextInvalidatedError,
 } from '../../src/features/shared/antrolCore.js';
 
 describe('antrolCore — ekstraksi baris display', () => {
@@ -275,5 +277,36 @@ describe('antrolCore — payload claim & report', () => {
 
   it('ANTRL_FEATURE_KEY konsisten dgn config background', () => {
     expect(ANTRL_FEATURE_KEY).toBe('antrolKirimOtomatis');
+  });
+});
+
+describe('antrolCore — kesehatan konteks extension', () => {
+  // Regresi: "Extension context invalidated" (habis extension update/reload)
+  // melempar + warn tiap 5 detik selamanya. Watcher harus mendeteksi sekali
+  // lalu menghentikan timernya (diuji di sini deteksinya; stop-nya di watch).
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('konteks hidup (mock setup) → tidak mati', () => {
+    expect(isExtensionContextDead()).toBe(false);
+  });
+
+  it('runtime.id hilang → mati', () => {
+    vi.stubGlobal('chrome', { runtime: {} });
+    expect(isExtensionContextDead()).toBe(true);
+  });
+
+  it('tanpa chrome sama sekali → bukan "mati" (bukan konteks extension)', () => {
+    vi.stubGlobal('chrome', undefined);
+    expect(isExtensionContextDead()).toBe(false);
+  });
+
+  it('mengenali pesan invalidated vs error biasa', () => {
+    expect(isContextInvalidatedError(new Error('Extension context invalidated.'))).toBe(true);
+    expect(isContextInvalidatedError({ message: 'Extension context invalidated' })).toBe(true);
+    expect(isContextInvalidatedError(new Error('timeout'))).toBe(false);
+    expect(isContextInvalidatedError(null)).toBe(false);
+    expect(isContextInvalidatedError('poll gagal (background): timeout')).toBe(false);
   });
 });

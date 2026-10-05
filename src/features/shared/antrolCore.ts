@@ -223,3 +223,34 @@ export function extractIdVisit(raw: unknown): string | null {
   }
   return null;
 }
+
+/* ── Kesehatan konteks extension ──────────────────────────────────────
+ * Satu-satunya bagian file ini yang menyentuh chrome API — hanya baca
+ * `chrome.runtime.id`, aman diuji via stub. Mendeteksi "Extension context
+ * invalidated": terjadi saat extension diperbarui/dimuat ulang selagi
+ * content script lama masih hidup. Tanpa deteksi ini, loop polling
+ * melempar + warn tiap 5 detik selamanya; konteks mati tak bisa pulih
+ * tanpa reload halaman, jadi pemanggil harus menghentikan timernya. */
+
+/** true bila konteks extension sudah mati (chrome ada tapi runtime.id hilang). */
+export function isExtensionContextDead(): boolean {
+  try {
+    if (typeof chrome === 'undefined') return false;
+    return chrome.runtime?.id === undefined;
+  } catch {
+    return true;
+  }
+}
+
+/** true bila error adalah "Extension context invalidated" (pesan Chrome). */
+export function isContextInvalidatedError(e: unknown): boolean {
+  // chrome.runtime.lastError adalah objek biasa {message}, BUKAN Error —
+  // wajib ditangani eksplisit (inilah bentuk yang dilempar sendMessage).
+  const msg =
+    e instanceof Error
+      ? e.message
+      : typeof e === 'object' && e !== null && 'message' in e
+        ? String((e as { message?: unknown }).message ?? '')
+        : String(e ?? '');
+  return /extension context invalidated/i.test(msg);
+}
