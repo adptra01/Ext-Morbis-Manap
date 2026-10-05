@@ -357,7 +357,8 @@ var __morbis_feature = (() => {
         norm: info.norm ?? null,
         nama: info.nama ?? null,
         no_reg: info.noReg ?? null,
-        user: info.user ?? null
+        user: info.user ?? null,
+        visit_datetime: info.visitDatetime ?? null
       },
       fetcher
     );
@@ -850,6 +851,17 @@ var __morbis_feature = (() => {
       jenis
     });
   }
+  function normalizeVisitDatetime(v) {
+    if (!v || v === "" || v === "-") return void 0;
+    let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
+    if (m) {
+      const iso = `${m[3]}-${m[2]}-${m[1]}`;
+      return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
+    }
+    m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
+    if (m) return v.replace("T", " ");
+    return v;
+  }
   function stripHtml(s) {
     return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
   }
@@ -881,7 +893,9 @@ var __morbis_feature = (() => {
         norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
         nama: get("nama", "nama_pasien", "pasien"),
         noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
-        visitDatetime: get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
+        visitDatetime: normalizeVisitDatetime(
+          get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
+        )
       }
     };
   }
@@ -1189,11 +1203,12 @@ var __morbis_feature = (() => {
       const t = (cells[i] ?? "").trim();
       return cellTextEmpty(t) ? void 0 : t;
     };
+    const rawVisit = pick(idx.visitDatetime);
     return {
       norm: pick(idx.norm),
       nama: pick(idx.nama),
       noReg: pick(idx.noReg),
-      visitDatetime: pick(idx.visitDatetime)
+      visitDatetime: rawVisit ? normalizeVisitDatetime(rawVisit) : void 0
     };
   }
   function guessPatientInfo(cells) {
@@ -1349,7 +1364,8 @@ var __morbis_feature = (() => {
             norm: info.norm,
             nama: info.nama,
             noReg: info.noReg,
-            user: readPetugas()
+            user: readPetugas(),
+            visitDatetime: info.visitDatetime
           })
         ).then(settle, settle);
       } catch {
