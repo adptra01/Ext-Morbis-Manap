@@ -18,8 +18,13 @@
 
 - **telaah-print** — Catatan dari envelope API, bukan scraping HTML (`5b95ebe`)
 
+### 🎨 style
+
+- **pa-print** — rapatkan line-height + font -2pt + isi Kesimpulan bold (`c68ecee`)
+
 ### 🧹 chore
 
+- kembalikan scripts/morbis-update-main.bat (update satu-klik main) (`9429ee9`)
 - rebuild dist (catatan dari envelope API) (`7f6aa9e`)
 - rebuild dist (catatan resep di print telaah) (`e02ca02`)
 - rebuild dist (tombol detail Batal Telaah) (`f414e9b`)
@@ -1779,4 +1784,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 7f6aa9eddaa0da4a4f02c4c39a35b26e78feda90 -->
+<!-- changelog-upto: c68eceed91d104613d15c9ea55ebb10d809c0d0d -->

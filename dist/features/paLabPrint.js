@@ -370,8 +370,10 @@ var __morbis_feature = (() => {
             continue;
           }
           hasilDoc += '<p style="margin:12pt 0 0 0;font-size:11pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
+          const boldAll = normTitle(s.title) === "kesimpulan";
           s.items.forEach((it, i) => {
-            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + ' 0 6pt 0;text-align:justify;">' + fmtItem(it) + "</p>";
+            const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
+            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + ' 0 6pt 0;text-align:justify;">' + body + "</p>";
           });
         }
         const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + esc(judul) + '</title></head><body style="font-family:Arial,sans-serif;font-size:11pt;"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="' + logo + '" width="90"></td><td align="center">' + kopLines.slice(0, 3).map((l) => '<b style="font-size:16pt;">' + esc(l) + "</b>").join("<br>") + '<br><span style="font-size:9pt;">' + addrLines.map((l) => esc(l)).join("<br>") + '</span></td></tr></table><hr><p align="center"><b><u>' + esc(judul.toUpperCase()) + '</u></b></p><table border="0" cellspacing="0" cellpadding="2">' + infoTbl + "</table>" + hasilDoc + '<table border="0" width="100%" cellspacing="0" cellpadding="0"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">' + esc(thanks) + '</p><p style="margin:0 0 6pt 0;">' + esc(dateLine) + "</p>" + (qr ? '<p style="margin:0 0 6pt 0;"><img src="' + qr + '" width="80" height="80"></p>' : "") + '<p style="margin:0 0 6pt 0;"><b>' + esc(docName) + '</b></p><p style="margin:0 0 6pt 0;">' + esc(nip) + "</p></td></tr></table></body></html>";
@@ -393,8 +395,9 @@ var __morbis_feature = (() => {
             (it) => '<div class="catatan-item"><span class="catatan-dash">-</span><span>' + esc(stripBullet(it) || "Tidak ada") + "</span></div>"
           ).join("") + "</div></div>";
         }
+        const boldAll = normTitle(s.title) === "kesimpulan";
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + '">' + s.items.map(
-          (it, i) => '<div class="item-list' + (s.para.includes(i) ? " item-para" : "") + '">' + fmtItem(it) + "</div>"
+          (it, i) => '<div class="item-list' + (s.para.includes(i) ? " item-para" : "") + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>"
         ).join("") + "</div>";
         if (s.bare) return isi;
         return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
@@ -418,9 +421,9 @@ var __morbis_feature = (() => {
         /* Pengaturan Font dan Kertas untuk Cetak */
         body {
             font-family: 'Roboto', sans-serif;
-            font-size: 9pt;
+            font-size: 7pt;
             color: #000;
-            line-height: 1.4;
+            line-height: 1.2;
             margin: 0;
             padding: 0;
             background-color: #f1f5f9;
@@ -457,18 +460,18 @@ var __morbis_feature = (() => {
         }
 
         .kop-atas {
-            font-size: 16pt;
+            font-size: 14pt;
             margin: 0;
-            line-height: 1.2;
+            line-height: 1.1;
             font-weight: bold;
             color: #000;
         }
 
         .kop-alamat {
-            font-size: 7.5pt;
+            font-size: 5.5pt;
             margin-top: 5px;
             color: #334155;
-            line-height: 1.3;
+            line-height: 1.15;
         }
 
         hr.kop-hr {
@@ -479,7 +482,7 @@ var __morbis_feature = (() => {
         }
 
         .head-cetak-instansi {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: bold;
             text-align: center;
             margin: 15px 0 20px 0;
@@ -526,7 +529,7 @@ var __morbis_feature = (() => {
         .hasil-title {
             text-align: center;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 9pt;
             margin-bottom: 20px;
             text-decoration: underline;
         }
@@ -534,7 +537,7 @@ var __morbis_feature = (() => {
         .section-judul {
             font-weight: bold;
             margin-top: 12px;
-            font-size: 9pt;
+            font-size: 7pt;
             text-decoration: underline;
             text-transform: uppercase;
         }
@@ -542,7 +545,7 @@ var __morbis_feature = (() => {
         .section-isi {
             margin-top: 8px;
             text-align: justify;
-            line-height: 1.5;
+            line-height: 1.25;
         }
 
         .item-list {
@@ -669,7 +672,7 @@ var __morbis_feature = (() => {
         }
 
         .patient-info-container {
-            font-size: 10pt;
+            font-size: 8pt;
             line-height: 1;
             gap: 4px 40px;
             border: 1px solid #000;
@@ -687,12 +690,12 @@ var __morbis_feature = (() => {
         }
 
         .section-judul {
-            font-size: 11pt;
+            font-size: 9pt;
         }
 
         .section-isi {
-            font-size: 10pt;
-            line-height: 1.5;
+            font-size: 8pt;
+            line-height: 1.25;
         }
 
         .item-list {
@@ -710,9 +713,9 @@ var __morbis_feature = (() => {
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: 11pt;
+            font-size: 9pt;
             font-weight: bold;
-            line-height: 1.4;
+            line-height: 1.2;
             text-transform: uppercase;
         }
 
@@ -728,22 +731,22 @@ var __morbis_feature = (() => {
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: 10pt;
-            line-height: 1.5;
+            font-size: 8pt;
+            line-height: 1.25;
             text-align: justify;
         }
 
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 9pt;
             text-transform: uppercase;
         }
 
         .catatan-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             min-width: 0;
         }
 
@@ -756,8 +759,9 @@ var __morbis_feature = (() => {
             flex-shrink: 0;
         }
 
-        /* Cetak 16px khusus fitur PA (ramah lansia): blok ini SENGAJA
-           paling akhir \u2014 rule dasar (10/11pt) di atasnya berspesifisitas
+        /* Cetak 14px khusus fitur PA (ramah lansia, ikut turun 2 tingkat
+           mengikuti permintaan): blok ini SENGAJA
+           paling akhir \u2014 rule dasar di atasnya berspesifisitas
            sama sehingga hanya menang bila muncul belakangan. HANYA
            @media print: tampilan layar tidak berubah, fitur lain tak
            tersentuh (<style> ini hanya ada di halaman cetak PA). */
@@ -767,12 +771,12 @@ var __morbis_feature = (() => {
             .section-catatan,
             .patient-info-container,
             .ttd-box {
-                font-size: 16px;
+                font-size: 14px;
             }
 
             .section-judul,
             .catatan-label {
-                font-size: 13pt;
+                font-size: 11pt;
             }
         }
       `;
