@@ -11,10 +11,12 @@
 
 ### ✨ feat
 
+- **telaah-print** — ambil + tampilkan Catatan resep dari halaman detail (`08fab80`)
 - **telaah** — tombol detail jadi 'Batal Telaah' saat sudah ditandai (`45537c6`)
 
 ### 🧹 chore
 
+- rebuild dist (catatan resep di print telaah) (`e02ca02`)
 - rebuild dist (tombol detail Batal Telaah) (`f414e9b`)
 
 ## 2026-10-05
@@ -1772,4 +1774,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f414e9bed3c489537ef969bb65169d38f2001957 -->
+<!-- changelog-upto: e02ca028feaae9571d23cc7d5368d0c242cfed2e -->

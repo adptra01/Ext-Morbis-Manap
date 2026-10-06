@@ -258,7 +258,12 @@ whenFeatureEnabled('telaahResep', function () {
         const envelope = (await resp.json()) as {
           resep?: ResepItem[];
           ID_PENJUALAN?: unknown;
+          CATATAN?: unknown;
         };
+        // CATATAN otoritatif ada di envelope (textarea detail diisi JS
+        // dari endpoint ini — scraping HTML mentah selalu kosong).
+        const envCatatan = String(envelope?.CATATAN ?? '').trim();
+        if (envCatatan !== '') catatan = envCatatan;
         const penjualanId = String(envelope?.ID_PENJUALAN ?? '').trim();
         if (penjualanId && penjualanId !== '0') {
           const editItems = await fetchEditItems(penjualanId);
