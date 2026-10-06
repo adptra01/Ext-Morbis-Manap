@@ -88,6 +88,7 @@ var __morbis_feature = (() => {
       let diagnosisSekunder = [];
       const antrianNumber = "";
       let noSep = "";
+      let catatan = "";
       async function fetchRacikanDetails() {
         const params2 = new URLSearchParams(window.location.search);
         const resepId = params2.get("id_resep") || params2.get("id") || params2.get("penjualan") || "";
@@ -99,12 +100,13 @@ var __morbis_feature = (() => {
           const html2 = await resp.text();
           const doc = new DOMParser().parseFromString(html2, "text/html");
           const inVal = (name) => {
-            const el = doc.querySelector("#" + name) || doc.querySelector('input[name="' + name + '"]') || doc.querySelector('input[id*="' + name + '"]');
+            const el = doc.querySelector("#" + name) || doc.querySelector('input[name="' + name + '"]') || doc.querySelector('input[id*="' + name + '"]') || doc.querySelector("textarea#" + name) || doc.querySelector('textarea[name="' + name + '"]');
             return el?.value?.trim() || "";
           };
           diagVisit = inVal("id_visit") || params2.get("visit") || diagVisit;
           diagKunjungan = inVal("id_kunjungan") || diagKunjungan;
           noSep = inVal("no_sep") || noSep;
+          catatan = inVal("catatan") || catatan;
           const fieldsets = Array.from(doc.querySelectorAll("fieldset#perhatian"));
           const fs = fieldsets.find((f) => {
             const leg = f.querySelector("legend");
@@ -384,7 +386,9 @@ var __morbis_feature = (() => {
       const bawahHtml = '<table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c" colspan="2">Waktu Tunggu</td></tr><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr><tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>';
       const html = (
         // HEADER 3 kolom: logo | brand & alamat | no antrian
-        '<header class="t-head"><img class="t-logo" alt="Logo" src="' + esc(logoSrc) + '"/><div class="t-bhead"><h1 class="t-hname">' + esc(hospitalName) + "</h1>" + (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + "</div>" : "") + '</div><div class="t-antrian">' + formatAntrian(antrianNumber) + '</div></header><main class="t-main"><section class="t-left">' + patientMetaHtml + '<div class="t-meds">' + medListHtml + "</div>" + adminHtml + '</section><section class="t-right">' + doctorMetaHtml + checkTable("Telaah Resep", telaahResep) + checkTable("Telaah Obat", telaahObat) + bawahHtml + '</section></main><footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>'
+        '<header class="t-head"><img class="t-logo" alt="Logo" src="' + esc(logoSrc) + '"/><div class="t-bhead"><h1 class="t-hname">' + esc(hospitalName) + "</h1>" + (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + "</div>" : "") + '</div><div class="t-antrian">' + formatAntrian(antrianNumber) + '</div></header><main class="t-main"><section class="t-left">' + patientMetaHtml + '<div class="t-meds">' + medListHtml + "</div>" + // Catatan resep dari halaman detail (textarea merah #catatan).
+        // Hanya tampil bila ada isi — blok merah agar terbaca apoteker.
+        (catatan.trim() !== "" ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' + esc(catatan).split("\n").map((l) => l.trim()).filter(Boolean).join("<br/>") + "</div></div>" : "") + adminHtml + '</section><section class="t-right">' + doctorMetaHtml + checkTable("Telaah Resep", telaahResep) + checkTable("Telaah Obat", telaahObat) + bawahHtml + '</section></main><footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>'
       );
       page.innerHTML = html;
       if (resepIdForQueue) {
@@ -445,8 +449,7 @@ var __morbis_feature = (() => {
         .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
 
         /* DAFTAR OBAT */
-        .med{margin-bottom:6px}
-        .med-line{font-size:11px;line-height:1.35;text-align:left}
+        .med{margin-bottom:6px}        .med-line{font-size:11px;line-height:1.35;text-align:left}
         .med-line.indent{margin-left:0}
         .med-no{font-weight:400}
         .med-name{font-weight:600}
@@ -454,6 +457,11 @@ var __morbis_feature = (() => {
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
         .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
+
+        /* CATATAN resep (dari textarea #catatan halaman detail) */
+        .t-catatan{margin-bottom:8px;border:1px solid #f87171;border-radius:4px;padding:4px 6px;background:#fef2f2}
+        .t-catatan-title{font-weight:700;font-size:10px;color:#b91c1c;margin-bottom:2px}
+        .t-catatan-body{font-size:11px;color:#7f1d1d;line-height:1.35;white-space:normal}
 
         /* TABEL \u2014 checklist (font sama dengan info pasien & dokter = 10px) */
         table{width:100%;border-collapse:collapse;font-size:10px}
