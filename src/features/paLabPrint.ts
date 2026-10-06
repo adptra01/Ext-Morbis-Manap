@@ -1,5 +1,14 @@
 import { whenFeatureEnabled } from './shared/featureGate.js';
 import { neutralizeToUpper, FREE_TEXT_CSS } from './shared/freeText.js';
+import {
+  loadTypo,
+  saveTypo,
+  resetTypo,
+  applyTypoVars,
+  resolveTypo,
+  TYPO_GROUPS,
+  type PaTypo,
+} from './shared/paTypo.js';
 whenFeatureEnabled('paLabPrint', function () {
   'use strict';
 
@@ -62,6 +71,25 @@ whenFeatureEnabled('paLabPrint', function () {
     const PAGE_GUARD = 'ext-pa-print-proc';
     if (document.documentElement.getAttribute(PAGE_GUARD)) return;
     document.documentElement.setAttribute(PAGE_GUARD, '1'); // kunci awal (ada fetch async)
+
+    // Tipografi dinamis 5 grup (kop/pasien/judul/isi/ttd): muat simpanan,
+    // terapkan sebagai CSS variable (live + cetak sama/WYSIWYG).
+    const typoStore = (): Storage | null => {
+      try {
+        return window.localStorage ?? null;
+      } catch {
+        return null;
+      }
+    };
+    let typo: PaTypo = loadTypo(typoStore());
+    const applyTypo = (): void => {
+      try {
+        applyTypoVars(document.documentElement.style, typo);
+      } catch {
+        /* abaikan */
+      }
+    };
+    applyTypo();
 
     const txt = (el: Element | null | undefined): string => cleanPhpNoise(el?.textContent || '');
 
@@ -584,6 +612,8 @@ whenFeatureEnabled('paLabPrint', function () {
     }
 
     async function exportWord(): Promise<void> {
+      // Hormati pengaturan panel (resolve = delta kop + clamp).
+      const r = resolveTypo(typo);
       const [logo, qr] = await Promise.all([
         dataUrl(logoSrc),
         qrSrc ? dataUrl(qrSrc) : Promise.resolve(''),
@@ -609,7 +639,9 @@ whenFeatureEnabled('paLabPrint', function () {
           const rows = s.items.length ? s.items : ['Tidak ada'];
           hasilDoc +=
             '<table border="0" cellspacing="0" cellpadding="2"><tr>' +
-            '<td valign="top"><b><u>CATATAN:</u></b></td><td>' +
+            '<td valign="top" style="font-size:' +
+            r.judul.fs +
+            'pt"><b><u>CATATAN:</u></b></td><td>' +
             rows.map((it) => '- ' + esc(stripBullet(it) || 'Tidak ada')).join('<br>') +
             '</td></tr></table>';
           continue;
@@ -619,14 +651,18 @@ whenFeatureEnabled('paLabPrint', function () {
             hasilDoc +=
               '<p style="margin:' +
               (i === 0 ? '12pt' : '0') +
-              ' 0 6pt 0;font-size:11pt;"><b>' +
+              ' 0 6pt 0;font-size:' +
+              r.judul.fs +
+              'pt;"><b>' +
               esc(it.toUpperCase()) +
               '</b></p>';
           });
           continue;
         }
         hasilDoc +=
-          '<p style="margin:12pt 0 0 0;font-size:11pt;"><b><u>' +
+          '<p style="margin:12pt 0 0 0;font-size:' +
+          r.judul.fs +
+          'pt;"><b><u>' +
           esc(s.title.toUpperCase()) +
           '</u></b></p>';
         const boldAll = normTitle(s.title) === 'kesimpulan';
@@ -647,26 +683,42 @@ whenFeatureEnabled('paLabPrint', function () {
         '<title>' +
         esc(judul) +
         '</title></head>' +
-        '<body style="font-family:Arial,sans-serif;font-size:11pt;">' +
+        '<body style="font-family:Arial,sans-serif;font-size:' +
+        r.isi.fs +
+        'pt;line-height:' +
+        r.isi.lh +
+        ';">' +
         '<table border="0" width="100%" cellspacing="0" cellpadding="4"><tr>' +
         '<td width="110" valign="middle"><img src="' +
         logo +
         '" width="90"></td><td align="center">' +
         kopLines
           .slice(0, 3)
-          .map((l) => '<b style="font-size:16pt;">' + esc(l) + '</b>')
+          .map((l) => '<b style="font-size:' + r.kop.fs + 'pt;">' + esc(l) + '</b>')
           .join('<br>') +
-        '<br><span style="font-size:9pt;">' +
+        '<br><span style="font-size:' +
+        r.alamatFs +
+        'pt;">' +
         addrLines.map((l) => esc(l)).join('<br>') +
         '</span></td></tr></table><hr>' +
-        '<p align="center"><b><u>' +
+        '<p align="center" style="font-size:' +
+        r.judulLapFs +
+        'pt;"><b><u>' +
         esc(judul.toUpperCase()) +
         '</u></b></p>' +
-        '<table border="0" cellspacing="0" cellpadding="2">' +
+        '<table border="0" cellspacing="0" cellpadding="2" style="font-size:' +
+        r.pasien.fs +
+        'pt;line-height:' +
+        r.pasien.lh +
+        ';">' +
         infoTbl +
         '</table>' +
         hasilDoc +
-        '<table border="0" width="100%" cellspacing="0" cellpadding="0"><tr>' +
+        '<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size:' +
+        r.ttd.fs +
+        'pt;line-height:' +
+        r.ttd.lh +
+        ';"><tr>' +
         '<td width="60%"></td><td align="center">' +
         '<p style="margin:0 0 6pt 0;">' +
         esc(thanks) +
@@ -747,6 +799,8 @@ whenFeatureEnabled('paLabPrint', function () {
       esc(exportHref) +
       '" class="btn-back" id="btn-word">Export Word</a>' +
       '<span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span>' +
+      '<button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">⚙️ Gaya</button>' +
+      '<div class="t-typo no-print" id="ext-pa-typo" hidden></div>' +
       '<div class="page-a4">' +
       '<div class="head-cetak">' +
       '<div id="logo"><img src="' +
@@ -799,6 +853,92 @@ whenFeatureEnabled('paLabPrint', function () {
       exportWord().catch(() => {
         window.location.href = exportHref;
       });
+    });
+
+    // Panel pengaturan tipografi (⚙️ Gaya): 5 grup × (font-size +
+    // line-height), live via CSS variable, Simpan → localStorage,
+    // Reset → default extension.
+    const renderTypoPanel = (): void => {
+      const panel = document.getElementById('ext-pa-typo');
+      if (!panel) return;
+      const row = (
+        gkey: string,
+        field: 'fs' | 'lh',
+        label: string,
+        min: number,
+        max: number,
+        step: number,
+        val: number,
+        unit: string,
+      ): string =>
+        '<label>' +
+        esc(label) +
+        '<input type="range" data-g="' +
+        esc(gkey) +
+        '" data-f="' +
+        field +
+        '" min="' +
+        min +
+        '" max="' +
+        max +
+        '" step="' +
+        step +
+        '" value="' +
+        val +
+        '">' +
+        '<output data-o="' +
+        esc(gkey + '-' + field) +
+        '">' +
+        esc(String(val) + unit) +
+        '</output></label>';
+      panel.innerHTML =
+        '<h4>Gaya Cetakan PA</h4>' +
+        TYPO_GROUPS.map(
+          (g) =>
+            '<div class="t-typo-group"><strong>' +
+            esc(g.label) +
+            '</strong><div class="t-typo-row">' +
+            row(g.key, 'fs', 'Font (pt)', 4, 20, 0.5, typo[g.key].fs, 'pt') +
+            row(g.key, 'lh', 'Spasi baris', 1, 2.5, 0.05, typo[g.key].lh, '') +
+            '</div></div>',
+        ).join('') +
+        '<div class="t-typo-actions"><button type="button" data-act="save" class="primary">Simpan</button>' +
+        '<button type="button" data-act="reset">Reset</button></div>' +
+        '<div class="t-typo-note" data-note></div>';
+      panel.querySelectorAll('input[type="range"]').forEach((el) => {
+        const input = el as HTMLInputElement;
+        input.addEventListener('input', () => {
+          const gk = input.dataset.g as keyof PaTypo | undefined;
+          const fd = input.dataset.f as 'fs' | 'lh' | undefined;
+          if (!gk || !fd || !typo[gk]) return;
+          typo[gk][fd] = Number(input.value);
+          applyTypo();
+          const out = panel.querySelector<HTMLElement>(`output[data-o="${gk}-${fd}"]`);
+          if (out) out.textContent = input.value + (fd === 'fs' ? 'pt' : '');
+        });
+      });
+      const note = panel.querySelector<HTMLElement>('[data-note]');
+      panel.querySelector('[data-act="save"]')?.addEventListener('click', () => {
+        const ok = saveTypo(typoStore(), typo);
+        if (note) note.textContent = ok ? 'Tersimpan ✓' : 'Gagal menyimpan';
+      });
+      panel.querySelector('[data-act="reset"]')?.addEventListener('click', () => {
+        resetTypo(typoStore());
+        typo = loadTypo(typoStore());
+        applyTypo();
+        renderTypoPanel();
+        if (note) {
+          const n2 = panel.querySelector<HTMLElement>('[data-note]');
+          if (n2) n2.textContent = 'Kembali ke default ✓';
+        }
+      });
+    };
+    document.querySelector('#btn-typo')?.addEventListener('click', () => {
+      const panel = document.getElementById('ext-pa-typo');
+      if (!panel) return;
+      const willOpen = panel.hidden;
+      if (willOpen) renderTypoPanel();
+      panel.hidden = !willOpen;
     });
 
     // Buang <style>/<link> asli di-head agar tidak melawan CSS prioritas.
@@ -855,18 +995,18 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .kop-atas {
-            font-size: 16pt;
+            font-size: var(--pa-kop-fs, 16pt);
             margin: 0;
-            line-height: 1.2;
+            line-height: var(--pa-kop-lh, 1.2);
             font-weight: bold;
             color: #000;
         }
 
         .kop-alamat {
-            font-size: 7.5pt;
+            font-size: var(--pa-alamat-fs, 7.5pt);
             margin-top: 5px;
             color: #334155;
-            line-height: 1.3;
+            line-height: var(--pa-kop-lh, 1.3);
         }
 
         hr.kop-hr {
@@ -877,12 +1017,13 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .head-cetak-instansi {
-            font-size: 12pt;
+            font-size: var(--pa-judul-lap-fs, 12pt);
             font-weight: bold;
             text-align: center;
             margin: 15px 0 20px 0;
             text-decoration: underline;
             text-transform: uppercase;
+            line-height: var(--pa-kop-lh, 1.2);
         }
 
         /* Kontainer utama dengan 2 kolom */
@@ -966,6 +1107,8 @@ whenFeatureEnabled('paLabPrint', function () {
             float: right;
             width: 300px;
             text-align: center;
+            font-size: var(--pa-ttd-fs, 6pt);
+            line-height: var(--pa-ttd-lh, 1.2);
         }
 
         .ttd-box p {
@@ -1067,8 +1210,8 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .patient-info-container {
-            font-size: 4pt;
-            line-height: 1;
+            font-size: var(--pa-pasien-fs, 4pt);
+            line-height: var(--pa-pasien-lh, 1);
             gap: 4px 40px;
             border: 1px solid #000;
             padding: 10px 12px;
@@ -1085,12 +1228,13 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .section-judul {
-            font-size: 6pt;
+            font-size: var(--pa-judul-fs, 6pt);
+            line-height: var(--pa-judul-lh, 1.2);
         }
 
         .section-isi {
-            font-size: 5pt;
-            line-height: 1.25;
+            font-size: var(--pa-isi-fs, 5pt);
+            line-height: var(--pa-isi-lh, 1.25);
         }
 
         .item-list {
@@ -1108,9 +1252,9 @@ whenFeatureEnabled('paLabPrint', function () {
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: 6pt;
+            font-size: var(--pa-judul-fs, 6pt);
             font-weight: bold;
-            line-height: 1.2;
+            line-height: var(--pa-judul-lh, 1.2);
             text-transform: uppercase;
         }
 
@@ -1126,15 +1270,16 @@ whenFeatureEnabled('paLabPrint', function () {
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: 5pt;
-            line-height: 1.25;
+            font-size: var(--pa-isi-fs, 5pt);
+            line-height: var(--pa-isi-lh, 1.25);
             text-align: justify;
         }
 
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: 6pt;
+            font-size: var(--pa-judul-fs, 6pt);
+            line-height: var(--pa-judul-lh, 1.2);
             text-transform: uppercase;
         }
 
@@ -1154,32 +1299,57 @@ whenFeatureEnabled('paLabPrint', function () {
             flex-shrink: 0;
         }
 
-        /* Cetak 14px khusus fitur PA (ramah lansia, ikut turun 2 tingkat
-           mengikuti permintaan): blok ini SENGAJA
-           paling akhir — rule dasar di atasnya berspesifisitas
-           sama sehingga hanya menang bila muncul belakangan. HANYA
-           @media print: tampilan layar tidak berubah, fitur lain tak
-           tersentuh (<style> ini hanya ada di halaman cetak PA). */
-        @media print {
-            .section-isi,
-            .section-isi-bare,
-            .section-catatan {
-                font-size: 11px;
-            }
-
-            .patient-info-container {
-                font-size: 10px;
-            }
-
-            .ttd-box {
-                font-size: 10px;
-            }
-
-            .section-judul,
-            .catatan-label {
-                font-size: 8pt;
-            }
+        /* Panel pengaturan tipografi (tombol ⚙️ Gaya) — no-print. */
+        #btn-typo {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            z-index: 9999;
         }
+        #btn-typo:hover { background: #0f172a; }
+        .t-typo {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            width: 280px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+            padding: 12px 14px;
+            z-index: 9999;
+            font-family: 'Roboto', sans-serif;
+        }
+        .t-typo h4 { margin: 0 0 8px; font-size: 13px; }
+        .t-typo-group { margin-bottom: 10px; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+        .t-typo-group > strong { display: block; font-size: 12px; margin-bottom: 4px; }
+        .t-typo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .t-typo-row label { display: flex; flex-direction: column; font-size: 11px; color: #475569; gap: 2px; }
+        .t-typo-row input[type="range"] { width: 100%; }
+        .t-typo-row output { font-size: 11px; color: #0f172a; font-weight: 600; }
+        .t-typo-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .t-typo-actions button {
+            flex: 1;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 6px 0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .t-typo-actions button.primary { background: #1e293b; color: white; border-color: #1e293b; }
+        .t-typo-note { font-size: 11px; color: #15803d; min-height: 16px; margin-top: 6px; }
+        @media print { .no-print { display: none !important; } }
       `;
       document.head.appendChild(s);
     }

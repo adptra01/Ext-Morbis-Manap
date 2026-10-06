@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **pa-print** — free text tanpa auto-camelcase di form input + footer ttd = isi (`92a8cd7`)
 - **telaah-print** — ambil + tampilkan Catatan resep dari halaman detail (`08fab80`)
 - **telaah** — tombol detail jadi 'Batal Telaah' saat sudah ditandai (`45537c6`)
 
@@ -28,6 +29,7 @@
 
 ### 🧹 chore
 
+- rebuild dist (pa-print isi-1 info-2) (`d5afcc8`)
 - rebuild dist (pa-print info+isi -1pt) (`3a63530`)
 - rebuild dist (pa-print font -1pt) (`047a18a`)
 - rebuild dist (kop kembali semula) (`460e18f`)
@@ -1792,4 +1794,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: fc3f1ae34cdc2c33f5768f849cc70b56dfa804eb -->
+<!-- changelog-upto: 92a8cd70d9fcde2b516b5a02a3e05657692e4eca -->
