@@ -14,8 +14,13 @@
 - **telaah-print** — ambil + tampilkan Catatan resep dari halaman detail (`08fab80`)
 - **telaah** — tombol detail jadi 'Batal Telaah' saat sudah ditandai (`45537c6`)
 
+### 🐛 fix
+
+- **telaah-print** — Catatan dari envelope API, bukan scraping HTML (`5b95ebe`)
+
 ### 🧹 chore
 
+- rebuild dist (catatan dari envelope API) (`7f6aa9e`)
 - rebuild dist (catatan resep di print telaah) (`e02ca02`)
 - rebuild dist (tombol detail Batal Telaah) (`f414e9b`)
 
@@ -1774,4 +1779,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e02ca028feaae9571d23cc7d5368d0c242cfed2e -->
+<!-- changelog-upto: 7f6aa9eddaa0da4a4f02c4c39a35b26e78feda90 -->
