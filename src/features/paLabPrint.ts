@@ -599,12 +599,14 @@ whenFeatureEnabled('paLabPrint', function () {
           '<p style="margin:12pt 0 0 0;font-size:11pt;"><b><u>' +
           esc(s.title.toUpperCase()) +
           '</u></b></p>';
+        const boldAll = normTitle(s.title) === 'kesimpulan';
         s.items.forEach((it, i) => {
+          const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
           hasilDoc +=
             '<p style="margin:' +
             (s.para.includes(i) ? '14pt' : '0') +
             ' 0 6pt 0;text-align:justify;">' +
-            fmtItem(it) +
+            body +
             '</p>';
         });
       }
@@ -688,6 +690,8 @@ whenFeatureEnabled('paLabPrint', function () {
         // Section virtual ICD-O tampil tanpa judul (bare): cukup baris
         // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi disamakan
         // dengan section-judul (11pt bold kapital) via .section-isi-bare.
+        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
+        const boldAll = normTitle(s.title) === 'kesimpulan';
         const isi =
           '<div class="' +
           (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
@@ -698,7 +702,7 @@ whenFeatureEnabled('paLabPrint', function () {
                 '<div class="item-list' +
                 (s.para.includes(i) ? ' item-para' : '') +
                 '">' +
-                fmtItem(it) +
+                (boldAll ? '<strong>' + esc(it) + '</strong>' : fmtItem(it)) +
                 '</div>',
             )
             .join('') +
@@ -782,9 +786,9 @@ whenFeatureEnabled('paLabPrint', function () {
         /* Pengaturan Font dan Kertas untuk Cetak */
         body {
             font-family: 'Roboto', sans-serif;
-            font-size: 9pt;
+            font-size: 7pt;
             color: #000;
-            line-height: 1.4;
+            line-height: 1.2;
             margin: 0;
             padding: 0;
             background-color: #f1f5f9;
@@ -821,18 +825,18 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .kop-atas {
-            font-size: 16pt;
+            font-size: 14pt;
             margin: 0;
-            line-height: 1.2;
+            line-height: 1.1;
             font-weight: bold;
             color: #000;
         }
 
         .kop-alamat {
-            font-size: 7.5pt;
+            font-size: 5.5pt;
             margin-top: 5px;
             color: #334155;
-            line-height: 1.3;
+            line-height: 1.15;
         }
 
         hr.kop-hr {
@@ -843,7 +847,7 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .head-cetak-instansi {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: bold;
             text-align: center;
             margin: 15px 0 20px 0;
@@ -890,7 +894,7 @@ whenFeatureEnabled('paLabPrint', function () {
         .hasil-title {
             text-align: center;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 9pt;
             margin-bottom: 20px;
             text-decoration: underline;
         }
@@ -898,7 +902,7 @@ whenFeatureEnabled('paLabPrint', function () {
         .section-judul {
             font-weight: bold;
             margin-top: 12px;
-            font-size: 9pt;
+            font-size: 7pt;
             text-decoration: underline;
             text-transform: uppercase;
         }
@@ -906,7 +910,7 @@ whenFeatureEnabled('paLabPrint', function () {
         .section-isi {
             margin-top: 8px;
             text-align: justify;
-            line-height: 1.5;
+            line-height: 1.25;
         }
 
         .item-list {
@@ -1033,7 +1037,7 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .patient-info-container {
-            font-size: 10pt;
+            font-size: 8pt;
             line-height: 1;
             gap: 4px 40px;
             border: 1px solid #000;
@@ -1051,12 +1055,12 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .section-judul {
-            font-size: 11pt;
+            font-size: 9pt;
         }
 
         .section-isi {
-            font-size: 10pt;
-            line-height: 1.5;
+            font-size: 8pt;
+            line-height: 1.25;
         }
 
         .item-list {
@@ -1074,9 +1078,9 @@ whenFeatureEnabled('paLabPrint', function () {
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: 11pt;
+            font-size: 9pt;
             font-weight: bold;
-            line-height: 1.4;
+            line-height: 1.2;
             text-transform: uppercase;
         }
 
@@ -1092,22 +1096,22 @@ whenFeatureEnabled('paLabPrint', function () {
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: 10pt;
-            line-height: 1.5;
+            font-size: 8pt;
+            line-height: 1.25;
             text-align: justify;
         }
 
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 9pt;
             text-transform: uppercase;
         }
 
         .catatan-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             min-width: 0;
         }
 
@@ -1120,8 +1124,9 @@ whenFeatureEnabled('paLabPrint', function () {
             flex-shrink: 0;
         }
 
-        /* Cetak 16px khusus fitur PA (ramah lansia): blok ini SENGAJA
-           paling akhir — rule dasar (10/11pt) di atasnya berspesifisitas
+        /* Cetak 14px khusus fitur PA (ramah lansia, ikut turun 2 tingkat
+           mengikuti permintaan): blok ini SENGAJA
+           paling akhir — rule dasar di atasnya berspesifisitas
            sama sehingga hanya menang bila muncul belakangan. HANYA
            @media print: tampilan layar tidak berubah, fitur lain tak
            tersentuh (<style> ini hanya ada di halaman cetak PA). */
@@ -1131,12 +1136,12 @@ whenFeatureEnabled('paLabPrint', function () {
             .section-catatan,
             .patient-info-container,
             .ttd-box {
-                font-size: 16px;
+                font-size: 14px;
             }
 
             .section-judul,
             .catatan-label {
-                font-size: 13pt;
+                font-size: 11pt;
             }
         }
       `;
