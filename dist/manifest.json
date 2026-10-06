@@ -363,7 +363,8 @@
         "http://dev.rsudkotajambi.id/laboratorium/input-hasil/input-hasil-pa*"
       ],
       "js": [
-        "features/inputHasilPa.js"
+        "features/inputHasilPa.js",
+        "features/paLabPrint.js"
       ],
       "run_at": "document_idle",
       "world": "MAIN",

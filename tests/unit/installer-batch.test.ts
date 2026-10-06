@@ -519,7 +519,11 @@ describe('repo - hanya satu .bat di seluruh repo', () => {
       }
     };
     walk(repoRoot, 0);
-    expect(found).toEqual(['deploy/Install_Morbis_Ext.bat']);
+    // Satu installer aktif + satu script update main yang dikembalikan
+    // (user minta scripts/morbis-update-main.bat di branch dev).
+    expect(found.sort()).toEqual(
+      ['deploy/Install_Morbis_Ext.bat', 'scripts/morbis-update-main.bat'].sort(),
+    );
   });
 
   it('workflow tidak lagi menyalin .bat terpisah', () => {

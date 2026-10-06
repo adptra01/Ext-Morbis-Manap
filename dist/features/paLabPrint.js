@@ -32,9 +32,55 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/freeText.ts
+  var FREE_TEXT_MARK = "ext-free-text-noop";
+  var FREE_TEXT_CSS = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),textarea,select{text-transform:none!important}';
+  function neutralizeToUpper(w) {
+    try {
+      const cur = w.toUpper;
+      if (typeof cur === "function" && cur[FREE_TEXT_MARK] === true) return true;
+      const noop = function(obj) {
+        return obj?.value ?? "";
+      };
+      noop[FREE_TEXT_MARK] = true;
+      try {
+        Object.defineProperty(w, "toUpper", {
+          value: noop,
+          writable: true,
+          configurable: true
+        });
+      } catch {
+        w.toUpper = noop;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // src/features/paLabPrint.ts
   whenFeatureEnabled("paLabPrint", function() {
     "use strict";
+    function freeTextNow() {
+      try {
+        neutralizeToUpper(window);
+      } catch {
+      }
+      try {
+        if (document.head && !document.getElementById("ext-free-text-style")) {
+          const s = document.createElement("style");
+          s.id = "ext-free-text-style";
+          s.textContent = FREE_TEXT_CSS;
+          document.head.appendChild(s);
+        }
+      } catch {
+      }
+    }
+    freeTextNow();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", freeTextNow);
+    }
+    window.setInterval(freeTextNow, 3e3);
     async function apply() {
       const PAGE_GUARD = "ext-pa-print-proc";
       if (document.documentElement.getAttribute(PAGE_GUARD)) return;
@@ -777,7 +823,7 @@ var __morbis_feature = (() => {
             }
 
             .ttd-box {
-                font-size: 13px;
+                font-size: 10px;
             }
 
             .section-judul,

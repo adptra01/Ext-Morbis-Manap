@@ -1,6 +1,36 @@
 import { whenFeatureEnabled } from './shared/featureGate.js';
+import { neutralizeToUpper, FREE_TEXT_CSS } from './shared/freeText.js';
 whenFeatureEnabled('paLabPrint', function () {
   'use strict';
+
+  // Free text (gabung di fitur ini): netralkan pemaksa besar-kecil huruf
+  // MORBIS `toUpper(this)` (keypress/blur di ~31 field input-hasil-pa)
+  // agar ejaan bebas (Sp.OG(K), pH, …) tersimpan apa adanya. Berjalan di
+  // SEMUA halaman bundle ini dimuat (input + cetak); logic cetak di bawah
+  // tetap hanya jalan di halaman cetak (guard .halaman + atribut gate).
+  function freeTextNow(): void {
+    try {
+      neutralizeToUpper(window as unknown as { toUpper?: unknown });
+    } catch {
+      /* abaikan */
+    }
+    try {
+      if (document.head && !document.getElementById('ext-free-text-style')) {
+        const s = document.createElement('style');
+        s.id = 'ext-free-text-style';
+        s.textContent = FREE_TEXT_CSS;
+        document.head.appendChild(s);
+      }
+    } catch {
+      /* head belum ada — dicoba lagi oleh interval */
+    }
+  }
+  freeTextNow();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', freeTextNow);
+  }
+  // Penjaga murah: timpa ulang bila halaman mendefinisikan ulang toUpper.
+  window.setInterval(freeTextNow, 3000);
 
   /**
    * paLabPrint.ts — Redesign halaman cetak Laporan Hasil Pemeriksaan
@@ -1142,7 +1172,7 @@ whenFeatureEnabled('paLabPrint', function () {
             }
 
             .ttd-box {
-                font-size: 13px;
+                font-size: 10px;
             }
 
             .section-judul,
