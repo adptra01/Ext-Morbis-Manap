@@ -825,18 +825,18 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .kop-atas {
-            font-size: 14pt;
+            font-size: 16pt;
             margin: 0;
-            line-height: 1.1;
+            line-height: 1.2;
             font-weight: bold;
             color: #000;
         }
 
         .kop-alamat {
-            font-size: 5.5pt;
+            font-size: 7.5pt;
             margin-top: 5px;
             color: #334155;
-            line-height: 1.15;
+            line-height: 1.3;
         }
 
         hr.kop-hr {
@@ -847,7 +847,7 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         .head-cetak-instansi {
-            font-size: 10pt;
+            font-size: 12pt;
             font-weight: bold;
             text-align: center;
             margin: 15px 0 20px 0;
