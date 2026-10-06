@@ -111,6 +111,7 @@ whenFeatureEnabled('telaahResep', function () {
     let diagnosisSekunder: string[] = [];
     const antrianNumber = '';
     let noSep = '';
+    let catatan = '';
 
     async function fetchRacikanDetails(): Promise<void> {
       const params = new URLSearchParams(window.location.search);
@@ -127,17 +128,22 @@ whenFeatureEnabled('telaahResep', function () {
         const html = await resp.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
 
-        // Tangkap id_visit / id_kunjungan dari hidden input
+        // Tangkap id_visit / id_kunjungan dari hidden input.
+        // `catatan` adalah <textarea> (bukan input) — ikut dicari.
         const inVal = (name: string): string => {
           const el =
             doc.querySelector<HTMLInputElement>('#' + name) ||
             doc.querySelector<HTMLInputElement>('input[name="' + name + '"]') ||
-            doc.querySelector<HTMLInputElement>('input[id*="' + name + '"]');
+            doc.querySelector<HTMLInputElement>('input[id*="' + name + '"]') ||
+            doc.querySelector<HTMLTextAreaElement>('textarea#' + name) ||
+            doc.querySelector<HTMLTextAreaElement>('textarea[name="' + name + '"]');
           return el?.value?.trim() || '';
         };
         diagVisit = inVal('id_visit') || params.get('visit') || diagVisit;
         diagKunjungan = inVal('id_kunjungan') || diagKunjungan;
         noSep = inVal('no_sep') || noSep;
+        // Catatan resep (textarea merah #catatan di halaman detail).
+        catatan = inVal('catatan') || catatan;
 
         // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
         const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
@@ -635,6 +641,17 @@ whenFeatureEnabled('telaahResep', function () {
       '<div class="t-meds">' +
       medListHtml +
       '</div>' +
+      // Catatan resep dari halaman detail (textarea merah #catatan).
+      // Hanya tampil bila ada isi — blok merah agar terbaca apoteker.
+      (catatan.trim() !== ''
+        ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' +
+          esc(catatan)
+            .split('\n')
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .join('<br/>') +
+          '</div></div>'
+        : '') +
       adminHtml +
       '</section>' +
       '<section class="t-right">' +
@@ -722,8 +739,7 @@ whenFeatureEnabled('telaahResep', function () {
         .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
 
         /* DAFTAR OBAT */
-        .med{margin-bottom:6px}
-        .med-line{font-size:11px;line-height:1.35;text-align:left}
+        .med{margin-bottom:6px}        .med-line{font-size:11px;line-height:1.35;text-align:left}
         .med-line.indent{margin-left:0}
         .med-no{font-weight:400}
         .med-name{font-weight:600}
@@ -731,6 +747,11 @@ whenFeatureEnabled('telaahResep', function () {
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
         .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
+
+        /* CATATAN resep (dari textarea #catatan halaman detail) */
+        .t-catatan{margin-bottom:8px;border:1px solid #f87171;border-radius:4px;padding:4px 6px;background:#fef2f2}
+        .t-catatan-title{font-weight:700;font-size:10px;color:#b91c1c;margin-bottom:2px}
+        .t-catatan-body{font-size:11px;color:#7f1d1d;line-height:1.35;white-space:normal}
 
         /* TABEL — checklist (font sama dengan info pasien & dokter = 10px) */
         table{width:100%;border-collapse:collapse;font-size:10px}

@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-10-06
+
+### ✨ feat
+
+- **telaah** — tombol detail jadi 'Batal Telaah' saat sudah ditandai (`45537c6`)
+
+### 🧹 chore
+
+- rebuild dist (tombol detail Batal Telaah) (`f414e9b`)
+
 ## 2026-10-05
 
 ### ✨ feat
@@ -1762,4 +1772,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c7b6d5cb718c466eba91d9d2b298c1531cf86deb -->
+<!-- changelog-upto: f414e9bed3c489537ef969bb65169d38f2001957 -->
