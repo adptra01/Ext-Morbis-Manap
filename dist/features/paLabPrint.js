@@ -183,6 +183,8 @@ var __morbis_feature = (() => {
       document.addEventListener("DOMContentLoaded", freeTextNow);
     }
     window.setInterval(freeTextNow, 3e3);
+    const isPrintPage = window.location.pathname.includes("/laboratorium/print/");
+    if (!isPrintPage) return;
     async function apply() {
       const PAGE_GUARD = "ext-pa-print-proc";
       if (document.documentElement.getAttribute(PAGE_GUARD)) return;
