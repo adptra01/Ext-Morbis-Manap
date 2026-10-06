@@ -15,8 +15,8 @@ whenFeatureEnabled('paLabPrint', function () {
   // Free text (gabung di fitur ini): netralkan pemaksa besar-kecil huruf
   // MORBIS `toUpper(this)` (keypress/blur di ~31 field input-hasil-pa)
   // agar ejaan bebas (Sp.OG(K), pH, …) tersimpan apa adanya. Berjalan di
-  // SEMUA halaman bundle ini dimuat (input + cetak); logic cetak di bawah
-  // tetap hanya jalan di halaman cetak (guard .halaman + atribut gate).
+  // SEMUA halaman bundle ini dimuat (input + cetak); logic cetak +
+  // tipografi di bawah hanya jalan di halaman print (gate isPrintPage).
   function freeTextNow(): void {
     try {
       neutralizeToUpper(window as unknown as { toUpper?: unknown });
@@ -40,6 +40,12 @@ whenFeatureEnabled('paLabPrint', function () {
   }
   // Penjaga murah: timpa ulang bila halaman mendefinisikan ulang toUpper.
   window.setInterval(freeTextNow, 3000);
+
+  // Tipografi + rebuild cetak HANYA di halaman print. PENTING: bundle ini
+  // juga dimuat di halaman input (untuk freeText di atas) — tanpa gate
+  // ini apply() akan me-rebuild body form input (merusak halaman)!
+  const isPrintPage = window.location.pathname.includes('/laboratorium/print/');
+  if (!isPrintPage) return;
 
   /**
    * paLabPrint.ts — Redesign halaman cetak Laporan Hasil Pemeriksaan

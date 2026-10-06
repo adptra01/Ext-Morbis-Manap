@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-10-07
+
+### ✨ feat
+
+- **pa-print** — panel tipografi dinamis 5 grup + simpan/reset (`3dcaec7`)
+
+### 🧹 chore
+
+- rebuild dist (panel tipografi pa-print) (`132d2cc`)
+
 ## 2026-10-06
 
 ### ✨ feat
@@ -1794,4 +1804,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 92a8cd70d9fcde2b516b5a02a3e05657692e4eca -->
+<!-- changelog-upto: 132d2ccfebab4cec143260de0b6da23a1e2e5fbc -->
