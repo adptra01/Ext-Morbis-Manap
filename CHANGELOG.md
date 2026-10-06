@@ -20,11 +20,13 @@
 
 ### 🎨 style
 
+- **pa-print** — font isi -1pt lagi (kop/header tidak berubah) (`112a9a1`)
 - **pa-print** — kop/header kembali seperti semula (`a52c6a4`)
 - **pa-print** — rapatkan line-height + font -2pt + isi Kesimpulan bold (`c68ecee`)
 
 ### 🧹 chore
 
+- rebuild dist (kop kembali semula) (`460e18f`)
 - rebuild dist (pa-print rapat + kecil + kesimpulan bold) (`46e113d`)
 - kembalikan scripts/morbis-update-main.bat (update satu-klik main) (`9429ee9`)
 - rebuild dist (catatan dari envelope API) (`7f6aa9e`)
@@ -1786,4 +1788,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a52c6a499184a1efb9a71177748b95dc268e3759 -->
+<!-- changelog-upto: 112a9a1fffb4f09ff7b6d6e977723c8dde79ab28 -->

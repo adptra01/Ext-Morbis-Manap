@@ -421,7 +421,7 @@ var __morbis_feature = (() => {
         /* Pengaturan Font dan Kertas untuk Cetak */
         body {
             font-family: 'Roboto', sans-serif;
-            font-size: 7pt;
+            font-size: 6pt;
             color: #000;
             line-height: 1.2;
             margin: 0;
@@ -529,7 +529,7 @@ var __morbis_feature = (() => {
         .hasil-title {
             text-align: center;
             font-weight: bold;
-            font-size: 9pt;
+            font-size: 8pt;
             margin-bottom: 20px;
             text-decoration: underline;
         }
@@ -537,7 +537,7 @@ var __morbis_feature = (() => {
         .section-judul {
             font-weight: bold;
             margin-top: 12px;
-            font-size: 7pt;
+            font-size: 6pt;
             text-decoration: underline;
             text-transform: uppercase;
         }
@@ -672,7 +672,7 @@ var __morbis_feature = (() => {
         }
 
         .patient-info-container {
-            font-size: 8pt;
+            font-size: 7pt;
             line-height: 1;
             gap: 4px 40px;
             border: 1px solid #000;
@@ -690,11 +690,11 @@ var __morbis_feature = (() => {
         }
 
         .section-judul {
-            font-size: 9pt;
+            font-size: 8pt;
         }
 
         .section-isi {
-            font-size: 8pt;
+            font-size: 7pt;
             line-height: 1.25;
         }
 
@@ -713,7 +713,7 @@ var __morbis_feature = (() => {
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: 9pt;
+            font-size: 8pt;
             font-weight: bold;
             line-height: 1.2;
             text-transform: uppercase;
@@ -731,7 +731,7 @@ var __morbis_feature = (() => {
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: 8pt;
+            font-size: 7pt;
             line-height: 1.25;
             text-align: justify;
         }
@@ -739,7 +739,7 @@ var __morbis_feature = (() => {
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: 9pt;
+            font-size: 8pt;
             text-transform: uppercase;
         }
 
@@ -771,12 +771,12 @@ var __morbis_feature = (() => {
             .section-catatan,
             .patient-info-container,
             .ttd-box {
-                font-size: 14px;
+                font-size: 13px;
             }
 
             .section-judul,
             .catatan-label {
-                font-size: 11pt;
+                font-size: 10pt;
             }
         }
       `;
