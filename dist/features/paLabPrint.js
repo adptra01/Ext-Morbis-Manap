@@ -672,7 +672,7 @@ var __morbis_feature = (() => {
         }
 
         .patient-info-container {
-            font-size: 6pt;
+            font-size: 4pt;
             line-height: 1;
             gap: 4px 40px;
             border: 1px solid #000;
@@ -690,11 +690,11 @@ var __morbis_feature = (() => {
         }
 
         .section-judul {
-            font-size: 7pt;
+            font-size: 6pt;
         }
 
         .section-isi {
-            font-size: 6pt;
+            font-size: 5pt;
             line-height: 1.25;
         }
 
@@ -713,7 +713,7 @@ var __morbis_feature = (() => {
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: 7pt;
+            font-size: 6pt;
             font-weight: bold;
             line-height: 1.2;
             text-transform: uppercase;
@@ -731,7 +731,7 @@ var __morbis_feature = (() => {
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: 6pt;
+            font-size: 5pt;
             line-height: 1.25;
             text-align: justify;
         }
@@ -739,7 +739,7 @@ var __morbis_feature = (() => {
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: 7pt;
+            font-size: 6pt;
             text-transform: uppercase;
         }
 
@@ -768,9 +768,12 @@ var __morbis_feature = (() => {
         @media print {
             .section-isi,
             .section-isi-bare,
-            .section-catatan,
+            .section-catatan {
+                font-size: 11px;
+            }
+
             .patient-info-container {
-                font-size: 12px;
+                font-size: 10px;
             }
 
             .ttd-box {
@@ -779,7 +782,7 @@ var __morbis_feature = (() => {
 
             .section-judul,
             .catatan-label {
-                font-size: 9pt;
+                font-size: 8pt;
             }
         }
       `;

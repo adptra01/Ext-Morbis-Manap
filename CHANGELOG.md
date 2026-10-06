@@ -20,6 +20,7 @@
 
 ### 🎨 style
 
+- **pa-print** — isi -1pt, info pasien -2pt (`fc3f1ae`)
 - **pa-print** — font info pasien + isi -1pt lagi (`767954c`)
 - **pa-print** — font isi -1pt lagi (kop/header tidak berubah) (`112a9a1`)
 - **pa-print** — kop/header kembali seperti semula (`a52c6a4`)
@@ -27,6 +28,7 @@
 
 ### 🧹 chore
 
+- rebuild dist (pa-print info+isi -1pt) (`3a63530`)
 - rebuild dist (pa-print font -1pt) (`047a18a`)
 - rebuild dist (kop kembali semula) (`460e18f`)
 - rebuild dist (pa-print rapat + kecil + kesimpulan bold) (`46e113d`)
@@ -1790,4 +1792,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 767954c7c97746c392f7293f65af6d42eae771b7 -->
+<!-- changelog-upto: fc3f1ae34cdc2c33f5768f849cc70b56dfa804eb -->
