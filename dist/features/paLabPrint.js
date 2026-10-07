@@ -100,14 +100,17 @@ var __morbis_feature = (() => {
       ttd: group(o.ttd, DEFAULT_TYPO.ttd)
     };
   }
+  function defaultTypo() {
+    return sanitizeTypo(null);
+  }
   function loadTypo(store) {
     try {
-      if (!store) return { ...DEFAULT_TYPO };
+      if (!store) return defaultTypo();
       const raw = store.getItem(TYPO_KEY);
-      if (!raw) return { ...DEFAULT_TYPO };
+      if (!raw) return defaultTypo();
       return sanitizeTypo(JSON.parse(raw));
     } catch {
-      return { ...DEFAULT_TYPO };
+      return defaultTypo();
     }
   }
   function saveTypo(store, t) {
