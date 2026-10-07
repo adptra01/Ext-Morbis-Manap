@@ -84,15 +84,21 @@ export interface TypoStore {
   removeItem(k: string): void;
 }
 
+/** Salinan default yang segar (deep-copy): pemanggil boleh mutasi
+ *  hasilnya — DEFAULT_TYPO sendiri tak pernah berubah. */
+export function defaultTypo(): PaTypo {
+  return sanitizeTypo(null);
+}
+
 /** Baca pengaturan; rusak/kosong → default (tak pernah melempar). */
 export function loadTypo(store: Pick<TypoStore, 'getItem'> | null | undefined): PaTypo {
   try {
-    if (!store) return { ...DEFAULT_TYPO };
+    if (!store) return defaultTypo();
     const raw = store.getItem(TYPO_KEY);
-    if (!raw) return { ...DEFAULT_TYPO };
+    if (!raw) return defaultTypo();
     return sanitizeTypo(JSON.parse(raw));
   } catch {
-    return { ...DEFAULT_TYPO };
+    return defaultTypo();
   }
 }
 

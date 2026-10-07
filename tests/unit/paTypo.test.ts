@@ -58,6 +58,15 @@ describe('paTypo — simpan/muat/reset', () => {
     resetTypo(s);
     expect(loadTypo(s)).toEqual(DEFAULT_TYPO);
   });
+
+  it('REGRESI reset: mutasi hasil load tak merusak DEFAULT_TYPO', () => {
+    const t = loadTypo(memStore());
+    t.isi.fs = 20;
+    t.kop.lh = 2;
+    expect(DEFAULT_TYPO.isi).toEqual({ fs: 5, lh: 1.25 });
+    expect(DEFAULT_TYPO.kop).toEqual({ fs: 16, lh: 1.2 });
+    expect(loadTypo(memStore())).toEqual(DEFAULT_TYPO);
+  });
 });
 
 describe('paTypo — resolve & vars', () => {

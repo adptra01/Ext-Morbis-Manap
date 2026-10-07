@@ -13,8 +13,13 @@
 
 - **pa-print** — panel tipografi dinamis 5 grup + simpan/reset (`3dcaec7`)
 
+### 🐛 fix
+
+- **pa-print** — logika cetak + tipografi hanya di halaman print (`400ed2d`)
+
 ### 🧹 chore
 
+- rebuild dist (gate print-only) (`0ed906e`)
 - rebuild dist (panel tipografi pa-print) (`132d2cc`)
 
 ## 2026-10-06
@@ -1804,4 +1809,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 132d2ccfebab4cec143260de0b6da23a1e2e5fbc -->
+<!-- changelog-upto: 0ed906ebf2917280fe824da5d5e363b9b3bd16dd -->
