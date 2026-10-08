@@ -178,13 +178,6 @@ var __morbis_feature = (() => {
     if (rest === "") return null;
     return [m[1], rest];
   }
-  var r1 = (n) => Math.round(n * 10) / 10;
-  function estimateMarkerPt(marker, fsPt) {
-    const fs = Number.isFinite(fsPt) && fsPt > 0 ? fsPt : 11;
-    const len = (marker ?? "").length;
-    if (len === 0) return 0;
-    return r1(len * 0.55 * fs + 0.35 * fs);
-  }
 
   // src/features/paLabPrint.ts
   whenFeatureEnabled("paLabPrint", function() {
@@ -548,20 +541,6 @@ var __morbis_feature = (() => {
           const b = infoClean[r3 + 1];
           infoTbl += "<tr><td>" + esc(a2[0]) + "</td><td>:</td><td>" + esc(a2[1]) + "</td>" + (b ? "<td>" + esc(b[0]) + "</td><td>:</td><td>" + esc(b[1]) + "</td>" : "<td></td><td></td><td></td>") + "</tr>";
         }
-        const globalMaxMk = Math.max(
-          0,
-          ...sections.map(
-            (sec) => sec.bare || isCatatan(sec.title) ? 0 : Math.max(
-              0,
-              ...sec.items.map((x) => {
-                const mm = splitListMarker(x);
-                const boldAll = normTitle(sec.title) === "kesimpulan";
-                const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
-                return mm ? estimateMarkerPt(mm[0], fs) : 0;
-              })
-            )
-          )
-        );
         let hasilDoc = "";
         for (const s of sections) {
           if (isCatatan(s.title)) {
@@ -582,9 +561,7 @@ var __morbis_feature = (() => {
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
-            const baseHv = fs * 1.8;
-            const hv = (globalMaxMk > 0 ? Math.max(baseHv, globalMaxMk) : baseHv).toFixed(1);
-            const hang = "margin-left:" + hv + "pt;" + (mk ? "text-indent:-" + hv + "pt;" : "");
+            const hang = mk ? "margin-left:18pt;text-indent:-18pt;" : "";
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
@@ -613,102 +590,13 @@ var __morbis_feature = (() => {
           const mk = splitListMarker(it);
           if (mk) {
             const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
-            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span> <span>" + rest + "</span></div>";
+            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
           }
           return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
         return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
       }).join("");
-      function alignHanging(root = document) {
-        let blocks;
-        try {
-          blocks = Array.from(root.querySelectorAll(".section-isi:not(.section-isi-bare)"));
-        } catch {
-          return;
-        }
-        if (!blocks.length) return;
-        const data = [];
-        let globalFontPx = 12;
-        let globalMaxW = 0;
-        for (const block of blocks) {
-          let items;
-          try {
-            items = Array.from(block.querySelectorAll(":scope > .item-list"));
-          } catch {
-            items = Array.from(block.children).filter(
-              (c) => c.classList.contains("item-list")
-            );
-          }
-          let fontPx = 12;
-          try {
-            const fs = parseFloat(getComputedStyle(block).fontSize);
-            if (Number.isFinite(fs) && fs > 0) fontPx = fs;
-          } catch {
-          }
-          if (fontPx > globalFontPx) globalFontPx = fontPx;
-          const widths = /* @__PURE__ */ new Map();
-          for (const el of items) {
-            if (!el.classList.contains("has-marker")) continue;
-            const m = el.querySelector(".item-marker");
-            if (!m || !m.textContent) continue;
-            let w = 0;
-            try {
-              const range = document.createRange();
-              range.selectNodeContents(m);
-              const rects = Array.from(range.getClientRects()).filter(
-                (r) => r.width > 0.5
-              );
-              if (rects.length) w = Math.max(...rects.map((r) => r.width));
-            } catch {
-            }
-            if (w > 0) {
-              widths.set(el, w);
-              if (w > globalMaxW) globalMaxW = w;
-            }
-          }
-          data.push({ block, items, widths });
-        }
-        const basePad = globalFontPx * 1.8;
-        const targetPadPx = globalMaxW > 0 ? Math.max(basePad, globalMaxW) : basePad;
-        const pad = targetPadPx.toFixed(1) + "px";
-        const indent = (-targetPadPx).toFixed(1) + "px";
-        const markerW = globalMaxW > 0 ? globalMaxW.toFixed(1) + "px" : "";
-        for (const { block, items, widths } of data) {
-          try {
-            block.style.paddingLeft = pad;
-            for (const el of items) {
-              const html = el;
-              html.style.paddingLeft = "0px";
-              const marker = html.querySelector(".item-marker");
-              if (widths.has(el)) {
-                html.style.textIndent = indent;
-                if (marker) {
-                  marker.style.display = "inline-block";
-                  marker.style.minWidth = markerW;
-                }
-              } else {
-                html.style.textIndent = "0px";
-                if (marker) {
-                  marker.style.display = "";
-                  marker.style.minWidth = "";
-                }
-              }
-            }
-          } catch {
-          }
-        }
-      }
-      let alignT;
-      function alignHangingSoon() {
-        try {
-          window.clearTimeout(alignT);
-        } catch {
-        }
-        alignT = window.setTimeout(() => {
-          alignHanging();
-        }, 250);
-      }
       document.body.innerHTML = '<a href="' + esc(exportHref) + '" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">\u2699\uFE0F Gaya</button><div class="t-typo no-print" id="ext-pa-typo" hidden></div><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' + esc(logoSrc) + '" alt="Logo"></div><div class="kop-text">' + kopLines.slice(0, 3).map((l) => '<h1 class="kop-atas">' + esc(l) + "</h1>").join("") + '<div class="kop-alamat">' + addrLines.map((l) => esc(l)).join("<br>") + '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' + esc(judul) + '</div><div class="patient-info-container">' + infoHtml + '</div><div class="hasil-pa">' + hasilHtml + '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' + esc(thanks) + "</p><p>" + esc(dateLine) + "</p>" + (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : "") + '<p style="font-weight: bold; margin-bottom: 0;">' + esc(docName) + '</p><p style="margin-top: 2px;">' + esc(nip) + "</p></div></div></div>";
       bodyScripts.forEach((s) => document.body.appendChild(s));
       document.querySelector("#btn-word")?.addEventListener("click", (e) => {
@@ -732,7 +620,6 @@ var __morbis_feature = (() => {
             if (!gk || !fd || !typo[gk]) return;
             typo[gk][fd] = Number(input.value);
             applyTypo();
-            alignHangingSoon();
             const out = panel.querySelector(`output[data-o="${gk}-${fd}"]`);
             if (out) out.textContent = input.value + (fd === "fs" ? "pt" : "");
           });
@@ -1047,24 +934,28 @@ var __morbis_feature = (() => {
             line-height: var(--pa-judul-lh, 1.2);
         }
 
-        /* Base gutter di CONTAINER (.section-isi): semua item (polos maupun
-           ber-marker, baris pertama maupun lanjutan) berbagi kolom teks
-           yang sama; hanya marker yang menggantung di gutter. */
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
-            padding-left: 1.8em;
         }
 
-        /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi */
+        /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
+           (permintaan user). Default sama dengan isi agar tampilan
+           awal tidak berubah. */
         .section-kesimpulan {
             font-size: var(--pa-kesimpulan-fs, 5pt);
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
-        /* Hanya marker yang menggantung \u2014 padding sudah disediakan container. */
+        /* Hanging indent: baris bernomor/berpoin \u2014 penanda di kolom
+           kiri tetap, teks lanjutan sejajar di bawah teks. */
         .item-list.has-marker {
-            text-indent: -1.8em;
+            display: flex;
+            gap: 6px;
+        }
+
+        .item-marker {
+            flex-shrink: 0;
         }
 
         .item-list {
@@ -1183,19 +1074,6 @@ var __morbis_feature = (() => {
       `;
         document.head.appendChild(s);
       }
-      alignHanging();
-      try {
-        if (document.fonts?.ready) {
-          void document.fonts.ready.then(() => {
-            alignHanging();
-          });
-        }
-      } catch {
-      }
-      window.addEventListener("resize", alignHangingSoon);
-      window.addEventListener("beforeprint", () => {
-        alignHanging();
-      });
     }
     const t0 = Date.now();
     const iv = window.setInterval(() => {

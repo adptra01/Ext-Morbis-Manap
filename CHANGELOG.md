@@ -16,6 +16,8 @@
 
 ### 🐛 fix
 
+- **pa-print** — 2-pass global max marker width & fix marker min-width (1. & XIII. sejajar sempurna) (`457ffd4`)
+- **pa-print** — gutter container-level alignment (semua item polos & ber-marker rata vertikal) (`0631c96`)
 - **pa-print** — gutter hanging indent terukur per section (XIII. sejajar) (`747524c`)
 - **pa-print** — gutter hanging indent di container (teks sejajar vertikal) (`dfcb491`)
 
@@ -1823,4 +1825,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 747524c0a71ec490c259117c5d82e40798e9cd03 -->
+<!-- changelog-upto: 457ffd4bba630787e75133c96e04b9993a224faf -->
