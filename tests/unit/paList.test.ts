@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { splitListMarker } from '../../src/features/shared/paList.js';
+import { splitListMarker, hangingFor, estimateMarkerPt } from '../../src/features/shared/paList.js';
 
 describe('paList — splitListMarker', () => {
   it('mengenali penomoran angka', () => {
@@ -27,5 +27,31 @@ describe('paList — splitListMarker', () => {
     expect(splitListMarker('')).toBeNull();
     expect(splitListMarker('1.')).toBeNull();
     expect(splitListMarker('-')).toBeNull();
+  });
+});
+
+describe('paList — hangingFor (gutter terukur per section)', () => {
+  it('padding = marker + gap, indent = negatifnya (sejajar vertikal)', () => {
+    expect(hangingFor(20, 12)).toEqual({ padPx: 24.2, indentPx: -24.2 });
+    expect(hangingFor(0, 12)).toEqual({ padPx: 4.2, indentPx: -4.2 });
+  });
+
+  it('tahan input rusak (NaN/nol/negatif)', () => {
+    expect(hangingFor(NaN, 12)).toEqual({ padPx: 4.2, indentPx: -4.2 });
+    expect(hangingFor(-5, 0)).toEqual({ padPx: 4.2, indentPx: -4.2 });
+  });
+});
+
+describe('paList — estimateMarkerPt (export Word tanpa DOM)', () => {
+  it('proporsional panjang marker × font-size', () => {
+    const pendek = estimateMarkerPt('1.', 5);
+    const panjang = estimateMarkerPt('XIII.', 5);
+    expect(panjang).toBeGreaterThan(pendek);
+    expect(pendek).toBeGreaterThan(0);
+  });
+
+  it('kosong/rusak → 0', () => {
+    expect(estimateMarkerPt('', 5)).toBe(0);
+    expect(estimateMarkerPt('1.', NaN)).toBeGreaterThan(0);
   });
 });

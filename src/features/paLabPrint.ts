@@ -9,7 +9,7 @@ import {
   TYPO_GROUPS,
   type PaTypo,
 } from './shared/paTypo.js';
-import { splitListMarker } from './shared/paList.js';
+import { splitListMarker, hangingFor, estimateMarkerPt } from './shared/paList.js';
 whenFeatureEnabled('paLabPrint', function () {
   'use strict';
 
@@ -678,12 +678,20 @@ whenFeatureEnabled('paLabPrint', function () {
         const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
           const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
-          // Gutter di SEMUA item (margin-left), hanya ber-marker yang
-          // ditarik (text-indent) — teks polos & lanjutan rata di kolom
-          // yang sama, marker menggantung di gutter.
+          // Gutter SERAGAM per section = marker terpanjang (estimasi pt):
+          // semua item dapat margin-left yang sama, hanya ber-marker yang
+          // ditarik. Teks polos & lanjutan rata di satu kolom vertikal.
           const mk = splitListMarker(it);
-          const hv = (fs * 1.8).toFixed(1);
-          const hang = 'margin-left:' + hv + 'pt;' + (mk ? 'text-indent:-' + hv + 'pt;' : '');
+          const maxMk = Math.max(
+            0,
+            ...s.items.map((x) => {
+              const mm = splitListMarker(x);
+              return mm ? estimateMarkerPt(mm[0], fs) : 0;
+            }),
+          );
+          const hv = maxMk > 0 ? maxMk.toFixed(1) : '0';
+          const hang =
+            'margin-left:' + hv + 'pt;' + (mk && maxMk > 0 ? 'text-indent:-' + hv + 'pt;' : '');
           hasilDoc +=
             '<p style="margin:' +
             (s.para.includes(i) ? '14pt' : '0') +
@@ -807,11 +815,25 @@ whenFeatureEnabled('paLabPrint', function () {
           s.items
             .map((it, i) => {
               const paraCls = s.para.includes(i) ? ' item-para' : '';
-              const hangCls = splitListMarker(it) ? ' has-marker' : '';
+              const mk = splitListMarker(it);
+              // Marker di span sendiri agar lebarnya bisa diukur untuk
+              // hanging indent presisi (alignHanging). Tanpa marker =
+              // div polos seperti sebelumnya.
+              if (mk) {
+                const rest = boldAll ? '<strong>' + esc(mk[1]) + '</strong>' : fmtItem(mk[1]);
+                return (
+                  '<div class="item-list has-marker' +
+                  paraCls +
+                  '"><span class="item-marker">' +
+                  esc(mk[0]) +
+                  '</span> <span>' +
+                  rest +
+                  '</span></div>'
+                );
+              }
               return (
                 '<div class="item-list' +
                 paraCls +
-                hangCls +
                 '">' +
                 (boldAll ? '<strong>' + esc(it) + '</strong>' : fmtItem(it)) +
                 '</div>'
@@ -823,6 +845,88 @@ whenFeatureEnabled('paLabPrint', function () {
         return '<div class="section-judul">' + esc(s.title) + '</div>' + isi;
       })
       .join('');
+
+    /**
+     * Hanging indent PRESISI per section: ukur marker terlebar di section
+     * itu (Range API, px aktual setelah font ter-render), samakan gutter
+     * semua item di section yang sama. Hasil: SEMUA teks (polos maupun
+     * lanjutan, marker pendek/panjang spt "XIII.") mulai di SATU kolom
+     * vertikal; marker menggantung di gutter. Item polos ikut digeser ke
+     * kolom itu agar rata dengan item ber-marker.
+     *
+     * Dipanggil: setelah render + styles, document.fonts.ready, tiap
+     * geser slider (font berubah), resize debounced, beforeprint.
+     * Aman diulang (idempoten) dan tak melempar.
+     */
+    function alignHanging(root: ParentNode = document): void {
+      let blocks: Element[];
+      try {
+        blocks = Array.from(root.querySelectorAll('.section-isi'));
+      } catch {
+        return;
+      }
+      for (const block of blocks) {
+        let items: Element[];
+        try {
+          items = Array.from(block.querySelectorAll(':scope > .item-list'));
+        } catch {
+          items = Array.from(block.children).filter((c) => c.classList.contains('item-list'));
+        }
+        const marked = items.filter((el) => el.classList.contains('has-marker'));
+        if (!marked.length) continue;
+        let fontPx = 12;
+        try {
+          const fs = parseFloat(getComputedStyle(block).fontSize);
+          if (Number.isFinite(fs) && fs > 0) fontPx = fs;
+        } catch {
+          /* abaikan */
+        }
+        let maxW = 0;
+        const widths = new Map<Element, number>();
+        for (const el of marked) {
+          const m = el.querySelector('.item-marker');
+          if (!m || !m.textContent) continue;
+          let w = 0;
+          try {
+            const range = document.createRange();
+            range.selectNodeContents(m);
+            const rects = Array.from(range.getClientRects()).filter((r) => r.width > 0.5);
+            if (rects.length) w = Math.max(...rects.map((r) => r.width));
+          } catch {
+            /* abaikan */
+          }
+          if (w > 0) {
+            widths.set(el, w);
+            if (w > maxW) maxW = w;
+          }
+        }
+        if (maxW <= 0) continue;
+        const { padPx } = hangingFor(maxW, fontPx);
+        const pad = padPx.toFixed(1) + 'px';
+        const indent = (-padPx).toFixed(1) + 'px';
+        for (const el of items) {
+          try {
+            const html = el as HTMLElement;
+            html.style.paddingLeft = pad;
+            html.style.textIndent = widths.has(el) ? indent : '0px';
+          } catch {
+            /* abaikan */
+          }
+        }
+      }
+    }
+
+    let alignT: number | undefined;
+    function alignHangingSoon(): void {
+      try {
+        window.clearTimeout(alignT);
+      } catch {
+        /* abaikan */
+      }
+      alignT = window.setTimeout(() => {
+        alignHanging();
+      }, 250);
+    }
 
     document.body.innerHTML =
       '<a href="' +
@@ -943,6 +1047,7 @@ whenFeatureEnabled('paLabPrint', function () {
           if (!gk || !fd || !typo[gk]) return;
           typo[gk][fd] = Number(input.value);
           applyTypo();
+          alignHangingSoon(); // font berubah -> lebar marker berubah
           const out = panel.querySelector<HTMLElement>(`output[data-o="${gk}-${fd}"]`);
           if (out) out.textContent = input.value + (fd === 'fs' ? 'pt' : '');
         });
@@ -1262,15 +1367,13 @@ whenFeatureEnabled('paLabPrint', function () {
             line-height: var(--pa-judul-lh, 1.2);
         }
 
-        /* Gutter marker di CONTAINER (.section-isi), bukan di item:
-           semua teks (polos maupun lanjutan) mulai di kolom yang sama;
-           hanya baris pertama item ber-marker yang ditarik ke gutter.
-           Tanpa ini, baris lanjutan selalu tergeser ke kanan dibanding
-           item polos. */
+        /* Gutter hanging indent dihitung PER SECTION via JS terukur
+           (alignHanging -> inline style), BUKAN fix 1.8em: marker
+           sepanjang apa pun ("1." s/d "XIII.") sejajar sempurna.
+           Aturan di bawah hanya fallback bila pengukuran belum jalan. */
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
-            padding-left: 1.8em;
         }
 
         /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
@@ -1281,9 +1384,10 @@ whenFeatureEnabled('paLabPrint', function () {
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
-        /* Item ber-marker: hanya baris pertama (marker) yang ditarik
-           ke gutter; teks + baris lanjutan tetap di kolom container. */
+        /* Fallback pra-pengukuran: gutter fix 1.8em (ditimpa inline
+           presisi oleh alignHanging segera setelah render). */
         .item-list.has-marker {
+            padding-left: 1.8em;
             text-indent: -1.8em;
         }
 
@@ -1403,6 +1507,24 @@ whenFeatureEnabled('paLabPrint', function () {
       `;
       document.head.appendChild(s);
     }
+
+    // Sejajarkan gutter hanging indent setelah styles terpasang; ulangi
+    // saat font selesai dimuat (metrik berubah), saat resize/zoom, dan
+    // sebelum cetak.
+    alignHanging();
+    try {
+      if (document.fonts?.ready) {
+        void document.fonts.ready.then(() => {
+          alignHanging();
+        });
+      }
+    } catch {
+      /* abaikan */
+    }
+    window.addEventListener('resize', alignHangingSoon);
+    window.addEventListener('beforeprint', () => {
+      alignHanging();
+    });
   }
 
   // Jalankan segera jika tanda sudah ada; jika belum, polling sebentar.

@@ -178,6 +178,19 @@ var __morbis_feature = (() => {
     if (rest === "") return null;
     return [m[1], rest];
   }
+  var r1 = (n) => Math.round(n * 10) / 10;
+  function hangingFor(markerWidthPx, fontPx, gapEm = 0.35) {
+    const w = Number.isFinite(markerWidthPx) && markerWidthPx > 0 ? markerWidthPx : 0;
+    const f = Number.isFinite(fontPx) && fontPx > 0 ? fontPx : 12;
+    const pad = r1(w + gapEm * f);
+    return { padPx: pad, indentPx: -pad };
+  }
+  function estimateMarkerPt(marker, fsPt) {
+    const fs = Number.isFinite(fsPt) && fsPt > 0 ? fsPt : 11;
+    const len = (marker ?? "").length;
+    if (len === 0) return 0;
+    return r1(len * 0.55 * fs + 0.35 * fs);
+  }
 
   // src/features/paLabPrint.ts
   whenFeatureEnabled("paLabPrint", function() {
@@ -561,8 +574,15 @@ var __morbis_feature = (() => {
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
-            const hv = (fs * 1.8).toFixed(1);
-            const hang = "margin-left:" + hv + "pt;" + (mk ? "text-indent:-" + hv + "pt;" : "");
+            const maxMk = Math.max(
+              0,
+              ...s.items.map((x) => {
+                const mm = splitListMarker(x);
+                return mm ? estimateMarkerPt(mm[0], fs) : 0;
+              })
+            );
+            const hv = maxMk > 0 ? maxMk.toFixed(1) : "0";
+            const hang = "margin-left:" + hv + "pt;" + (mk && maxMk > 0 ? "text-indent:-" + hv + "pt;" : "");
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
@@ -588,12 +608,80 @@ var __morbis_feature = (() => {
         const boldAll = normTitle(s.title) === "kesimpulan";
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (boldAll ? " section-kesimpulan" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
-          const hangCls = splitListMarker(it) ? " has-marker" : "";
-          return '<div class="item-list' + paraCls + hangCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
+          const mk = splitListMarker(it);
+          if (mk) {
+            const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
+            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span> <span>" + rest + "</span></div>";
+          }
+          return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
         return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
       }).join("");
+      function alignHanging(root = document) {
+        let blocks;
+        try {
+          blocks = Array.from(root.querySelectorAll(".section-isi"));
+        } catch {
+          return;
+        }
+        for (const block of blocks) {
+          let items;
+          try {
+            items = Array.from(block.querySelectorAll(":scope > .item-list"));
+          } catch {
+            items = Array.from(block.children).filter((c) => c.classList.contains("item-list"));
+          }
+          const marked = items.filter((el) => el.classList.contains("has-marker"));
+          if (!marked.length) continue;
+          let fontPx = 12;
+          try {
+            const fs = parseFloat(getComputedStyle(block).fontSize);
+            if (Number.isFinite(fs) && fs > 0) fontPx = fs;
+          } catch {
+          }
+          let maxW = 0;
+          const widths = /* @__PURE__ */ new Map();
+          for (const el of marked) {
+            const m = el.querySelector(".item-marker");
+            if (!m || !m.textContent) continue;
+            let w = 0;
+            try {
+              const range = document.createRange();
+              range.selectNodeContents(m);
+              const rects = Array.from(range.getClientRects()).filter((r) => r.width > 0.5);
+              if (rects.length) w = Math.max(...rects.map((r) => r.width));
+            } catch {
+            }
+            if (w > 0) {
+              widths.set(el, w);
+              if (w > maxW) maxW = w;
+            }
+          }
+          if (maxW <= 0) continue;
+          const { padPx } = hangingFor(maxW, fontPx);
+          const pad = padPx.toFixed(1) + "px";
+          const indent = (-padPx).toFixed(1) + "px";
+          for (const el of items) {
+            try {
+              const html = el;
+              html.style.paddingLeft = pad;
+              html.style.textIndent = widths.has(el) ? indent : "0px";
+            } catch {
+            }
+          }
+        }
+      }
+      let alignT;
+      function alignHangingSoon() {
+        try {
+          window.clearTimeout(alignT);
+        } catch {
+        }
+        alignT = window.setTimeout(() => {
+          alignHanging();
+        }, 250);
+      }
       document.body.innerHTML = '<a href="' + esc(exportHref) + '" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">\u2699\uFE0F Gaya</button><div class="t-typo no-print" id="ext-pa-typo" hidden></div><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' + esc(logoSrc) + '" alt="Logo"></div><div class="kop-text">' + kopLines.slice(0, 3).map((l) => '<h1 class="kop-atas">' + esc(l) + "</h1>").join("") + '<div class="kop-alamat">' + addrLines.map((l) => esc(l)).join("<br>") + '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' + esc(judul) + '</div><div class="patient-info-container">' + infoHtml + '</div><div class="hasil-pa">' + hasilHtml + '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' + esc(thanks) + "</p><p>" + esc(dateLine) + "</p>" + (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : "") + '<p style="font-weight: bold; margin-bottom: 0;">' + esc(docName) + '</p><p style="margin-top: 2px;">' + esc(nip) + "</p></div></div></div>";
       bodyScripts.forEach((s) => document.body.appendChild(s));
       document.querySelector("#btn-word")?.addEventListener("click", (e) => {
@@ -617,6 +705,7 @@ var __morbis_feature = (() => {
             if (!gk || !fd || !typo[gk]) return;
             typo[gk][fd] = Number(input.value);
             applyTypo();
+            alignHangingSoon();
             const out = panel.querySelector(`output[data-o="${gk}-${fd}"]`);
             if (out) out.textContent = input.value + (fd === "fs" ? "pt" : "");
           });
@@ -931,15 +1020,13 @@ var __morbis_feature = (() => {
             line-height: var(--pa-judul-lh, 1.2);
         }
 
-        /* Gutter marker di CONTAINER (.section-isi), bukan di item:
-           semua teks (polos maupun lanjutan) mulai di kolom yang sama;
-           hanya baris pertama item ber-marker yang ditarik ke gutter.
-           Tanpa ini, baris lanjutan selalu tergeser ke kanan dibanding
-           item polos. */
+        /* Gutter hanging indent dihitung PER SECTION via JS terukur
+           (alignHanging -> inline style), BUKAN fix 1.8em: marker
+           sepanjang apa pun ("1." s/d "XIII.") sejajar sempurna.
+           Aturan di bawah hanya fallback bila pengukuran belum jalan. */
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
-            padding-left: 1.8em;
         }
 
         /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
@@ -950,9 +1037,10 @@ var __morbis_feature = (() => {
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
-        /* Item ber-marker: hanya baris pertama (marker) yang ditarik
-           ke gutter; teks + baris lanjutan tetap di kolom container. */
+        /* Fallback pra-pengukuran: gutter fix 1.8em (ditimpa inline
+           presisi oleh alignHanging segera setelah render). */
         .item-list.has-marker {
+            padding-left: 1.8em;
             text-indent: -1.8em;
         }
 
@@ -1072,6 +1160,19 @@ var __morbis_feature = (() => {
       `;
         document.head.appendChild(s);
       }
+      alignHanging();
+      try {
+        if (document.fonts?.ready) {
+          void document.fonts.ready.then(() => {
+            alignHanging();
+          });
+        }
+      } catch {
+      }
+      window.addEventListener("resize", alignHangingSoon);
+      window.addEventListener("beforeprint", () => {
+        alignHanging();
+      });
     }
     const t0 = Date.now();
     const iv = window.setInterval(() => {
