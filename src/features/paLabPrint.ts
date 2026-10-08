@@ -9,7 +9,7 @@ import {
   TYPO_GROUPS,
   type PaTypo,
 } from './shared/paTypo.js';
-import { splitListMarker, hangingFor, estimateMarkerPt } from './shared/paList.js';
+import { splitListMarker, estimateMarkerPt } from './shared/paList.js';
 whenFeatureEnabled('paLabPrint', function () {
   'use strict';
 
@@ -640,6 +640,22 @@ whenFeatureEnabled('paLabPrint', function () {
             : '<td></td><td></td><td></td>') +
           '</tr>';
       }
+      const globalMaxMk = Math.max(
+        0,
+        ...sections.map((sec) =>
+          sec.bare || isCatatan(sec.title)
+            ? 0
+            : Math.max(
+                0,
+                ...sec.items.map((x) => {
+                  const mm = splitListMarker(x);
+                  const boldAll = normTitle(sec.title) === 'kesimpulan';
+                  const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
+                  return mm ? estimateMarkerPt(mm[0], fs) : 0;
+                }),
+              ),
+        ),
+      );
       let hasilDoc = '';
       for (const s of sections) {
         if (isCatatan(s.title)) {
@@ -678,19 +694,11 @@ whenFeatureEnabled('paLabPrint', function () {
         const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
           const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
-          // Gutter SERAGAM per section = max(base 1.8em, marker terpanjang):
-          // semua item dapat margin-left yang sama, hanya ber-marker yang
-          // ditarik. Teks polos & lanjutan rata di satu kolom vertikal.
+          // Gutter SERAGAM global = max(base 1.8em, global marker terpanjang):
+          // semua item di seluruh section dapat margin-left yang sama.
           const mk = splitListMarker(it);
           const baseHv = fs * 1.8;
-          const maxMk = Math.max(
-            0,
-            ...s.items.map((x) => {
-              const mm = splitListMarker(x);
-              return mm ? estimateMarkerPt(mm[0], fs) : 0;
-            }),
-          );
-          const hv = (maxMk > 0 ? Math.max(baseHv, maxMk) : baseHv).toFixed(1);
+          const hv = (globalMaxMk > 0 ? Math.max(baseHv, globalMaxMk) : baseHv).toFixed(1);
           const hang = 'margin-left:' + hv + 'pt;' + (mk ? 'text-indent:-' + hv + 'pt;' : '');
           hasilDoc +=
             '<p style="margin:' +
@@ -858,37 +866,36 @@ whenFeatureEnabled('paLabPrint', function () {
      * geser slider (font berubah), resize debounced, beforeprint.
      * Aman diulang (idempoten) dan tak melempar.
      */
+    /**
+     * Hanging indent GLOBAL seluruh halaman:
+     * 1. Ukur maxW marker di SELURUH section (agar kolom teks Makroskopik,
+     *    Mikroskopik, Kesimpulan dll. persis sejajar vertikal).
+     * 2. Set minWidth pada .item-marker = globalMaxW (agar teks setelah marker
+     *    seperti "1." dan "XIII." mulai di kolom yang SAMA).
+     */
     function alignHanging(root: ParentNode = document): void {
       let blocks: Element[];
       try {
-        blocks = Array.from(root.querySelectorAll('.section-isi'));
+        blocks = Array.from(root.querySelectorAll('.section-isi:not(.section-isi-bare)'));
       } catch {
         return;
       }
+      if (!blocks.length) return;
+
+      const data: Array<{
+        block: HTMLElement;
+        items: HTMLElement[];
+        widths: Map<Element, number>;
+      }> = [];
+      let globalFontPx = 12;
+      let globalMaxW = 0;
+
       for (const block of blocks) {
-        if (block.classList.contains('section-isi-bare')) continue;
         let items: Element[];
         try {
           items = Array.from(block.querySelectorAll(':scope > .item-list'));
         } catch {
           items = Array.from(block.children).filter((c) => c.classList.contains('item-list'));
-        }
-        const resetBlock = (): void => {
-          try {
-            (block as HTMLElement).style.paddingLeft = '';
-            for (const el of items) {
-              const html = el as HTMLElement;
-              html.style.paddingLeft = '0px';
-              html.style.textIndent = '0px';
-            }
-          } catch {
-            /* abaikan */
-          }
-        };
-        const marked = items.filter((el) => el.classList.contains('has-marker'));
-        if (!marked.length) {
-          resetBlock();
-          continue;
         }
         let fontPx = 12;
         try {
@@ -897,9 +904,11 @@ whenFeatureEnabled('paLabPrint', function () {
         } catch {
           /* abaikan */
         }
-        let maxW = 0;
+        if (fontPx > globalFontPx) globalFontPx = fontPx;
+
         const widths = new Map<Element, number>();
-        for (const el of marked) {
+        for (const el of items) {
+          if (!el.classList.contains('has-marker')) continue;
           const m = el.querySelector('.item-marker');
           if (!m || !m.textContent) continue;
           let w = 0;
@@ -913,22 +922,38 @@ whenFeatureEnabled('paLabPrint', function () {
           }
           if (w > 0) {
             widths.set(el, w);
-            if (w > maxW) maxW = w;
+            if (w > globalMaxW) globalMaxW = w;
           }
         }
-        if (maxW <= 0) {
-          resetBlock();
-          continue;
-        }
-        const { padPx } = hangingFor(maxW, fontPx);
-        const pad = padPx.toFixed(1) + 'px';
-        const indent = (-padPx).toFixed(1) + 'px';
+        data.push({ block: block as HTMLElement, items: items as HTMLElement[], widths });
+      }
+
+      const basePad = globalFontPx * 1.8;
+      const targetPadPx = globalMaxW > 0 ? Math.max(basePad, globalMaxW) : basePad;
+      const pad = targetPadPx.toFixed(1) + 'px';
+      const indent = (-targetPadPx).toFixed(1) + 'px';
+      const markerW = globalMaxW > 0 ? globalMaxW.toFixed(1) + 'px' : '';
+
+      for (const { block, items, widths } of data) {
         try {
-          (block as HTMLElement).style.paddingLeft = pad;
+          block.style.paddingLeft = pad;
           for (const el of items) {
-            const html = el as HTMLElement;
+            const html = el;
             html.style.paddingLeft = '0px';
-            html.style.textIndent = widths.has(el) ? indent : '0px';
+            const marker = html.querySelector('.item-marker') as HTMLElement | null;
+            if (widths.has(el)) {
+              html.style.textIndent = indent;
+              if (marker) {
+                marker.style.display = 'inline-block';
+                marker.style.minWidth = markerW;
+              }
+            } else {
+              html.style.textIndent = '0px';
+              if (marker) {
+                marker.style.display = '';
+                marker.style.minWidth = '';
+              }
+            }
           }
         } catch {
           /* abaikan */

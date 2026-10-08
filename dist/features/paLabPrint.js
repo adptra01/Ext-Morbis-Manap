@@ -179,12 +179,6 @@ var __morbis_feature = (() => {
     return [m[1], rest];
   }
   var r1 = (n) => Math.round(n * 10) / 10;
-  function hangingFor(markerWidthPx, fontPx, gapEm = 0.35) {
-    const w = Number.isFinite(markerWidthPx) && markerWidthPx > 0 ? markerWidthPx : 0;
-    const f = Number.isFinite(fontPx) && fontPx > 0 ? fontPx : 12;
-    const pad = r1(w + gapEm * f);
-    return { padPx: pad, indentPx: -pad };
-  }
   function estimateMarkerPt(marker, fsPt) {
     const fs = Number.isFinite(fsPt) && fsPt > 0 ? fsPt : 11;
     const len = (marker ?? "").length;
@@ -554,6 +548,20 @@ var __morbis_feature = (() => {
           const b = infoClean[r3 + 1];
           infoTbl += "<tr><td>" + esc(a2[0]) + "</td><td>:</td><td>" + esc(a2[1]) + "</td>" + (b ? "<td>" + esc(b[0]) + "</td><td>:</td><td>" + esc(b[1]) + "</td>" : "<td></td><td></td><td></td>") + "</tr>";
         }
+        const globalMaxMk = Math.max(
+          0,
+          ...sections.map(
+            (sec) => sec.bare || isCatatan(sec.title) ? 0 : Math.max(
+              0,
+              ...sec.items.map((x) => {
+                const mm = splitListMarker(x);
+                const boldAll = normTitle(sec.title) === "kesimpulan";
+                const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
+                return mm ? estimateMarkerPt(mm[0], fs) : 0;
+              })
+            )
+          )
+        );
         let hasilDoc = "";
         for (const s of sections) {
           if (isCatatan(s.title)) {
@@ -575,14 +583,7 @@ var __morbis_feature = (() => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
             const baseHv = fs * 1.8;
-            const maxMk = Math.max(
-              0,
-              ...s.items.map((x) => {
-                const mm = splitListMarker(x);
-                return mm ? estimateMarkerPt(mm[0], fs) : 0;
-              })
-            );
-            const hv = (maxMk > 0 ? Math.max(baseHv, maxMk) : baseHv).toFixed(1);
+            const hv = (globalMaxMk > 0 ? Math.max(baseHv, globalMaxMk) : baseHv).toFixed(1);
             const hang = "margin-left:" + hv + "pt;" + (mk ? "text-indent:-" + hv + "pt;" : "");
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
@@ -622,33 +623,22 @@ var __morbis_feature = (() => {
       function alignHanging(root = document) {
         let blocks;
         try {
-          blocks = Array.from(root.querySelectorAll(".section-isi"));
+          blocks = Array.from(root.querySelectorAll(".section-isi:not(.section-isi-bare)"));
         } catch {
           return;
         }
+        if (!blocks.length) return;
+        const data = [];
+        let globalFontPx = 12;
+        let globalMaxW = 0;
         for (const block of blocks) {
-          if (block.classList.contains("section-isi-bare")) continue;
           let items;
           try {
             items = Array.from(block.querySelectorAll(":scope > .item-list"));
           } catch {
-            items = Array.from(block.children).filter((c) => c.classList.contains("item-list"));
-          }
-          const resetBlock = () => {
-            try {
-              block.style.paddingLeft = "";
-              for (const el of items) {
-                const html = el;
-                html.style.paddingLeft = "0px";
-                html.style.textIndent = "0px";
-              }
-            } catch {
-            }
-          };
-          const marked = items.filter((el) => el.classList.contains("has-marker"));
-          if (!marked.length) {
-            resetBlock();
-            continue;
+            items = Array.from(block.children).filter(
+              (c) => c.classList.contains("item-list")
+            );
           }
           let fontPx = 12;
           try {
@@ -656,37 +646,54 @@ var __morbis_feature = (() => {
             if (Number.isFinite(fs) && fs > 0) fontPx = fs;
           } catch {
           }
-          let maxW = 0;
+          if (fontPx > globalFontPx) globalFontPx = fontPx;
           const widths = /* @__PURE__ */ new Map();
-          for (const el of marked) {
+          for (const el of items) {
+            if (!el.classList.contains("has-marker")) continue;
             const m = el.querySelector(".item-marker");
             if (!m || !m.textContent) continue;
             let w = 0;
             try {
               const range = document.createRange();
               range.selectNodeContents(m);
-              const rects = Array.from(range.getClientRects()).filter((r) => r.width > 0.5);
+              const rects = Array.from(range.getClientRects()).filter(
+                (r) => r.width > 0.5
+              );
               if (rects.length) w = Math.max(...rects.map((r) => r.width));
             } catch {
             }
             if (w > 0) {
               widths.set(el, w);
-              if (w > maxW) maxW = w;
+              if (w > globalMaxW) globalMaxW = w;
             }
           }
-          if (maxW <= 0) {
-            resetBlock();
-            continue;
-          }
-          const { padPx } = hangingFor(maxW, fontPx);
-          const pad = padPx.toFixed(1) + "px";
-          const indent = (-padPx).toFixed(1) + "px";
+          data.push({ block, items, widths });
+        }
+        const basePad = globalFontPx * 1.8;
+        const targetPadPx = globalMaxW > 0 ? Math.max(basePad, globalMaxW) : basePad;
+        const pad = targetPadPx.toFixed(1) + "px";
+        const indent = (-targetPadPx).toFixed(1) + "px";
+        const markerW = globalMaxW > 0 ? globalMaxW.toFixed(1) + "px" : "";
+        for (const { block, items, widths } of data) {
           try {
             block.style.paddingLeft = pad;
             for (const el of items) {
               const html = el;
               html.style.paddingLeft = "0px";
-              html.style.textIndent = widths.has(el) ? indent : "0px";
+              const marker = html.querySelector(".item-marker");
+              if (widths.has(el)) {
+                html.style.textIndent = indent;
+                if (marker) {
+                  marker.style.display = "inline-block";
+                  marker.style.minWidth = markerW;
+                }
+              } else {
+                html.style.textIndent = "0px";
+                if (marker) {
+                  marker.style.display = "";
+                  marker.style.minWidth = "";
+                }
+              }
             }
           } catch {
           }
