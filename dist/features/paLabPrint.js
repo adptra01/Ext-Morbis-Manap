@@ -574,6 +574,7 @@ var __morbis_feature = (() => {
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
+            const baseHv = fs * 1.8;
             const maxMk = Math.max(
               0,
               ...s.items.map((x) => {
@@ -581,8 +582,8 @@ var __morbis_feature = (() => {
                 return mm ? estimateMarkerPt(mm[0], fs) : 0;
               })
             );
-            const hv = maxMk > 0 ? maxMk.toFixed(1) : "0";
-            const hang = "margin-left:" + hv + "pt;" + (mk && maxMk > 0 ? "text-indent:-" + hv + "pt;" : "");
+            const hv = (maxMk > 0 ? Math.max(baseHv, maxMk) : baseHv).toFixed(1);
+            const hang = "margin-left:" + hv + "pt;" + (mk ? "text-indent:-" + hv + "pt;" : "");
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
@@ -626,14 +627,29 @@ var __morbis_feature = (() => {
           return;
         }
         for (const block of blocks) {
+          if (block.classList.contains("section-isi-bare")) continue;
           let items;
           try {
             items = Array.from(block.querySelectorAll(":scope > .item-list"));
           } catch {
             items = Array.from(block.children).filter((c) => c.classList.contains("item-list"));
           }
+          const resetBlock = () => {
+            try {
+              block.style.paddingLeft = "";
+              for (const el of items) {
+                const html = el;
+                html.style.paddingLeft = "0px";
+                html.style.textIndent = "0px";
+              }
+            } catch {
+            }
+          };
           const marked = items.filter((el) => el.classList.contains("has-marker"));
-          if (!marked.length) continue;
+          if (!marked.length) {
+            resetBlock();
+            continue;
+          }
           let fontPx = 12;
           try {
             const fs = parseFloat(getComputedStyle(block).fontSize);
@@ -658,17 +674,21 @@ var __morbis_feature = (() => {
               if (w > maxW) maxW = w;
             }
           }
-          if (maxW <= 0) continue;
+          if (maxW <= 0) {
+            resetBlock();
+            continue;
+          }
           const { padPx } = hangingFor(maxW, fontPx);
           const pad = padPx.toFixed(1) + "px";
           const indent = (-padPx).toFixed(1) + "px";
-          for (const el of items) {
-            try {
+          try {
+            block.style.paddingLeft = pad;
+            for (const el of items) {
               const html = el;
-              html.style.paddingLeft = pad;
+              html.style.paddingLeft = "0px";
               html.style.textIndent = widths.has(el) ? indent : "0px";
-            } catch {
             }
+          } catch {
           }
         }
       }
@@ -1020,27 +1040,23 @@ var __morbis_feature = (() => {
             line-height: var(--pa-judul-lh, 1.2);
         }
 
-        /* Gutter hanging indent dihitung PER SECTION via JS terukur
-           (alignHanging -> inline style), BUKAN fix 1.8em: marker
-           sepanjang apa pun ("1." s/d "XIII.") sejajar sempurna.
-           Aturan di bawah hanya fallback bila pengukuran belum jalan. */
+        /* Base gutter di CONTAINER (.section-isi): semua item (polos maupun
+           ber-marker, baris pertama maupun lanjutan) berbagi kolom teks
+           yang sama; hanya marker yang menggantung di gutter. */
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
+            padding-left: 1.8em;
         }
 
-        /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
-           (permintaan user). Default sama dengan isi agar tampilan
-           awal tidak berubah. */
+        /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi */
         .section-kesimpulan {
             font-size: var(--pa-kesimpulan-fs, 5pt);
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
-        /* Fallback pra-pengukuran: gutter fix 1.8em (ditimpa inline
-           presisi oleh alignHanging segera setelah render). */
+        /* Hanya marker yang menggantung \u2014 padding sudah disediakan container. */
         .item-list.has-marker {
-            padding-left: 1.8em;
             text-indent: -1.8em;
         }
 

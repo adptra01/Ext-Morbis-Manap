@@ -14,6 +14,11 @@
 - **pa-print** — spasi baris bisa sampai 0.5 (lebih rapat) (`ce48d09`)
 - **pa-print** — hanging indent poin + grup gaya Kesimpulan terpisah (`2f792ba`)
 
+### 🐛 fix
+
+- **pa-print** — gutter hanging indent terukur per section (XIII. sejajar) (`747524c`)
+- **pa-print** — gutter hanging indent di container (teks sejajar vertikal) (`dfcb491`)
+
 ## 2026-10-07
 
 ### ✨ feat
@@ -1818,4 +1823,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ce48d09d4c3bf5a36153877b6d36955d1e0aceb4 -->
+<!-- changelog-upto: 747524c0a71ec490c259117c5d82e40798e9cd03 -->
