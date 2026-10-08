@@ -43,7 +43,7 @@ describe('paTypo — sanitasi & default', () => {
   });
 
   it('clamp batas + parsial merge', () => {
-    expect(sanitizeTypo({ isi: { fs: 99, lh: 0 } }).isi).toEqual({ fs: 24, lh: 1 });
+    expect(sanitizeTypo({ isi: { fs: 99, lh: 0 } }).isi).toEqual({ fs: 24, lh: 0.5 });
     expect(sanitizeTypo({ kop: { fs: '14' } }).kop).toEqual({ fs: 14, lh: 1.2 });
     expect(sanitizeTypo({ ttd: { fs: NaN } }).ttd).toEqual(DEFAULT_TYPO.ttd);
   });

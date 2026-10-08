@@ -78,7 +78,7 @@ var __morbis_feature = (() => {
   };
   var FS_MIN = 4;
   var FS_MAX = 24;
-  var LH_MIN = 1;
+  var LH_MIN = 0.5;
   var LH_MAX = 2.5;
   function num(v, fallback, min, max) {
     const n = typeof v === "number" ? v : Number(v);
@@ -610,7 +610,7 @@ var __morbis_feature = (() => {
         if (!panel) return;
         const row = (gkey, field, label, min, max, step, val, unit) => "<label>" + esc(label) + '<input type="range" data-g="' + esc(gkey) + '" data-f="' + field + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output data-o="' + esc(gkey + "-" + field) + '">' + esc(String(val) + unit) + "</output></label>";
         panel.innerHTML = "<h4>Gaya Cetakan PA</h4>" + TYPO_GROUPS.map(
-          (g) => '<div class="t-typo-group"><strong>' + esc(g.label) + '</strong><div class="t-typo-row">' + row(g.key, "fs", "Font (pt)", 4, 20, 0.5, typo[g.key].fs, "pt") + row(g.key, "lh", "Spasi baris", 1, 2.5, 0.05, typo[g.key].lh, "") + "</div></div>"
+          (g) => '<div class="t-typo-group"><strong>' + esc(g.label) + '</strong><div class="t-typo-row">' + row(g.key, "fs", "Font (pt)", 4, 20, 0.5, typo[g.key].fs, "pt") + row(g.key, "lh", "Spasi baris", 0.5, 2.5, 0.05, typo[g.key].lh, "") + "</div></div>"
         ).join("") + '<div class="t-typo-actions"><button type="button" data-act="save" class="primary">Simpan</button><button type="button" data-act="reset">Reset</button></div><div class="t-typo-note" data-note></div>';
         panel.querySelectorAll('input[type="range"]').forEach((el) => {
           const input = el;

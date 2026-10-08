@@ -55,7 +55,7 @@ export const DEFAULT_TYPO: PaTypo = {
 
 const FS_MIN = 4;
 const FS_MAX = 24;
-const LH_MIN = 1;
+const LH_MIN = 0.5;
 const LH_MAX = 2.5;
 
 function num(v: unknown, fallback: number, min: number, max: number): number {

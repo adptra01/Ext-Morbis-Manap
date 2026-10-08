@@ -936,7 +936,7 @@ whenFeatureEnabled('paLabPrint', function () {
             esc(g.label) +
             '</strong><div class="t-typo-row">' +
             row(g.key, 'fs', 'Font (pt)', 4, 20, 0.5, typo[g.key].fs, 'pt') +
-            row(g.key, 'lh', 'Spasi baris', 1, 2.5, 0.05, typo[g.key].lh, '') +
+            row(g.key, 'lh', 'Spasi baris', 0.5, 2.5, 0.05, typo[g.key].lh, '') +
             '</div></div>',
         ).join('') +
         '<div class="t-typo-actions"><button type="button" data-act="save" class="primary">Simpan</button>' +
