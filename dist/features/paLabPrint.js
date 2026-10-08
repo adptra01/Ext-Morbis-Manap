@@ -561,7 +561,8 @@ var __morbis_feature = (() => {
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
-            const hang = mk ? "margin-left:18pt;text-indent:-18pt;" : "";
+            const hv = (fs * 1.8).toFixed(1);
+            const hang = "margin-left:" + hv + "pt;" + (mk ? "text-indent:-" + hv + "pt;" : "");
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
@@ -587,12 +588,8 @@ var __morbis_feature = (() => {
         const boldAll = normTitle(s.title) === "kesimpulan";
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (boldAll ? " section-kesimpulan" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
-          const mk = splitListMarker(it);
-          if (mk) {
-            const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
-            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
-          }
-          return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
+          const hangCls = splitListMarker(it) ? " has-marker" : "";
+          return '<div class="item-list' + paraCls + hangCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
         return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
@@ -934,9 +931,15 @@ var __morbis_feature = (() => {
             line-height: var(--pa-judul-lh, 1.2);
         }
 
+        /* Gutter marker di CONTAINER (.section-isi), bukan di item:
+           semua teks (polos maupun lanjutan) mulai di kolom yang sama;
+           hanya baris pertama item ber-marker yang ditarik ke gutter.
+           Tanpa ini, baris lanjutan selalu tergeser ke kanan dibanding
+           item polos. */
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
+            padding-left: 1.8em;
         }
 
         /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
@@ -947,15 +950,10 @@ var __morbis_feature = (() => {
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
-        /* Hanging indent: baris bernomor/berpoin \u2014 penanda di kolom
-           kiri tetap, teks lanjutan sejajar di bawah teks. */
+        /* Item ber-marker: hanya baris pertama (marker) yang ditarik
+           ke gutter; teks + baris lanjutan tetap di kolom container. */
         .item-list.has-marker {
-            display: flex;
-            gap: 6px;
-        }
-
-        .item-marker {
-            flex-shrink: 0;
+            text-indent: -1.8em;
         }
 
         .item-list {

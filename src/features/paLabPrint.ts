@@ -678,8 +678,12 @@ whenFeatureEnabled('paLabPrint', function () {
         const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
           const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
+          // Gutter di SEMUA item (margin-left), hanya ber-marker yang
+          // ditarik (text-indent) — teks polos & lanjutan rata di kolom
+          // yang sama, marker menggantung di gutter.
           const mk = splitListMarker(it);
-          const hang = mk ? 'margin-left:18pt;text-indent:-18pt;' : '';
+          const hv = (fs * 1.8).toFixed(1);
+          const hang = 'margin-left:' + hv + 'pt;' + (mk ? 'text-indent:-' + hv + 'pt;' : '');
           hasilDoc +=
             '<p style="margin:' +
             (s.para.includes(i) ? '14pt' : '0') +
@@ -791,9 +795,9 @@ whenFeatureEnabled('paLabPrint', function () {
         // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi disamakan
         // dengan section-judul (11pt bold kapital) via .section-isi-bare.
         // Isi KESIMPULAN selalu bold seluruhnya (permintaan user) +
-        // hanging indent untuk baris bernomor/berpoin (permintaan user):
-        // penanda ("1.", "II.", "-") di kolom kiri tetap, teks lanjutan
-        // sejajar di bawah teks — bukan di bawah penanda.
+        // hanging indent SEJATI untuk baris bernomor/berpoin: gutter di
+        // container .section-isi, teks sejajar vertikal dengan baris polos;
+        // penanda menggantung di gutter kiri (text-indent negatif).
         const boldAll = normTitle(s.title) === 'kesimpulan';
         const isi =
           '<div class="' +
@@ -803,22 +807,11 @@ whenFeatureEnabled('paLabPrint', function () {
           s.items
             .map((it, i) => {
               const paraCls = s.para.includes(i) ? ' item-para' : '';
-              const mk = splitListMarker(it);
-              if (mk) {
-                const rest = boldAll ? '<strong>' + esc(mk[1]) + '</strong>' : fmtItem(mk[1]);
-                return (
-                  '<div class="item-list has-marker' +
-                  paraCls +
-                  '"><span class="item-marker">' +
-                  esc(mk[0]) +
-                  '</span><span>' +
-                  rest +
-                  '</span></div>'
-                );
-              }
+              const hangCls = splitListMarker(it) ? ' has-marker' : '';
               return (
                 '<div class="item-list' +
                 paraCls +
+                hangCls +
                 '">' +
                 (boldAll ? '<strong>' + esc(it) + '</strong>' : fmtItem(it)) +
                 '</div>'
@@ -1269,9 +1262,15 @@ whenFeatureEnabled('paLabPrint', function () {
             line-height: var(--pa-judul-lh, 1.2);
         }
 
+        /* Gutter marker di CONTAINER (.section-isi), bukan di item:
+           semua teks (polos maupun lanjutan) mulai di kolom yang sama;
+           hanya baris pertama item ber-marker yang ditarik ke gutter.
+           Tanpa ini, baris lanjutan selalu tergeser ke kanan dibanding
+           item polos. */
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
+            padding-left: 1.8em;
         }
 
         /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
@@ -1282,15 +1281,10 @@ whenFeatureEnabled('paLabPrint', function () {
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
-        /* Hanging indent: baris bernomor/berpoin — penanda di kolom
-           kiri tetap, teks lanjutan sejajar di bawah teks. */
+        /* Item ber-marker: hanya baris pertama (marker) yang ditarik
+           ke gutter; teks + baris lanjutan tetap di kolom container. */
         .item-list.has-marker {
-            display: flex;
-            gap: 6px;
-        }
-
-        .item-marker {
-            flex-shrink: 0;
+            text-indent: -1.8em;
         }
 
         .item-list {

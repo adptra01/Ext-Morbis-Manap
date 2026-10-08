@@ -7,6 +7,13 @@
 
 ---
 
+## 2026-10-08
+
+### ✨ feat
+
+- **pa-print** — spasi baris bisa sampai 0.5 (lebih rapat) (`ce48d09`)
+- **pa-print** — hanging indent poin + grup gaya Kesimpulan terpisah (`2f792ba`)
+
 ## 2026-10-07
 
 ### ✨ feat
@@ -1811,4 +1818,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 59cb65d01fa50d35d5467c34207a6f3314bd1d45 -->
+<!-- changelog-upto: ce48d09d4c3bf5a36153877b6d36955d1e0aceb4 -->
