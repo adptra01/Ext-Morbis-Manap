@@ -15,10 +15,12 @@
 
 ### 🐛 fix
 
+- **pa-typo** — reset kembali ke default (deep-copy, anti shallow-copy) (`6d2290f`)
 - **pa-print** — logika cetak + tipografi hanya di halaman print (`400ed2d`)
 
 ### 🧹 chore
 
+- rebuild dist (fix reset tipografi) (`59cb65d`)
 - rebuild dist (gate print-only) (`0ed906e`)
 - rebuild dist (panel tipografi pa-print) (`132d2cc`)
 
@@ -1809,4 +1811,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0ed906ebf2917280fe824da5d5e363b9b3bd16dd -->
+<!-- changelog-upto: 59cb65d01fa50d35d5467c34207a6f3314bd1d45 -->

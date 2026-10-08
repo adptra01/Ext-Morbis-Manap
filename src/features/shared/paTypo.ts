@@ -1,12 +1,13 @@
 /**
  * paTypo — pengaturan tipografi dinamis cetakan PA (murni, unit-tested).
  *
- * 5 grup (sesuai kesepakatan user): kop (surat + judul laporan), pasien
+ * 6 grup (sesuai kesepakatan user): kop (surat + judul laporan), pasien
  * (data pasien), judul (judul-judul bagian isi), isi (badan teks +
- * catatan), ttd (blok tanda tangan). Tiap grup: font-size (pt) +
- * line-height. Disimpan di localStorage halaman (world MAIN tak punya
- * chrome.storage), diterapkan via CSS variable sehingga pratinjau live
- * tanpa rebuild + berlaku sama di layar dan kertas (WYSIWYG).
+ * catatan), kesimpulan (isi Kesimpulan — terpisah dari isi), ttd (blok
+ * tanda tangan). Tiap grup: font-size (pt) + line-height. Disimpan di
+ * localStorage halaman (world MAIN tak punya chrome.storage), diterapkan
+ * via CSS variable sehingga pratinjau live tanpa rebuild + berlaku sama
+ * di layar dan kertas (WYSIWYG).
  *
  * Hierarki dalam grup kop dipertahankan via delta tetap dari nilai
  * approved: alamat = kop − 8.5pt, judul laporan = kop − 4pt
@@ -24,6 +25,7 @@ export interface PaTypo {
   pasien: TypoGroup;
   judul: TypoGroup;
   isi: TypoGroup;
+  kesimpulan: TypoGroup;
   ttd: TypoGroup;
 }
 
@@ -36,15 +38,18 @@ export const TYPO_GROUPS: Array<{ key: TypoGroupKey; label: string }> = [
   { key: 'pasien', label: 'Data Pasien' },
   { key: 'judul', label: 'Judul Bagian Isi' },
   { key: 'isi', label: 'Isi' },
+  { key: 'kesimpulan', label: 'Kesimpulan' },
   { key: 'ttd', label: 'TTD' },
 ];
 
-/** Default = tampilan approved saat ini (pt). */
+/** Default = tampilan approved saat ini (pt). Kesimpulan defaultnya
+ *  sama dengan isi agar tampilan awal tidak berubah. */
 export const DEFAULT_TYPO: PaTypo = {
   kop: { fs: 16, lh: 1.2 },
   pasien: { fs: 4, lh: 1 },
   judul: { fs: 6, lh: 1.2 },
   isi: { fs: 5, lh: 1.25 },
+  kesimpulan: { fs: 5, lh: 1.25 },
   ttd: { fs: 6, lh: 1.2 },
 };
 
@@ -74,6 +79,7 @@ export function sanitizeTypo(v: unknown): PaTypo {
     pasien: group(o.pasien, DEFAULT_TYPO.pasien),
     judul: group(o.judul, DEFAULT_TYPO.judul),
     isi: group(o.isi, DEFAULT_TYPO.isi),
+    kesimpulan: group(o.kesimpulan, DEFAULT_TYPO.kesimpulan),
     ttd: group(o.ttd, DEFAULT_TYPO.ttd),
   };
 }
@@ -154,6 +160,8 @@ export function typoCssVars(t: PaTypo): Record<string, string> {
     '--pa-judul-lh': r2(r.judul.lh),
     '--pa-isi-fs': `${r2(r.isi.fs)}pt`,
     '--pa-isi-lh': r2(r.isi.lh),
+    '--pa-kesimpulan-fs': `${r2(r.kesimpulan.fs)}pt`,
+    '--pa-kesimpulan-lh': r2(r.kesimpulan.lh),
     '--pa-ttd-fs': `${r2(r.ttd.fs)}pt`,
     '--pa-ttd-lh': r2(r.ttd.lh),
   };

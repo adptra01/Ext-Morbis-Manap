@@ -65,6 +65,7 @@ var __morbis_feature = (() => {
     { key: "pasien", label: "Data Pasien" },
     { key: "judul", label: "Judul Bagian Isi" },
     { key: "isi", label: "Isi" },
+    { key: "kesimpulan", label: "Kesimpulan" },
     { key: "ttd", label: "TTD" }
   ];
   var DEFAULT_TYPO = {
@@ -72,6 +73,7 @@ var __morbis_feature = (() => {
     pasien: { fs: 4, lh: 1 },
     judul: { fs: 6, lh: 1.2 },
     isi: { fs: 5, lh: 1.25 },
+    kesimpulan: { fs: 5, lh: 1.25 },
     ttd: { fs: 6, lh: 1.2 }
   };
   var FS_MIN = 4;
@@ -97,6 +99,7 @@ var __morbis_feature = (() => {
       pasien: group(o.pasien, DEFAULT_TYPO.pasien),
       judul: group(o.judul, DEFAULT_TYPO.judul),
       isi: group(o.isi, DEFAULT_TYPO.isi),
+      kesimpulan: group(o.kesimpulan, DEFAULT_TYPO.kesimpulan),
       ttd: group(o.ttd, DEFAULT_TYPO.ttd)
     };
   }
@@ -151,6 +154,8 @@ var __morbis_feature = (() => {
       "--pa-judul-lh": r2(r.judul.lh),
       "--pa-isi-fs": `${r2(r.isi.fs)}pt`,
       "--pa-isi-lh": r2(r.isi.lh),
+      "--pa-kesimpulan-fs": `${r2(r.kesimpulan.fs)}pt`,
+      "--pa-kesimpulan-lh": r2(r.kesimpulan.lh),
       "--pa-ttd-fs": `${r2(r.ttd.fs)}pt`,
       "--pa-ttd-lh": r2(r.ttd.lh)
     };
@@ -161,6 +166,17 @@ var __morbis_feature = (() => {
       for (const [k, v] of Object.entries(typoCssVars(t))) target.setProperty(k, v);
     } catch {
     }
+  }
+
+  // src/features/shared/paList.ts
+  var MARKER_RE = /^(\(?[IVXLC]+[.)]|\d+[.)]|[-•–—*])\s+/;
+  function splitListMarker(text) {
+    const t = text ?? "";
+    const m = t.match(MARKER_RE);
+    if (!m) return null;
+    const rest = t.slice(m[0].length).trim();
+    if (rest === "") return null;
+    return [m[1], rest];
   }
 
   // src/features/paLabPrint.ts
@@ -540,9 +556,13 @@ var __morbis_feature = (() => {
           }
           hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
           const boldAll = normTitle(s.title) === "kesimpulan";
+          const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
+          const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
-            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + ' 0 6pt 0;text-align:justify;">' + body + "</p>";
+            const mk = splitListMarker(it);
+            const hang = mk ? "margin-left:18pt;text-indent:-18pt;" : "";
+            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
         const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + esc(judul) + '</title></head><body style="font-family:Arial,sans-serif;font-size:' + r.isi.fs + "pt;line-height:" + r.isi.lh + ';"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="' + logo + '" width="90"></td><td align="center">' + kopLines.slice(0, 3).map((l) => '<b style="font-size:' + r.kop.fs + 'pt;">' + esc(l) + "</b>").join("<br>") + '<br><span style="font-size:' + r.alamatFs + 'pt;">' + addrLines.map((l) => esc(l)).join("<br>") + '</span></td></tr></table><hr><p align="center" style="font-size:' + r.judulLapFs + 'pt;"><b><u>' + esc(judul.toUpperCase()) + '</u></b></p><table border="0" cellspacing="0" cellpadding="2" style="font-size:' + r.pasien.fs + "pt;line-height:" + r.pasien.lh + ';">' + infoTbl + "</table>" + hasilDoc + '<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size:' + r.ttd.fs + "pt;line-height:" + r.ttd.lh + ';"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">' + esc(thanks) + '</p><p style="margin:0 0 6pt 0;">' + esc(dateLine) + "</p>" + (qr ? '<p style="margin:0 0 6pt 0;"><img src="' + qr + '" width="80" height="80"></p>' : "") + '<p style="margin:0 0 6pt 0;"><b>' + esc(docName) + '</b></p><p style="margin:0 0 6pt 0;">' + esc(nip) + "</p></td></tr></table></body></html>";
@@ -565,9 +585,15 @@ var __morbis_feature = (() => {
           ).join("") + "</div></div>";
         }
         const boldAll = normTitle(s.title) === "kesimpulan";
-        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + '">' + s.items.map(
-          (it, i) => '<div class="item-list' + (s.para.includes(i) ? " item-para" : "") + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>"
-        ).join("") + "</div>";
+        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (boldAll ? " section-kesimpulan" : "") + '">' + s.items.map((it, i) => {
+          const paraCls = s.para.includes(i) ? " item-para" : "";
+          const mk = splitListMarker(it);
+          if (mk) {
+            const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
+            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
+          }
+          return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
+        }).join("") + "</div>";
         if (s.bare) return isi;
         return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
       }).join("");
@@ -911,6 +937,25 @@ var __morbis_feature = (() => {
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
+        }
+
+        /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
+           (permintaan user). Default sama dengan isi agar tampilan
+           awal tidak berubah. */
+        .section-kesimpulan {
+            font-size: var(--pa-kesimpulan-fs, 5pt);
+            line-height: var(--pa-kesimpulan-lh, 1.25);
+        }
+
+        /* Hanging indent: baris bernomor/berpoin \u2014 penanda di kolom
+           kiri tetap, teks lanjutan sejajar di bawah teks. */
+        .item-list.has-marker {
+            display: flex;
+            gap: 6px;
+        }
+
+        .item-marker {
+            flex-shrink: 0;
         }
 
         .item-list {

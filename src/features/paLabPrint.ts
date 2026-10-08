@@ -9,6 +9,7 @@ import {
   TYPO_GROUPS,
   type PaTypo,
 } from './shared/paTypo.js';
+import { splitListMarker } from './shared/paList.js';
 whenFeatureEnabled('paLabPrint', function () {
   'use strict';
 
@@ -672,12 +673,23 @@ whenFeatureEnabled('paLabPrint', function () {
           esc(s.title.toUpperCase()) +
           '</u></b></p>';
         const boldAll = normTitle(s.title) === 'kesimpulan';
+        // Kesimpulan ikut grup gaya sendiri (bukan grup Isi).
+        const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
+        const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
           const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
+          const mk = splitListMarker(it);
+          const hang = mk ? 'margin-left:18pt;text-indent:-18pt;' : '';
           hasilDoc +=
             '<p style="margin:' +
             (s.para.includes(i) ? '14pt' : '0') +
-            ' 0 6pt 0;text-align:justify;">' +
+            ' 0 6pt 0;font-size:' +
+            fs +
+            'pt;line-height:' +
+            lh +
+            ';text-align:justify;' +
+            hang +
+            '">' +
             body +
             '</p>';
         });
@@ -778,21 +790,40 @@ whenFeatureEnabled('paLabPrint', function () {
         // Section virtual ICD-O tampil tanpa judul (bare): cukup baris
         // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi disamakan
         // dengan section-judul (11pt bold kapital) via .section-isi-bare.
-        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
+        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user) +
+        // hanging indent untuk baris bernomor/berpoin (permintaan user):
+        // penanda ("1.", "II.", "-") di kolom kiri tetap, teks lanjutan
+        // sejajar di bawah teks — bukan di bawah penanda.
         const boldAll = normTitle(s.title) === 'kesimpulan';
         const isi =
           '<div class="' +
           (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
+          (boldAll ? ' section-kesimpulan' : '') +
           '">' +
           s.items
-            .map(
-              (it, i) =>
+            .map((it, i) => {
+              const paraCls = s.para.includes(i) ? ' item-para' : '';
+              const mk = splitListMarker(it);
+              if (mk) {
+                const rest = boldAll ? '<strong>' + esc(mk[1]) + '</strong>' : fmtItem(mk[1]);
+                return (
+                  '<div class="item-list has-marker' +
+                  paraCls +
+                  '"><span class="item-marker">' +
+                  esc(mk[0]) +
+                  '</span><span>' +
+                  rest +
+                  '</span></div>'
+                );
+              }
+              return (
                 '<div class="item-list' +
-                (s.para.includes(i) ? ' item-para' : '') +
+                paraCls +
                 '">' +
                 (boldAll ? '<strong>' + esc(it) + '</strong>' : fmtItem(it)) +
-                '</div>',
-            )
+                '</div>'
+              );
+            })
             .join('') +
           '</div>';
         if (s.bare) return isi;
@@ -1241,6 +1272,25 @@ whenFeatureEnabled('paLabPrint', function () {
         .section-isi {
             font-size: var(--pa-isi-fs, 5pt);
             line-height: var(--pa-isi-lh, 1.25);
+        }
+
+        /* Isi Kesimpulan: grup gaya sendiri, terpisah dari Isi
+           (permintaan user). Default sama dengan isi agar tampilan
+           awal tidak berubah. */
+        .section-kesimpulan {
+            font-size: var(--pa-kesimpulan-fs, 5pt);
+            line-height: var(--pa-kesimpulan-lh, 1.25);
+        }
+
+        /* Hanging indent: baris bernomor/berpoin — penanda di kolom
+           kiri tetap, teks lanjutan sejajar di bawah teks. */
+        .item-list.has-marker {
+            display: flex;
+            gap: 6px;
+        }
+
+        .item-marker {
+            flex-shrink: 0;
         }
 
         .item-list {

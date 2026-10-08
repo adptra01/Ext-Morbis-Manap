@@ -29,6 +29,7 @@ const full = (): PaTypo => ({
   pasien: { fs: 6, lh: 1 },
   judul: { fs: 6, lh: 1.2 },
   isi: { fs: 5, lh: 1.25 },
+  kesimpulan: { fs: 5, lh: 1.25 },
   ttd: { fs: 6, lh: 1.2 },
 });
 
@@ -82,9 +83,19 @@ describe('paTypo — resolve & vars', () => {
     expect(vars['--pa-kop-fs']).toBe('16pt');
     expect(vars['--pa-isi-lh']).toBe('1.25');
     expect(vars['--pa-ttd-fs']).toBe('6pt');
+    expect(vars['--pa-kesimpulan-fs']).toBe('5pt');
+    expect(vars['--pa-kesimpulan-lh']).toBe('1.25');
     const seen: Record<string, string> = {};
     applyTypoVars({ setProperty: (k, v) => (seen[k] = v) }, full());
     expect(seen).toEqual(vars);
     applyTypoVars(null, full()); // tak melempar
+  });
+
+  it('kesimpulan independen dari isi (default awal sama)', () => {
+    expect(DEFAULT_TYPO.kesimpulan).toEqual(DEFAULT_TYPO.isi);
+    const t = sanitizeTypo({ kesimpulan: { fs: 8, lh: 1.5 } });
+    expect(t.kesimpulan).toEqual({ fs: 8, lh: 1.5 });
+    expect(t.isi).toEqual(DEFAULT_TYPO.isi);
+    expect(typoCssVars(t)['--pa-kesimpulan-fs']).toBe('8pt');
   });
 });
