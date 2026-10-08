@@ -1,0 +1,272 @@
+name: Deploy dist to main
+
+# Phase C — dua channel (tag-based):
+#   push ke dev        → STAGING   (docs/channels/staging/update.xml)
+#   push tag vX.Y.Z    → PRODUCTION (docs/update.xml) + publish Edge
+# Production tidak berubah hanya karena developer push biasa.
+on:
+  push:
+    branches: [dev]
+    tags: ['v*']
+
+# Satu deploy dalam satu waktu (writeback bump versi di bawah tidak balapan).
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  # Quality gate: tanpa ini tidak ada bump/build/deploy.
+  # Dulu tes hanya jalan lokal (husky pre-commit); sekarang CI wajib lolos
+  # typecheck → unit test → lint sebelum artifact production dibuat.
+  quality:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+  deploy:
+    needs: [quality]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Deteksi channel: tag → production (tanpa bump; versi ambil dari
+      # manifest commit yang di-tag), branch → staging (bump patch otomatis).
+      - name: Detect channel & version
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            CHANNEL=production
+            echo "CHANNEL=production" >> "$GITHUB_ENV"
+            if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::tag tidak valid (harus vX.Y.Z, tanpa suffix): $GITHUB_REF_NAME"; exit 1
+            fi
+            MANIFEST_VER=$(jq -r .version manifest.json)
+            if [ "${GITHUB_REF_NAME#v}" != "$MANIFEST_VER" ]; then
+              echo "::error::tag ${GITHUB_REF_NAME#v} ≠ manifest.version ($MANIFEST_VER). Tag harus menunjuk commit yang versinya sesuai (mis. commit bump hasil rilis staging)."; exit 1
+            fi
+            echo "VERSION=$MANIFEST_VER" >> "$GITHUB_ENV"
+            echo "Channel: $CHANNEL | Versi target: $MANIFEST_VER"
+          else
+            echo "CHANNEL=staging" >> "$GITHUB_ENV"
+            echo "Channel: staging | Versi target: <bump otomatis>"
+          fi
+
+      # Bump patch OTOMATIS tiap deploy staging (syarat Store: versi harus naik
+      # agar Edge ikut terupdate). Writeback [skip ci] → tidak memicu deploy lagi.
+      # Untuk run tag: TIDAK bump — versi sudah ditetapkan oleh commit yang di-tag.
+      - name: Bump patch version (staging only)
+        if: github.ref_type != 'tag'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          for i in 1 2 3; do
+            git fetch origin dev
+            git reset --hard origin/dev
+            OLD=$(jq -r .version manifest.json)
+            NEW=$(node -e "const p=process.argv[1].split('.').map(Number);console.log(p[0]+'.'+p[1]+'.'+(p[2]+1))" "$OLD")
+            jq --arg v "$NEW" '.version=$v' manifest.json > manifest.json.tmp && mv manifest.json.tmp manifest.json
+            # Satu source of truth versi: package.json ikut sinkron (sebelumnya
+            # melenceng: manifest 1.5.x vs package.json 1.4.x).
+            jq --arg v "$NEW" '.version=$v' package.json > package.json.tmp && mv package.json.tmp package.json
+            git add manifest.json package.json
+            git commit -m "chore: bump version to $NEW [skip ci]" || break
+            if git push origin HEAD:dev; then
+              echo "VERSION=$NEW" >> $GITHUB_ENV
+              VERSION="$NEW"
+              break
+            fi
+            echo "push ditolak (balapan), coba lagi ($i/3)..."
+            sleep 5
+          done
+          test -n "${VERSION:-}" || { echo "::error::bump versi gagal"; exit 1; }
+          echo "Versi deploy: $VERSION"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build extension (production)
+        env:
+          NODE_ENV: production
+        run: npm run clean && npm run build
+
+      # Feature audit: pastikan registrasi fitur (id/match/run) sinkron dengan
+      # matrix regresi - gagalkan job bila meleset (scripts/audit-features.mjs).
+      - name: Audit features
+        run: npm run audit
+
+      # Auto-update enterprise mesin farmasi: CRX3 signed + update.xml.
+      # Key .pem dari secret CRX_SIGNING_KEY (tidak pernah masuk repo).
+      # --require-key → gagal keras kalau secret hilang, agar auto-update
+      # tidak senyap berhenti bekerja. pack.mjs selalu menulis update.xml
+      # versi production (deploy/update.xml) DAN staging
+      # (deploy/channels/staging/update.xml) — workflow yang memutuskan
+      # channel mana yang dipublikasikan ke Pages.
+      - name: Pack CRX signed + update.xml
+        env:
+          CRX_SIGNING_KEY: ${{ secrets.CRX_SIGNING_KEY }}
+        run: |
+          printf '%s' "$CRX_SIGNING_KEY" > "$RUNNER_TEMP/crx-signing-key.pem"
+          node scripts/pack.mjs --key "$RUNNER_TEMP/crx-signing-key.pem" --require-key --channel "$CHANNEL" | tee "$RUNNER_TEMP/pack.log"
+          # Guard: EXT_ID di .bat + appid update.xml (kedua channel) + versi
+          # harus sinkron dengan ID yang dihitung dari key signing (sumber tunggal).
+          CRX_EXT_ID=$(grep -oP '(?<=\[pack\] EXT_ID: )[a-p]{32}' "$RUNNER_TEMP/pack.log" | head -1)
+          test -n "$CRX_EXT_ID" || { echo "::error::gagal membaca EXT_ID dari pack.mjs"; exit 1; }
+          echo "CRX_EXT_ID=$CRX_EXT_ID" >> $GITHUB_ENV
+          grep -q "set EXT_ID=$CRX_EXT_ID" deploy/Install_Morbis_Ext.bat || { echo "::error::EXT_ID di .bat tidak sinkron dengan key signing (pack=$CRX_EXT_ID)"; exit 1; }
+          for UPDXML in deploy/update.xml deploy/channels/staging/update.xml; do
+            grep -q "appid='$CRX_EXT_ID'" "$UPDXML" || { echo "::error::appid $UPDXML tidak sinkron dengan key signing"; exit 1; }
+          done
+          XML_VER=$(grep -oP "updatecheck codebase='[^']*' version='\K[0-9.]+" deploy/update.xml | head -1)
+          test "$XML_VER" = "$VERSION" || { echo "::error::versi update.xml ($XML_VER) != manifest ($VERSION)"; exit 1; }
+          grep -q "version='$VERSION'" deploy/channels/staging/update.xml || { echo "::error::versi staging update.xml ≠ $VERSION"; exit 1; }
+          echo "Guard OK: EXT_ID=$CRX_EXT_ID, update.xml v$XML_VER, channel=$CHANNEL"
+
+      # Guard ke-4 (sebelum commit deploy): jangan pernah menyebarkan private
+      # key (.pem) ke main/Pages - CRX sudah ditandatangani CI pakai secret.
+      # (nilai name di-quote: colon+spasi di compact mapping membuat
+      # prettier/yaml gagal parse → pre-commit lint-staged menolak.)
+      - name: 'Guard: no .pem in deploy payload'
+        run: |
+          find deploy dist -name '*.pem' | grep -q . && { echo "::error::Private key would be deployed"; exit 1; } || true
+
+      - name: Deploy dist + docs → main (orphan-style)
+        run: |
+          # Create orphan branch state — dist contents at root + docs for GitHub Pages
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          ORPHAN=$(mktemp -d)
+          cp -r dist/* "$ORPHAN/"
+          cp README.md "$ORPHAN/README.md"
+          cp -r docs "$ORPHAN/docs"
+          # Preserve release immutabel + pointer produksi dari main sebelumnya —
+          # jangan orphan-wipe (dulu docs/releases hilang → 404 di Pages tiap
+          # deploy). Pointer produksi (docs/update.xml) dipertahankan pada run
+          # staging agar production TIDAK ikut bergeser ke versi staging.
+          if git fetch origin main --depth=1 2>/dev/null; then
+            if git ls-tree -r --name-only FETCH_HEAD 2>/dev/null | grep -q '^docs/releases/'; then
+              git archive FETCH_HEAD docs/releases | tar -x -C "$ORPHAN" 2>/dev/null || true
+            fi
+            git archive FETCH_HEAD docs/update.xml | tar -x -C "$ORPHAN" 2>/dev/null || true
+            git archive FETCH_HEAD docs/channels | tar -x -C "$ORPHAN" 2>/dev/null || true
+          fi
+          # Channel staging: update.xml SELALU dipublikasikan (grup pilot).
+          # Channel production: hanya pada run tag vX.Y.Z pointer produksi
+          # digeser ke versi baru; pada run dev docs/update.xml tetap versi
+          # tag terakhir (hasil preserve di atas).
+          mkdir -p "$ORPHAN/docs/channels/staging"
+          cp deploy/channels/staging/update.xml "$ORPHAN/docs/channels/staging/update.xml"
+          if [ "$CHANNEL" = "production" ]; then
+            cp deploy/update.xml "$ORPHAN/docs/update.xml"
+          fi
+          # Release versi ini (immutable path — update.xml menunjuk ke sini).
+          # Semua artefak yang tercatat di sha256sums.txt WAJIB ikut, kalau
+          # tidak sha256sum -c akan gagal (regresi: .zip tercatat tapi tak
+          # pernah dipublish di 17 rilis sebelumnya).
+          mkdir -p "$ORPHAN/docs/releases/v${VERSION}"
+          cp deploy/releases/v${VERSION}/morbis-v${VERSION}.crx "$ORPHAN/docs/releases/v${VERSION}/"
+          cp deploy/releases/v${VERSION}/morbis-v${VERSION}.zip "$ORPHAN/docs/releases/v${VERSION}/"
+          cp deploy/releases/v${VERSION}/metadata.json "$ORPHAN/docs/releases/v${VERSION}/" 2>/dev/null || true
+          cp deploy/releases/v${VERSION}/sha256sums.txt "$ORPHAN/docs/releases/v${VERSION}/" 2>/dev/null || true
+          # Guard: sha256sums.txt harus cocok dengan file yang benar-benar
+          # dipublish. Regresi .zip (tercatat tapi 404) ditemukan 2026-09-29 —
+          # guard ini menutup kelas bug tersebut ke depan.
+          ( cd "$ORPHAN/docs/releases/v${VERSION}" && sha256sum -c sha256sums.txt )
+          # Compat: salinan flat versi TERBARU (URL morbis-v<ver>.crx lama tetap
+          # hidup) untuk device yang masih menunjuk update.xml versi sebelumnya.
+          cp "deploy/morbis-v${VERSION}.crx" "$ORPHAN/docs/morbis-v${VERSION}.crx"
+          # Installer siap pakai ikut ke main (1 domain Pages) — sinkron
+          # EXT_ID sudah dijaga step Pack di atas, tanpa inject/sed.
+          # SATU-SATUNYA .bat yang dipublish. Uninstall dan penjadwal
+          # update sudah jadi mode [4] dan [5] di dalamnya.
+          cp deploy/Install_Morbis_Ext.bat "$ORPHAN/docs/"
+          # Policy GPO/Intune (Phase E) — didokumentasikan ke Pages untuk tim IT.
+          if [ -d deploy/policy ]; then
+            cp -r deploy/policy "$ORPHAN/docs/policy"
+          fi
+          # CATATAN: tidak ada lagi payload .bat terpisah. Logika tarik
+          # branch main sudah di-inline ke mode "pull" Install_Morbis_Ext.bat,
+          # jadi tidak ada skrip update yang perlu disalin ke Pages.
+          # Salinan lawas yang terlanjur tayang di branch main dihapus lewat
+          # aturan "!morbis-update-main.bat" di bawah.
+          # Workflow repo ikut ke main (inert pada push main — Pages auto-deploy
+          # dari branch main/docs; menjaga main mencerminkan konfigurasi CI).
+          cp -r .github "$ORPHAN/.github"
+
+          cat > "$ORPHAN/.gitignore" << 'EOF'
+          # main branch — extension files at root + docs for GitHub Pages
+          /*
+          !.gitignore
+          !README.md
+          !manifest.json
+          !background.js
+          !core.js
+          !init.js
+          !popup.js
+          !sidepanel.html
+          !sidepanel.js
+          !popup/
+          !popup/**
+          !assets/
+          !assets/**
+          !chunks/
+          !chunks/**
+          !features/
+          !features/**
+          !icons/
+          !icons/**
+          !rules/
+          !rules/**
+          !ui/
+          !ui/**
+          !docs/
+          !docs/**
+          !morbis-update-main.bat
+          !.github/
+          !.github/**
+          EOF
+
+          cd "$ORPHAN"
+          git init
+          git add -A
+          git commit -m "deploy: v${VERSION:-unknown} ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push origin HEAD:main --force
+
+  # Pages: GitHub Pages dalam mode "Deploy from a branch" (main, folder /docs) —
+  # setiap push ke main otomatis dideploy GitHub tanpa workflow terpisah.
+  # (Dulu ada workflow pages.yml + job pages via Actions: ditinggalkan karena
+  # environment github-pages menolak deploy dari ref tag, dan push GITHUB_TOKEN
+  # tidak memicu workflow baru.)
+
+  # Store Edge: HANYA rilis production (tag vX.Y.Z) yang diunggah — bukan tiap
+  # push dev (sebelumnya tiap deploy staging ikut di-publish ke Store).
+  publish-edge:
+    needs: [deploy]
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/publish-edge.yml
+    secrets: inherit
