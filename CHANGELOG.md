@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-10-14
+
+### ✨ feat
+
+- **telaahResepPrint** — tambah grid 3 kolom Surat Rujuk Balik | Surat Iter | Hasil Lab + baris paraf manual (`4e80415`)
+
 ## 2026-10-08
 
 ### ✨ feat
@@ -20,6 +26,10 @@
 - **pa-print** — gutter container-level alignment (semua item polos & ber-marker rata vertikal) (`0631c96`)
 - **pa-print** — gutter hanging indent terukur per section (XIII. sejajar) (`747524c`)
 - **pa-print** — gutter hanging indent di container (teks sejajar vertikal) (`dfcb491`)
+
+### 🧹 chore
+
+- downgrade version to 1.5.157 in manifest and package files (`7e912d9`)
 
 ## 2026-10-07
 
@@ -1825,4 +1835,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 457ffd4bba630787e75133c96e04b9993a224faf -->
+<!-- changelog-upto: 4e804150006cec20a6624cda86f463908ac6f263 -->
