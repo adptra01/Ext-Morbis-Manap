@@ -623,13 +623,13 @@ whenFeatureEnabled('telaahResep', function () {
       '<tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr>' +
       '</tbody></table>';
 
-    // Grid lampiran 3 kolom: Surat Rujuk Balik | Surat Iter | Hasil Lab.
+    // Grid lampiran 3 kolom: Srt. Rujuk Balik | Surat Iter | Hasil Lab.
     // Reuse class .t-admin/.blk agar ukuran kotak & penempatan identik
     // dengan grid Hitung/Timbang/Kemas/Paraf, tepat di bawah .t-admin.
     const lampiranHtml =
       '<table class="t-admin t-lampiran">' +
       '<thead><tr>' +
-      '<th class="c third">Surat Rujuk Balik</th>' +
+      '<th class="c third">Srt. Rujuk Balik</th>' +
       '<th class="c third">Surat Iter</th>' +
       '<th class="c third">Hasil Lab</th>' +
       '</tr></thead><tbody>' +

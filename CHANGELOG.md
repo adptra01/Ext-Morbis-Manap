@@ -11,7 +11,12 @@
 
 ### ✨ feat
 
+- **telaahResepPrint** — pindah grid lampiran ke bawah t-admin, samakan ukuran t-admin, header tengah semua (`b2ed851`)
 - **telaahResepPrint** — tambah grid 3 kolom Surat Rujuk Balik | Surat Iter | Hasil Lab + baris paraf manual (`4e80415`)
+
+### 🧹 chore
+
+- update version to 1.5.158 in manifest file (`e8879fd`)
 
 ## 2026-10-08
 
@@ -1835,4 +1840,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4e804150006cec20a6624cda86f463908ac6f263 -->
+<!-- changelog-upto: b2ed8515cc40788cf8d23d803e5cebf0fd65ed81 -->
