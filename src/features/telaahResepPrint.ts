@@ -623,6 +623,18 @@ whenFeatureEnabled('telaahResep', function () {
       '<tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr>' +
       '</tbody></table>';
 
+    // Grid lampiran 3 kolom: Surat Rujuk Balik | Surat Iter | Hasil Lab.
+    // Baris kosong tinggi untuk paraf/cap manual user.
+    const lampiranHtml =
+      '<table class="t-check t-lampiran">' +
+      '<thead><tr>' +
+      '<th class="c third">Surat Rujuk Balik</th>' +
+      '<th class="c third">Surat Iter</th>' +
+      '<th class="c third">Hasil Lab</th>' +
+      '</tr></thead><tbody>' +
+      '<tr><td class="blk-lampiran"></td><td class="blk-lampiran"></td><td class="blk-lampiran"></td></tr>' +
+      '</tbody></table>';
+
     const html =
       // HEADER 3 kolom: logo | brand & alamat | no antrian
       '<header class="t-head">' +
@@ -666,6 +678,7 @@ whenFeatureEnabled('telaahResep', function () {
       bawahHtml +
       '</section>' +
       '</main>' +
+      lampiranHtml +
       // FOOTER + CETAK
       '<footer class="t-footer">' +
       esc(footerText) +
@@ -773,6 +786,8 @@ whenFeatureEnabled('telaahResep', function () {
         .blk2{min-height:10px}
         .blk3{min-height:35px}
         .blk4{height:40px;padding:.5pt 3px}
+        .t-lampiran{margin-top:6px}
+        .blk-lampiran{height:45px;padding:.5pt 3px}
         .t-sub{text-align:center;font-size:10px!important;margin:3px 0}
 
         /* FOOTER + BUTTON */
@@ -798,6 +813,8 @@ whenFeatureEnabled('telaahResep', function () {
         .halaman.compact .blk{height:30px}
         .halaman.compact .blk3{min-height:25px}
         .halaman.compact .blk4{height:30px}
+        .halaman.compact .t-lampiran{margin-top:4px}
+        .halaman.compact .blk-lampiran{height:35px}
         .halaman.compact .t-footer{margin-top:6px}
 
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
@@ -816,6 +833,8 @@ whenFeatureEnabled('telaahResep', function () {
         .halaman.ultra .blk{height:30px}
         .halaman.ultra .blk3{min-height:20px}
         .halaman.ultra .blk4{height:30px}
+        .halaman.ultra .t-lampiran{margin-top:3px}
+        .halaman.ultra .blk-lampiran{height:30px}
         .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
       `;
       document.head.appendChild(s);

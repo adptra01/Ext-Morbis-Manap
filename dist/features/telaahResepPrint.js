@@ -386,11 +386,13 @@ var __morbis_feature = (() => {
         ([num, item]) => '<tr><td class="num">' + esc(num) + "</td><td>" + esc(item) + '</td><td class="yt"></td></tr>'
       ).join("") + "</tbody></table>";
       const bawahHtml = '<table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c" colspan="2">Waktu Tunggu</td></tr><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr><tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>';
+      const lampiranHtml = '<table class="t-check t-lampiran"><thead><tr><th class="c third">Surat Rujuk Balik</th><th class="c third">Surat Iter</th><th class="c third">Hasil Lab</th></tr></thead><tbody><tr><td class="blk-lampiran"></td><td class="blk-lampiran"></td><td class="blk-lampiran"></td></tr></tbody></table>';
       const html = (
         // HEADER 3 kolom: logo | brand & alamat | no antrian
         '<header class="t-head"><img class="t-logo" alt="Logo" src="' + esc(logoSrc) + '"/><div class="t-bhead"><h1 class="t-hname">' + esc(hospitalName) + "</h1>" + (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + "</div>" : "") + '</div><div class="t-antrian">' + formatAntrian(antrianNumber) + '</div></header><main class="t-main"><section class="t-left">' + patientMetaHtml + '<div class="t-meds">' + medListHtml + "</div>" + // Catatan resep dari halaman detail (textarea merah #catatan).
         // Hanya tampil bila ada isi — blok merah agar terbaca apoteker.
-        (catatan.trim() !== "" ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' + esc(catatan).split("\n").map((l) => l.trim()).filter(Boolean).join("<br/>") + "</div></div>" : "") + adminHtml + '</section><section class="t-right">' + doctorMetaHtml + checkTable("Telaah Resep", telaahResep) + checkTable("Telaah Obat", telaahObat) + bawahHtml + '</section></main><footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>'
+        (catatan.trim() !== "" ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' + esc(catatan).split("\n").map((l) => l.trim()).filter(Boolean).join("<br/>") + "</div></div>" : "") + adminHtml + '</section><section class="t-right">' + doctorMetaHtml + checkTable("Telaah Resep", telaahResep) + checkTable("Telaah Obat", telaahObat) + bawahHtml + "</section></main>" + lampiranHtml + // FOOTER + CETAK
+        '<footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>'
       );
       page.innerHTML = html;
       if (resepIdForQueue) {
@@ -480,6 +482,8 @@ var __morbis_feature = (() => {
         .blk2{min-height:10px}
         .blk3{min-height:35px}
         .blk4{height:40px;padding:.5pt 3px}
+        .t-lampiran{margin-top:6px}
+        .blk-lampiran{height:45px;padding:.5pt 3px}
         .t-sub{text-align:center;font-size:10px!important;margin:3px 0}
 
         /* FOOTER + BUTTON */
@@ -505,6 +509,8 @@ var __morbis_feature = (() => {
         .halaman.compact .blk{height:30px}
         .halaman.compact .blk3{min-height:25px}
         .halaman.compact .blk4{height:30px}
+        .halaman.compact .t-lampiran{margin-top:4px}
+        .halaman.compact .blk-lampiran{height:35px}
         .halaman.compact .t-footer{margin-top:6px}
 
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
@@ -523,6 +529,8 @@ var __morbis_feature = (() => {
         .halaman.ultra .blk{height:30px}
         .halaman.ultra .blk3{min-height:20px}
         .halaman.ultra .blk4{height:30px}
+        .halaman.ultra .t-lampiran{margin-top:3px}
+        .halaman.ultra .blk-lampiran{height:30px}
         .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
       `;
         document.head.appendChild(s);
