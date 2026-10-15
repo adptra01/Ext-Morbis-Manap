@@ -545,7 +545,7 @@ var __morbis_feature = (() => {
         for (const s of sections) {
           if (isCatatan(s.title)) {
             const rows = s.items.length ? s.items : ["Tidak ada"];
-            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>CATATAN:</u></b></td><td>' + rows.map((it) => "- " + esc(stripBullet(it) || "Tidak ada")).join("<br>") + "</td></tr></table>";
+            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>CATATAN:</u></b></td><td>' + rows.map((it) => "- <b>" + esc(stripBullet(it) || "Tidak ada") + "</b>").join("<br>") + "</td></tr></table>";
             continue;
           }
           if (s.bare) {
@@ -555,9 +555,10 @@ var __morbis_feature = (() => {
             continue;
           }
           hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
-          const boldAll = normTitle(s.title) === "kesimpulan";
-          const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
-          const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
+          const isKesimpulan = normTitle(s.title) === "kesimpulan";
+          const boldAll = isKesimpulan || normTitle(s.title) === "saran";
+          const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
+          const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
@@ -584,8 +585,9 @@ var __morbis_feature = (() => {
             (it) => '<div class="catatan-item"><span class="catatan-dash">-</span><span>' + esc(stripBullet(it) || "Tidak ada") + "</span></div>"
           ).join("") + "</div></div>";
         }
-        const boldAll = normTitle(s.title) === "kesimpulan";
-        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (boldAll ? " section-kesimpulan" : "") + '">' + s.items.map((it, i) => {
+        const isKesimpulan = normTitle(s.title) === "kesimpulan";
+        const boldAll = isKesimpulan || normTitle(s.title) === "saran";
+        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
           const mk = splitListMarker(it);
           if (mk) {
@@ -1009,6 +1011,7 @@ var __morbis_feature = (() => {
             flex-direction: column;
             gap: 4px;
             min-width: 0;
+            font-weight: bold;
         }
 
         .catatan-item {

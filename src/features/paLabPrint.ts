@@ -649,7 +649,7 @@ whenFeatureEnabled('paLabPrint', function () {
             '<td valign="top" style="font-size:' +
             r.judul.fs +
             'pt"><b><u>CATATAN:</u></b></td><td>' +
-            rows.map((it) => '- ' + esc(stripBullet(it) || 'Tidak ada')).join('<br>') +
+            rows.map((it) => '- <b>' + esc(stripBullet(it) || 'Tidak ada') + '</b>').join('<br>') +
             '</td></tr></table>';
           continue;
         }
@@ -672,10 +672,14 @@ whenFeatureEnabled('paLabPrint', function () {
           'pt;"><b><u>' +
           esc(s.title.toUpperCase()) +
           '</u></b></p>';
-        const boldAll = normTitle(s.title) === 'kesimpulan';
+        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user) +
+        // SARAN juga bold seluruhnya (permintaan user 2026-10-15),
+        // tapi SARAN tetap grup font Isi (bukan grup Kesimpulan).
+        const isKesimpulan = normTitle(s.title) === 'kesimpulan';
+        const boldAll = isKesimpulan || normTitle(s.title) === 'saran';
         // Kesimpulan ikut grup gaya sendiri (bukan grup Isi).
-        const fs = boldAll ? r.kesimpulan.fs : r.isi.fs;
-        const lh = boldAll ? r.kesimpulan.lh : r.isi.lh;
+        const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
+        const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
           const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
           const mk = splitListMarker(it);
@@ -791,14 +795,17 @@ whenFeatureEnabled('paLabPrint', function () {
         // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi disamakan
         // dengan section-judul (11pt bold kapital) via .section-isi-bare.
         // Isi KESIMPULAN selalu bold seluruhnya (permintaan user) +
+        // SARAN juga bold seluruhnya (permintaan user 2026-10-15),
+        // tapi SARAN tetap grup font Isi (tanpa .section-kesimpulan).
         // hanging indent untuk baris bernomor/berpoin (permintaan user):
         // penanda ("1.", "II.", "-") di kolom kiri tetap, teks lanjutan
         // sejajar di bawah teks — bukan di bawah penanda.
-        const boldAll = normTitle(s.title) === 'kesimpulan';
+        const isKesimpulan = normTitle(s.title) === 'kesimpulan';
+        const boldAll = isKesimpulan || normTitle(s.title) === 'saran';
         const isi =
           '<div class="' +
           (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
-          (boldAll ? ' section-kesimpulan' : '') +
+          (isKesimpulan ? ' section-kesimpulan' : '') +
           '">' +
           s.items
             .map((it, i) => {
@@ -1344,6 +1351,7 @@ whenFeatureEnabled('paLabPrint', function () {
             flex-direction: column;
             gap: 4px;
             min-width: 0;
+            font-weight: bold;
         }
 
         .catatan-item {
