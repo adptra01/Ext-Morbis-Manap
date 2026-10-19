@@ -34,18 +34,21 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
   const [showFinishedReload, setShowFinishedReload] = useState(false);
 
   // Send command to content script via background
-  const sendTabAction = useCallback(async (action: string, payload: unknown) => {
-    try {
-      await chrome.runtime.sendMessage({
-        type: 'TAB_ACTION',
-        tabId,
-        action,
-        payload,
-      });
-    } catch (err) {
-      console.error('Error sending tab action:', err);
-    }
-  }, [tabId]);
+  const sendTabAction = useCallback(
+    async (action: string, payload: unknown) => {
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'TAB_ACTION',
+          tabId,
+          action,
+          payload,
+        });
+      } catch (err) {
+        console.error('Error sending tab action:', err);
+      }
+    },
+    [tabId],
+  );
 
   // Handle messages from content script (progress updates)
   useEffect(() => {
@@ -124,7 +127,7 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
   };
 
   const handleStartUpload = () => {
-    const selectedCount = items.filter(i => i.selected !== false).length;
+    const selectedCount = items.filter((i) => i.selected !== false).length;
     if (selectedCount === 0) {
       alert('Tidak ada dokumen yang dipilih untuk diupload.');
       return;
@@ -151,7 +154,7 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
     chrome.tabs.reload(tabId);
   };
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -161,13 +164,15 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
     );
   });
 
-  const selectedCount = items.filter(i => i.selected !== false).length;
+  const selectedCount = items.filter((i) => i.selected !== false).length;
 
   return (
     <div className="space-y-4">
       <div className="flex gap-4 border-b border-border pb-2">
         <button
-          onClick={() => { if (!isProcessing) setMode('manual'); }}
+          onClick={() => {
+            if (!isProcessing) setMode('manual');
+          }}
           className={`flex-1 pb-1.5 text-md-xs font-semibold border-b-2 text-center transition-all ${
             mode === 'manual'
               ? 'border-primary text-primary'
@@ -178,7 +183,9 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
           Mode Manual (Paste URL)
         </button>
         <button
-          onClick={() => { if (!isProcessing) setMode('auto'); }}
+          onClick={() => {
+            if (!isProcessing) setMode('auto');
+          }}
           className={`flex-1 pb-1.5 text-md-xs font-semibold border-b-2 text-center transition-all ${
             mode === 'auto'
               ? 'border-primary text-primary'
@@ -236,7 +243,9 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
               {statusText}
             </span>
             {isProcessing && progress > 0 && (
-              <span className="text-[10px] font-semibold text-primary">{Math.round(progress)}%</span>
+              <span className="text-[10px] font-semibold text-primary">
+                {Math.round(progress)}%
+              </span>
             )}
           </div>
           {isProcessing && progress > 0 && (
@@ -284,15 +293,28 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
                 />
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-start justify-between gap-1">
-                    <span className="font-medium text-foreground truncate block" title={item.filename}>
+                    <span
+                      className="font-medium text-foreground truncate block"
+                      title={item.filename}
+                    >
                       {idx + 1}. {item.filename}
                     </span>
                     {item.status !== 'pending' && (
                       <Badge
-                        variant={item.status === 'success' ? 'success' : 'danger'}
+                        variant={
+                          item.status === 'success'
+                            ? 'success'
+                            : item.status === 'warning'
+                              ? 'warning'
+                              : 'danger'
+                        }
                         className="shrink-0 scale-90"
                       >
-                        {item.status === 'success' ? 'Sukses' : 'Gagal'}
+                        {item.status === 'success'
+                          ? 'Sukses'
+                          : item.status === 'warning'
+                            ? 'Belum pasti'
+                            : 'Gagal'}
                       </Badge>
                     )}
                   </div>

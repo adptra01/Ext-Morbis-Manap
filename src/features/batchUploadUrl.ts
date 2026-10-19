@@ -14,7 +14,13 @@ import {
   htmlToVisibleText,
   isMorbisApplicationErrorMessage,
   parseMorbisHtmlResponse,
+  summarizeMorbisResponse,
 } from './shared/morbisResponse.js';
+import {
+  decideSaveVerification,
+  isSavedByResponseBody,
+  type SaveVerification,
+} from './shared/uploadVerification.js';
 
 const g = getMorbisGlobals();
 
@@ -406,6 +412,17 @@ function closeBatchModal(): void {
   }
 }
 
+/** Badge status item di modal: sukses / belum pasti (⚠️) / gagal / memproses. */
+function renderItemBadge(item: BatchItem): string {
+  const known: Record<string, { status: string; label: string }> = {
+    success: { status: 'success', label: 'Sukses' },
+    warning: { status: 'warning', label: 'Belum pasti' },
+    error: { status: 'error', label: 'Gagal' },
+  };
+  const info = known[item.status] ?? { status: 'deleting', label: 'Memproses' };
+  return `<span class="ext-status-badge" data-status="${info.status}">${info.label}</span>`;
+}
+
 function updatePreview(items: BatchItem[]): void {
   const previewEl = document.getElementById(
     BATCH_UPLOAD_URL_CONFIG.previewId,
@@ -493,11 +510,11 @@ function updatePreview(items: BatchItem[]): void {
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
             <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${escHtml(item.filename)}${extBadge}</strong>
-            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status === 'success' ? 'success' : item.status === 'error' ? 'error' : 'deleting'}">${item.status === 'success' ? 'Sukses' : item.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
+            ${item.status !== 'pending' ? renderItemBadge(item) : ''}
           </div>
           ${modeText}
           <input type="text" class="ext-keterangan-input" data-index="${i}" value="${escHtml(item.keterangan || '')}" placeholder="Keterangan dokumen..." ${isProcessing ? 'disabled' : ''}>
-          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${escHtml(item.error)}</div>` : ''}
+          ${item.error ? `<div style="font-size: 11px; color: ${item.status === 'warning' ? '#92400e' : '#dc2626'}; margin-top: 4px;"><strong>${item.status === 'warning' ? 'Perhatian' : 'Error'}:</strong> ${escHtml(item.error)}</div>` : ''}
         </div>
       </label>
       <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? 'disabled' : ''}>${Icons.eye} Preview</button>
@@ -938,10 +955,183 @@ function generateTimestampKeterangan(): string {
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 }
 
+/** Jeda sederhana (ms). */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** State verifikasi daftar dokumen — di-reset setiap batch baru. */
+let _docRowsCache: { idVisit: string; rows: string[] | null; at: number } | null = null;
+let _docRowsLookupFailures = 0;
+/** Umur snapshot baseline: cukup pendek agar tidak basi, cukup lama agar hemat. */
+const DOC_ROWS_CACHE_TTL_MS = 60_000;
+/** Daftar dokumen tidak terbaca berulang → berhenti mencoba sepanjang batch. */
+const MAX_DOC_ROWS_LOOKUP_FAILURES = 2;
+
+function resetDocRowsCache(): void {
+  _docRowsCache = null;
+  _docRowsLookupFailures = 0;
+}
+
+/** Tabel daftar dokumen — selector cascade yang sama dengan crawlDokumenPasien. */
+function findDocumentTable(doc: Document): HTMLTableElement | null {
+  const selectors = [
+    'table.data-list.tabel',
+    'table.tabel',
+    'table[id*="dokumen"]',
+    'table[class*="dokumen"]',
+  ];
+  for (const selector of selectors) {
+    const table = doc.querySelector<HTMLTableElement>(selector);
+    if (table && table.querySelectorAll('tr').length > 1) return table;
+  }
+  const fallback = doc.querySelector<HTMLTableElement>('table');
+  return fallback && fallback.querySelectorAll('tr').length > 1 ? fallback : null;
+}
+
+/**
+ * Baris tabel dokumen-pasien sebagai teks (lowercase). `null` = tidak terbaca
+ * (halaman gagal dimuat / tabel tidak ditemukan) — pemanggil WAJIB
+ * memperlakukannya sebagai "tidak bisa diverifikasi", bukan "gagal".
+ */
+async function fetchVisitDocumentRows(idVisit: string): Promise<string[] | null> {
+  try {
+    const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`;
+    const response = await fetch(targetUrl, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      signal: _getBatchAbortSignal(),
+    });
+    if (!response.ok) return null;
+    const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const table = findDocumentTable(doc);
+    if (!table) return null;
+    return Array.from(table.querySelectorAll('tr'))
+      .map((tr) => (tr.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase())
+      .filter((row) => row.length > 0);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Snapshot baris daftar dokumen. Hasil "sesudah" upload item sebelumnya dipakai
+ * ulang sebagai baseline item berikutnya (TTL 1 menit) → satu request per item,
+ * bukan dua.
+ */
+async function getDocRowsSnapshot(
+  idVisit: string,
+  options: { fresh?: boolean } = {},
+): Promise<string[] | null> {
+  if (_getBatchAbortSignal().aborted) return null;
+
+  const cached = _docRowsCache;
+  if (
+    !options.fresh &&
+    cached &&
+    cached.idVisit === idVisit &&
+    Date.now() - cached.at < DOC_ROWS_CACHE_TTL_MS
+  ) {
+    return cached.rows;
+  }
+  if (_docRowsLookupFailures >= MAX_DOC_ROWS_LOOKUP_FAILURES) return null;
+
+  const rows = await fetchVisitDocumentRows(idVisit);
+  _docRowsCache = { idVisit, rows, at: Date.now() };
+  if (rows) _docRowsLookupFailures = 0;
+  else _docRowsLookupFailures += 1;
+  return rows;
+}
+
+/**
+ * Buktikan dokumen benar-benar tersimpan (aturan di shared/uploadVerification.ts).
+ *
+ * `responseBodyForProof` hanya boleh berisi body respons yang TIDAK memuat pesan
+ * gagal — kalau server jelas menolak, body tidak boleh jadi bukti.
+ */
+async function verifyDocumentUpload(
+  idVisit: string,
+  fileName: string,
+  extraNeedles: readonly string[],
+  responseBodyForProof: string,
+  rowsBefore: readonly string[] | null,
+): Promise<SaveVerification> {
+  // Fast-path: server memantulkan nama file kita → tidak perlu fetch daftar.
+  if (isSavedByResponseBody(responseBodyForProof, fileName)) return 'saved';
+
+  const rowsAfter = await getDocRowsSnapshot(idVisit, { fresh: true });
+  const first = decideSaveVerification({
+    responseBody: responseBodyForProof,
+    fileName,
+    extraNeedles,
+    rowsBefore,
+    rowsAfter,
+  });
+  if (first !== 'missing') return first;
+
+  // Baris dokumen kadang baru muncul beberapa saat setelah insert — beri jeda.
+  await sleep(1500);
+  return decideSaveVerification({
+    responseBody: responseBodyForProof,
+    fileName,
+    extraNeedles,
+    rowsBefore,
+    rowsAfter: await getDocRowsSnapshot(idVisit, { fresh: true }),
+  });
+}
+
+interface UploadResponseVerdict {
+  /** `false` hanya bila ada pesan gagal yang benar-benar terbaca. */
+  ok: boolean;
+  message?: string;
+  /** Ada kandidat marker error tanpa pesan terbaca (mis. "Error - Aplikasi"). */
+  rejectedMarker?: boolean;
+}
+
+/** Nilai body respons upload dari endpoint `control?sub=simpan`. */
+function evaluateUploadResponse(body: string, contentType: string): UploadResponseVerdict {
+  if (/application\/json/i.test(contentType)) {
+    const json = evaluateJsonPayload(body);
+    return json.ok ? { ok: true } : { ok: false, message: json.message || 'Server rejected' };
+  }
+
+  // Body HTML kadang dikirim dengan content-type teks biasa → isinya ikut dicek.
+  const looksHtml =
+    /text\/html/i.test(contentType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(body);
+  if (looksHtml) {
+    const verdict = parseMorbisHtmlResponse(body);
+    if (verdict.loginExpired) {
+      return {
+        ok: false,
+        message: verdict.message || 'Sesi login kadaluarsa — login ulang lalu coba lagi',
+      };
+    }
+    if (!verdict.ok) return { ok: false, message: verdict.message || 'Server menolak upload' };
+    return { ok: true, rejectedMarker: verdict.rejectedMarker };
+  }
+
+  const trimmed = body.trim();
+  if (isMorbisApplicationErrorMessage(trimmed)) return { ok: true, rejectedMarker: true };
+  if (/^(error|gagal|failed)/i.test(trimmed)) {
+    return { ok: false, message: `Server: ${cleanServerMessage(trimmed, 200)}` };
+  }
+  return { ok: true };
+}
+
+/** Pesan server untuk respons gagal (4xx/5xx) — tanpa isi script/CSS. */
+function describeServerFailure(body: string, statusText: string): string {
+  return (
+    extractServerErrorMessage(body) ||
+    cleanServerMessage(htmlToVisibleText(body), 200) ||
+    statusText ||
+    'tanpa keterangan'
+  );
+}
+
 async function processAndUploadSingleUrl(
   metadata: BatchItem,
   idVisitStr: string,
-): Promise<{ success: boolean; result?: string; error?: string }> {
+): Promise<{ success: boolean; unverified?: boolean; result?: string; error?: string }> {
   try {
     const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
     updateStatus(`Download: ${escHtml(metadata.filename)}...`);
@@ -962,6 +1152,9 @@ async function processAndUploadSingleUrl(
     const keterangan = generateTimestampKeterangan();
     formData.append('keterangan', keterangan);
 
+    // Snapshot daftar dokumen SEBELUM upload → dasar verifikasi "benar tersimpan".
+    const rowsBefore = await getDocRowsSnapshot(idVisitStr);
+
     updateStatus(`Upload: ${escHtml(file.name)} (${(file.size / 1024).toFixed(0)} KB)...`);
 
     const uploadResponse = await fetchWithRetry(
@@ -975,75 +1168,79 @@ async function processAndUploadSingleUrl(
       2,
     );
 
-    if (!uploadResponse.ok) {
+    if (!uploadResponse.ok && uploadResponse.redirected) {
       // Deteksi redirect ke halaman login (sesi kadaluarsa)
-      if (uploadResponse.redirected) {
-        throw new Error('Sesi login kadaluarsa — login ulang di tab ini lalu coba lagi');
-      }
-      // Ambil pesan server yang benar-benar terbaca. JANGAN membuang tag dari
-      // HTML mentah: isi <script> (New Relic) akan ikut tampil sebagai "pesan
-      // error" — lihat shared/morbisResponse.ts.
-      const errorText = await uploadResponse.text().catch(() => '');
-      const detail =
-        extractServerErrorMessage(errorText) ||
-        cleanServerMessage(htmlToVisibleText(errorText), 200) ||
-        uploadResponse.statusText;
-      throw new Error(`Server ${uploadResponse.status}: ${detail}`);
+      throw new Error('Sesi login kadaluarsa — login ulang di tab ini lalu coba lagi');
     }
 
-    const result = await uploadResponse.text();
-    // Deteksi sukses/gagal PRESISI: MORBIS kadang balas 200 dengan halaman
-    // error. Aturan lengkap ada di shared/morbisResponse.ts — intinya hanya
-    // percaya pesan yang terbaca manusia, dan tidak pernah mengekstrak teks
-    // dari <script>/<style> (script New Relic dulu bocor jadi pesan error).
+    const result = await uploadResponse.text().catch(() => '');
     const responseType = uploadResponse.headers.get('content-type') || '';
 
-    // JSON response = paling reliable (termasuk JSON yang salah label)
-    if (/application\/json/i.test(responseType)) {
-      const json = evaluateJsonPayload(result);
-      if (!json.ok) {
-        return { success: false, error: json.message || 'Server rejected' };
-      }
-      return { success: true, result };
-    }
-
-    // HTML response — hanya gagal bila ada pesan error yang terbaca. Body HTML
-    // kadang dikirim dengan content-type teks biasa, jadi isinya ikut diperiksa.
-    const looksHtml =
-      /text\/html/i.test(responseType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(result);
-    if (looksHtml) {
-      const verdict = parseMorbisHtmlResponse(result);
-      if (verdict.loginExpired) {
-        return {
-          success: false,
-          error: verdict.message || 'Sesi login kadaluarsa — login ulang lalu coba lagi',
+    // Nilai pesan respons. Isi <script> (New Relic) tidak boleh ikut jadi "pesan
+    // error" — aturan lengkap ada di shared/morbisResponse.ts.
+    const verdict: UploadResponseVerdict = uploadResponse.ok
+      ? evaluateUploadResponse(result, responseType)
+      : {
+          ok: false,
+          message: `Server ${uploadResponse.status}: ${describeServerFailure(result, uploadResponse.statusText)}`,
         };
-      }
+
+    // Sukses HARUS dibuktikan, tidak boleh diasumsikan: MORBIS membalas 200
+    // dengan halaman "Error - Aplikasi" walau insert dokumen gagal (gejala lama:
+    // status ✅ tapi dokumen tidak pernah muncul di daftar). Buktinya = dokumen
+    // muncul sebagai baris baru di daftar dokumen pasien.
+    const verification = _getBatchAbortSignal().aborted
+      ? 'unknown'
+      : await verifyDocumentUpload(
+          idVisitStr,
+          file.name,
+          [keterangan],
+          verdict.ok ? result : '',
+          rowsBefore,
+        );
+
+    if (verification === 'saved') {
       if (!verdict.ok) {
-        return { success: false, error: verdict.message || 'Server menolak upload' };
-      }
-      if (verdict.rejectedMarker) {
-        // Ada kandidat marker error, tapi pesannya tidak layak tampil (mis.
-        // halaman "Error - Aplikasi" MORBIS yang tetap muncul walau file
-        // tersimpan). Upload TIDAK digagalkan; catat untuk diagnosa.
-        console.debug(
-          '[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca — upload dianggap sukses.',
+        console.warn(
+          '[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen — dianggap sukses.',
+          verdict.message,
         );
       }
       return { success: true, result };
     }
 
-    // Plain text — cek marker di AWAL saja
-    const trimmed = result.trim();
-    if (isMorbisApplicationErrorMessage(trimmed)) {
-      // Teks "Error - Aplikasi" MORBIS juga muncul saat data tetap tersimpan.
-      console.debug('[Batch Upload] Respons "Error - Aplikasi" MORBIS — upload dianggap sukses.');
-      return { success: true, result };
+    if (verification === 'missing') {
+      const summary = summarizeMorbisResponse(result);
+      const detail =
+        verdict.message ||
+        `respons ${uploadResponse.status} ${responseType || 'tanpa content-type'}`;
+      console.warn(
+        '[Batch Upload] Dokumen TIDAK tersimpan:',
+        file.name,
+        '|',
+        detail,
+        '| respons server:',
+        summary,
+      );
+      return {
+        success: false,
+        error: `Dokumen tidak tersimpan — tidak muncul di daftar dokumen pasien. ${detail}. Respons server: ${summary}`,
+      };
     }
-    if (/^(error|gagal|failed)/i.test(trimmed)) {
-      return { success: false, error: `Server: ${cleanServerMessage(trimmed, 200)}` };
+
+    // verification === 'unknown' → tidak bisa dibuktikan sukses maupun gagal.
+    if (!verdict.ok) return { success: false, error: verdict.message || 'Server menolak upload' };
+    if (verdict.rejectedMarker) {
+      console.debug(
+        '[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca — terkirim, tapi belum terverifikasi.',
+        summarizeMorbisResponse(result),
+      );
     }
-    return { success: true, result };
+    return {
+      success: false,
+      unverified: true,
+      error: 'Terkirim, belum bisa dipastikan tersimpan (daftar dokumen tidak terbaca).',
+    };
   } catch (error) {
     const msg = (error as Error).message;
     // Batch cancellation must propagate to the caller so the outer loop can
@@ -1068,6 +1265,7 @@ async function runBatchQueue(): Promise<void> {
   // New batch run — reset the shared cancellation signal so a batch started
   // after a cancel does not begin already-aborted.
   _batchAbortController = new AbortController();
+  resetDocRowsCache();
 
   isProcessing = true;
   toggleUIProcessingState(true);
@@ -1094,6 +1292,7 @@ async function runBatchQueue(): Promise<void> {
 
   let successCount = 0;
   let errorCount = 0;
+  let unverifiedCount = 0;
   let cancelled = false;
   const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
   const total = itemsToUpload.length;
@@ -1143,6 +1342,12 @@ async function runBatchQueue(): Promise<void> {
       if (result.success) {
         metadata.status = 'success';
         successCount++;
+      } else if (result.unverified) {
+        // Terkirim, tapi tidak bisa dibuktikan tersimpan (daftar dokumen tidak
+        // terbaca). Jangan lapor sukses, tapi juga jangan tuduh gagal.
+        metadata.status = 'warning';
+        metadata.error = result.error;
+        unverifiedCount++;
       } else {
         metadata.status = 'error';
         metadata.error = result.error;
@@ -1171,6 +1376,7 @@ async function runBatchQueue(): Promise<void> {
   const summaryParts = cancelled
     ? ['Batch dibatalkan:', `${successCount} sukses`]
     : [`Selesai ${total} dokumen:`, `${successCount} sukses`];
+  if (unverifiedCount > 0) summaryParts.push(`${unverifiedCount} belum terverifikasi`);
   if (errorCount > 0) summaryParts.push(`${errorCount} gagal`);
   updateStatus(summaryParts.join(' '));
 
@@ -1182,26 +1388,36 @@ async function runBatchQueue(): Promise<void> {
         .map((item) => `${item.filename}: ${item.error}`),
     );
   }
+  if (unverifiedCount > 0) {
+    console.warn(
+      '[Batch Upload] Belum terverifikasi (dokumen tidak terlihat di daftar):',
+      batchQueue
+        .filter((item) => item.status === 'warning')
+        .map((item) => `${item.filename}: ${item.error}`),
+    );
+  }
 
   // Replace buttons: Reload + Retry Failed (if any)
   const buttonsContainer = document.querySelector(
     '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
   );
+  // Item "belum terverifikasi" ikut bisa diulang — statusnya belum jelas.
+  const retryableCount = errorCount + unverifiedCount;
   if (buttonsContainer) {
     const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
     const retryBtn =
-      errorCount > 0
-        ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">Ulangi yang Gagal</button>`
+      retryableCount > 0
+        ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">${unverifiedCount > 0 ? 'Ulangi Gagal/Belum Pasti' : 'Ulangi yang Gagal'}</button>`
         : '';
     buttonsContainer.innerHTML = `<div style="display:flex;gap:8px;justify-content:flex-end;">${retryBtn}${reloadBtn}</div>`;
     document
       .getElementById('ext-reload-btn')
       ?.addEventListener('click', () => window.location.reload());
-    if (errorCount > 0) {
+    if (retryableCount > 0) {
       document.getElementById('ext-retry-failed-btn')?.addEventListener('click', () => {
-        // Reset failed items to pending, re-run
+        // Reset failed/unverified items to pending, re-run
         batchQueue.forEach((item) => {
-          if (item.status === 'error') {
+          if (item.status === 'error' || item.status === 'warning') {
             item.status = 'pending';
             item.error = undefined;
           }
@@ -1241,6 +1457,10 @@ async function testSingleUpload(): Promise<void> {
     if (result.success) {
       firstItem.status = 'success';
       updateStatus('Test sukses! Detail di console.');
+    } else if (result.unverified) {
+      firstItem.status = 'warning';
+      firstItem.error = result.error;
+      updateStatus('Terkirim, tapi belum terverifikasi (lihat console).');
     } else {
       firstItem.status = 'error';
       firstItem.error = result.error;
@@ -1387,6 +1607,7 @@ async function runBatchQueueToSidepanel(): Promise<void> {
   // New batch run — reset the shared cancellation signal (mirrors runBatchQueue)
   // so a sidepanel batch never inherits a stale aborted controller.
   _batchAbortController = new AbortController();
+  resetDocRowsCache();
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const idVisitStr = urlParams.get('id_visit') || '';
@@ -1404,6 +1625,7 @@ async function runBatchQueueToSidepanel(): Promise<void> {
 
     let successCount = 0;
     let errorCount = 0;
+    let unverifiedCount = 0;
     const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
     const total = itemsToUpload.length;
 
@@ -1422,13 +1644,17 @@ async function runBatchQueueToSidepanel(): Promise<void> {
       const metadata = itemsToUpload[i];
       metadata.status = 'uploading';
 
-      sendProgress(i, total, successCount, errorCount, batchQueue);
+      sendProgress(i, total, successCount, errorCount, unverifiedCount, batchQueue);
 
       try {
         const result = await processAndUploadSingleUrl(metadata, idVisitStr);
         if (result.success) {
           metadata.status = 'success';
           successCount++;
+        } else if (result.unverified) {
+          metadata.status = 'warning';
+          metadata.error = result.error;
+          unverifiedCount++;
         } else {
           metadata.status = 'error';
           metadata.error = result.error;
@@ -1440,7 +1666,7 @@ async function runBatchQueueToSidepanel(): Promise<void> {
         errorCount++;
       }
 
-      sendProgress(i + 1, total, successCount, errorCount, batchQueue);
+      sendProgress(i + 1, total, successCount, errorCount, unverifiedCount, batchQueue);
     }
   } catch (err) {
     chrome.runtime
@@ -1458,15 +1684,19 @@ function sendProgress(
   total: number,
   success: number,
   fail: number,
+  unverified: number,
   items: BatchItem[],
 ): void {
+  const parts = [`Sukses: ${success}`];
+  if (unverified > 0) parts.push(`Belum pasti: ${unverified}`);
+  parts.push(`Gagal: ${fail}`);
   chrome.runtime
     .sendMessage({
       type: 'TAB_ACTION_RESULT',
       action: 'BATCH_UPLOAD_PROGRESS',
       data: {
         percent: (current / total) * 100,
-        status: `Diproses: ${current}/${total} - Sukses: ${success}, Gagal: ${fail}`,
+        status: `Diproses: ${current}/${total} - ${parts.join(', ')}`,
         items,
         finished: current >= total,
       },
@@ -1498,6 +1728,9 @@ async function testSingleUploadToSidepanel(): Promise<void> {
     const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
     if (result.success) {
       firstItem.status = 'success';
+    } else if (result.unverified) {
+      firstItem.status = 'warning';
+      firstItem.error = result.error;
     } else {
       firstItem.status = 'error';
       firstItem.error = result.error;
@@ -1513,7 +1746,12 @@ async function testSingleUploadToSidepanel(): Promise<void> {
       action: 'BATCH_UPLOAD_PROGRESS',
       data: {
         percent: 100,
-        status: firstItem.status === 'success' ? 'Test upload sukses!' : 'Test upload gagal!',
+        status:
+          firstItem.status === 'success'
+            ? 'Test upload sukses!'
+            : firstItem.status === 'warning'
+              ? 'Terkirim, belum terverifikasi — cek daftar dokumen!'
+              : 'Test upload gagal!',
         items: batchQueue,
         finished: true,
       },

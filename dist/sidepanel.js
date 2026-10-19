@@ -785,9 +785,9 @@ function BatchUploadPanel({ tabId }) {
 												item.filename
 											]
 										}), item.status !== "pending" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-											variant: item.status === "success" ? "success" : "danger",
+											variant: item.status === "success" ? "success" : item.status === "warning" ? "warning" : "danger",
 											className: "shrink-0 scale-90",
-											children: item.status === "success" ? "Sukses" : "Gagal"
+											children: item.status === "success" ? "Sukses" : item.status === "warning" ? "Belum pasti" : "Gagal"
 										})]
 									}),
 									item.tglFileTabel ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {

@@ -409,3 +409,19 @@ export function extractServerErrorMessage(body: string): string | null {
   if (json.isJson && !json.ok && json.message) return json.message;
   return extractContainerMessage(body) ?? extractInlineJsMessage(body);
 }
+
+/**
+ * Ringkasan satu baris isi respons server untuk pesan error & diagnosa console.
+ *
+ * Dipakai saat upload tidak terverifikasi: tanpa ini pengguna hanya melihat
+ * "tidak tersimpan" tanpa tahu apa kata server. Isi `<script>`/`<style>`
+ * dibuang lebih dulu (lihat stripNonTextMarkup), jadi script New Relic tidak
+ * pernah bocor ke pesan.
+ */
+export function summarizeMorbisResponse(body: string, maxLength = 220): string {
+  const raw = String(body ?? '');
+  if (!raw.trim()) return '(body kosong)';
+  const text = cleanServerMessage(htmlToVisibleText(raw), maxLength);
+  if (text) return text;
+  return `(teks tidak terbaca, ${raw.length} byte)`;
+}

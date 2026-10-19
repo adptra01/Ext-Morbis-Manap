@@ -8,6 +8,7 @@ import {
   looksLikeHumanMessage,
   parseMorbisHtmlResponse,
   stripNonTextMarkup,
+  summarizeMorbisResponse,
 } from '../../src/features/shared/morbisResponse.js';
 
 /** Script New Relic inline yang disuntik MORBIS di awal <head> (minified). */
@@ -241,5 +242,33 @@ describe('extractServerErrorMessage', () => {
     expect(extractServerErrorMessage('{"success":false,"message":"NORM kosong"}')).toBe(
       'NORM kosong',
     );
+  });
+});
+
+describe('summarizeMorbisResponse', () => {
+  it('meringkas teks halaman tanpa membocorkan script New Relic', () => {
+    const html = `<html><head>${NR_SCRIPT}${STYLE_WITH_ERROR_VAR}</head><body><h1>Error - Aplikasi</h1><p>Terjadi kesalahan saat menyimpan data.</p></body></html>`;
+    const summary = summarizeMorbisResponse(html);
+
+    expect(summary).toContain('Error - Aplikasi');
+    expect(summary).toContain('Terjadi kesalahan saat menyimpan data.');
+    expect(summary).not.toContain('NREUM');
+    expect(summary).not.toContain('--error');
+  });
+
+  it('body kosong / hanya whitespace → penanda eksplisit', () => {
+    expect(summarizeMorbisResponse('')).toBe('(body kosong)');
+    expect(summarizeMorbisResponse('   \n  ')).toBe('(body kosong)');
+  });
+
+  it('membatasi panjang ringkasan', () => {
+    const summary = summarizeMorbisResponse(`<p>${'kata '.repeat(200)}</p>`, 80);
+    expect(summary.length).toBeLessThanOrEqual(80);
+    expect(summary.endsWith('…')).toBe(true);
+  });
+
+  it('body tanpa teks terbaca → sebut ukuran byte', () => {
+    const summary = summarizeMorbisResponse(`<div>${'<script>var a=1;</script>'.repeat(5)}</div>`);
+    expect(summary).toMatch(/teks tidak terbaca|byte|body kosong/);
   });
 });

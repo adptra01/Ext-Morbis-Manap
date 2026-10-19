@@ -107,6 +107,7 @@ var __morbis_feature = (() => {
     .ext-status-badge[data-status="success"] { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
     .ext-status-badge[data-status="error"] { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
     .ext-status-badge[data-status="deleting"] { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .ext-status-badge[data-status="warning"] { background: #fffbeb; color: #92400e; border-color: #fde68a; }
 
     .ext-modal-content input,
     .ext-modal-content textarea,
@@ -761,6 +762,47 @@ ${xrefOffset}
     if (json.isJson && !json.ok && json.message) return json.message;
     return extractContainerMessage(body) ?? extractInlineJsMessage(body);
   }
+  function summarizeMorbisResponse(body, maxLength = 220) {
+    const raw = String(body ?? "");
+    if (!raw.trim()) return "(body kosong)";
+    const text = cleanServerMessage(htmlToVisibleText(raw), maxLength);
+    if (text) return text;
+    return `(teks tidak terbaca, ${raw.length} byte)`;
+  }
+
+  // src/features/shared/uploadVerification.ts
+  var MIN_NEEDLE_LENGTH = 6;
+  function normalizeForMatch(value) {
+    return String(value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+  function documentMatchNeedle(fileName) {
+    return normalizeForMatch(String(fileName ?? "").replace(/\.[a-z0-9]{1,6}$/i, ""));
+  }
+  function usableNeedles(needles) {
+    return needles.map((n) => normalizeForMatch(n)).filter((n) => n.length >= MIN_NEEDLE_LENGTH);
+  }
+  function countDocumentMatches(rows, needles) {
+    if (!rows || rows.length === 0) return 0;
+    const usable = usableNeedles(needles);
+    if (usable.length === 0) return 0;
+    let count = 0;
+    for (const row of rows) {
+      const hay = normalizeForMatch(row);
+      if (usable.some((needle) => hay.includes(needle))) count += 1;
+    }
+    return count;
+  }
+  function isSavedByResponseBody(responseBody, fileName) {
+    const needle = documentMatchNeedle(fileName);
+    return needle.length >= MIN_NEEDLE_LENGTH && normalizeForMatch(responseBody).includes(needle);
+  }
+  function decideSaveVerification(input) {
+    if (isSavedByResponseBody(input.responseBody, input.fileName)) return "saved";
+    if (input.rowsBefore === null || input.rowsAfter === null) return "unknown";
+    const needles = [documentMatchNeedle(input.fileName), ...input.extraNeedles ?? []];
+    if (usableNeedles(needles).length === 0) return "unknown";
+    return countDocumentMatches(input.rowsAfter, needles) > countDocumentMatches(input.rowsBefore, needles) ? "saved" : "missing";
+  }
 
   // src/features/batchUploadUrl.ts
   var g = getMorbisGlobals();
@@ -1050,6 +1092,15 @@ ${xrefOffset}
       }
     }
   }
+  function renderItemBadge(item) {
+    const known = {
+      success: { status: "success", label: "Sukses" },
+      warning: { status: "warning", label: "Belum pasti" },
+      error: { status: "error", label: "Gagal" }
+    };
+    const info = known[item.status] ?? { status: "deleting", label: "Memproses" };
+    return `<span class="ext-status-badge" data-status="${info.status}">${info.label}</span>`;
+  }
   function updatePreview(items) {
     const previewEl = document.getElementById(
       BATCH_UPLOAD_URL_CONFIG.previewId
@@ -1117,11 +1168,11 @@ ${xrefOffset}
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
             <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${escHtml(item.filename)}${extBadge}</strong>
-            ${item.status !== "pending" ? `<span class="ext-status-badge" data-status="${item.status === "success" ? "success" : item.status === "error" ? "error" : "deleting"}">${item.status === "success" ? "Sukses" : item.status === "error" ? "Gagal" : "Memproses"}</span>` : ""}
+            ${item.status !== "pending" ? renderItemBadge(item) : ""}
           </div>
           ${modeText}
           <input type="text" class="ext-keterangan-input" data-index="${i}" value="${escHtml(item.keterangan || "")}" placeholder="Keterangan dokumen..." ${isProcessing ? "disabled" : ""}>
-          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${escHtml(item.error)}</div>` : ""}
+          ${item.error ? `<div style="font-size: 11px; color: ${item.status === "warning" ? "#92400e" : "#dc2626"}; margin-top: 4px;"><strong>${item.status === "warning" ? "Perhatian" : "Error"}:</strong> ${escHtml(item.error)}</div>` : ""}
         </div>
       </label>
       <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? "disabled" : ""}>${Icons.eye} Preview</button>
@@ -1456,6 +1507,108 @@ ${xrefOffset}
     const ss = String(now.getSeconds()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
   }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  var _docRowsCache = null;
+  var _docRowsLookupFailures = 0;
+  var DOC_ROWS_CACHE_TTL_MS = 6e4;
+  var MAX_DOC_ROWS_LOOKUP_FAILURES = 2;
+  function resetDocRowsCache() {
+    _docRowsCache = null;
+    _docRowsLookupFailures = 0;
+  }
+  function findDocumentTable(doc) {
+    const selectors = [
+      "table.data-list.tabel",
+      "table.tabel",
+      'table[id*="dokumen"]',
+      'table[class*="dokumen"]'
+    ];
+    for (const selector of selectors) {
+      const table = doc.querySelector(selector);
+      if (table && table.querySelectorAll("tr").length > 1) return table;
+    }
+    const fallback = doc.querySelector("table");
+    return fallback && fallback.querySelectorAll("tr").length > 1 ? fallback : null;
+  }
+  async function fetchVisitDocumentRows(idVisit) {
+    try {
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`;
+      const response = await fetch(targetUrl, {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: _getBatchAbortSignal()
+      });
+      if (!response.ok) return null;
+      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+      const table = findDocumentTable(doc);
+      if (!table) return null;
+      return Array.from(table.querySelectorAll("tr")).map((tr) => (tr.textContent || "").replace(/\s+/g, " ").trim().toLowerCase()).filter((row) => row.length > 0);
+    } catch {
+      return null;
+    }
+  }
+  async function getDocRowsSnapshot(idVisit, options = {}) {
+    if (_getBatchAbortSignal().aborted) return null;
+    const cached = _docRowsCache;
+    if (!options.fresh && cached && cached.idVisit === idVisit && Date.now() - cached.at < DOC_ROWS_CACHE_TTL_MS) {
+      return cached.rows;
+    }
+    if (_docRowsLookupFailures >= MAX_DOC_ROWS_LOOKUP_FAILURES) return null;
+    const rows = await fetchVisitDocumentRows(idVisit);
+    _docRowsCache = { idVisit, rows, at: Date.now() };
+    if (rows) _docRowsLookupFailures = 0;
+    else _docRowsLookupFailures += 1;
+    return rows;
+  }
+  async function verifyDocumentUpload(idVisit, fileName, extraNeedles, responseBodyForProof, rowsBefore) {
+    if (isSavedByResponseBody(responseBodyForProof, fileName)) return "saved";
+    const rowsAfter = await getDocRowsSnapshot(idVisit, { fresh: true });
+    const first = decideSaveVerification({
+      responseBody: responseBodyForProof,
+      fileName,
+      extraNeedles,
+      rowsBefore,
+      rowsAfter
+    });
+    if (first !== "missing") return first;
+    await sleep(1500);
+    return decideSaveVerification({
+      responseBody: responseBodyForProof,
+      fileName,
+      extraNeedles,
+      rowsBefore,
+      rowsAfter: await getDocRowsSnapshot(idVisit, { fresh: true })
+    });
+  }
+  function evaluateUploadResponse(body, contentType) {
+    if (/application\/json/i.test(contentType)) {
+      const json = evaluateJsonPayload(body);
+      return json.ok ? { ok: true } : { ok: false, message: json.message || "Server rejected" };
+    }
+    const looksHtml = /text\/html/i.test(contentType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(body);
+    if (looksHtml) {
+      const verdict = parseMorbisHtmlResponse(body);
+      if (verdict.loginExpired) {
+        return {
+          ok: false,
+          message: verdict.message || "Sesi login kadaluarsa \u2014 login ulang lalu coba lagi"
+        };
+      }
+      if (!verdict.ok) return { ok: false, message: verdict.message || "Server menolak upload" };
+      return { ok: true, rejectedMarker: verdict.rejectedMarker };
+    }
+    const trimmed = body.trim();
+    if (isMorbisApplicationErrorMessage(trimmed)) return { ok: true, rejectedMarker: true };
+    if (/^(error|gagal|failed)/i.test(trimmed)) {
+      return { ok: false, message: `Server: ${cleanServerMessage(trimmed, 200)}` };
+    }
+    return { ok: true };
+  }
+  function describeServerFailure(body, statusText) {
+    return extractServerErrorMessage(body) || cleanServerMessage(htmlToVisibleText(body), 200) || statusText || "tanpa keterangan";
+  }
   async function processAndUploadSingleUrl(metadata, idVisitStr) {
     try {
       const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
@@ -1471,6 +1624,7 @@ ${xrefOffset}
       formData.append("dok", file);
       const keterangan = generateTimestampKeterangan();
       formData.append("keterangan", keterangan);
+      const rowsBefore = await getDocRowsSnapshot(idVisitStr);
       updateStatus(`Upload: ${escHtml(file.name)} (${(file.size / 1024).toFixed(0)} KB)...`);
       const uploadResponse = await fetchWithRetry(
         BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
@@ -1482,51 +1636,59 @@ ${xrefOffset}
         },
         2
       );
-      if (!uploadResponse.ok) {
-        if (uploadResponse.redirected) {
-          throw new Error("Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi");
-        }
-        const errorText = await uploadResponse.text().catch(() => "");
-        const detail = extractServerErrorMessage(errorText) || cleanServerMessage(htmlToVisibleText(errorText), 200) || uploadResponse.statusText;
-        throw new Error(`Server ${uploadResponse.status}: ${detail}`);
+      if (!uploadResponse.ok && uploadResponse.redirected) {
+        throw new Error("Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi");
       }
-      const result = await uploadResponse.text();
+      const result = await uploadResponse.text().catch(() => "");
       const responseType = uploadResponse.headers.get("content-type") || "";
-      if (/application\/json/i.test(responseType)) {
-        const json = evaluateJsonPayload(result);
-        if (!json.ok) {
-          return { success: false, error: json.message || "Server rejected" };
-        }
-        return { success: true, result };
-      }
-      const looksHtml = /text\/html/i.test(responseType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(result);
-      if (looksHtml) {
-        const verdict = parseMorbisHtmlResponse(result);
-        if (verdict.loginExpired) {
-          return {
-            success: false,
-            error: verdict.message || "Sesi login kadaluarsa \u2014 login ulang lalu coba lagi"
-          };
-        }
+      const verdict = uploadResponse.ok ? evaluateUploadResponse(result, responseType) : {
+        ok: false,
+        message: `Server ${uploadResponse.status}: ${describeServerFailure(result, uploadResponse.statusText)}`
+      };
+      const verification = _getBatchAbortSignal().aborted ? "unknown" : await verifyDocumentUpload(
+        idVisitStr,
+        file.name,
+        [keterangan],
+        verdict.ok ? result : "",
+        rowsBefore
+      );
+      if (verification === "saved") {
         if (!verdict.ok) {
-          return { success: false, error: verdict.message || "Server menolak upload" };
-        }
-        if (verdict.rejectedMarker) {
-          console.debug(
-            "[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca \u2014 upload dianggap sukses."
+          console.warn(
+            "[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen \u2014 dianggap sukses.",
+            verdict.message
           );
         }
         return { success: true, result };
       }
-      const trimmed = result.trim();
-      if (isMorbisApplicationErrorMessage(trimmed)) {
-        console.debug('[Batch Upload] Respons "Error - Aplikasi" MORBIS \u2014 upload dianggap sukses.');
-        return { success: true, result };
+      if (verification === "missing") {
+        const summary = summarizeMorbisResponse(result);
+        const detail = verdict.message || `respons ${uploadResponse.status} ${responseType || "tanpa content-type"}`;
+        console.warn(
+          "[Batch Upload] Dokumen TIDAK tersimpan:",
+          file.name,
+          "|",
+          detail,
+          "| respons server:",
+          summary
+        );
+        return {
+          success: false,
+          error: `Dokumen tidak tersimpan \u2014 tidak muncul di daftar dokumen pasien. ${detail}. Respons server: ${summary}`
+        };
       }
-      if (/^(error|gagal|failed)/i.test(trimmed)) {
-        return { success: false, error: `Server: ${cleanServerMessage(trimmed, 200)}` };
+      if (!verdict.ok) return { success: false, error: verdict.message || "Server menolak upload" };
+      if (verdict.rejectedMarker) {
+        console.debug(
+          "[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca \u2014 terkirim, tapi belum terverifikasi.",
+          summarizeMorbisResponse(result)
+        );
       }
-      return { success: true, result };
+      return {
+        success: false,
+        unverified: true,
+        error: "Terkirim, belum bisa dipastikan tersimpan (daftar dokumen tidak terbaca)."
+      };
     } catch (error) {
       const msg = error.message;
       if (msg === "Batch cancelled") throw error;
@@ -1544,6 +1706,7 @@ ${xrefOffset}
   async function runBatchQueue() {
     if (isProcessing) return;
     _batchAbortController = new AbortController();
+    resetDocRowsCache();
     isProcessing = true;
     toggleUIProcessingState(true);
     const startBtn = document.getElementById("ext-start-upload-btn");
@@ -1565,6 +1728,7 @@ ${xrefOffset}
     }
     let successCount = 0;
     let errorCount = 0;
+    let unverifiedCount = 0;
     let cancelled = false;
     const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
     const total = itemsToUpload.length;
@@ -1604,6 +1768,10 @@ ${xrefOffset}
         if (result.success) {
           metadata.status = "success";
           successCount++;
+        } else if (result.unverified) {
+          metadata.status = "warning";
+          metadata.error = result.error;
+          unverifiedCount++;
         } else {
           metadata.status = "error";
           metadata.error = result.error;
@@ -1624,6 +1792,7 @@ ${xrefOffset}
       updatePreview(batchQueue);
     }
     const summaryParts = cancelled ? ["Batch dibatalkan:", `${successCount} sukses`] : [`Selesai ${total} dokumen:`, `${successCount} sukses`];
+    if (unverifiedCount > 0) summaryParts.push(`${unverifiedCount} belum terverifikasi`);
     if (errorCount > 0) summaryParts.push(`${errorCount} gagal`);
     updateStatus(summaryParts.join(" "));
     if (errorCount > 0) {
@@ -1632,18 +1801,25 @@ ${xrefOffset}
         batchQueue.filter((item) => item.status === "error").map((item) => `${item.filename}: ${item.error}`)
       );
     }
+    if (unverifiedCount > 0) {
+      console.warn(
+        "[Batch Upload] Belum terverifikasi (dokumen tidak terlihat di daftar):",
+        batchQueue.filter((item) => item.status === "warning").map((item) => `${item.filename}: ${item.error}`)
+      );
+    }
     const buttonsContainer = document.querySelector(
       "#" + BATCH_UPLOAD_URL_CONFIG.modalId + " .ext-modal-buttons"
     );
+    const retryableCount = errorCount + unverifiedCount;
     if (buttonsContainer) {
       const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
-      const retryBtn = errorCount > 0 ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">Ulangi yang Gagal</button>` : "";
+      const retryBtn = retryableCount > 0 ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">${unverifiedCount > 0 ? "Ulangi Gagal/Belum Pasti" : "Ulangi yang Gagal"}</button>` : "";
       buttonsContainer.innerHTML = `<div style="display:flex;gap:8px;justify-content:flex-end;">${retryBtn}${reloadBtn}</div>`;
       document.getElementById("ext-reload-btn")?.addEventListener("click", () => window.location.reload());
-      if (errorCount > 0) {
+      if (retryableCount > 0) {
         document.getElementById("ext-retry-failed-btn")?.addEventListener("click", () => {
           batchQueue.forEach((item) => {
-            if (item.status === "error") {
+            if (item.status === "error" || item.status === "warning") {
               item.status = "pending";
               item.error = void 0;
             }
@@ -1678,6 +1854,10 @@ ${xrefOffset}
       if (result.success) {
         firstItem.status = "success";
         updateStatus("Test sukses! Detail di console.");
+      } else if (result.unverified) {
+        firstItem.status = "warning";
+        firstItem.error = result.error;
+        updateStatus("Terkirim, tapi belum terverifikasi (lihat console).");
       } else {
         firstItem.status = "error";
         firstItem.error = result.error;
@@ -1791,6 +1971,7 @@ ${xrefOffset}
   }
   async function runBatchQueueToSidepanel() {
     _batchAbortController = new AbortController();
+    resetDocRowsCache();
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const idVisitStr = urlParams.get("id_visit") || "";
@@ -1804,6 +1985,7 @@ ${xrefOffset}
       }
       let successCount = 0;
       let errorCount = 0;
+      let unverifiedCount = 0;
       const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
       const total = itemsToUpload.length;
       if (total === 0) {
@@ -1817,12 +1999,16 @@ ${xrefOffset}
       for (let i = 0; i < total; i++) {
         const metadata = itemsToUpload[i];
         metadata.status = "uploading";
-        sendProgress(i, total, successCount, errorCount, batchQueue);
+        sendProgress(i, total, successCount, errorCount, unverifiedCount, batchQueue);
         try {
           const result = await processAndUploadSingleUrl(metadata, idVisitStr);
           if (result.success) {
             metadata.status = "success";
             successCount++;
+          } else if (result.unverified) {
+            metadata.status = "warning";
+            metadata.error = result.error;
+            unverifiedCount++;
           } else {
             metadata.status = "error";
             metadata.error = result.error;
@@ -1833,7 +2019,7 @@ ${xrefOffset}
           metadata.error = error.message;
           errorCount++;
         }
-        sendProgress(i + 1, total, successCount, errorCount, batchQueue);
+        sendProgress(i + 1, total, successCount, errorCount, unverifiedCount, batchQueue);
       }
     } catch (err) {
       chrome.runtime.sendMessage({
@@ -1843,13 +2029,16 @@ ${xrefOffset}
       }).catch(console.error);
     }
   }
-  function sendProgress(current, total, success, fail, items) {
+  function sendProgress(current, total, success, fail, unverified, items) {
+    const parts = [`Sukses: ${success}`];
+    if (unverified > 0) parts.push(`Belum pasti: ${unverified}`);
+    parts.push(`Gagal: ${fail}`);
     chrome.runtime.sendMessage({
       type: "TAB_ACTION_RESULT",
       action: "BATCH_UPLOAD_PROGRESS",
       data: {
         percent: current / total * 100,
-        status: `Diproses: ${current}/${total} - Sukses: ${success}, Gagal: ${fail}`,
+        status: `Diproses: ${current}/${total} - ${parts.join(", ")}`,
         items,
         finished: current >= total
       }
@@ -1875,6 +2064,9 @@ ${xrefOffset}
       const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
       if (result.success) {
         firstItem.status = "success";
+      } else if (result.unverified) {
+        firstItem.status = "warning";
+        firstItem.error = result.error;
       } else {
         firstItem.status = "error";
         firstItem.error = result.error;
@@ -1888,7 +2080,7 @@ ${xrefOffset}
       action: "BATCH_UPLOAD_PROGRESS",
       data: {
         percent: 100,
-        status: firstItem.status === "success" ? "Test upload sukses!" : "Test upload gagal!",
+        status: firstItem.status === "success" ? "Test upload sukses!" : firstItem.status === "warning" ? "Terkirim, belum terverifikasi \u2014 cek daftar dokumen!" : "Test upload gagal!",
         items: batchQueue,
         finished: true
       }

@@ -107,6 +107,7 @@ var __morbis_feature = (() => {
     .ext-status-badge[data-status="success"] { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
     .ext-status-badge[data-status="error"] { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
     .ext-status-badge[data-status="deleting"] { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .ext-status-badge[data-status="warning"] { background: #fffbeb; color: #92400e; border-color: #fde68a; }
 
     .ext-modal-content input,
     .ext-modal-content textarea,

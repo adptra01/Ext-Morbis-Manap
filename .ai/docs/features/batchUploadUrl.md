@@ -76,6 +76,39 @@ Aturan yang dipakai:
 5. Semua pesan dirapikan (tanpa newline/whitespace berlebih) dan dipotong
    maksimal 200–300 karakter. Potongan `<script>`/CSS tidak pernah ditampilkan.
 
+### 6. Verifikasi "Benar-benar Tersimpan" (sejak 2026-10-19)
+
+Respons 200 HTML **tidak bisa jadi bukti apa pun**: halaman "Error - Aplikasi"
+muncul baik saat data tersimpan maupun saat insert gagal (teramati: status ✅
+tapi dokumen tidak pernah muncul di daftar). Karena itu sukses harus
+dibuktikan, bukan diasumsikan. Implementasi:
+`src/features/shared/uploadVerification.ts` (+ IO di `batchUploadUrl.ts`).
+
+Cara kerja:
+
+1. **Baseline** — sebelum tiap upload, extension membaca daftar dokumen pasien
+   (`/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=…`) dan menyimpan
+   baris tabelnya. Hasil "sesudah" upload dipakai ulang sebagai baseline item
+   berikutnya (TTL 1 menit) → 1 request per dokumen, bukan 2.
+2. **Bukti** (urutan prioritas):
+   - nama file upload terbaca di body respons → tersimpan (tanpa request tambahan)
+   - jumlah baris daftar yang memuat nama file / keterangan timestamp
+     **bertambah** → tersimpan
+   - kedua snapshot terbaca tapi tidak ada tambahan → **tidak tersimpan**
+     (diberi satu jeda 1,5 s + satu pengecekan ulang, karena baris bisa muncul
+     telat)
+3. **Tiga status item**:
+   - ✅ `Sukses` — ada bukti dokumen tersimpan
+   - ⚠️ `Belum pasti` — terkirim, tapi daftar dokumen tidak terbaca (halaman
+     gagal dimuat / tabel tidak ditemukan) → tidak diklaim sukses, tidak
+     dituduh gagal; tombol ulangi menyertakan item ini
+   - ❌ `Gagal` — server menyatakan gagal, atau daftar terbaca dan dokumen
+     tidak ada → pesan error memuat kalimat server + ringkasan respons
+     (`summarizeMorbisResponse`, isi `<script>` dibuang lebih dulu)
+4. Verifikasi **tidak pernah** menyimpulkan "gagal" tanpa baseline; kalau daftar
+   dokumen tidak terbaca 2×, verifikasi dimatikan untuk sisa batch (hemat waktu)
+   dan item ditandai ⚠️.
+
 ## Langkah Penggunaan
 
 ### 1. Akses Fitur
@@ -168,14 +201,16 @@ Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
 
 ### Error Umum dan Solusi
 
-| Error                                  | Penyebab                                                  | Solusi                                                                     |
-| -------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **CORS Blocked**                       | URL sumber beda domain/origin                             | URL harus dapat diakses dari browser (same-origin atau allow CORS)         |
-| **404 Not Found**                      | URL file sudah tidak tersedia                             | Periksa dan update URL yang benar                                          |
-| **Network Error**                      | Koneksi internet bermasalah                               | Coba lagi saat koneksi stabil                                              |
-| **Invalid File Type**                  | Ekstensi file tidak didukung                              | Pastikan file berformat PDF, JPG, PNG                                      |
-| **Upload Failed**                      | Server menolak upload                                     | Periksa parameter metadata (NORM, tanggal)                                 |
-| **Pesan error berisi `window.NREUM…`** | Isi `<script>` New Relic ikut diekstrak dari HTML respons | Sudah diperbaiki: parser membuang isi script/style sebelum ekstraksi pesan |
+| Error                                             | Penyebab                                                                                     | Solusi                                                                                                                                               |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CORS Blocked**                                  | URL sumber beda domain/origin                                                                | URL harus dapat diakses dari browser (same-origin atau allow CORS)                                                                                   |
+| **404 Not Found**                                 | URL file sudah tidak tersedia                                                                | Periksa dan update URL yang benar                                                                                                                    |
+| **Network Error**                                 | Koneksi internet bermasalah                                                                  | Coba lagi saat koneksi stabil                                                                                                                        |
+| **Invalid File Type**                             | Ekstensi file tidak didukung                                                                 | Pastikan file berformat PDF, JPG, PNG                                                                                                                |
+| **Upload Failed**                                 | Server menolak upload                                                                        | Periksa parameter metadata (NORM, tanggal)                                                                                                           |
+| **Pesan error berisi `window.NREUM…`**            | Isi `<script>` New Relic ikut diekstrak dari HTML respons                                    | Sudah diperbaiki: parser membuang isi script/style sebelum ekstraksi pesan                                                                           |
+| **Status ✅ tapi dokumen tidak muncul di daftar** | Respons 200 HTML "Error - Aplikasi" muncul walau insert gagal                                | Sudah diperbaiki: sukses diverifikasi ke halaman dokumen-pasien (bagian 6). Item tanpa bukti kini ❌/⚠️, pesan error memuat ringkasan respons server |
+| **Item ⚠️ "Belum pasti"**                         | Daftar dokumen-pasien tidak terbaca saat verifikasi (halaman error/pagination/tabel berubah) | Cek manual halaman `dokumen-pasien?id_visit=…`; tombol "Ulangi Gagal/Belum Pasti" tersedia                                                           |
 
 ### Log dan Debug
 
@@ -220,10 +255,12 @@ Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
 
 ### File yang Terlibat
 
-- `features/batchUploadUrl.js`: Implementasi utama
-- `core.js`: Registrasi fitur di konfigurasi
-- `popup.js`: UI toggle di popup extension
-- `manifest.json`: Content script injection
+- `src/features/batchUploadUrl.ts`: Implementasi utama (UI, antrian, upload, verifikasi)
+- `src/features/shared/morbisResponse.ts`: parser respons server (HTML/JSON/teks)
+- `src/features/shared/uploadVerification.ts`: aturan verifikasi "tersimpan"
+- `tests/unit/morbis-response.test.ts`, `tests/unit/upload-verification.test.ts`: unit test
+- `dist/features/batchUploadUrl.js`: bundle (IKUT di-commit — dipakai CI/CRX)
+- `manifest.json` + `core`/`popup`: registrasi fitur & toggle
 
 ### Testing Checklist
 
@@ -231,6 +268,7 @@ Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
 - [ ] Download file dari berbagai domain
 - [ ] Error handling untuk URL tidak valid
 - [ ] Upload sequence dan progress tracking
+- [ ] Upload ulang dokumen → status harus ⚠️/❌ bila dokumen tidak muncul di daftar
 - [ ] UI responsiveness di berbagai browser
 - [ ] Memory management untuk batch besar
 
