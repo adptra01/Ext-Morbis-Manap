@@ -11,10 +11,12 @@
 
 ### 🐛 fix
 
+- **batch-upload** — sukses diverifikasi ke daftar dokumen, bukan diasumsikan (`b6d474d`)
 - **batch-upload** — buang script New Relic dari pesan error respons HTML (`ce26f6b`)
 
 ### 🧹 chore
 
+- **changelog** — regenerasi untuk entri batch-upload 2026-10-19 (`b0bac2d`)
 - **build** — sinkronkan versi dist/manifest.json ke 1.5.161 (`74b41d3`)
 
 ## 2026-10-15
@@ -1857,4 +1859,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 74b41d3b8471636dcbb84a784ac6983d7daf3fd4 -->
+<!-- changelog-upto: b6d474de6a7bd4692575e5b0c894370d395829d2 -->
