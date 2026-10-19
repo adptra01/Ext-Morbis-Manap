@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-10-19
+
+### 🐛 fix
+
+- **batch-upload** — buang script New Relic dari pesan error respons HTML (`ce26f6b`)
+
+### 🧹 chore
+
+- **build** — sinkronkan versi dist/manifest.json ke 1.5.161 (`74b41d3`)
+
 ## 2026-10-15
 
 ### ✨ feat
@@ -1847,4 +1857,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: aaee91d2429b82af69bbbdbe935811615f8bb6fc -->
+<!-- changelog-upto: 74b41d3b8471636dcbb84a784ac6983d7daf3fd4 -->
