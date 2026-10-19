@@ -762,6 +762,17 @@ ${xrefOffset}
     if (json.isJson && !json.ok && json.message) return json.message;
     return extractContainerMessage(body) ?? extractInlineJsMessage(body);
   }
+  function extractJsonServerMessage(body) {
+    const trimmed = String(body ?? "").trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
+    let parsed;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+    return findJsonMessage(parsed) ?? null;
+  }
   function summarizeMorbisResponse(body, maxLength = 220) {
     const raw = String(body ?? "");
     if (!raw.trim()) return "(body kosong)";
@@ -772,6 +783,7 @@ ${xrefOffset}
 
   // src/features/shared/uploadVerification.ts
   var MIN_NEEDLE_LENGTH = 6;
+  var MAX_ADDED_ROWS_REPORTED = 3;
   function normalizeForMatch(value) {
     return String(value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
   }
@@ -796,12 +808,53 @@ ${xrefOffset}
     const needle = documentMatchNeedle(fileName);
     return needle.length >= MIN_NEEDLE_LENGTH && normalizeForMatch(responseBody).includes(needle);
   }
-  function decideSaveVerification(input) {
-    if (isSavedByResponseBody(input.responseBody, input.fileName)) return "saved";
-    if (input.rowsBefore === null || input.rowsAfter === null) return "unknown";
-    const needles = [documentMatchNeedle(input.fileName), ...input.extraNeedles ?? []];
-    if (usableNeedles(needles).length === 0) return "unknown";
-    return countDocumentMatches(input.rowsAfter, needles) > countDocumentMatches(input.rowsBefore, needles) ? "saved" : "missing";
+  function rowForDisplay(row, maxLength = 160) {
+    const clean = String(row ?? "").replace(/\s+/g, " ").trim();
+    if (clean.length <= maxLength) return clean;
+    return `${clean.slice(0, Math.max(0, maxLength - 1)).trimEnd()}\u2026`;
+  }
+  function rowKey(row) {
+    return normalizeForMatch(String(row ?? "").replace(/^\s*\d+\s+/, ""));
+  }
+  function diffDocumentRows(before, after) {
+    const beforeKeys = new Set(before.map(rowKey));
+    const seen = /* @__PURE__ */ new Set();
+    const added = [];
+    for (const row of after) {
+      const key = rowKey(row);
+      if (!key || beforeKeys.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      added.push(rowForDisplay(row));
+    }
+    return added;
+  }
+  function verifyDocumentSaved(input) {
+    const before = input.rowsBefore;
+    const after = input.rowsAfter;
+    const fileNeedle = documentMatchNeedle(input.fileName);
+    const needles = usableNeedles([fileNeedle, ...input.extraNeedles ?? []]);
+    const result = {
+      status: "unknown",
+      addedRows: [],
+      rowsBeforeCount: before ? before.length : null,
+      rowsAfterCount: after ? after.length : null
+    };
+    if (isSavedByResponseBody(input.responseBody, input.fileName)) {
+      return { ...result, status: "saved", matchedNeedle: fileNeedle };
+    }
+    if (before === null || after === null) return result;
+    for (const needle of needles) {
+      if (countDocumentMatches(after, [needle]) > countDocumentMatches(before, [needle])) {
+        return { ...result, status: "saved", matchedNeedle: needle };
+      }
+    }
+    const added = diffDocumentRows(before, after);
+    if (added.length === 0) return { ...result, status: "missing" };
+    const capped = added.slice(0, MAX_ADDED_ROWS_REPORTED);
+    if (added.length <= MAX_ADDED_ROWS_REPORTED) {
+      return { ...result, status: "mismatch", addedRows: capped };
+    }
+    return { ...result, status: "unknown", addedRows: capped };
   }
 
   // src/features/batchUploadUrl.ts
@@ -891,11 +944,12 @@ ${xrefOffset}
         if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) return resp;
         lastErr = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
       } catch (err) {
-        lastErr = err;
-        if (err instanceof DOMException && err.name === "AbortError") {
-          if (signal?.aborted) {
-            throw new Error("Batch cancelled", { cause: err });
-          }
+        const isAbort = err instanceof DOMException ? err.name === "AbortError" : /abort/i.test(err?.message ?? "");
+        if (!isAbort) {
+          lastErr = err;
+        } else if (signal?.aborted) {
+          throw new Error("Batch cancelled", { cause: err });
+        } else {
           lastErr = new Error("Request timeout");
         }
       }
@@ -1562,49 +1616,97 @@ ${xrefOffset}
     else _docRowsLookupFailures += 1;
     return rows;
   }
+  async function isDocumentVisibleOnCurrentPage(fileName) {
+    if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
+    try {
+      const response = await fetch(window.location.href, {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: _getBatchAbortSignal()
+      });
+      if (!response.ok) return null;
+      return isSavedByResponseBody(await response.text(), fileName);
+    } catch {
+      return null;
+    }
+  }
+  function describeVerification(result) {
+    const parts = [];
+    parts.push(
+      result.rowsBeforeCount === null || result.rowsAfterCount === null ? "daftar dokumen tidak terbaca" : `daftar dokumen ${result.rowsBeforeCount} \u2192 ${result.rowsAfterCount} baris`
+    );
+    if (result.status === "mismatch" && result.addedRows.length > 0) {
+      parts.push(`baris baru: ${result.addedRows.map((row) => `"${row}"`).join(" | ")}`);
+    } else if (result.status === "missing") {
+      parts.push("tidak ada baris baru");
+    }
+    return parts.join(", ");
+  }
   async function verifyDocumentUpload(idVisit, fileName, extraNeedles, responseBodyForProof, rowsBefore) {
-    if (isSavedByResponseBody(responseBodyForProof, fileName)) return "saved";
-    const rowsAfter = await getDocRowsSnapshot(idVisit, { fresh: true });
-    const first = decideSaveVerification({
-      responseBody: responseBodyForProof,
-      fileName,
-      extraNeedles,
-      rowsBefore,
-      rowsAfter
-    });
-    if (first !== "missing") return first;
-    await sleep(1500);
-    return decideSaveVerification({
+    if (isSavedByResponseBody(responseBodyForProof, fileName)) {
+      return { status: "saved", detail: "nama file terbaca di respons server", source: "body" };
+    }
+    const snapshot = async () => verifyDocumentSaved({
       responseBody: responseBodyForProof,
       fileName,
       extraNeedles,
       rowsBefore,
       rowsAfter: await getDocRowsSnapshot(idVisit, { fresh: true })
     });
+    let result = await snapshot();
+    if (result.status === "saved") {
+      return { status: "saved", detail: describeVerification(result), source: "rows" };
+    }
+    if (result.status === "missing") {
+      await sleep(1500);
+      result = await snapshot();
+      if (result.status === "saved") {
+        return { status: "saved", detail: describeVerification(result), source: "rows" };
+      }
+    }
+    if (result.status === "missing" || result.status === "mismatch") {
+      if (await isDocumentVisibleOnCurrentPage(fileName) === true) {
+        return {
+          status: "saved",
+          detail: "nama file tampil di halaman klaim (tidak ada di daftar dokumen-pasien)",
+          source: "claim-page"
+        };
+      }
+    }
+    return { status: result.status, detail: describeVerification(result) };
   }
   function evaluateUploadResponse(body, contentType) {
+    const serverMessage = extractJsonServerMessage(body) ?? void 0;
+    const withMessage = (verdict) => serverMessage && !verdict.serverMessage ? { ...verdict, serverMessage } : verdict;
     if (/application\/json/i.test(contentType)) {
       const json = evaluateJsonPayload(body);
-      return json.ok ? { ok: true } : { ok: false, message: json.message || "Server rejected" };
+      return withMessage(
+        json.ok ? { ok: true } : { ok: false, message: json.message || "Server rejected" }
+      );
     }
     const looksHtml = /text\/html/i.test(contentType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(body);
     if (looksHtml) {
       const verdict = parseMorbisHtmlResponse(body);
       if (verdict.loginExpired) {
-        return {
+        return withMessage({
           ok: false,
           message: verdict.message || "Sesi login kadaluarsa \u2014 login ulang lalu coba lagi"
-        };
+        });
       }
-      if (!verdict.ok) return { ok: false, message: verdict.message || "Server menolak upload" };
-      return { ok: true, rejectedMarker: verdict.rejectedMarker };
+      if (!verdict.ok) {
+        return withMessage({ ok: false, message: verdict.message || "Server menolak upload" });
+      }
+      return withMessage({ ok: true, rejectedMarker: verdict.rejectedMarker });
     }
     const trimmed = body.trim();
-    if (isMorbisApplicationErrorMessage(trimmed)) return { ok: true, rejectedMarker: true };
-    if (/^(error|gagal|failed)/i.test(trimmed)) {
-      return { ok: false, message: `Server: ${cleanServerMessage(trimmed, 200)}` };
+    const plainMessage = cleanServerMessage(trimmed, 200) || void 0;
+    if (isMorbisApplicationErrorMessage(trimmed)) {
+      return withMessage({ ok: true, rejectedMarker: true, serverMessage: plainMessage });
     }
-    return { ok: true };
+    if (/^(error|gagal|failed)/i.test(trimmed)) {
+      return withMessage({ ok: false, message: `Server: ${plainMessage}` });
+    }
+    return withMessage({ ok: true, serverMessage: plainMessage });
   }
   function describeServerFailure(body, statusText) {
     return extractServerErrorMessage(body) || cleanServerMessage(htmlToVisibleText(body), 200) || statusText || "tanpa keterangan";
@@ -1645,36 +1747,58 @@ ${xrefOffset}
         ok: false,
         message: `Server ${uploadResponse.status}: ${describeServerFailure(result, uploadResponse.statusText)}`
       };
-      const verification = _getBatchAbortSignal().aborted ? "unknown" : await verifyDocumentUpload(
+      const verification = _getBatchAbortSignal().aborted ? { status: "unknown", detail: "batch dibatalkan" } : await verifyDocumentUpload(
         idVisitStr,
         file.name,
         [keterangan],
         verdict.ok ? result : "",
         rowsBefore
       );
-      if (verification === "saved") {
+      if (verification.status === "saved") {
         if (!verdict.ok) {
           console.warn(
             "[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen \u2014 dianggap sukses.",
             verdict.message
           );
         }
+        if (verification.source === "claim-page") {
+          console.info(
+            "[Batch Upload] Dokumen tampil di halaman klaim tapi TIDAK di daftar dokumen-pasien:",
+            file.name
+          );
+        }
         return { success: true, result };
       }
-      if (verification === "missing") {
-        const summary = summarizeMorbisResponse(result);
-        const detail = verdict.message || `respons ${uploadResponse.status} ${responseType || "tanpa content-type"}`;
+      const serverSaid = verdict.serverMessage || verdict.message || summarizeMorbisResponse(result);
+      const httpInfo = `${uploadResponse.status} ${responseType || "tanpa content-type"}`;
+      if (verification.status === "mismatch") {
+        console.warn(
+          "[Batch Upload] Ada baris baru di daftar tapi nama tidak cocok:",
+          file.name,
+          "|",
+          serverSaid,
+          "|",
+          verification.detail
+        );
+        return {
+          success: false,
+          unverified: true,
+          error: `Server: ${serverSaid} \u2014 tapi baris baru di daftar tidak memuat nama upload kita (${verification.detail}). Cek manual.`
+        };
+      }
+      if (verification.status === "missing") {
         console.warn(
           "[Batch Upload] Dokumen TIDAK tersimpan:",
           file.name,
           "|",
-          detail,
-          "| respons server:",
-          summary
+          serverSaid,
+          "|",
+          verification.detail,
+          `| ${httpInfo}`
         );
         return {
           success: false,
-          error: `Dokumen tidak tersimpan \u2014 tidak muncul di daftar dokumen pasien. ${detail}. Respons server: ${summary}`
+          error: `Dokumen tidak tersimpan \u2014 ${verification.detail}. Server: ${serverSaid}. Respons ${httpInfo}.`
         };
       }
       if (!verdict.ok) return { success: false, error: verdict.message || "Server menolak upload" };
@@ -1687,7 +1811,7 @@ ${xrefOffset}
       return {
         success: false,
         unverified: true,
-        error: "Terkirim, belum bisa dipastikan tersimpan (daftar dokumen tidak terbaca)."
+        error: `Terkirim (server: ${serverSaid || "tanpa pesan"}), tapi belum bisa dipastikan tersimpan \u2014 ${verification.detail}.`
       };
     } catch (error) {
       const msg = error.message;
@@ -1697,6 +1821,8 @@ ${xrefOffset}
         friendly = "Network error \u2014 cek koneksi atau CORS";
       } else if (msg.includes("timeout") || msg.includes("AbortError")) {
         friendly = "Timeout \u2014 server tidak merespon dalam 30 detik";
+      } else if (/abort/i.test(msg)) {
+        friendly = "Permintaan dihentikan sebelum server menjawab (timeout halaman/cancel) \u2014 coba lagi";
       } else if (msg.includes("0 bytes")) {
         friendly = "File kosong dari server";
       }

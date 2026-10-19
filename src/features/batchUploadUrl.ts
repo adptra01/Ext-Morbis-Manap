@@ -10,6 +10,7 @@ import { buildSingleJpegPdf, sniffFileKind } from './shared/pdfWriter.js';
 import {
   cleanServerMessage,
   evaluateJsonPayload,
+  extractJsonServerMessage,
   extractServerErrorMessage,
   htmlToVisibleText,
   isMorbisApplicationErrorMessage,
@@ -17,8 +18,8 @@ import {
   summarizeMorbisResponse,
 } from './shared/morbisResponse.js';
 import {
-  decideSaveVerification,
   isSavedByResponseBody,
+  verifyDocumentSaved,
   type SaveVerification,
 } from './shared/uploadVerification.js';
 
@@ -161,13 +162,19 @@ async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 2):
       if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) return resp;
       lastErr = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     } catch (err) {
-      lastErr = err as Error;
-      // AbortError = timeout or cancellation, don't retry if it's our batch abort
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        if (signal?.aborted) {
-          // Batch was cancelled — don't retry
-          throw new Error('Batch cancelled', { cause: err });
-        }
+      // AbortError bisa datang dari timer kita, watchdog halaman (15 s), atau
+      // cancel batch. Jangan biarkan pesan mentahnya ("signal is aborted
+      // without reason") sampai ke UI.
+      const isAbort =
+        err instanceof DOMException
+          ? err.name === 'AbortError'
+          : /abort/i.test((err as Error)?.message ?? '');
+      if (!isAbort) {
+        lastErr = err as Error;
+      } else if (signal?.aborted) {
+        // Batch was cancelled — don't retry
+        throw new Error('Batch cancelled', { cause: err });
+      } else {
         lastErr = new Error('Request timeout');
       }
     }
@@ -1044,6 +1051,51 @@ async function getDocRowsSnapshot(
 }
 
 /**
+ * Cek apakah nama file kita muncul di halaman yang sedang dibuka (mis. preview
+ * `div-file-upload` di halaman klaim). Dokumen M-KLAIM bisa tampil di sini walau
+ * tidak terdaftar di halaman dokumen-pasien.
+ */
+async function isDocumentVisibleOnCurrentPage(fileName: string): Promise<boolean | null> {
+  // Hanya relevan di halaman modul klaim (tempat fitur ini dipakai).
+  if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
+  try {
+    const response = await fetch(window.location.href, {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      signal: _getBatchAbortSignal(),
+    });
+    if (!response.ok) return null;
+    return isSavedByResponseBody(await response.text(), fileName);
+  } catch {
+    return null;
+  }
+}
+
+interface UploadVerificationOutcome {
+  status: SaveVerification;
+  /** Ringkasan bukti/diagnosa untuk pesan UI & console. */
+  detail: string;
+  /** Dari mana bukti tersimpan diperoleh. */
+  source?: 'body' | 'rows' | 'claim-page';
+}
+
+/** Ringkasan angka + baris baru untuk pesan diagnosa. */
+function describeVerification(result: ReturnType<typeof verifyDocumentSaved>): string {
+  const parts: string[] = [];
+  parts.push(
+    result.rowsBeforeCount === null || result.rowsAfterCount === null
+      ? 'daftar dokumen tidak terbaca'
+      : `daftar dokumen ${result.rowsBeforeCount} → ${result.rowsAfterCount} baris`,
+  );
+  if (result.status === 'mismatch' && result.addedRows.length > 0) {
+    parts.push(`baris baru: ${result.addedRows.map((row) => `"${row}"`).join(' | ')}`);
+  } else if (result.status === 'missing') {
+    parts.push('tidak ada baris baru');
+  }
+  return parts.join(', ');
+}
+
+/**
  * Buktikan dokumen benar-benar tersimpan (aturan di shared/uploadVerification.ts).
  *
  * `responseBodyForProof` hanya boleh berisi body respons yang TIDAK memuat pesan
@@ -1055,44 +1107,73 @@ async function verifyDocumentUpload(
   extraNeedles: readonly string[],
   responseBodyForProof: string,
   rowsBefore: readonly string[] | null,
-): Promise<SaveVerification> {
+): Promise<UploadVerificationOutcome> {
   // Fast-path: server memantulkan nama file kita → tidak perlu fetch daftar.
-  if (isSavedByResponseBody(responseBodyForProof, fileName)) return 'saved';
+  if (isSavedByResponseBody(responseBodyForProof, fileName)) {
+    return { status: 'saved', detail: 'nama file terbaca di respons server', source: 'body' };
+  }
 
-  const rowsAfter = await getDocRowsSnapshot(idVisit, { fresh: true });
-  const first = decideSaveVerification({
-    responseBody: responseBodyForProof,
-    fileName,
-    extraNeedles,
-    rowsBefore,
-    rowsAfter,
-  });
-  if (first !== 'missing') return first;
+  const snapshot = async (): Promise<ReturnType<typeof verifyDocumentSaved>> =>
+    verifyDocumentSaved({
+      responseBody: responseBodyForProof,
+      fileName,
+      extraNeedles,
+      rowsBefore,
+      rowsAfter: await getDocRowsSnapshot(idVisit, { fresh: true }),
+    });
+
+  let result = await snapshot();
+  if (result.status === 'saved') {
+    return { status: 'saved', detail: describeVerification(result), source: 'rows' };
+  }
 
   // Baris dokumen kadang baru muncul beberapa saat setelah insert — beri jeda.
-  await sleep(1500);
-  return decideSaveVerification({
-    responseBody: responseBodyForProof,
-    fileName,
-    extraNeedles,
-    rowsBefore,
-    rowsAfter: await getDocRowsSnapshot(idVisit, { fresh: true }),
-  });
+  if (result.status === 'missing') {
+    await sleep(1500);
+    result = await snapshot();
+    if (result.status === 'saved') {
+      return { status: 'saved', detail: describeVerification(result), source: 'rows' };
+    }
+  }
+
+  // Halaman klaim (preview `div-file-upload`) bisa menampilkan dokumen yang
+  // tidak terdaftar di halaman dokumen-pasien → cek sebelum menyimpulkan gagal.
+  if (result.status === 'missing' || result.status === 'mismatch') {
+    if ((await isDocumentVisibleOnCurrentPage(fileName)) === true) {
+      return {
+        status: 'saved',
+        detail: 'nama file tampil di halaman klaim (tidak ada di daftar dokumen-pasien)',
+        source: 'claim-page',
+      };
+    }
+  }
+
+  return { status: result.status, detail: describeVerification(result) };
 }
 
 interface UploadResponseVerdict {
   /** `false` hanya bila ada pesan gagal yang benar-benar terbaca. */
   ok: boolean;
   message?: string;
+  /** Pesan server apa adanya (termasuk pesan sukses JSON) untuk diagnosa. */
+  serverMessage?: string;
   /** Ada kandidat marker error tanpa pesan terbaca (mis. "Error - Aplikasi"). */
   rejectedMarker?: boolean;
 }
 
 /** Nilai body respons upload dari endpoint `control?sub=simpan`. */
 function evaluateUploadResponse(body: string, contentType: string): UploadResponseVerdict {
+  // MORBIS sering mengirim JSON dengan content-type text/html → pesan diambil
+  // lebih dulu supaya UI menampilkan kata server (mis. "Dokumen Berhasil Diupload").
+  const serverMessage = extractJsonServerMessage(body) ?? undefined;
+  const withMessage = (verdict: UploadResponseVerdict): UploadResponseVerdict =>
+    serverMessage && !verdict.serverMessage ? { ...verdict, serverMessage } : verdict;
+
   if (/application\/json/i.test(contentType)) {
     const json = evaluateJsonPayload(body);
-    return json.ok ? { ok: true } : { ok: false, message: json.message || 'Server rejected' };
+    return withMessage(
+      json.ok ? { ok: true } : { ok: false, message: json.message || 'Server rejected' },
+    );
   }
 
   // Body HTML kadang dikirim dengan content-type teks biasa → isinya ikut dicek.
@@ -1101,21 +1182,26 @@ function evaluateUploadResponse(body: string, contentType: string): UploadRespon
   if (looksHtml) {
     const verdict = parseMorbisHtmlResponse(body);
     if (verdict.loginExpired) {
-      return {
+      return withMessage({
         ok: false,
         message: verdict.message || 'Sesi login kadaluarsa — login ulang lalu coba lagi',
-      };
+      });
     }
-    if (!verdict.ok) return { ok: false, message: verdict.message || 'Server menolak upload' };
-    return { ok: true, rejectedMarker: verdict.rejectedMarker };
+    if (!verdict.ok) {
+      return withMessage({ ok: false, message: verdict.message || 'Server menolak upload' });
+    }
+    return withMessage({ ok: true, rejectedMarker: verdict.rejectedMarker });
   }
 
   const trimmed = body.trim();
-  if (isMorbisApplicationErrorMessage(trimmed)) return { ok: true, rejectedMarker: true };
-  if (/^(error|gagal|failed)/i.test(trimmed)) {
-    return { ok: false, message: `Server: ${cleanServerMessage(trimmed, 200)}` };
+  const plainMessage = cleanServerMessage(trimmed, 200) || undefined;
+  if (isMorbisApplicationErrorMessage(trimmed)) {
+    return withMessage({ ok: true, rejectedMarker: true, serverMessage: plainMessage });
   }
-  return { ok: true };
+  if (/^(error|gagal|failed)/i.test(trimmed)) {
+    return withMessage({ ok: false, message: `Server: ${plainMessage}` });
+  }
+  return withMessage({ ok: true, serverMessage: plainMessage });
 }
 
 /** Pesan server untuk respons gagal (4xx/5xx) — tanpa isi script/CSS. */
@@ -1190,7 +1276,7 @@ async function processAndUploadSingleUrl(
     // status ✅ tapi dokumen tidak pernah muncul di daftar). Buktinya = dokumen
     // muncul sebagai baris baru di daftar dokumen pasien.
     const verification = _getBatchAbortSignal().aborted
-      ? 'unknown'
+      ? { status: 'unknown' as SaveVerification, detail: 'batch dibatalkan' }
       : await verifyDocumentUpload(
           idVisitStr,
           file.name,
@@ -1199,36 +1285,58 @@ async function processAndUploadSingleUrl(
           rowsBefore,
         );
 
-    if (verification === 'saved') {
+    if (verification.status === 'saved') {
       if (!verdict.ok) {
         console.warn(
           '[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen — dianggap sukses.',
           verdict.message,
         );
       }
+      if (verification.source === 'claim-page') {
+        console.info(
+          '[Batch Upload] Dokumen tampil di halaman klaim tapi TIDAK di daftar dokumen-pasien:',
+          file.name,
+        );
+      }
       return { success: true, result };
     }
 
-    if (verification === 'missing') {
-      const summary = summarizeMorbisResponse(result);
-      const detail =
-        verdict.message ||
-        `respons ${uploadResponse.status} ${responseType || 'tanpa content-type'}`;
+    const serverSaid = verdict.serverMessage || verdict.message || summarizeMorbisResponse(result);
+    const httpInfo = `${uploadResponse.status} ${responseType || 'tanpa content-type'}`;
+
+    if (verification.status === 'mismatch') {
+      console.warn(
+        '[Batch Upload] Ada baris baru di daftar tapi nama tidak cocok:',
+        file.name,
+        '|',
+        serverSaid,
+        '|',
+        verification.detail,
+      );
+      return {
+        success: false,
+        unverified: true,
+        error: `Server: ${serverSaid} — tapi baris baru di daftar tidak memuat nama upload kita (${verification.detail}). Cek manual.`,
+      };
+    }
+
+    if (verification.status === 'missing') {
       console.warn(
         '[Batch Upload] Dokumen TIDAK tersimpan:',
         file.name,
         '|',
-        detail,
-        '| respons server:',
-        summary,
+        serverSaid,
+        '|',
+        verification.detail,
+        `| ${httpInfo}`,
       );
       return {
         success: false,
-        error: `Dokumen tidak tersimpan — tidak muncul di daftar dokumen pasien. ${detail}. Respons server: ${summary}`,
+        error: `Dokumen tidak tersimpan — ${verification.detail}. Server: ${serverSaid}. Respons ${httpInfo}.`,
       };
     }
 
-    // verification === 'unknown' → tidak bisa dibuktikan sukses maupun gagal.
+    // verification.status === 'unknown' → tidak bisa dibuktikan sukses maupun gagal.
     if (!verdict.ok) return { success: false, error: verdict.message || 'Server menolak upload' };
     if (verdict.rejectedMarker) {
       console.debug(
@@ -1239,7 +1347,7 @@ async function processAndUploadSingleUrl(
     return {
       success: false,
       unverified: true,
-      error: 'Terkirim, belum bisa dipastikan tersimpan (daftar dokumen tidak terbaca).',
+      error: `Terkirim (server: ${serverSaid || 'tanpa pesan'}), tapi belum bisa dipastikan tersimpan — ${verification.detail}.`,
     };
   } catch (error) {
     const msg = (error as Error).message;
@@ -1252,6 +1360,9 @@ async function processAndUploadSingleUrl(
       friendly = 'Network error — cek koneksi atau CORS';
     } else if (msg.includes('timeout') || msg.includes('AbortError')) {
       friendly = 'Timeout — server tidak merespon dalam 30 detik';
+    } else if (/abort/i.test(msg)) {
+      friendly =
+        'Permintaan dihentikan sebelum server menjawab (timeout halaman/cancel) — coba lagi';
     } else if (msg.includes('0 bytes')) {
       friendly = 'File kosong dari server';
     }

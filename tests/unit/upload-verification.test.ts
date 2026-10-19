@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
   MIN_NEEDLE_LENGTH,
   countDocumentMatches,
-  decideSaveVerification,
+  diffDocumentRows,
   documentMatchNeedle,
   isSavedByResponseBody,
   normalizeForMatch,
   usableNeedles,
+  verifyDocumentSaved,
 } from '../../src/features/shared/uploadVerification.js';
 
 /** Nama upload nyata dari rewriteUploadFilename(): upload_YYYYMMDD_<ms>_<rand>.pdf */
@@ -69,110 +70,142 @@ describe('isSavedByResponseBody', () => {
   });
 });
 
-describe('decideSaveVerification', () => {
+describe('diffDocumentRows', () => {
+  it('melaporkan hanya baris yang benar-benar baru', () => {
+    expect(diffDocumentRows([ROW_OLD], [ROW_OLD, ROW_NEW])).toEqual([ROW_NEW]);
+  });
+
+  it('tahan terhadap pergeseran kolom nomor urut ("1", "2", …)', () => {
+    const before = ['1 dokumen A 2026-08-17', '2 dokumen B 2026-08-18'];
+    const after = ['1 dokumen B 2026-08-18', '2 dokumen A 2026-08-17', '3 dokumen C 2026-10-19'];
+    expect(diffDocumentRows(before, after)).toEqual(['3 dokumen C 2026-10-19']);
+  });
+
+  it('memotong teks baris yang panjang', () => {
+    const long = `1 ${'x'.repeat(400)}`;
+    const [added] = diffDocumentRows([], [long]);
+    expect(added.length).toBeLessThanOrEqual(160);
+    expect(added.endsWith('…')).toBe(true);
+  });
+});
+
+describe('verifyDocumentSaved', () => {
+  const base = { responseBody: '', fileName: UPLOAD_NAME };
+
   it('saved: nama file terbaca di body respons (halaman detail setelah simpan)', () => {
     const body = `<html><body><div class="div-file-upload"><script>var url = '/assets/dokumen-pasien/00005288-1760832001-${UPLOAD_NAME}';</script></div></body></html>`;
-    expect(
-      decideSaveVerification({
-        responseBody: body,
-        fileName: UPLOAD_NAME,
-        rowsBefore: [ROW_OLD],
-        rowsAfter: [ROW_OLD],
-      }),
-    ).toBe('saved');
+    const result = verifyDocumentSaved({
+      ...base,
+      responseBody: body,
+      rowsBefore: [ROW_OLD],
+      rowsAfter: [ROW_OLD],
+    });
+    expect(result.status).toBe('saved');
+    expect(result.matchedNeedle).toBe(UPLOAD_NEEDLE);
   });
 
   it('saved: jumlah baris daftar bertambah setelah upload', () => {
-    expect(
-      decideSaveVerification({
-        responseBody: '',
-        fileName: UPLOAD_NAME,
-        rowsBefore: [ROW_OLD],
-        rowsAfter: [ROW_OLD, ROW_NEW],
-      }),
-    ).toBe('saved');
+    const result = verifyDocumentSaved({
+      ...base,
+      rowsBefore: [ROW_OLD],
+      rowsAfter: [ROW_OLD, ROW_NEW],
+    });
+    expect(result.status).toBe('saved');
+    expect(result.rowsBeforeCount).toBe(1);
+    expect(result.rowsAfterCount).toBe(2);
   });
 
   it('saved: jarum keterangan (timestamp) yang cocok di baris baru', () => {
-    const rowsAfter = [`7 00005288-1760832001-dokumen_lain.pdf 2026-10-19 09:00:00 ${''}`];
-    expect(
-      decideSaveVerification({
-        responseBody: '',
-        fileName: UPLOAD_NAME,
-        extraNeedles: ['2026-10-19 09:00:00'],
-        rowsBefore: [ROW_OLD],
-        rowsAfter,
-      }),
-    ).toBe('saved');
+    const rowsAfter = ['7 00005288-1760832001-dokumen_lain.pdf 2026-10-19 09:00:00'];
+    const result = verifyDocumentSaved({
+      ...base,
+      extraNeedles: ['2026-10-19 09:00:00'],
+      rowsBefore: [ROW_OLD],
+      rowsAfter,
+    });
+    expect(result.status).toBe('saved');
+    expect(result.matchedNeedle).toBe('20261019090000');
   });
 
-  it('missing: baris tidak bertambah dan respons tidak memuat nama file', () => {
-    expect(
-      decideSaveVerification({
-        responseBody:
-          '<html><head><title>Error - Aplikasi</title></head><body>Error - Aplikasi</body></html>',
-        fileName: UPLOAD_NAME,
-        rowsBefore: [ROW_OLD],
-        rowsAfter: [ROW_OLD],
-      }),
-    ).toBe('missing');
+  it('mismatch: ada baris baru tapi namanya tidak memuat nama upload kita', () => {
+    const renamed =
+      '2 00005288-1760832001-dokumen_hasil_scan.pdf 2026-10-19 09:00 2026-10-19 09:00';
+    const result = verifyDocumentSaved({
+      ...base,
+      rowsBefore: [ROW_OLD],
+      rowsAfter: [ROW_OLD, renamed],
+    });
+    expect(result.status).toBe('mismatch');
+    expect(result.addedRows).toEqual([renamed]);
+  });
+
+  it('missing: tidak ada baris baru sama sekali', () => {
+    const result = verifyDocumentSaved({ ...base, rowsBefore: [ROW_OLD], rowsAfter: [ROW_OLD] });
+    expect(result.status).toBe('missing');
+    expect(result.addedRows).toEqual([]);
   });
 
   it('missing: baris lama yang menyerupai nama kita tidak dihitung sebagai bukti', () => {
     // Upload ulang dokumen yang sama → baris sudah ada sebelum upload.
-    expect(
-      decideSaveVerification({
-        responseBody: '{}',
-        fileName: UPLOAD_NAME,
-        rowsBefore: [ROW_NEW],
-        rowsAfter: [ROW_NEW],
-      }),
-    ).toBe('missing');
+    const result = verifyDocumentSaved({ ...base, rowsBefore: [ROW_NEW], rowsAfter: [ROW_NEW] });
+    expect(result.status).toBe('missing');
   });
 
   it('unknown: daftar dokumen tidak terbaca (baseline null)', () => {
-    expect(
-      decideSaveVerification({
-        responseBody: '',
-        fileName: UPLOAD_NAME,
-        rowsBefore: null,
-        rowsAfter: [ROW_OLD, ROW_NEW],
-      }),
-    ).toBe('unknown');
+    const result = verifyDocumentSaved({
+      ...base,
+      rowsBefore: null,
+      rowsAfter: [ROW_OLD, ROW_NEW],
+    });
+    expect(result.status).toBe('unknown');
+    expect(result.rowsBeforeCount).toBeNull();
   });
 
   it('unknown: daftar dokumen tidak terbaca setelah upload', () => {
-    expect(
-      decideSaveVerification({
-        responseBody: '<html><body><p>Silakan login</p></body></html>',
-        fileName: UPLOAD_NAME,
-        rowsBefore: [ROW_OLD],
-        rowsAfter: null,
-      }),
-    ).toBe('unknown');
+    const result = verifyDocumentSaved({
+      ...base,
+      responseBody: '<html><body><p>Silakan login</p></body></html>',
+      rowsBefore: [ROW_OLD],
+      rowsAfter: null,
+    });
+    expect(result.status).toBe('unknown');
+  });
+
+  it('unknown: tabel berubah banyak (re-render) tidak dipakai sebagai bukti', () => {
+    const after = [ROW_OLD, '2 a', '3 b', '4 c', '5 d'];
+    const result = verifyDocumentSaved({ ...base, rowsBefore: [ROW_OLD], rowsAfter: after });
+    expect(result.status).toBe('unknown');
+    expect(result.addedRows.length).toBeLessThanOrEqual(3);
   });
 
   it('body yang hanya memantulkan keterangan (form re-render) bukan bukti tersimpan', () => {
-    const formEcho = `<input name="keterangan" value="2026-10-19 09:00:00">`;
-    expect(
-      decideSaveVerification({
-        responseBody: formEcho,
-        fileName: UPLOAD_NAME,
-        extraNeedles: ['2026-10-19 09:00:00'],
-        rowsBefore: [ROW_OLD],
-        rowsAfter: [ROW_OLD],
-      }),
-    ).toBe('missing');
+    const result = verifyDocumentSaved({
+      ...base,
+      responseBody: `<input name="keterangan" value="2026-10-19 09:00:00">`,
+      extraNeedles: ['2026-10-19 09:00:00'],
+      rowsBefore: [ROW_OLD],
+      rowsAfter: [ROW_OLD],
+    });
+    expect(result.status).toBe('missing');
   });
 
   it('nama file pendek tidak dipakai sebagai jarum fast-path', () => {
-    expect(
-      decideSaveVerification({
-        responseBody: '<p>a.pdf</p>',
-        fileName: 'a.pdf',
-        rowsBefore: null,
-        rowsAfter: null,
-      }),
-    ).toBe('unknown');
+    const result = verifyDocumentSaved({
+      responseBody: '<p>a.pdf</p>',
+      fileName: 'a.pdf',
+      rowsBefore: null,
+      rowsAfter: null,
+    });
+    expect(result.status).toBe('unknown');
+  });
+
+  it('respons JSON sukses ("Dokumen Berhasil Diupload") bukan bukti tersimpan', () => {
+    const result = verifyDocumentSaved({
+      ...base,
+      responseBody: '{"status":"success","message":"Dokumen Berhasil Diupload"}',
+      rowsBefore: [ROW_OLD],
+      rowsAfter: [ROW_OLD],
+    });
+    expect(result.status).toBe('missing');
   });
 });

@@ -411,6 +411,26 @@ export function extractServerErrorMessage(body: string): string | null {
 }
 
 /**
+ * Pesan server dari body JSON — baik sukses maupun gagal.
+ *
+ * MORBIS membalas JSON walau content-type-nya `text/html`, mis.
+ * `{"status":"success","message":"Dokumen Berhasil Diupload"}`. Pesan itu
+ * ditampilkan di UI/diagnosa supaya pengguna tahu kata server, bukan hanya
+ * "gagal". `null` bila body bukan JSON / tidak ada pesan.
+ */
+export function extractJsonServerMessage(body: string): string | null {
+  const trimmed = String(body ?? '').trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+  return findJsonMessage(parsed) ?? null;
+}
+
+/**
  * Ringkasan satu baris isi respons server untuk pesan error & diagnosa console.
  *
  * Dipakai saat upload tidak terverifikasi: tanpa ini pengguna hanya melihat

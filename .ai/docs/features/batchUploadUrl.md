@@ -79,35 +79,42 @@ Aturan yang dipakai:
 ### 6. Verifikasi "Benar-benar Tersimpan" (sejak 2026-10-19)
 
 Respons 200 HTML **tidak bisa jadi bukti apa pun**: halaman "Error - Aplikasi"
-muncul baik saat data tersimpan maupun saat insert gagal (teramati: status ✅
-tapi dokumen tidak pernah muncul di daftar). Karena itu sukses harus
-dibuktikan, bukan diasumsikan. Implementasi:
+muncul baik saat data tersimpan maupun saat insert gagal. Bahkan JSON
+`{"status":"success","message":"Dokumen Berhasil Diupload"}` (dikirim dengan
+content-type `text/html`) belum tentu berarti barisnya ada. Karena itu sukses
+harus dibuktikan, bukan diasumsikan. Implementasi:
 `src/features/shared/uploadVerification.ts` (+ IO di `batchUploadUrl.ts`).
 
 Cara kerja:
 
 1. **Baseline** — sebelum tiap upload, extension membaca daftar dokumen pasien
    (`/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=…`) dan menyimpan
-   baris tabelnya. Hasil "sesudah" upload dipakai ulang sebagai baseline item
+   baris tabelnya. Hasil "sesudah" dipakai ulang sebagai baseline item
    berikutnya (TTL 1 menit) → 1 request per dokumen, bukan 2.
 2. **Bukti** (urutan prioritas):
-   - nama file upload terbaca di body respons → tersimpan (tanpa request tambahan)
+   - nama file upload terbaca di body respons → tersimpan (fast-path)
    - jumlah baris daftar yang memuat nama file / keterangan timestamp
      **bertambah** → tersimpan
-   - kedua snapshot terbaca tapi tidak ada tambahan → **tidak tersimpan**
-     (diberi satu jeda 1,5 s + satu pengecekan ulang, karena baris bisa muncul
-     telat)
-3. **Tiga status item**:
-   - ✅ `Sukses` — ada bukti dokumen tersimpan
-   - ⚠️ `Belum pasti` — terkirim, tapi daftar dokumen tidak terbaca (halaman
-     gagal dimuat / tabel tidak ditemukan) → tidak diklaim sukses, tidak
-     dituduh gagal; tombol ulangi menyertakan item ini
-   - ❌ `Gagal` — server menyatakan gagal, atau daftar terbaca dan dokumen
-     tidak ada → pesan error memuat kalimat server + ringkasan respons
-     (`summarizeMorbisResponse`, isi `<script>` dibuang lebih dulu)
-4. Verifikasi **tidak pernah** menyimpulkan "gagal" tanpa baseline; kalau daftar
+   - tidak ada tambahan → jeda 1,5 s + satu pengecekan ulang (baris bisa telat)
+   - masih tidak ada → cek halaman klaim yang sedang dibuka (preview
+     `div-file-upload`); dokumen bisa tampil di sana walau tidak terdaftar di
+     halaman dokumen-pasien
+3. **Empat status verifikasi**:
+   - `saved` → ✅ `Sukses`
+   - `mismatch` — ada baris BARU tapi tidak memuat nama upload kita (server
+     memakai pola nama lain) → ⚠️ `Belum pasti`, pesannya menampilkan isi baris
+     baru itu supaya bisa dicek manual
+   - `missing` — tidak ada baris baru sama sekali → ❌ `Gagal`
+   - `unknown` — daftar tidak terbaca / tabel berubah banyak (re-render) → ⚠️
+4. **Diagnosa selalu ikut ditulis** ke pesan item + console: kalimat server
+   (`Dokumen Berhasil Diupload`, dst.), jumlah baris daftar sebelum → sesudah,
+   dan isi baris baru bila ada. Ringkasan respons dibersihkan dari isi
+   `<script>` (`summarizeMorbisResponse`).
+5. Verifikasi **tidak pernah** menyimpulkan "gagal" tanpa baseline; kalau daftar
    dokumen tidak terbaca 2×, verifikasi dimatikan untuk sisa batch (hemat waktu)
-   dan item ditandai ⚠️.
+   dan item ditandai ⚠️. Catatan: `fetchWatchdog` memotong GET same-origin
+   setelah 15 s — kegagalan itu diperlakukan sebagai "tidak terbaca", bukan
+   "gagal".
 
 ## Langkah Penggunaan
 
@@ -201,16 +208,17 @@ Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
 
 ### Error Umum dan Solusi
 
-| Error                                             | Penyebab                                                                                     | Solusi                                                                                                                                               |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **CORS Blocked**                                  | URL sumber beda domain/origin                                                                | URL harus dapat diakses dari browser (same-origin atau allow CORS)                                                                                   |
-| **404 Not Found**                                 | URL file sudah tidak tersedia                                                                | Periksa dan update URL yang benar                                                                                                                    |
-| **Network Error**                                 | Koneksi internet bermasalah                                                                  | Coba lagi saat koneksi stabil                                                                                                                        |
-| **Invalid File Type**                             | Ekstensi file tidak didukung                                                                 | Pastikan file berformat PDF, JPG, PNG                                                                                                                |
-| **Upload Failed**                                 | Server menolak upload                                                                        | Periksa parameter metadata (NORM, tanggal)                                                                                                           |
-| **Pesan error berisi `window.NREUM…`**            | Isi `<script>` New Relic ikut diekstrak dari HTML respons                                    | Sudah diperbaiki: parser membuang isi script/style sebelum ekstraksi pesan                                                                           |
-| **Status ✅ tapi dokumen tidak muncul di daftar** | Respons 200 HTML "Error - Aplikasi" muncul walau insert gagal                                | Sudah diperbaiki: sukses diverifikasi ke halaman dokumen-pasien (bagian 6). Item tanpa bukti kini ❌/⚠️, pesan error memuat ringkasan respons server |
-| **Item ⚠️ "Belum pasti"**                         | Daftar dokumen-pasien tidak terbaca saat verifikasi (halaman error/pagination/tabel berubah) | Cek manual halaman `dokumen-pasien?id_visit=…`; tombol "Ulangi Gagal/Belum Pasti" tersedia                                                           |
+| Error                                                      | Penyebab                                                                                                                                            | Solusi                                                                                                                                                                       |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CORS Blocked**                                           | URL sumber beda domain/origin                                                                                                                       | URL harus dapat diakses dari browser (same-origin atau allow CORS)                                                                                                           |
+| **404 Not Found**                                          | URL file sudah tidak tersedia                                                                                                                       | Periksa dan update URL yang benar                                                                                                                                            |
+| **Network Error**                                          | Koneksi internet bermasalah                                                                                                                         | Coba lagi saat koneksi stabil                                                                                                                                                |
+| **Invalid File Type**                                      | Ekstensi file tidak didukung                                                                                                                        | Pastikan file berformat PDF, JPG, PNG                                                                                                                                        |
+| **Upload Failed**                                          | Server menolak upload                                                                                                                               | Periksa parameter metadata (NORM, tanggal)                                                                                                                                   |
+| **Pesan error berisi `window.NREUM…`**                     | Isi `<script>` New Relic ikut diekstrak dari HTML respons                                                                                           | Sudah diperbaiki: parser membuang isi script/style sebelum ekstraksi pesan                                                                                                   |
+| **Status ✅ tapi dokumen tidak muncul di daftar**          | Respons 200 HTML "Error - Aplikasi" / JSON sukses palsu                                                                                             | Sudah diperbaiki: sukses diverifikasi ke halaman dokumen-pasien + preview halaman klaim (bagian 6)                                                                           |
+| **Item ❌ "Tidak tersimpan" padahal server bilang sukses** | Baris tidak bertambah di daftar dokumen-pasien — dokumen mungkin tersimpan di tabel klaim, atau request ditolak diam-diam                           | Pesan item memuat kalimat server + jumlah baris daftar sebelum → sesudah; cek manual daftar `dokumen-pasien?id_visit=…` dan preview halaman klaim lalu laporkan isi pesannya |
+| **Item ⚠️ "Belum pasti"**                                  | Daftar dokumen-pasien tidak terbaca (error/timeout watchdog 15 s/tabel berubah), **atau** ada baris baru yang namanya tidak memuat nama upload kita | Baca detail di pesan item: kalau ada "baris baru: …", cek apakah baris itu dokumen kita; tombol "Ulangi Gagal/Belum Pasti" tersedia                                          |
 
 ### Log dan Debug
 

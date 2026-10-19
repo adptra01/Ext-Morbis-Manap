@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   cleanServerMessage,
   evaluateJsonPayload,
+  extractJsonServerMessage,
   extractServerErrorMessage,
   htmlToVisibleText,
   isMorbisApplicationErrorMessage,
@@ -242,6 +243,26 @@ describe('extractServerErrorMessage', () => {
     expect(extractServerErrorMessage('{"success":false,"message":"NORM kosong"}')).toBe(
       'NORM kosong',
     );
+  });
+});
+
+describe('extractJsonServerMessage', () => {
+  it('membaca pesan sukses JSON yang dikirim dengan content-type text/html', () => {
+    expect(
+      extractJsonServerMessage('{"status":"success","message":"Dokumen Berhasil Diupload"}'),
+    ).toBe('Dokumen Berhasil Diupload');
+  });
+
+  it('membaca pesan gagal JSON', () => {
+    expect(extractJsonServerMessage('{"success":false,"message":"NORM kosong"}')).toBe(
+      'NORM kosong',
+    );
+  });
+
+  it('null untuk body non-JSON / tanpa pesan', () => {
+    expect(extractJsonServerMessage('<html><body>Error - Aplikasi</body></html>')).toBeNull();
+    expect(extractJsonServerMessage('{"status":"success"}')).toBeNull();
+    expect(extractJsonServerMessage('')).toBeNull();
   });
 });
 
