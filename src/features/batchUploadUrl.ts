@@ -7,6 +7,14 @@ import {
 } from './shared/batchUtils.js';
 import { rewriteUploadFilename } from './shared/uploadName.js';
 import { buildSingleJpegPdf, sniffFileKind } from './shared/pdfWriter.js';
+import {
+  cleanServerMessage,
+  evaluateJsonPayload,
+  extractServerErrorMessage,
+  htmlToVisibleText,
+  isMorbisApplicationErrorMessage,
+  parseMorbisHtmlResponse,
+} from './shared/morbisResponse.js';
 
 const g = getMorbisGlobals();
 
@@ -972,67 +980,68 @@ async function processAndUploadSingleUrl(
       if (uploadResponse.redirected) {
         throw new Error('Sesi login kadaluarsa — login ulang di tab ini lalu coba lagi');
       }
-      // ponytail: extract meaningful error from server response
+      // Ambil pesan server yang benar-benar terbaca. JANGAN membuang tag dari
+      // HTML mentah: isi <script> (New Relic) akan ikut tampil sebagai "pesan
+      // error" — lihat shared/morbisResponse.ts.
       const errorText = await uploadResponse.text().catch(() => '');
-      const snippet = errorText
-        .replace(/<[^>]+>/g, '')
-        .trim()
-        .slice(0, 200);
-      // Coba parsing JSON error dari server
-      const jsonMsg = errorText.match(/"message"\s*:\s*"([^"]+)"/);
-      const throwMsg = jsonMsg
-        ? `Server ${uploadResponse.status}: ${jsonMsg[1]}`
-        : `Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`;
-      throw new Error(throwMsg);
+      const detail =
+        extractServerErrorMessage(errorText) ||
+        cleanServerMessage(htmlToVisibleText(errorText), 200) ||
+        uploadResponse.statusText;
+      throw new Error(`Server ${uploadResponse.status}: ${detail}`);
     }
 
     const result = await uploadResponse.text();
     // Deteksi sukses/gagal PRESISI: MORBIS kadang balas 200 dengan halaman
-    // error. Dulu pakai includes('error')/includes('gagal') — false positive
-    // karena CSS halaman error mengandung variabel "--error:" sehingga upload
-    // yang SUKSES dianggap gagal (gejala: "Server response: Error - Aplikasi
-    // :root { --primary: ... --error: ... }").
+    // error. Aturan lengkap ada di shared/morbisResponse.ts — intinya hanya
+    // percaya pesan yang terbaca manusia, dan tidak pernah mengekstrak teks
+    // dari <script>/<style> (script New Relic dulu bocor jadi pesan error).
     const responseType = uploadResponse.headers.get('content-type') || '';
 
-    // JSON response = paling reliable
+    // JSON response = paling reliable (termasuk JSON yang salah label)
     if (/application\/json/i.test(responseType)) {
-      try {
-        const json = JSON.parse(result);
-        if (json.success === false || json.status === 'error' || json.error) {
-          return {
-            success: false,
-            error: json.message || json.error || 'Server rejected',
-          };
-        }
-        return { success: true, result };
-      } catch {
-        // Body JSON rusak/tidak valid — upload dianggap sukses (parse gagal)
-        return { success: true, result };
+      const json = evaluateJsonPayload(result);
+      if (!json.ok) {
+        return { success: false, error: json.message || 'Server rejected' };
       }
+      return { success: true, result };
     }
 
-    // HTML response — cek marker error SPESIFIK, bukan string "error"
-    if (/text\/html/i.test(responseType)) {
-      const hasRealError =
-        /class="[^"]*alert-danger[^"]*"/i.test(result) ||
-        /<div[^>]*class="[^"]*error[^"]*"[^>]*>[\s\S]{0,200}<\/div>/i.test(result) ||
-        /"success"\s*:\s*false/i.test(result);
-      if (hasRealError) {
-        const snippet = result
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .slice(0, 200);
-        return { success: false, error: `Server error: ${snippet}` };
+    // HTML response — hanya gagal bila ada pesan error yang terbaca. Body HTML
+    // kadang dikirim dengan content-type teks biasa, jadi isinya ikut diperiksa.
+    const looksHtml =
+      /text\/html/i.test(responseType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(result);
+    if (looksHtml) {
+      const verdict = parseMorbisHtmlResponse(result);
+      if (verdict.loginExpired) {
+        return {
+          success: false,
+          error: verdict.message || 'Sesi login kadaluarsa — login ulang lalu coba lagi',
+        };
       }
-      // HTML tanpa marker error (mis. redirect sukses) → dianggap sukses
+      if (!verdict.ok) {
+        return { success: false, error: verdict.message || 'Server menolak upload' };
+      }
+      if (verdict.rejectedMarker) {
+        // Ada kandidat marker error, tapi pesannya tidak layak tampil (mis.
+        // halaman "Error - Aplikasi" MORBIS yang tetap muncul walau file
+        // tersimpan). Upload TIDAK digagalkan; catat untuk diagnosa.
+        console.debug(
+          '[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca — upload dianggap sukses.',
+        );
+      }
       return { success: true, result };
     }
 
     // Plain text — cek marker di AWAL saja
     const trimmed = result.trim();
-    if (/^(error|gagal)/i.test(trimmed)) {
-      return { success: false, error: `Server: ${trimmed.slice(0, 200)}` };
+    if (isMorbisApplicationErrorMessage(trimmed)) {
+      // Teks "Error - Aplikasi" MORBIS juga muncul saat data tetap tersimpan.
+      console.debug('[Batch Upload] Respons "Error - Aplikasi" MORBIS — upload dianggap sukses.');
+      return { success: true, result };
+    }
+    if (/^(error|gagal|failed)/i.test(trimmed)) {
+      return { success: false, error: `Server: ${cleanServerMessage(trimmed, 200)}` };
     }
     return { success: true, result };
   } catch (error) {

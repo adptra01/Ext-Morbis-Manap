@@ -48,6 +48,34 @@ Fitur **Upload Dokumen Ulang** memungkinkan pengguna untuk mengunggah dokumen se
 - Sistem melanjutkan ke URL berikutnya tanpa menghentikan seluruh proses
 - Laporan akhir menunjukkan jumlah sukses vs gagal
 
+### 5. Parsing Respons Server (HTML / JSON / teks)
+
+Endpoint `control?sub=simpan` tidak konsisten: bisa membalas JSON, teks biasa
+(`"Berhasil disimpan"`), atau halaman HTML lengkap dengan HTTP 200 — termasuk
+halaman **"Error - Aplikasi"** yang terbukti tetap muncul walau file SUDAH
+tersimpan. Implementasi: `src/features/shared/morbisResponse.ts`.
+
+Aturan yang dipakai:
+
+1. **Buang komentar HTML dan seluruh isi `<script>`/`<style>`/`<noscript>`**
+   sebelum mengambil teks. Setiap halaman MORBIS menyuntikkan script New Relic
+   inline (`window.NREUM...`). Tanpa langkah ini isi JS-nya ikut terbaca dan
+   tampil sebagai pesan error palsu:
+   `Server error: (window.NREUM||(NREUM={})).init={privacy:{...}}`.
+2. **Hanya percaya pesan yang terbaca manusia** dari sumber spesifik:
+   - kontainer `alert-danger` / `alert-error` / `invalid-feedback` / `toast-error`
+   - pesan flash di inline JS: `toastr['error']("...")` atau swal `{icon:'error'}`
+   - JSON `"success": false` + `"message"` (termasuk JSON yang salah label content-type)
+3. **Class yang sekadar mengandung kata "error" tidak dipercaya.** Halaman
+   `"Error - Aplikasi"` MORBIS memakai class/CSS variable berbau error
+   (`--error:`), tetapi data tetap tersimpan — halaman itu eksplisit dianggap
+   **sukses** (dicatat lewat `console.debug` untuk diagnosa).
+4. **Halaman login ber-HTTP 200** (sesi habis) dideteksi dari
+   `<input type="password">` + form action login → item ditandai gagal dengan
+   pesan "Sesi login kadaluarsa".
+5. Semua pesan dirapikan (tanpa newline/whitespace berlebih) dan dipotong
+   maksimal 200–300 karakter. Potongan `<script>`/CSS tidak pernah ditampilkan.
+
 ## Langkah Penggunaan
 
 ### 1. Akses Fitur
@@ -140,13 +168,14 @@ Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
 
 ### Error Umum dan Solusi
 
-| Error                 | Penyebab                      | Solusi                                                             |
-| --------------------- | ----------------------------- | ------------------------------------------------------------------ |
-| **CORS Blocked**      | URL sumber beda domain/origin | URL harus dapat diakses dari browser (same-origin atau allow CORS) |
-| **404 Not Found**     | URL file sudah tidak tersedia | Periksa dan update URL yang benar                                  |
-| **Network Error**     | Koneksi internet bermasalah   | Coba lagi saat koneksi stabil                                      |
-| **Invalid File Type** | Ekstensi file tidak didukung  | Pastikan file berformat PDF, JPG, PNG                              |
-| **Upload Failed**     | Server menolak upload         | Periksa parameter metadata (NORM, tanggal)                         |
+| Error                                  | Penyebab                                                  | Solusi                                                                     |
+| -------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **CORS Blocked**                       | URL sumber beda domain/origin                             | URL harus dapat diakses dari browser (same-origin atau allow CORS)         |
+| **404 Not Found**                      | URL file sudah tidak tersedia                             | Periksa dan update URL yang benar                                          |
+| **Network Error**                      | Koneksi internet bermasalah                               | Coba lagi saat koneksi stabil                                              |
+| **Invalid File Type**                  | Ekstensi file tidak didukung                              | Pastikan file berformat PDF, JPG, PNG                                      |
+| **Upload Failed**                      | Server menolak upload                                     | Periksa parameter metadata (NORM, tanggal)                                 |
+| **Pesan error berisi `window.NREUM…`** | Isi `<script>` New Relic ikut diekstrak dari HTML respons | Sudah diperbaiki: parser membuang isi script/style sebelum ekstraksi pesan |
 
 ### Log dan Debug
 

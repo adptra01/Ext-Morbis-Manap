@@ -7,10 +7,17 @@
 
 ---
 
+## 2026-10-15
+
+### ✨ feat
+
+- **pa-print** — isi Saran dan Catatan dibuat bold (layar + Export Word) (`aaee91d`)
+
 ## 2026-10-14
 
 ### ✨ feat
 
+- **telaahResepPrint** — singkat header Surat Rujuk Balik jadi Srt. Rujuk Balik (`85280e4`)
 - **telaahResepPrint** — pindah grid lampiran ke bawah t-admin, samakan ukuran t-admin, header tengah semua (`b2ed851`)
 - **telaahResepPrint** — tambah grid 3 kolom Surat Rujuk Balik | Surat Iter | Hasil Lab + baris paraf manual (`4e80415`)
 
@@ -1840,4 +1847,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: b2ed8515cc40788cf8d23d803e5cebf0fd65ed81 -->
+<!-- changelog-upto: aaee91d2429b82af69bbbdbe935811615f8bb6fc -->
