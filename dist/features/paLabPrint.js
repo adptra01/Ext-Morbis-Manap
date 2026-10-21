@@ -66,6 +66,8 @@ var __morbis_feature = (() => {
     { key: "judul", label: "Judul Bagian Isi" },
     { key: "isi", label: "Isi" },
     { key: "kesimpulan", label: "Kesimpulan" },
+    { key: "icdo", label: "ICD-O" },
+    { key: "catatan", label: "Catatan" },
     { key: "ttd", label: "TTD" }
   ];
   var DEFAULT_TYPO = {
@@ -74,6 +76,8 @@ var __morbis_feature = (() => {
     judul: { fs: 6, lh: 1.2 },
     isi: { fs: 5, lh: 1.25 },
     kesimpulan: { fs: 5, lh: 1.25 },
+    icdo: { fs: 6, lh: 1.2 },
+    catatan: { fs: 5, lh: 1.25 },
     ttd: { fs: 6, lh: 1.2 }
   };
   var FS_MIN = 4;
@@ -100,6 +104,8 @@ var __morbis_feature = (() => {
       judul: group(o.judul, DEFAULT_TYPO.judul),
       isi: group(o.isi, DEFAULT_TYPO.isi),
       kesimpulan: group(o.kesimpulan, DEFAULT_TYPO.kesimpulan),
+      icdo: group(o.icdo, DEFAULT_TYPO.icdo),
+      catatan: group(o.catatan, DEFAULT_TYPO.catatan),
       ttd: group(o.ttd, DEFAULT_TYPO.ttd)
     };
   }
@@ -156,6 +162,10 @@ var __morbis_feature = (() => {
       "--pa-isi-lh": r2(r.isi.lh),
       "--pa-kesimpulan-fs": `${r2(r.kesimpulan.fs)}pt`,
       "--pa-kesimpulan-lh": r2(r.kesimpulan.lh),
+      "--pa-icdo-fs": `${r2(r.icdo.fs)}pt`,
+      "--pa-icdo-lh": r2(r.icdo.lh),
+      "--pa-catatan-fs": `${r2(r.catatan.fs)}pt`,
+      "--pa-catatan-lh": r2(r.catatan.lh),
       "--pa-ttd-fs": `${r2(r.ttd.fs)}pt`,
       "--pa-ttd-lh": r2(r.ttd.lh)
     };
@@ -545,20 +555,21 @@ var __morbis_feature = (() => {
         for (const s of sections) {
           if (isCatatan(s.title)) {
             const rows = s.items.length ? s.items : ["Tidak ada"];
-            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>CATATAN:</u></b></td><td>' + rows.map((it) => "- <b>" + esc(stripBullet(it) || "Tidak ada") + "</b>").join("<br>") + "</td></tr></table>";
+            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>CATATAN:</u></b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map((it) => "- <b>" + esc(stripBullet(it) || "Tidak ada") + "</b>").join("<br>") + "</td></tr></table>";
             continue;
           }
           if (s.bare) {
             s.items.forEach((it, i) => {
-              hasilDoc += '<p style="margin:' + (i === 0 ? "12pt" : "0") + " 0 6pt 0;font-size:" + r.judul.fs + 'pt;"><b>' + esc(it.toUpperCase()) + "</b></p>";
+              hasilDoc += '<p style="margin:' + (i === 0 ? "12pt" : "0") + " 0 6pt 0;font-size:" + r.icdo.fs + "pt;line-height:" + r.icdo.lh + ';"><b>' + esc(it.toUpperCase()) + "</b></p>";
             });
             continue;
           }
           hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
           const isKesimpulan = normTitle(s.title) === "kesimpulan";
+          const isIcdo = normTitle(s.title) === "icdo";
           const boldAll = isKesimpulan || normTitle(s.title) === "saran";
-          const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
-          const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
+          const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
+          const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
           s.items.forEach((it, i) => {
             const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
@@ -586,8 +597,9 @@ var __morbis_feature = (() => {
           ).join("") + "</div></div>";
         }
         const isKesimpulan = normTitle(s.title) === "kesimpulan";
+        const isIcdo = normTitle(s.title) === "icdo";
         const boldAll = isKesimpulan || normTitle(s.title) === "saran";
-        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + '">' + s.items.map((it, i) => {
+        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
           const mk = splitListMarker(it);
           if (mk) {
@@ -949,6 +961,14 @@ var __morbis_feature = (() => {
             line-height: var(--pa-kesimpulan-lh, 1.25);
         }
 
+        /* Isi ICD-O yang dirender server DENGAN judul section sendiri:
+           grup font & spasi sendiri, terpisah dari Isi. Varian tanpa
+           judul memakai .section-isi-bare (grup ICD-O yang sama). */
+        .section-icdo {
+            font-size: var(--pa-icdo-fs, 6pt);
+            line-height: var(--pa-icdo-lh, 1.2);
+        }
+
         /* Hanging indent: baris bernomor/berpoin \u2014 penanda di kolom
            kiri tetap, teks lanjutan sejajar di bawah teks. */
         .item-list.has-marker {
@@ -971,13 +991,14 @@ var __morbis_feature = (() => {
 
         /* ICD-O tanpa judul (bare, id=154696): "ICD-O : \u2026" saja tanpa
            dobel judul "ICD-0" \u2014 font, margin & padding sama persis
-           seperti section-judul (minus garis bawah). */
+           seperti section-judul (minus garis bawah), tapi ukuran font
+           dan spasi baris punya grup sendiri (\u2699\uFE0F Gaya \u2192 ICD-O). */
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: var(--pa-judul-fs, 6pt);
+            font-size: var(--pa-icdo-fs, 6pt);
             font-weight: bold;
-            line-height: var(--pa-judul-lh, 1.2);
+            line-height: var(--pa-icdo-lh, 1.2);
             text-transform: uppercase;
         }
 
@@ -987,14 +1008,16 @@ var __morbis_feature = (() => {
         }
 
         /* CATATAN: label + list gantung \u2014 baris lanjutan rata di bawah
-           dash pertama ("Catatan: - \u2026" lalu "- \u2026" sejajar di bawahnya). */
+           dash pertama ("Catatan: - \u2026" lalu "- \u2026" sejajar di bawahnya).
+           Label tetap grup Judul Bagian Isi (heading); isi Catatan punya
+           grup font & spasi baris sendiri (\u2699\uFE0F Gaya \u2192 Catatan). */
         .section-catatan {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: var(--pa-isi-fs, 5pt);
-            line-height: var(--pa-isi-lh, 1.25);
+            font-size: var(--pa-catatan-fs, 5pt);
+            line-height: var(--pa-catatan-lh, 1.25);
             text-align: justify;
         }
 

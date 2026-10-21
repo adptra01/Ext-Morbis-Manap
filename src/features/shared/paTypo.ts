@@ -1,10 +1,11 @@
 /**
  * paTypo — pengaturan tipografi dinamis cetakan PA (murni, unit-tested).
  *
- * 6 grup (sesuai kesepakatan user): kop (surat + judul laporan), pasien
- * (data pasien), judul (judul-judul bagian isi), isi (badan teks +
- * catatan), kesimpulan (isi Kesimpulan — terpisah dari isi), ttd (blok
- * tanda tangan). Tiap grup: font-size (pt) + line-height. Disimpan di
+ * 8 grup (sesuai kesepakatan user): kop (surat + judul laporan), pasien
+ * (data pasien), judul (judul-judul bagian isi), isi (badan teks),
+ * kesimpulan (isi Kesimpulan), icdo (baris ICD-O tanpa judul), catatan
+ * (isi Catatan) — ketiganya terpisah dari isi, ttd (blok tanda tangan).
+ * Tiap grup: font-size (pt) + line-height. Disimpan di
  * localStorage halaman (world MAIN tak punya chrome.storage), diterapkan
  * via CSS variable sehingga pratinjau live tanpa rebuild + berlaku sama
  * di layar dan kertas (WYSIWYG).
@@ -26,6 +27,8 @@ export interface PaTypo {
   judul: TypoGroup;
   isi: TypoGroup;
   kesimpulan: TypoGroup;
+  icdo: TypoGroup;
+  catatan: TypoGroup;
   ttd: TypoGroup;
 }
 
@@ -39,17 +42,23 @@ export const TYPO_GROUPS: Array<{ key: TypoGroupKey; label: string }> = [
   { key: 'judul', label: 'Judul Bagian Isi' },
   { key: 'isi', label: 'Isi' },
   { key: 'kesimpulan', label: 'Kesimpulan' },
+  { key: 'icdo', label: 'ICD-O' },
+  { key: 'catatan', label: 'Catatan' },
   { key: 'ttd', label: 'TTD' },
 ];
 
 /** Default = tampilan approved saat ini (pt). Kesimpulan defaultnya
- *  sama dengan isi agar tampilan awal tidak berubah. */
+ *  sama dengan isi agar tampilan awal tidak berubah; ICD-O dulu ikut
+ *  grup judul (6pt/1.2) dan isi Catatan ikut grup isi (5pt/1.25) —
+ *  default barunya disamakan supaya tampilan awal tetap sama. */
 export const DEFAULT_TYPO: PaTypo = {
   kop: { fs: 16, lh: 1.2 },
   pasien: { fs: 4, lh: 1 },
   judul: { fs: 6, lh: 1.2 },
   isi: { fs: 5, lh: 1.25 },
   kesimpulan: { fs: 5, lh: 1.25 },
+  icdo: { fs: 6, lh: 1.2 },
+  catatan: { fs: 5, lh: 1.25 },
   ttd: { fs: 6, lh: 1.2 },
 };
 
@@ -80,6 +89,8 @@ export function sanitizeTypo(v: unknown): PaTypo {
     judul: group(o.judul, DEFAULT_TYPO.judul),
     isi: group(o.isi, DEFAULT_TYPO.isi),
     kesimpulan: group(o.kesimpulan, DEFAULT_TYPO.kesimpulan),
+    icdo: group(o.icdo, DEFAULT_TYPO.icdo),
+    catatan: group(o.catatan, DEFAULT_TYPO.catatan),
     ttd: group(o.ttd, DEFAULT_TYPO.ttd),
   };
 }
@@ -162,6 +173,10 @@ export function typoCssVars(t: PaTypo): Record<string, string> {
     '--pa-isi-lh': r2(r.isi.lh),
     '--pa-kesimpulan-fs': `${r2(r.kesimpulan.fs)}pt`,
     '--pa-kesimpulan-lh': r2(r.kesimpulan.lh),
+    '--pa-icdo-fs': `${r2(r.icdo.fs)}pt`,
+    '--pa-icdo-lh': r2(r.icdo.lh),
+    '--pa-catatan-fs': `${r2(r.catatan.fs)}pt`,
+    '--pa-catatan-lh': r2(r.catatan.lh),
     '--pa-ttd-fs': `${r2(r.ttd.fs)}pt`,
     '--pa-ttd-lh': r2(r.ttd.lh),
   };

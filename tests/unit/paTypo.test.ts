@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_TYPO,
   TYPO_KEY,
+  TYPO_GROUPS,
   sanitizeTypo,
   loadTypo,
   saveTypo,
@@ -30,6 +31,8 @@ const full = (): PaTypo => ({
   judul: { fs: 6, lh: 1.2 },
   isi: { fs: 5, lh: 1.25 },
   kesimpulan: { fs: 5, lh: 1.25 },
+  icdo: { fs: 6, lh: 1.2 },
+  catatan: { fs: 5, lh: 1.25 },
   ttd: { fs: 6, lh: 1.2 },
 });
 
@@ -85,6 +88,10 @@ describe('paTypo — resolve & vars', () => {
     expect(vars['--pa-ttd-fs']).toBe('6pt');
     expect(vars['--pa-kesimpulan-fs']).toBe('5pt');
     expect(vars['--pa-kesimpulan-lh']).toBe('1.25');
+    expect(vars['--pa-icdo-fs']).toBe('6pt');
+    expect(vars['--pa-icdo-lh']).toBe('1.2');
+    expect(vars['--pa-catatan-fs']).toBe('5pt');
+    expect(vars['--pa-catatan-lh']).toBe('1.25');
     const seen: Record<string, string> = {};
     applyTypoVars({ setProperty: (k, v) => (seen[k] = v) }, full());
     expect(seen).toEqual(vars);
@@ -97,5 +104,33 @@ describe('paTypo — resolve & vars', () => {
     expect(t.kesimpulan).toEqual({ fs: 8, lh: 1.5 });
     expect(t.isi).toEqual(DEFAULT_TYPO.isi);
     expect(typoCssVars(t)['--pa-kesimpulan-fs']).toBe('8pt');
+  });
+
+  it('ICD-O & Catatan independen (default awal = tampilan lama)', () => {
+    // Dulu ICD-O menumpang grup judul, isi Catatan menumpang grup isi.
+    expect(DEFAULT_TYPO.icdo).toEqual(DEFAULT_TYPO.judul);
+    expect(DEFAULT_TYPO.catatan).toEqual(DEFAULT_TYPO.isi);
+
+    const t = sanitizeTypo({ icdo: { fs: 8, lh: 1.6 }, catatan: { fs: 7, lh: 1.4 } });
+    expect(t.icdo).toEqual({ fs: 8, lh: 1.6 });
+    expect(t.catatan).toEqual({ fs: 7, lh: 1.4 });
+    expect(t.judul).toEqual(DEFAULT_TYPO.judul);
+    expect(t.isi).toEqual(DEFAULT_TYPO.isi);
+
+    const vars = typoCssVars(t);
+    expect(vars['--pa-icdo-fs']).toBe('8pt');
+    expect(vars['--pa-icdo-lh']).toBe('1.6');
+    expect(vars['--pa-catatan-fs']).toBe('7pt');
+    expect(vars['--pa-catatan-lh']).toBe('1.4');
+    // Grup lain tak ikut berubah.
+    expect(vars['--pa-judul-fs']).toBe('6pt');
+    expect(vars['--pa-isi-fs']).toBe('5pt');
+  });
+
+  it('panel Gaya memuat 8 grup unik (termasuk ICD-O & Catatan)', () => {
+    expect(TYPO_GROUPS).toHaveLength(8);
+    expect(new Set(TYPO_GROUPS.map((g) => g.key)).size).toBe(8);
+    expect(TYPO_GROUPS.map((g) => g.key)).toContain('icdo');
+    expect(TYPO_GROUPS.map((g) => g.key)).toContain('catatan');
   });
 });
