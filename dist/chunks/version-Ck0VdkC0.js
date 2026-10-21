@@ -1,22 +1,22 @@
 //#region \0rolldown/runtime.js
 var __create = Object.create;
-var __defProp$22 = Object.defineProperty;
+var __defProp$21 = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod, mod.exports), cb = null), mod.exports);
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
 		key = keys[i];
-		if (!__hasOwnProp.call(to, key) && key !== except) __defProp$22(to, key, {
+		if (!__hasOwnProp.call(to, key) && key !== except) __defProp$21(to, key, {
 			get: ((k) => from[k]).bind(null, key),
 			enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
 		});
 	}
 	return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp$22(target, "default", {
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp$21(target, "default", {
 	value: mod,
 	enumerable: true
 }) : target, mod));
@@ -11540,29 +11540,29 @@ var ErrorBoundary = class extends import_react.Component {
 };
 //#endregion
 //#region node_modules/@radix-ui/primitive/dist/index.mjs
-var __defProp$21 = Object.defineProperty;
-var __name$21 = (target, value) => __defProp$21(target, "name", {
+var __defProp$20 = Object.defineProperty;
+var __name$20 = (target, value) => __defProp$20(target, "name", {
 	value,
 	configurable: true
 });
 var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
 function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
-	return /* @__PURE__ */ __name$21(function handleEvent(event) {
+	return /* @__PURE__ */ __name$20(function handleEvent(event) {
 		originalEventHandler?.(event);
 		if (checkForDefaultPrevented === false || !event || !event.defaultPrevented) return ourEventHandler?.(event);
 	}, "handleEvent");
 }
-__name$21(composeEventHandlers, "composeEventHandlers");
+__name$20(composeEventHandlers, "composeEventHandlers");
 function getOwnerWindow(element) {
 	if (!canUseDOM) throw new Error("Cannot access window outside of the DOM");
 	return element?.ownerDocument?.defaultView ?? window;
 }
-__name$21(getOwnerWindow, "getOwnerWindow");
+__name$20(getOwnerWindow, "getOwnerWindow");
 function getOwnerDocument(element) {
 	if (!canUseDOM) throw new Error("Cannot access document outside of the DOM");
 	return element?.ownerDocument ?? document;
 }
-__name$21(getOwnerDocument, "getOwnerDocument");
+__name$20(getOwnerDocument, "getOwnerDocument");
 function getActiveElement(node, activeDescendant = false) {
 	const { activeElement } = getOwnerDocument(node);
 	if (!activeElement?.nodeName) return null;
@@ -11576,15 +11576,15 @@ function getActiveElement(node, activeDescendant = false) {
 	}
 	return activeElement;
 }
-__name$21(getActiveElement, "getActiveElement");
+__name$20(getActiveElement, "getActiveElement");
 function isFrame(element) {
 	return element.tagName === "IFRAME";
 }
-__name$21(isFrame, "isFrame");
+__name$20(isFrame, "isFrame");
 //#endregion
 //#region node_modules/@radix-ui/react-compose-refs/dist/index.mjs
-var __defProp$20 = Object.defineProperty;
-var __name$20 = (target, value) => __defProp$20(target, "name", {
+var __defProp$19 = Object.defineProperty;
+var __name$19 = (target, value) => __defProp$19(target, "name", {
 	value,
 	configurable: true
 });
@@ -11592,7 +11592,7 @@ function setRef$1(ref, value) {
 	if (typeof ref === "function") return ref(value);
 	else if (ref !== null && ref !== void 0) ref.current = value;
 }
-__name$20(setRef$1, "setRef");
+__name$19(setRef$1, "setRef");
 function composeRefs(...refs) {
 	return (node) => {
 		let hasCleanup = false;
@@ -11610,15 +11610,15 @@ function composeRefs(...refs) {
 		};
 	};
 }
-__name$20(composeRefs, "composeRefs");
+__name$19(composeRefs, "composeRefs");
 function useComposedRefs(...refs) {
 	return import_react.useCallback(composeRefs(...refs), refs);
 }
-__name$20(useComposedRefs, "useComposedRefs");
+__name$19(useComposedRefs, "useComposedRefs");
 //#endregion
 //#region node_modules/@radix-ui/react-context/dist/index.mjs
-var __defProp$19 = Object.defineProperty;
-var __name$19 = (target, value) => __defProp$19(target, "name", {
+var __defProp$18 = Object.defineProperty;
+var __name$18 = (target, value) => __defProp$18(target, "name", {
 	value,
 	configurable: true
 });
@@ -11626,7 +11626,7 @@ var __name$19 = (target, value) => __defProp$19(target, "name", {
 function createContext2(rootComponentName, defaultContext) {
 	const Context = import_react.createContext(defaultContext);
 	Context.displayName = rootComponentName + "Context";
-	const Provider = /* @__PURE__ */ __name$19((props) => {
+	const Provider = /* @__PURE__ */ __name$18((props) => {
 		const { children, ...context } = props;
 		const value = import_react.useMemo(() => context, Object.values(context));
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Context.Provider, {
@@ -11643,10 +11643,10 @@ function createContext2(rootComponentName, defaultContext) {
 		if (optional) return void 0;
 		throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
 	}
-	__name$19(useContext2, "useContext");
+	__name$18(useContext2, "useContext");
 	return [Provider, useContext2];
 }
-__name$19(createContext2, "createContext");
+__name$18(createContext2, "createContext");
 // @__NO_SIDE_EFFECTS__
 function createContextScope(scopeName, createContextScopeDeps = []) {
 	let defaultContexts = [];
@@ -11655,7 +11655,7 @@ function createContextScope(scopeName, createContextScopeDeps = []) {
 		BaseContext.displayName = rootComponentName + "Context";
 		const index = defaultContexts.length;
 		defaultContexts = [...defaultContexts, defaultContext];
-		const Provider = /* @__PURE__ */ __name$19((props) => {
+		const Provider = /* @__PURE__ */ __name$18((props) => {
 			const { scope, children, ...context } = props;
 			const Context = scope?.[scopeName]?.[index] || BaseContext;
 			const value = import_react.useMemo(() => context, Object.values(context));
@@ -11674,15 +11674,15 @@ function createContextScope(scopeName, createContextScopeDeps = []) {
 			if (optional) return void 0;
 			throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
 		}
-		__name$19(useContext2, "useContext");
+		__name$18(useContext2, "useContext");
 		return [Provider, useContext2];
 	}
-	__name$19(createContext3, "createContext");
-	const createScope = /* @__PURE__ */ __name$19(() => {
+	__name$18(createContext3, "createContext");
+	const createScope = /* @__PURE__ */ __name$18(() => {
 		const scopeContexts = defaultContexts.map((defaultContext) => {
 			return import_react.createContext(defaultContext);
 		});
-		return /* @__PURE__ */ __name$19(function useScope(scope) {
+		return /* @__PURE__ */ __name$18(function useScope(scope) {
 			const contexts = scope?.[scopeName] || scopeContexts;
 			return import_react.useMemo(() => ({ [`__scope${scopeName}`]: {
 				...scope,
@@ -11693,16 +11693,16 @@ function createContextScope(scopeName, createContextScopeDeps = []) {
 	createScope.scopeName = scopeName;
 	return [createContext3, composeContextScopes(createScope, ...createContextScopeDeps)];
 }
-__name$19(createContextScope, "createContextScope");
+__name$18(createContextScope, "createContextScope");
 function composeContextScopes(...scopes) {
 	const baseScope = scopes[0];
 	if (scopes.length === 1) return baseScope;
-	const createScope = /* @__PURE__ */ __name$19(() => {
+	const createScope = /* @__PURE__ */ __name$18(() => {
 		const scopeHooks = scopes.map((createScope2) => ({
 			useScope: createScope2(),
 			scopeName: createScope2.scopeName
 		}));
-		return /* @__PURE__ */ __name$19(function useComposedScopes(overrideScopes) {
+		return /* @__PURE__ */ __name$18(function useComposedScopes(overrideScopes) {
 			const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
 				const currentScope = useScope(overrideScopes)[`__scope${scopeName}`];
 				return {
@@ -11716,25 +11716,25 @@ function composeContextScopes(...scopes) {
 	createScope.scopeName = baseScope.scopeName;
 	return createScope;
 }
-__name$19(composeContextScopes, "composeContextScopes");
+__name$18(composeContextScopes, "composeContextScopes");
 //#endregion
 //#region node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
 var useLayoutEffect2 = globalThis?.document ? import_react.useLayoutEffect : () => {};
 //#endregion
 //#region node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
-var __defProp$18 = Object.defineProperty;
-var __name$18 = (target, value) => __defProp$18(target, "name", {
+var __defProp$17 = Object.defineProperty;
+var __name$17 = (target, value) => __defProp$17(target, "name", {
 	value,
 	configurable: true
 });
 var useReactEffectEvent = import_react[" useEffectEvent ".trim().toString()];
-var useReactInsertionEffect = import_react[" useInsertionEffect ".trim().toString()];
+var useReactInsertionEffect$1 = import_react[" useInsertionEffect ".trim().toString()];
 function useEffectEvent(callback) {
 	if (typeof useReactEffectEvent === "function") return useReactEffectEvent(callback);
 	const ref = import_react.useRef(() => {
 		throw new Error("Cannot call an event handler while rendering.");
 	});
-	if (typeof useReactInsertionEffect === "function") useReactInsertionEffect(() => {
+	if (typeof useReactInsertionEffect$1 === "function") useReactInsertionEffect$1(() => {
 		ref.current = callback;
 	});
 	else useLayoutEffect2(() => {
@@ -11742,16 +11742,16 @@ function useEffectEvent(callback) {
 	});
 	return import_react.useMemo(() => ((...args) => ref.current?.(...args)), []);
 }
-__name$18(useEffectEvent, "useEffectEvent");
+__name$17(useEffectEvent, "useEffectEvent");
 //#endregion
 //#region node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-var __defProp$17 = Object.defineProperty;
-var __name$17 = (target, value) => __defProp$17(target, "name", {
+var __defProp$16 = Object.defineProperty;
+var __name$16 = (target, value) => __defProp$16(target, "name", {
 	value,
 	configurable: true
 });
 var useInsertionEffect = import_react[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
-function useControllableState({ prop, defaultProp, onChange = /* @__PURE__ */ __name$17(() => {}, "onChange"), caller }) {
+function useControllableState({ prop, defaultProp, onChange = /* @__PURE__ */ __name$16(() => {}, "onChange"), caller }) {
 	const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
 		defaultProp,
 		onChange
@@ -11769,7 +11769,7 @@ function useControllableState({ prop, defaultProp, onChange = /* @__PURE__ */ __
 		onChangeRef
 	])];
 }
-__name$17(useControllableState, "useControllableState");
+__name$16(useControllableState, "useControllableState");
 function useUncontrolledState({ defaultProp, onChange }) {
 	const [value, setValue] = import_react.useState(defaultProp);
 	const prevValueRef = import_react.useRef(value);
@@ -11789,11 +11789,11 @@ function useUncontrolledState({ defaultProp, onChange }) {
 		onChangeRef
 	];
 }
-__name$17(useUncontrolledState, "useUncontrolledState");
+__name$16(useUncontrolledState, "useUncontrolledState");
 function isFunction$2(value) {
 	return typeof value === "function";
 }
-__name$17(isFunction$2, "isFunction");
+__name$16(isFunction$2, "isFunction");
 var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
 function useControllableStateReducer(reducer, userArgs, initialArg, init) {
 	const { prop: controlledState, defaultProp, onChange: onChangeProp, caller } = userArgs;
@@ -11844,11 +11844,11 @@ function useControllableStateReducer(reducer, userArgs, initialArg, init) {
 	]);
 	return [state, dispatch];
 }
-__name$17(useControllableStateReducer, "useControllableStateReducer");
+__name$16(useControllableStateReducer, "useControllableStateReducer");
 //#endregion
 //#region node_modules/@radix-ui/react-use-size/dist/index.mjs
-var __defProp$16 = Object.defineProperty;
-var __name$16 = (target, value) => __defProp$16(target, "name", {
+var __defProp$15 = Object.defineProperty;
+var __name$15 = (target, value) => __defProp$15(target, "name", {
 	value,
 	configurable: true
 });
@@ -11860,38 +11860,45 @@ function useSize(element) {
 				width: element.offsetWidth,
 				height: element.offsetHeight
 			});
+			let rAF = 0;
 			const resizeObserver = new ResizeObserver((entries) => {
 				if (!Array.isArray(entries)) return;
 				if (!entries.length) return;
 				const entry = entries[0];
-				let width;
-				let height;
-				if ("borderBoxSize" in entry) {
-					const borderSizeEntry = entry["borderBoxSize"];
-					const borderSize = Array.isArray(borderSizeEntry) ? borderSizeEntry[0] : borderSizeEntry;
-					width = borderSize["inlineSize"];
-					height = borderSize["blockSize"];
-				} else {
-					width = element.offsetWidth;
-					height = element.offsetHeight;
-				}
-				setSize({
-					width,
-					height
+				window.cancelAnimationFrame(rAF);
+				rAF = window.requestAnimationFrame(() => {
+					let width;
+					let height;
+					if ("borderBoxSize" in entry) {
+						const borderSizeEntry = entry["borderBoxSize"];
+						const borderSize = Array.isArray(borderSizeEntry) ? borderSizeEntry[0] : borderSizeEntry;
+						width = borderSize["inlineSize"];
+						height = borderSize["blockSize"];
+					} else {
+						width = element.offsetWidth;
+						height = element.offsetHeight;
+					}
+					setSize({
+						width,
+						height
+					});
 				});
 			});
 			resizeObserver.observe(element, { box: "border-box" });
-			return () => resizeObserver.unobserve(element);
+			return () => {
+				window.cancelAnimationFrame(rAF);
+				resizeObserver.unobserve(element);
+			};
 		} else setSize(void 0);
 	}, [element]);
 	return size;
 }
-__name$16(useSize, "useSize");
+__name$15(useSize, "useSize");
 //#endregion
 //#region node_modules/@radix-ui/react-slot/dist/index.mjs
 var import_react_dom = /* @__PURE__ */ __toESM(require_react_dom(), 1);
-var __defProp$15 = Object.defineProperty;
-var __name$15 = (target, value) => __defProp$15(target, "name", {
+var __defProp$14 = Object.defineProperty;
+var __name$14 = (target, value) => __defProp$14(target, "name", {
 	value,
 	configurable: true
 });
@@ -11902,13 +11909,13 @@ function createSlot(ownerName) {
 		let slottableElement = null;
 		let hasSlottable = false;
 		const newChildren = [];
-		if (isLazyComponent(children) && typeof use === "function") children = use(children._payload);
+		children = useUnwrappedLazy(children);
 		import_react.Children.forEach(children, (maybeSlottable) => {
 			if (isSlottable(maybeSlottable)) {
 				hasSlottable = true;
 				const slottable = maybeSlottable;
 				let child = "child" in slottable.props ? slottable.props.child : slottable.props.children;
-				if (isLazyComponent(child) && typeof use === "function") child = use(child._payload);
+				while (isLazyComponent(child) && typeof use === "function") child = use(child._payload);
 				slottableElement = getSlottableElementFromSlottable(slottable, child);
 				newChildren.push(slottableElement?.props?.children);
 			} else newChildren.push(maybeSlottable);
@@ -11928,21 +11935,20 @@ function createSlot(ownerName) {
 	Slot2.displayName = `${ownerName}.Slot`;
 	return Slot2;
 }
-__name$15(createSlot, "createSlot");
+__name$14(createSlot, "createSlot");
 var SLOTTABLE_IDENTIFIER = Symbol.for("radix.slottable");
 // @__NO_SIDE_EFFECTS__
 function createSlottable(ownerName) {
-	const Slottable2 = /* @__PURE__ */ __name$15((props) => "child" in props ? props.children(props.child) : props.children, "Slottable");
+	const Slottable2 = /* @__PURE__ */ __name$14((props) => "child" in props ? props.children(props.child) : props.children, "Slottable");
 	Slottable2.displayName = `${ownerName}.Slottable`;
 	Slottable2.__radixId = SLOTTABLE_IDENTIFIER;
 	return Slottable2;
 }
-__name$15(createSlottable, "createSlottable");
-var getSlottableElementFromSlottable = /* @__PURE__ */ __name$15((slottable, child) => {
+__name$14(createSlottable, "createSlottable");
+var getSlottableElementFromSlottable = /* @__PURE__ */ __name$14((slottable, child) => {
 	if ("child" in slottable.props) {
-		const child2 = slottable.props.child;
-		if (!import_react.isValidElement(child2)) return null;
-		return import_react.cloneElement(child2, void 0, slottable.props.children(child2.props.children));
+		if (!import_react.isValidElement(child)) return null;
+		return import_react.cloneElement(child, void 0, slottable.props.children(child.props.children));
 	}
 	return import_react.isValidElement(child) ? child : null;
 }, "getSlottableElementFromSlottable");
@@ -11963,13 +11969,14 @@ function mergeProps(slotProps, childProps) {
 			...childPropValue
 		};
 		else if (propName === "className") overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
+		else if (propName === "aria-describedby") overrideProps[propName] = concatAriaDescribedby(childPropValue, slotPropValue);
 	}
 	return {
 		...slotProps,
 		...overrideProps
 	};
 }
-__name$15(mergeProps, "mergeProps");
+__name$14(mergeProps, "mergeProps");
 function getElementRef$1(element) {
 	let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
 	let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -11979,31 +11986,46 @@ function getElementRef$1(element) {
 	if (mayWarn) return element.props.ref;
 	return element.props.ref || element.ref;
 }
-__name$15(getElementRef$1, "getElementRef");
+__name$14(getElementRef$1, "getElementRef");
 function isSlottable(child) {
 	return import_react.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
 }
-__name$15(isSlottable, "isSlottable");
+__name$14(isSlottable, "isSlottable");
 var REACT_LAZY_TYPE = Symbol.for("react.lazy");
 function isLazyComponent(element) {
 	return element != null && typeof element === "object" && "$$typeof" in element && element.$$typeof === REACT_LAZY_TYPE && "_payload" in element && isPromiseLike(element._payload);
 }
-__name$15(isLazyComponent, "isLazyComponent");
+__name$14(isLazyComponent, "isLazyComponent");
 function isPromiseLike(value) {
 	return typeof value === "object" && value !== null && "then" in value;
 }
-__name$15(isPromiseLike, "isPromiseLike");
-var createSlotError = /* @__PURE__ */ __name$15((ownerName) => {
+__name$14(isPromiseLike, "isPromiseLike");
+function useUnwrappedLazy(value) {
+	let unwrapped = value;
+	while (isLazyComponent(unwrapped) && typeof use === "function") unwrapped = use(unwrapped._payload);
+	return unwrapped;
+}
+__name$14(useUnwrappedLazy, "useUnwrappedLazy");
+function concatAriaDescribedby(...values) {
+	const ids = /* @__PURE__ */ new Set();
+	for (const value of values) {
+		if (typeof value !== "string") continue;
+		for (const id of String(value).trim().split(/\s+/)) if (id) ids.add(id);
+	}
+	return ids.size > 0 ? Array.from(ids).join(" ") : void 0;
+}
+__name$14(concatAriaDescribedby, "concatAriaDescribedby");
+var createSlotError = /* @__PURE__ */ __name$14((ownerName) => {
 	return `${ownerName} failed to slot onto its children. Expected a single React element child or \`Slottable\`.`;
 }, "createSlotError");
-var createSlottableError = /* @__PURE__ */ __name$15((ownerName) => {
+var createSlottableError = /* @__PURE__ */ __name$14((ownerName) => {
 	return `${ownerName} failed to slot onto its \`Slottable\`. Expected \`Slottable\` to receive a single React element child.`;
 }, "createSlottableError");
 var use = import_react[" use ".trim().toString()];
 //#endregion
 //#region node_modules/@radix-ui/react-primitive/dist/index.mjs
-var __defProp$14 = Object.defineProperty;
-var __name$14 = (target, value) => __defProp$14(target, "name", {
+var __defProp$13 = Object.defineProperty;
+var __name$13 = (target, value) => __defProp$13(target, "name", {
 	value,
 	configurable: true
 });
@@ -12045,11 +12067,11 @@ var Primitive = [
 function dispatchDiscreteCustomEvent(target, event) {
 	if (target) import_react_dom.flushSync(() => target.dispatchEvent(event));
 }
-__name$14(dispatchDiscreteCustomEvent, "dispatchDiscreteCustomEvent");
+__name$13(dispatchDiscreteCustomEvent, "dispatchDiscreteCustomEvent");
 //#endregion
 //#region node_modules/@radix-ui/react-switch/dist/index.mjs
-var __defProp$13 = Object.defineProperty;
-var __name$13 = (target, value) => __defProp$13(target, "name", {
+var __defProp$12 = Object.defineProperty;
+var __name$12 = (target, value) => __defProp$12(target, "name", {
 	value,
 	configurable: true
 });
@@ -12066,8 +12088,7 @@ function SwitchProvider(props) {
 	});
 	const [control, setControl] = import_react.useState(null);
 	const [bubbleInput, setBubbleInput] = import_react.useState(null);
-	const hasConsumerStoppedPropagationRef = import_react.useRef(false);
-	const [userInteractionCount, onUserInteraction] = import_react.useReducer((count) => count + 1, 0);
+	const [userClick, setUserClick] = import_react.useState(null);
 	const context = {
 		checked,
 		setChecked,
@@ -12077,9 +12098,8 @@ function SwitchProvider(props) {
 		name,
 		form,
 		value,
-		hasConsumerStoppedPropagationRef,
-		userInteractionCount,
-		onUserInteraction,
+		userClick,
+		onUserClick: setUserClick,
 		required,
 		defaultChecked,
 		isFormControl: control ? !!form || !!control.closest("form") : true,
@@ -12092,16 +12112,16 @@ function SwitchProvider(props) {
 		children: isFunction$1(internal_do_not_use_render) ? internal_do_not_use_render(context) : children
 	});
 }
-__name$13(SwitchProvider, "SwitchProvider");
+__name$12(SwitchProvider, "SwitchProvider");
 var TRIGGER_NAME$1 = "SwitchTrigger";
-var SwitchTrigger = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchTrigger2({ __scopeSwitch, onClick, ...switchProps }, forwardedRef) {
-	const { control, form, value, disabled, checked, required, setControl, setChecked, hasConsumerStoppedPropagationRef, onUserInteraction, isFormControl, bubbleInput } = useSwitchContext(TRIGGER_NAME$1, __scopeSwitch);
+var SwitchTrigger = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$12(function SwitchTrigger2({ __scopeSwitch, onClick, ...switchProps }, forwardedRef) {
+	const { control, form, value, disabled, checked, required, setControl, setChecked, onUserClick, isFormControl, bubbleInput } = useSwitchContext(TRIGGER_NAME$1, __scopeSwitch);
 	const composedRefs = useComposedRefs(forwardedRef, setControl);
 	const initialCheckedStateRef = import_react.useRef(checked);
 	import_react.useEffect(() => {
 		const associatedForm = form ? control?.ownerDocument.getElementById(form) : control?.form;
 		if (associatedForm instanceof HTMLFormElement) {
-			const reset = /* @__PURE__ */ __name$13(() => setChecked(initialCheckedStateRef.current), "reset");
+			const reset = /* @__PURE__ */ __name$12(() => setChecked(initialCheckedStateRef.current), "reset");
 			associatedForm.addEventListener("reset", reset);
 			return () => associatedForm.removeEventListener("reset", reset);
 		}
@@ -12122,16 +12142,19 @@ var SwitchTrigger = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __na
 		...switchProps,
 		ref: composedRefs,
 		onClick: composeEventHandlers(onClick, (event) => {
-			onUserInteraction();
+			const hasConsumerStoppedPropagation = event.isPropagationStopped();
+			onUserClick({
+				requestedChecked: !checked,
+				hasConsumerStoppedPropagation
+			});
 			setChecked((prevChecked) => !prevChecked);
 			if (bubbleInput && isFormControl) {
-				hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
-				if (!hasConsumerStoppedPropagationRef.current) event.stopPropagation();
+				if (!hasConsumerStoppedPropagation) event.stopPropagation();
 			}
 		})
 	});
 }, "SwitchTrigger"));
-var Switch$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function Switch2(props, forwardedRef) {
+var Switch$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$12(function Switch2(props, forwardedRef) {
 	const { __scopeSwitch, name, checked, defaultChecked, required, disabled, value, onCheckedChange, form, ...switchProps } = props;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchProvider, {
 		__scopeSwitch,
@@ -12151,7 +12174,7 @@ var Switch$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13
 	});
 }, "Switch"));
 var THUMB_NAME = "SwitchThumb";
-var SwitchThumb = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchThumb2(props, forwardedRef) {
+var SwitchThumb = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$12(function SwitchThumb2(props, forwardedRef) {
 	const { __scopeSwitch, ...thumbProps } = props;
 	const context = useSwitchContext(THUMB_NAME, __scopeSwitch);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.span, {
@@ -12162,35 +12185,41 @@ var SwitchThumb = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name
 	});
 }, "SwitchThumb"));
 var BUBBLE_INPUT_NAME$1 = "SwitchBubbleInput";
-var SwitchBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchBubbleInput2({ __scopeSwitch, onClick, ...props }, forwardedRef) {
-	const { control, hasConsumerStoppedPropagationRef, userInteractionCount, checked, defaultChecked, required, disabled, name, value, form, bubbleInput, setBubbleInput } = useSwitchContext(BUBBLE_INPUT_NAME$1, __scopeSwitch);
+var SwitchBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$12(function SwitchBubbleInput2({ __scopeSwitch, onClick, ...props }, forwardedRef) {
+	const { control, userClick, checked, defaultChecked, required, disabled, name, value, form, bubbleInput, setBubbleInput } = useSwitchContext(BUBBLE_INPUT_NAME$1, __scopeSwitch);
 	const composedRefs = useComposedRefs(forwardedRef, setBubbleInput);
 	const controlSize = useSize(control);
 	const shouldStopClickPropagationRef = import_react.useRef(false);
 	const prevCheckedRef = import_react.useRef(checked);
-	const prevUserInteractionCountRef = import_react.useRef(userInteractionCount);
+	const handledUserClickRef = import_react.useRef(userClick);
+	const pendingUserClickRef = import_react.useRef(null);
 	import_react.useEffect(() => {
 		const input = bubbleInput;
 		if (!input) return;
 		const inputProto = window.HTMLInputElement.prototype;
 		const setChecked = Object.getOwnPropertyDescriptor(inputProto, "checked").set;
-		const isUserInteraction = userInteractionCount !== prevUserInteractionCountRef.current;
-		prevUserInteractionCountRef.current = userInteractionCount;
+		if (!setChecked) return;
 		const checkedChanged = prevCheckedRef.current !== checked;
 		prevCheckedRef.current = checked;
-		const bubbles = !(isUserInteraction && hasConsumerStoppedPropagationRef.current);
-		if (checkedChanged && setChecked) {
-			shouldStopClickPropagationRef.current = !isUserInteraction;
-			const event = new Event("click", { bubbles });
+		const isNewUserClick = userClick !== null && userClick !== handledUserClickRef.current;
+		handledUserClickRef.current = userClick;
+		if (isNewUserClick) {
+			pendingUserClickRef.current = checkedChanged ? null : userClick;
+			if (checkedChanged) setChecked.call(input, checked);
+			input.dispatchEvent(new Event("click", { bubbles: !userClick.hasConsumerStoppedPropagation }));
+		} else if (checkedChanged) {
+			const pendingUserClick = pendingUserClickRef.current;
+			pendingUserClickRef.current = null;
+			const isPendingUserChange = pendingUserClick?.requestedChecked === checked;
+			shouldStopClickPropagationRef.current = true;
 			setChecked.call(input, checked);
-			input.dispatchEvent(event);
+			input.dispatchEvent(new Event("click", { bubbles: !(isPendingUserChange && pendingUserClick.hasConsumerStoppedPropagation) }));
 			shouldStopClickPropagationRef.current = false;
 		}
 	}, [
 		bubbleInput,
 		checked,
-		hasConsumerStoppedPropagationRef,
-		userInteractionCount
+		userClick
 	]);
 	const defaultCheckedRef = import_react.useRef(checked);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.input, {
@@ -12222,11 +12251,11 @@ var SwitchBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ 
 function isFunction$1(value) {
 	return typeof value === "function";
 }
-__name$13(isFunction$1, "isFunction");
+__name$12(isFunction$1, "isFunction");
 function getState(checked) {
 	return checked ? "checked" : "unchecked";
 }
-__name$13(getState, "getState");
+__name$12(getState, "getState");
 //#endregion
 //#region node_modules/clsx/dist/clsx.mjs
 function r(e) {
@@ -15717,19 +15746,19 @@ var Switch = (0, import_react.forwardRef)(({ className, ...props }, ref) => /* @
 Switch.displayName = Switch$1.displayName;
 //#endregion
 //#region node_modules/@radix-ui/number/dist/index.mjs
-var __defProp$12 = Object.defineProperty;
-var __name$12 = (target, value) => __defProp$12(target, "name", {
+var __defProp$11 = Object.defineProperty;
+var __name$11 = (target, value) => __defProp$11(target, "name", {
 	value,
 	configurable: true
 });
 function clamp$1(value, [min, max]) {
 	return Math.min(max, Math.max(min, value));
 }
-__name$12(clamp$1, "clamp");
+__name$11(clamp$1, "clamp");
 //#endregion
 //#region node_modules/@radix-ui/react-collection/dist/index.mjs
-var __defProp$11 = Object.defineProperty;
-var __name$11 = (target, value) => __defProp$11(target, "name", {
+var __defProp$10 = Object.defineProperty;
+var __name$10 = (target, value) => __defProp$10(target, "name", {
 	value,
 	configurable: true
 });
@@ -15741,7 +15770,7 @@ function createCollection(name) {
 		collectionRef: { current: null },
 		itemMap: /* @__PURE__ */ new Map()
 	});
-	const CollectionProvider = /* @__PURE__ */ __name$11((props) => {
+	const CollectionProvider = /* @__PURE__ */ __name$10((props) => {
 		const { scope, children } = props;
 		const ref = import_react.useRef(null);
 		const itemMap = import_react.useRef(/* @__PURE__ */ new Map()).current;
@@ -15795,7 +15824,7 @@ function createCollection(name) {
 			return Array.from(context.itemMap.values()).sort((a, b) => orderedNodes.indexOf(a.ref.current) - orderedNodes.indexOf(b.ref.current));
 		}, [context.collectionRef, context.itemMap]);
 	}
-	__name$11(useCollection, "useCollection");
+	__name$10(useCollection, "useCollection");
 	return [
 		{
 			Provider: CollectionProvider,
@@ -15806,11 +15835,11 @@ function createCollection(name) {
 		createCollectionScope
 	];
 }
-__name$11(createCollection, "createCollection");
+__name$10(createCollection, "createCollection");
 var __instanciated = /* @__PURE__ */ new WeakMap();
 var OrderedDict = class _OrderedDict extends Map {
 	static {
-		__name$11(this, "OrderedDict");
+		__name$10(this, "OrderedDict");
 	}
 	#keys;
 	constructor(entries) {
@@ -15819,42 +15848,31 @@ var OrderedDict = class _OrderedDict extends Map {
 		__instanciated.set(this, true);
 	}
 	set(key, value) {
-		if (__instanciated.get(this)) {
-			if (this.has(key)) this.#keys[this.#keys.indexOf(key)] = key;
-			else this.#keys.push(key);
-		}
+		if (__instanciated.get(this) && !this.has(key)) this.#keys.push(key);
 		super.set(key, value);
 		return this;
 	}
+	/**
+	* Sets a key-value pair so that it ends up at the given index.
+	* - Existing keys are moved
+	* - Negative indices count from the end of the resulting dictionary, so
+	*   inserting at -1 makes the item the last one, -2 the second to last, etc.
+	* - Out-of-range indices are clamped
+	*/
 	insert(index, key, value) {
 		const has = this.has(key);
-		const length = this.#keys.length;
+		const finalSize = has ? this.size : this.size + 1;
 		const relativeIndex = toSafeInteger(index);
-		let actualIndex = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
-		const safeIndex = actualIndex < 0 || actualIndex >= length ? -1 : actualIndex;
-		if (safeIndex === this.size || has && safeIndex === this.size - 1 || safeIndex === -1) {
+		const targetIndex = relativeIndex >= 0 ? Math.min(relativeIndex, finalSize - 1) : Math.max(finalSize + relativeIndex, 0);
+		if (has ? this.#keys.indexOf(key) === targetIndex : targetIndex === this.size) {
 			this.set(key, value);
 			return this;
 		}
-		const size = this.size + (has ? 0 : 1);
-		if (relativeIndex < 0) actualIndex++;
-		const keys = [...this.#keys];
-		let nextValue;
-		let shouldSkip = false;
-		for (let i = actualIndex; i < size; i++) if (actualIndex === i) {
-			let nextKey = keys[i];
-			if (keys[i] === key) nextKey = keys[i + 1];
-			if (has) this.delete(key);
-			nextValue = this.get(nextKey);
-			this.set(key, value);
-		} else {
-			if (!shouldSkip && keys[i - 1] === key) shouldSkip = true;
-			const currentKey = keys[shouldSkip ? i : i - 1];
-			const currentValue = nextValue;
-			nextValue = this.get(currentKey);
-			this.delete(currentKey);
-			this.set(currentKey, currentValue);
-		}
+		const keys = this.#keys.filter((existingKey) => existingKey !== key);
+		keys.splice(targetIndex, 0, key);
+		const entries = keys.map((entryKey) => [entryKey, entryKey === key ? value : this.get(entryKey)]);
+		this.clear();
+		for (const [entryKey, entryValue] of entries) this.set(entryKey, entryValue);
 		return this;
 	}
 	with(index, key, value) {
@@ -15873,7 +15891,9 @@ var OrderedDict = class _OrderedDict extends Map {
 	setBefore(key, newKey, value) {
 		const index = this.#keys.indexOf(key);
 		if (index === -1) return this;
-		return this.insert(index, newKey, value);
+		const currentIndex = this.#keys.indexOf(newKey);
+		const targetIndex = currentIndex !== -1 && currentIndex < index ? index - 1 : index;
+		return this.insert(targetIndex, newKey, value);
 	}
 	after(key) {
 		let index = this.#keys.indexOf(key);
@@ -15887,7 +15907,9 @@ var OrderedDict = class _OrderedDict extends Map {
 	setAfter(key, newKey, value) {
 		const index = this.#keys.indexOf(key);
 		if (index === -1) return this;
-		return this.insert(index + 1, newKey, value);
+		const currentIndex = this.#keys.indexOf(newKey);
+		const targetIndex = currentIndex !== -1 && currentIndex <= index ? index : index + 1;
+		return this.insert(targetIndex, newKey, value);
 	}
 	first() {
 		return this.entryAt(0);
@@ -15990,10 +16012,12 @@ var OrderedDict = class _OrderedDict extends Map {
 	}
 	reduce(...args) {
 		const [callbackfn, initialValue] = args;
+		const hasInitialValue = args.length > 1;
+		if (!hasInitialValue && this.size === 0) throw new TypeError("Reduce of empty OrderedDict with no initial value");
 		let index = 0;
-		let accumulator = initialValue ?? this.at(0);
+		let accumulator = initialValue;
 		for (const entry of this) {
-			if (index === 0 && args.length === 1) accumulator = entry;
+			if (index === 0 && !hasInitialValue) accumulator = entry;
 			else accumulator = Reflect.apply(callbackfn, this, [
 				accumulator,
 				entry,
@@ -16006,10 +16030,12 @@ var OrderedDict = class _OrderedDict extends Map {
 	}
 	reduceRight(...args) {
 		const [callbackfn, initialValue] = args;
-		let accumulator = initialValue ?? this.at(-1);
+		const hasInitialValue = args.length > 1;
+		if (!hasInitialValue && this.size === 0) throw new TypeError("Reduce of empty OrderedDict with no initial value");
+		let accumulator = initialValue;
 		for (let index = this.size - 1; index >= 0; index--) {
-			const entry = this.at(index);
-			if (index === this.size - 1 && args.length === 1) accumulator = entry;
+			const entry = this.entryAt(index);
+			if (index === this.size - 1 && !hasInitialValue) accumulator = entry;
 			else accumulator = Reflect.apply(callbackfn, this, [
 				accumulator,
 				entry,
@@ -16019,7 +16045,30 @@ var OrderedDict = class _OrderedDict extends Map {
 		}
 		return accumulator;
 	}
+	/**
+	* Sorts the dictionary in place. This method mutates the dictionary and
+	* returns a reference to the same object
+	*
+	* @param compareFn Function used to determine the order of the elements. It
+	* is expected to return a negative value if the first argument is less than
+	* the second argument, zero if they're equal, and a positive value otherwise.
+	*/
+	sort(compareFn) {
+		if (typeof compareFn !== "function") throw new TypeError(`OrderedDict.sort requires a compare function`);
+		const entries = [...this.entries()].sort(compareFn);
+		this.clear();
+		for (const [key, value] of entries) this.set(key, value);
+		return this;
+	}
+	/**
+	* Returns a copy of the dictionary with its elements sorted.
+	*
+	* @param compareFn Function used to determine the order of the elements. It
+	* is expected to return a negative value if the first argument is less than
+	* the second argument, zero if they're equal, and a positive value otherwise.
+	*/
 	toSorted(compareFn) {
+		if (typeof compareFn !== "function") throw new TypeError(`OrderedDict.toSorted requires a compare function`);
 		const entries = [...this.entries()].sort(compareFn);
 		return new _OrderedDict(entries);
 	}
@@ -16039,15 +16088,7 @@ var OrderedDict = class _OrderedDict extends Map {
 	}
 	slice(start, end) {
 		const result = new _OrderedDict();
-		let stop = this.size - 1;
-		if (start === void 0) return result;
-		if (start < 0) start = start + this.size;
-		if (end !== void 0 && end > 0) stop = end - 1;
-		for (let index = start; index <= stop; index++) {
-			const key = this.keyAt(index);
-			const element = this.get(key);
-			result.set(key, element);
-		}
+		for (const key of this.#keys.slice(start, end)) result.set(key, this.get(key));
 		return result;
 	}
 	every(predicate, thisArg) {
@@ -16080,53 +16121,61 @@ function at(array, index) {
 	const actualIndex = toSafeIndex(array, index);
 	return actualIndex === -1 ? void 0 : array[actualIndex];
 }
-__name$11(at, "at");
+__name$10(at, "at");
 function toSafeIndex(array, index) {
 	const length = array.length;
 	const relativeIndex = toSafeInteger(index);
 	const actualIndex = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
 	return actualIndex < 0 || actualIndex >= length ? -1 : actualIndex;
 }
-__name$11(toSafeIndex, "toSafeIndex");
+__name$10(toSafeIndex, "toSafeIndex");
 function toSafeInteger(number) {
 	return number !== number || number === 0 ? 0 : Math.trunc(number);
 }
-__name$11(toSafeInteger, "toSafeInteger");
+__name$10(toSafeInteger, "toSafeInteger");
 // @__NO_SIDE_EFFECTS__
 function createCollection2(name) {
 	const PROVIDER_NAME = name + "CollectionProvider";
 	const [createCollectionContext, createCollectionScope] = /* @__PURE__ */ createContextScope(PROVIDER_NAME);
-	const [CollectionContextProvider, useCollectionContext] = createCollectionContext(PROVIDER_NAME, {
-		collectionElement: null,
-		collectionRef: { current: null },
-		collectionRefObject: { current: null },
-		itemMap: new OrderedDict(),
-		setItemMap: /* @__PURE__ */ __name$11(() => void 0, "setItemMap")
-	});
-	const CollectionProvider = /* @__PURE__ */ __name$11(({ state, ...props }) => {
+	const [CollectionStableContextProvider, useStableCollectionContext] = createCollectionContext(PROVIDER_NAME);
+	CollectionStableContextProvider.displayName = name + "CollectionStableContextProvider";
+	const [CollectionStatefulContextProvider, useStatefulCollectionContext] = createCollectionContext(PROVIDER_NAME);
+	CollectionStatefulContextProvider.displayName = name + "CollectionStatefulContextProvider";
+	const CollectionProvider = /* @__PURE__ */ __name$10(({ state, ...props }) => {
 		return state ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionProviderImpl, {
 			...props,
 			state
 		}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionInit, { ...props });
 	}, "CollectionProvider");
 	CollectionProvider.displayName = PROVIDER_NAME;
-	const CollectionInit = /* @__PURE__ */ __name$11((props) => {
+	const CollectionInit = /* @__PURE__ */ __name$10((props) => {
 		const state = useInitCollection();
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionProviderImpl, {
 			...props,
 			state
 		});
 	}, "CollectionInit");
-	CollectionInit.displayName = PROVIDER_NAME + "Init";
-	const CollectionProviderImpl = /* @__PURE__ */ __name$11((props) => {
+	CollectionInit.displayName = name + "CollectionInit";
+	const CollectionProviderImpl = /* @__PURE__ */ __name$10((props) => {
 		const { scope, children, state } = props;
 		const ref = import_react.useRef(null);
 		const [collectionElement, setCollectionElement] = import_react.useState(null);
 		const composeRefs = useComposedRefs(ref, setCollectionElement);
-		const [itemMap, setItemMap] = state;
+		const [collection, setCollection] = state;
+		const registryRef = import_react.useRef(new OrderedDict());
+		const getCollection = import_react.useCallback(() => {
+			const registry = registryRef.current;
+			if (!isInDocumentOrder(registry)) registry.sort(sortByDocumentPosition);
+			return registry;
+		}, []);
 		import_react.useEffect(() => {
 			if (!collectionElement) return;
-			const observer = getChildListObserver(() => {});
+			const observer = getChildListObserver(() => {
+				setCollection((map) => {
+					const sorted = map.toSorted(sortByDocumentPosition);
+					return sorted.some(([key], index) => map.keyAt(index) !== key) ? sorted : map;
+				});
+			});
 			observer.observe(collectionElement, {
 				childList: true,
 				subtree: true
@@ -16134,23 +16183,28 @@ function createCollection2(name) {
 			return () => {
 				observer.disconnect();
 			};
-		}, [collectionElement]);
-		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionContextProvider, {
+		}, [collectionElement, setCollection]);
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionStableContextProvider, {
 			scope,
-			itemMap,
-			setItemMap,
-			collectionRef: composeRefs,
-			collectionRefObject: ref,
-			collectionElement,
-			children
+			collectionElementRef: composeRefs,
+			collectionElementRefObject: ref,
+			getCollection,
+			setCollection,
+			registryRef,
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionStatefulContextProvider, {
+				scope,
+				collectionElement,
+				collection,
+				children
+			})
 		});
 	}, "CollectionProviderImpl");
-	CollectionProviderImpl.displayName = PROVIDER_NAME + "Impl";
+	CollectionProviderImpl.displayName = name + "CollectionProviderImpl";
 	const COLLECTION_SLOT_NAME = name + "CollectionSlot";
 	const CollectionSlotImpl = /* @__PURE__ */ createSlot(COLLECTION_SLOT_NAME);
 	const CollectionSlot = import_react.forwardRef((props, forwardedRef) => {
 		const { scope, children } = props;
-		const composedRefs = useComposedRefs(forwardedRef, useCollectionContext(COLLECTION_SLOT_NAME, scope).collectionRef);
+		const composedRefs = useComposedRefs(forwardedRef, useStableCollectionContext(COLLECTION_SLOT_NAME, scope).collectionElementRef);
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionSlotImpl, {
 			ref: composedRefs,
 			children
@@ -16163,40 +16217,58 @@ function createCollection2(name) {
 	const CollectionItemSlot = import_react.forwardRef((props, forwardedRef) => {
 		const { scope, children, ...itemData } = props;
 		const ref = import_react.useRef(null);
-		const [element, setElement] = import_react.useState(null);
-		const composedRefs = useComposedRefs(forwardedRef, ref, setElement);
-		const { setItemMap } = useCollectionContext(ITEM_SLOT_NAME, scope);
+		const { setCollection, registryRef } = useStableCollectionContext(ITEM_SLOT_NAME, scope);
 		const itemDataRef = import_react.useRef(itemData);
 		if (!shallowEqual(itemDataRef.current, itemData)) itemDataRef.current = itemData;
 		const memoizedItemData = itemDataRef.current;
-		import_react.useEffect(() => {
-			const itemData2 = memoizedItemData;
-			setItemMap((map) => {
-				if (!element) return map;
-				if (!map.has(element)) {
-					map.set(element, {
-						...itemData2,
-						element
-					});
-					return map.toSorted(sortByDocumentPosition);
-				}
-				return map.set(element, {
-					...itemData2,
-					element
-				}).toSorted(sortByDocumentPosition);
+		const composedRefs = useComposedRefs(forwardedRef, import_react.useCallback((node) => {
+			const registry = registryRef.current;
+			if (node) registry.set(node, {
+				...itemDataRef.current,
+				element: node
 			});
+			else if (ref.current) registry.delete(ref.current);
+		}, [registryRef]), ref);
+		useLayoutEffect2(() => {
+			const node = ref.current;
+			const registry = registryRef.current;
+			if (node && registry.has(node)) registry.set(node, {
+				...memoizedItemData,
+				element: node
+			});
+		}, [memoizedItemData, registryRef]);
+		const registeredRef = import_react.useRef(null);
+		import_react.useEffect(() => {
+			const element = ref.current;
+			const registered = registeredRef.current;
+			if ((registered?.element ?? null) === element && (!element || registered?.itemData === memoizedItemData)) return;
+			registeredRef.current = element ? {
+				element,
+				itemData: memoizedItemData
+			} : null;
+			setCollection((map) => {
+				const next = new OrderedDict(map);
+				if (registered && registered.element !== element) next.delete(registered.element);
+				if (element) next.set(element, {
+					...memoizedItemData,
+					element
+				});
+				return next.sort(sortByDocumentPosition);
+			});
+		});
+		import_react.useEffect(() => {
 			return () => {
-				setItemMap((map) => {
-					if (!element || !map.has(element)) return map;
-					map.delete(element);
-					return new OrderedDict(map);
+				const registered = registeredRef.current;
+				registeredRef.current = null;
+				if (!registered) return;
+				setCollection((map) => {
+					if (!map.has(registered.element)) return map;
+					const next = new OrderedDict(map);
+					next.delete(registered.element);
+					return next;
 				});
 			};
-		}, [
-			element,
-			memoizedItemData,
-			setItemMap
-		]);
+		}, [setCollection]);
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollectionItemSlotImpl, {
 			[ITEM_DATA_ATTR]: "",
 			ref: composedRefs,
@@ -16207,12 +16279,17 @@ function createCollection2(name) {
 	function useInitCollection() {
 		return import_react.useState(new OrderedDict());
 	}
-	__name$11(useInitCollection, "useInitCollection");
+	__name$10(useInitCollection, "useInitCollection");
 	function useCollection(scope) {
-		const { itemMap } = useCollectionContext(name + "CollectionConsumer", scope);
-		return itemMap;
+		const { collection } = useStatefulCollectionContext(name + "CollectionConsumer", scope);
+		return collection;
 	}
-	__name$11(useCollection, "useCollection");
+	__name$10(useCollection, "useCollection");
+	function useGetCollection(scope) {
+		const { getCollection } = useStableCollectionContext(name + "CollectionConsumer", scope);
+		return getCollection;
+	}
+	__name$10(useGetCollection, "useGetCollection");
 	return [{
 		Provider: CollectionProvider,
 		Slot: CollectionSlot,
@@ -16220,10 +16297,11 @@ function createCollection2(name) {
 	}, {
 		createCollectionScope,
 		useCollection,
+		useGetCollection,
 		useInitCollection
 	}];
 }
-__name$11(createCollection2, "createCollection");
+__name$10(createCollection2, "createCollection");
 function shallowEqual(a, b) {
 	if (a === b) return true;
 	if (typeof a !== "object" || typeof b !== "object") return false;
@@ -16237,15 +16315,27 @@ function shallowEqual(a, b) {
 	}
 	return true;
 }
-__name$11(shallowEqual, "shallowEqual");
+__name$10(shallowEqual, "shallowEqual");
 function isElementPreceding(a, b) {
 	return !!(b.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING);
 }
-__name$11(isElementPreceding, "isElementPreceding");
+__name$10(isElementPreceding, "isElementPreceding");
+function isInDocumentOrder(dict) {
+	let previous;
+	for (const element of dict.keys()) {
+		if (previous) {
+			const position = previous.compareDocumentPosition(element);
+			if (!(position & Node.DOCUMENT_POSITION_DISCONNECTED) && position & Node.DOCUMENT_POSITION_PRECEDING) return false;
+		}
+		previous = element;
+	}
+	return true;
+}
+__name$10(isInDocumentOrder, "isInDocumentOrder");
 function sortByDocumentPosition(a, b) {
 	return !a[1].element || !b[1].element ? 0 : isElementPreceding(a[1].element, b[1].element) ? -1 : 1;
 }
-__name$11(sortByDocumentPosition, "sortByDocumentPosition");
+__name$10(sortByDocumentPosition, "sortByDocumentPosition");
 function getChildListObserver(callback) {
 	return new MutationObserver((mutationsList) => {
 		for (const mutation of mutationsList) if (mutation.type === "childList") {
@@ -16254,39 +16344,47 @@ function getChildListObserver(callback) {
 		}
 	});
 }
-__name$11(getChildListObserver, "getChildListObserver");
+__name$10(getChildListObserver, "getChildListObserver");
 //#endregion
 //#region node_modules/@radix-ui/react-direction/dist/index.mjs
-var __defProp$10 = Object.defineProperty;
-var __name$10 = (target, value) => __defProp$10(target, "name", {
-	value,
-	configurable: true
-});
-var DirectionContext = import_react.createContext(void 0);
-function useDirection(localDir) {
-	const globalDir = import_react.useContext(DirectionContext);
-	return localDir || globalDir || "ltr";
-}
-__name$10(useDirection, "useDirection");
-//#endregion
-//#region node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
 var __defProp$9 = Object.defineProperty;
 var __name$9 = (target, value) => __defProp$9(target, "name", {
 	value,
 	configurable: true
 });
+var Direction$1 = {
+	LTR: "ltr",
+	RTL: "rtl"
+};
+var DirectionContext = import_react.createContext(void 0);
+function useDirection(localDir) {
+	const globalDir = import_react.useContext(DirectionContext);
+	return localDir || globalDir || Direction$1.LTR;
+}
+__name$9(useDirection, "useDirection");
+//#endregion
+//#region node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
+var __defProp$8 = Object.defineProperty;
+var __name$8 = (target, value) => __defProp$8(target, "name", {
+	value,
+	configurable: true
+});
+var useReactInsertionEffect = import_react[" useInsertionEffect ".trim().toString()];
 function useCallbackRef$1(callback) {
 	const callbackRef = import_react.useRef(callback);
-	import_react.useEffect(() => {
+	if (typeof useReactInsertionEffect === "function") useReactInsertionEffect(() => {
+		callbackRef.current = callback;
+	});
+	else useLayoutEffect2(() => {
 		callbackRef.current = callback;
 	});
 	return import_react.useMemo(() => ((...args) => callbackRef.current?.(...args)), []);
 }
-__name$9(useCallbackRef$1, "useCallbackRef");
+__name$8(useCallbackRef$1, "useCallbackRef");
 //#endregion
 //#region node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-var __defProp$8 = Object.defineProperty;
-var __name$8 = (target, value) => __defProp$8(target, "name", {
+var __defProp$7 = Object.defineProperty;
+var __name$7 = (target, value) => __defProp$7(target, "name", {
 	value,
 	configurable: true
 });
@@ -16300,7 +16398,7 @@ var DismissableLayerContext = import_react.createContext({
 	branches: /* @__PURE__ */ new Set(),
 	dismissableSurfaces: /* @__PURE__ */ new Set()
 });
-var DismissableLayer = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$8(function DismissableLayer2(props, forwardedRef) {
+var DismissableLayer = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$7(function DismissableLayer2(props, forwardedRef) {
 	const { disableOutsidePointerEvents = false, deferPointerDownOutside = false, onEscapeKeyDown, onPointerDownOutside, onFocusOutside, onInteractOutside, onDismiss, ...layerProps } = props;
 	const context = import_react.useContext(DismissableLayerContext);
 	const [node, setNode] = import_react.useState(null);
@@ -16387,7 +16485,7 @@ var DismissableLayer = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ _
 		};
 	}, [node, context]);
 	import_react.useEffect(() => {
-		const handleUpdate = /* @__PURE__ */ __name$8(() => force({}), "handleUpdate");
+		const handleUpdate = /* @__PURE__ */ __name$7(() => force({}), "handleUpdate");
 		document.addEventListener(CONTEXT_UPDATE, handleUpdate);
 		return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
 	}, []);
@@ -16415,8 +16513,8 @@ function useDismissableLayerSurface() {
 	}, [node, context.dismissableSurfaces]);
 	return setNode;
 }
-__name$8(useDismissableLayerSurface, "useDismissableLayerSurface");
-var IS_TRUE = /* @__PURE__ */ __name$8(() => true, "IS_TRUE");
+__name$7(useDismissableLayerSurface, "useDismissableLayerSurface");
+var IS_TRUE = /* @__PURE__ */ __name$7(() => true, "IS_TRUE");
 function usePointerDownOutside(onPointerDownOutside, args) {
 	const { ownerDocument = globalThis?.document, deferPointerDownOutside = false, isDeferredPointerDownOutsideRef, dismissableSurfaces, shouldHandlePointerDownOutside = IS_TRUE } = args;
 	const handlePointerDownOutside = useCallbackRef$1(onPointerDownOutside);
@@ -16430,11 +16528,11 @@ function usePointerDownOutside(onPointerDownOutside, args) {
 			isDeferredPointerDownOutsideRef.current = false;
 			interceptedOutsideInteractionEventsRef.current.clear();
 		}
-		__name$8(resetOutsideInteraction, "resetOutsideInteraction");
+		__name$7(resetOutsideInteraction, "resetOutsideInteraction");
 		function isOutsideInteractionIntercepted() {
 			return Array.from(interceptedOutsideInteractionEventsRef.current.values()).some(Boolean);
 		}
-		__name$8(isOutsideInteractionIntercepted, "isOutsideInteractionIntercepted");
+		__name$7(isOutsideInteractionIntercepted, "isOutsideInteractionIntercepted");
 		function handleInteractionCapture(event) {
 			if (!isPointerDownOutsideRef.current) return;
 			const target = event.target;
@@ -16443,12 +16541,12 @@ function usePointerDownOutside(onPointerDownOutside, args) {
 				if (isPointerDownOutsideRef.current) handleClickRef.current();
 			}, 0);
 		}
-		__name$8(handleInteractionCapture, "handleInteractionCapture");
+		__name$7(handleInteractionCapture, "handleInteractionCapture");
 		function handleInteractionBubble(event) {
 			if (isPointerDownOutsideRef.current) interceptedOutsideInteractionEventsRef.current.set(event.type, false);
 		}
-		__name$8(handleInteractionBubble, "handleInteractionBubble");
-		const handlePointerDown = /* @__PURE__ */ __name$8((event) => {
+		__name$7(handleInteractionBubble, "handleInteractionBubble");
+		const handlePointerDown = /* @__PURE__ */ __name$7((event) => {
 			if (event.target && !isPointerInsideReactTreeRef.current) {
 				let handleAndDispatchPointerDownOutsideEvent2 = function() {
 					ownerDocument.removeEventListener("click", handleClickRef.current);
@@ -16456,7 +16554,7 @@ function usePointerDownOutside(onPointerDownOutside, args) {
 					resetOutsideInteraction();
 					if (!wasOutsideInteractionIntercepted) handleAndDispatchCustomEvent(POINTER_DOWN_OUTSIDE, handlePointerDownOutside, eventDetail, { discrete: true });
 				};
-				__name$8(handleAndDispatchPointerDownOutsideEvent2, "handleAndDispatchPointerDownOutsideEvent");
+				__name$7(handleAndDispatchPointerDownOutsideEvent2, "handleAndDispatchPointerDownOutsideEvent");
 				if (!shouldHandlePointerDownOutside(event.target)) {
 					ownerDocument.removeEventListener("click", handleClickRef.current);
 					resetOutsideInteraction();
@@ -16511,30 +16609,30 @@ function usePointerDownOutside(onPointerDownOutside, args) {
 		dismissableSurfaces,
 		shouldHandlePointerDownOutside
 	]);
-	return { onPointerDownCapture: /* @__PURE__ */ __name$8(() => isPointerInsideReactTreeRef.current = true, "onPointerDownCapture") };
+	return { onPointerDownCapture: /* @__PURE__ */ __name$7(() => isPointerInsideReactTreeRef.current = true, "onPointerDownCapture") };
 }
-__name$8(usePointerDownOutside, "usePointerDownOutside");
+__name$7(usePointerDownOutside, "usePointerDownOutside");
 function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
 	const handleFocusOutside = useCallbackRef$1(onFocusOutside);
 	const isFocusInsideReactTreeRef = import_react.useRef(false);
 	import_react.useEffect(() => {
-		const handleFocus = /* @__PURE__ */ __name$8((event) => {
+		const handleFocus = /* @__PURE__ */ __name$7((event) => {
 			if (event.target && !isFocusInsideReactTreeRef.current) handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, { originalEvent: event }, { discrete: false });
 		}, "handleFocus");
 		ownerDocument.addEventListener("focusin", handleFocus);
 		return () => ownerDocument.removeEventListener("focusin", handleFocus);
 	}, [ownerDocument, handleFocusOutside]);
 	return {
-		onFocusCapture: /* @__PURE__ */ __name$8(() => isFocusInsideReactTreeRef.current = true, "onFocusCapture"),
-		onBlurCapture: /* @__PURE__ */ __name$8(() => isFocusInsideReactTreeRef.current = false, "onBlurCapture")
+		onFocusCapture: /* @__PURE__ */ __name$7(() => isFocusInsideReactTreeRef.current = true, "onFocusCapture"),
+		onBlurCapture: /* @__PURE__ */ __name$7(() => isFocusInsideReactTreeRef.current = false, "onBlurCapture")
 	};
 }
-__name$8(useFocusOutside, "useFocusOutside");
+__name$7(useFocusOutside, "useFocusOutside");
 function dispatchUpdate() {
 	const event = new CustomEvent(CONTEXT_UPDATE);
 	document.dispatchEvent(event);
 }
-__name$8(dispatchUpdate, "dispatchUpdate");
+__name$7(dispatchUpdate, "dispatchUpdate");
 function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
 	const target = detail.originalEvent.target;
 	const event = new CustomEvent(name, {
@@ -16546,11 +16644,11 @@ function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
 	if (discrete) dispatchDiscreteCustomEvent(target, event);
 	else target.dispatchEvent(event);
 }
-__name$8(handleAndDispatchCustomEvent, "handleAndDispatchCustomEvent");
+__name$7(handleAndDispatchCustomEvent, "handleAndDispatchCustomEvent");
 //#endregion
 //#region node_modules/@radix-ui/react-focus-guards/dist/index.mjs
-var __defProp$7 = Object.defineProperty;
-var __name$7 = (target, value) => __defProp$7(target, "name", {
+var __defProp$6 = Object.defineProperty;
+var __name$6 = (target, value) => __defProp$6(target, "name", {
 	value,
 	configurable: true
 });
@@ -16560,7 +16658,7 @@ function FocusGuards(props) {
 	useFocusGuards();
 	return props.children;
 }
-__name$7(FocusGuards, "FocusGuards");
+__name$6(FocusGuards, "FocusGuards");
 function useFocusGuards() {
 	import_react.useEffect(() => {
 		if (!guards) guards = {
@@ -16581,7 +16679,7 @@ function useFocusGuards() {
 		};
 	}, []);
 }
-__name$7(useFocusGuards, "useFocusGuards");
+__name$6(useFocusGuards, "useFocusGuards");
 function createFocusGuard() {
 	const element = document.createElement("span");
 	element.setAttribute("data-radix-focus-guard", "");
@@ -16592,11 +16690,11 @@ function createFocusGuard() {
 	element.style.pointerEvents = "none";
 	return element;
 }
-__name$7(createFocusGuard, "createFocusGuard");
+__name$6(createFocusGuard, "createFocusGuard");
 //#endregion
 //#region node_modules/@radix-ui/react-focus-scope/dist/index.mjs
-var __defProp$6 = Object.defineProperty;
-var __name$6 = (target, value) => __defProp$6(target, "name", {
+var __defProp$5 = Object.defineProperty;
+var __name$5 = (target, value) => __defProp$5(target, "name", {
 	value,
 	configurable: true
 });
@@ -16606,13 +16704,22 @@ var EVENT_OPTIONS = {
 	bubbles: false,
 	cancelable: true
 };
-var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$6(function FocusScope2(props, forwardedRef) {
-	const { loop = false, trapped = false, onMountAutoFocus: onMountAutoFocusProp, onUnmountAutoFocus: onUnmountAutoFocusProp, ...scopeProps } = props;
+var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$5(function FocusScope2(props, forwardedRef) {
+	const { loop = false, trapped = false, branches, onMountAutoFocus: onMountAutoFocusProp, onUnmountAutoFocus: onUnmountAutoFocusProp, ...scopeProps } = props;
 	const [container, setContainer] = import_react.useState(null);
 	const onMountAutoFocus = useCallbackRef$1(onMountAutoFocusProp);
 	const onUnmountAutoFocus = useCallbackRef$1(onUnmountAutoFocusProp);
 	const lastFocusedElementRef = import_react.useRef(null);
 	const composedRefs = useComposedRefs(forwardedRef, setContainer);
+	const branchesRef = import_react.useRef(branches);
+	import_react.useEffect(() => {
+		branchesRef.current = branches;
+	});
+	const isTargetInScope = import_react.useCallback((target) => {
+		if (!target) return false;
+		if (container?.contains(target)) return true;
+		return Boolean(branchesRef.current?.some((branch) => branch.contains(target)));
+	}, [container]);
 	const focusScope = import_react.useRef({
 		paused: false,
 		pause() {
@@ -16627,20 +16734,20 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 			let handleFocusIn2 = function(event) {
 				if (focusScope.paused || !container) return;
 				const target = event.target;
-				if (container.contains(target)) lastFocusedElementRef.current = target;
+				if (isTargetInScope(target)) lastFocusedElementRef.current = target;
 				else focus(lastFocusedElementRef.current, { select: true });
 			}, handleFocusOut2 = function(event) {
 				if (focusScope.paused || !container) return;
 				const relatedTarget = event.relatedTarget;
 				if (relatedTarget === null) return;
-				if (!container.contains(relatedTarget)) focus(lastFocusedElementRef.current, { select: true });
+				if (!isTargetInScope(relatedTarget)) focus(lastFocusedElementRef.current, { select: true });
 			}, handleMutations2 = function(mutations) {
 				if (document.activeElement !== document.body) return;
 				for (const mutation of mutations) if (mutation.removedNodes.length > 0) focus(container);
 			};
-			__name$6(handleFocusIn2, "handleFocusIn");
-			__name$6(handleFocusOut2, "handleFocusOut");
-			__name$6(handleMutations2, "handleMutations");
+			__name$5(handleFocusIn2, "handleFocusIn");
+			__name$5(handleFocusOut2, "handleFocusOut");
+			__name$5(handleMutations2, "handleMutations");
 			document.addEventListener("focusin", handleFocusIn2);
 			document.addEventListener("focusout", handleFocusOut2);
 			const mutationObserver = new MutationObserver(handleMutations2);
@@ -16657,7 +16764,8 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 	}, [
 		trapped,
 		container,
-		focusScope.paused
+		focusScope.paused,
+		isTargetInScope
 	]);
 	import_react.useEffect(() => {
 		if (container) {
@@ -16674,11 +16782,13 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 			}
 			return () => {
 				container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+				const ownerDocument = container.ownerDocument;
+				const UnmountEvent = CustomEvent;
 				setTimeout(() => {
-					const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
+					const unmountEvent = new UnmountEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
 					container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
 					container.dispatchEvent(unmountEvent);
-					if (!unmountEvent.defaultPrevented) focus(previouslyFocusedElement ?? document.body, { select: true });
+					if (!unmountEvent.defaultPrevented) focus(previouslyFocusedElement ?? ownerDocument.body, { select: true });
 					container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
 					focusScopesStack.remove(focusScope);
 				}, 0);
@@ -16720,6 +16830,35 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 		onKeyDown: handleKeyDown
 	});
 }, "FocusScope"));
+var FocusScopeBranchContext = import_react.createContext(null);
+function FocusScopeBranchProvider({ registry, children }) {
+	if (!registry) return children;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FocusScopeBranchContext.Provider, {
+		value: registry,
+		children
+	});
+}
+__name$5(FocusScopeBranchProvider, "FocusScopeBranchProvider");
+function useFocusScopeBranchRegistry() {
+	const [nodes, setNodes] = import_react.useState([]);
+	return {
+		nodes,
+		registry: import_react.useMemo(() => ({
+			add: /* @__PURE__ */ __name$5((node) => setNodes((prev) => prev.includes(node) ? prev : [...prev, node]), "add"),
+			remove: /* @__PURE__ */ __name$5((node) => setNodes((prev) => prev.filter((current) => current !== node)), "remove")
+		}), [])
+	};
+}
+__name$5(useFocusScopeBranchRegistry, "useFocusScopeBranchRegistry");
+function useFocusScopeBranch(node) {
+	const registry = import_react.useContext(FocusScopeBranchContext);
+	import_react.useEffect(() => {
+		if (!node || !registry) return;
+		registry.add(node);
+		return () => registry.remove(node);
+	}, [node, registry]);
+}
+__name$5(useFocusScopeBranch, "useFocusScopeBranch");
 function focusFirst(candidates, { select = false } = {}) {
 	const previouslyFocusedElement = document.activeElement;
 	for (const candidate of candidates) {
@@ -16727,15 +16866,15 @@ function focusFirst(candidates, { select = false } = {}) {
 		if (document.activeElement !== previouslyFocusedElement) return;
 	}
 }
-__name$6(focusFirst, "focusFirst");
+__name$5(focusFirst, "focusFirst");
 function getTabbableEdges(container) {
 	const candidates = getTabbableCandidates(container);
 	return [findVisible(candidates, container), findVisible(candidates.reverse(), container)];
 }
-__name$6(getTabbableEdges, "getTabbableEdges");
+__name$5(getTabbableEdges, "getTabbableEdges");
 function getTabbableCandidates(container) {
 	const nodes = [];
-	const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, { acceptNode: /* @__PURE__ */ __name$6((node) => {
+	const walker = container.ownerDocument.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, { acceptNode: /* @__PURE__ */ __name$5((node) => {
 		const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
 		if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
 		return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
@@ -16743,12 +16882,12 @@ function getTabbableCandidates(container) {
 	while (walker.nextNode()) nodes.push(walker.currentNode);
 	return nodes;
 }
-__name$6(getTabbableCandidates, "getTabbableCandidates");
+__name$5(getTabbableCandidates, "getTabbableCandidates");
 function findVisible(elements, container) {
 	const canUseCheckVisibility = typeof container.checkVisibility === "function" && container.checkVisibility({ checkVisibilityCSS: true });
 	for (const element of elements) if (!(canUseCheckVisibility ? !element.checkVisibility({ checkVisibilityCSS: true }) : isHidden(element, { upTo: container }))) return element;
 }
-__name$6(findVisible, "findVisible");
+__name$5(findVisible, "findVisible");
 function isHidden(node, { upTo }) {
 	if (getComputedStyle(node).visibility === "hidden") return true;
 	while (node) {
@@ -16758,19 +16897,19 @@ function isHidden(node, { upTo }) {
 	}
 	return false;
 }
-__name$6(isHidden, "isHidden");
+__name$5(isHidden, "isHidden");
 function isSelectableInput(element) {
-	return element instanceof HTMLInputElement && "select" in element;
+	return element.tagName === "INPUT" && typeof element.select === "function";
 }
-__name$6(isSelectableInput, "isSelectableInput");
+__name$5(isSelectableInput, "isSelectableInput");
 function focus(element, { select = false } = {}) {
 	if (element && element.focus) {
-		const previouslyFocusedElement = document.activeElement;
+		const previouslyFocusedElement = (element.ownerDocument ?? document).activeElement;
 		element.focus({ preventScroll: true });
 		if (element !== previouslyFocusedElement && isSelectableInput(element) && select) element.select();
 	}
 }
-__name$6(focus, "focus");
+__name$5(focus, "focus");
 var focusScopesStack = createFocusScopesStack();
 function createFocusScopesStack() {
 	let stack = [];
@@ -16787,22 +16926,22 @@ function createFocusScopesStack() {
 		}
 	};
 }
-__name$6(createFocusScopesStack, "createFocusScopesStack");
+__name$5(createFocusScopesStack, "createFocusScopesStack");
 function arrayRemove(array, item) {
 	const updatedArray = [...array];
 	const index = updatedArray.indexOf(item);
 	if (index !== -1) updatedArray.splice(index, 1);
 	return updatedArray;
 }
-__name$6(arrayRemove, "arrayRemove");
+__name$5(arrayRemove, "arrayRemove");
 function removeLinks(items) {
 	return items.filter((item) => item.tagName !== "A");
 }
-__name$6(removeLinks, "removeLinks");
+__name$5(removeLinks, "removeLinks");
 //#endregion
 //#region node_modules/@radix-ui/react-id/dist/index.mjs
-var __defProp$5 = Object.defineProperty;
-var __name$5 = (target, value) => __defProp$5(target, "name", {
+var __defProp$4 = Object.defineProperty;
+var __name$4 = (target, value) => __defProp$4(target, "name", {
 	value,
 	configurable: true
 });
@@ -16815,7 +16954,7 @@ function useId(deterministicId) {
 	}, [deterministicId]);
 	return deterministicId || (id ? `radix-${id}` : "");
 }
-__name$5(useId, "useId");
+__name$4(useId, "useId");
 //#endregion
 //#region node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
 /**
@@ -17162,7 +17301,7 @@ var arrow$3 = (options) => ({
 * clipping boundary. Alternative to `autoPlacement`.
 * @see https://floating-ui.com/docs/flip
 */
-var flip$2 = function(options) {
+var flip$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "flip",
@@ -17243,7 +17382,7 @@ function isAnySideFullyClipped(overflow) {
 * when it is not in the same clipping context as the reference element.
 * @see https://floating-ui.com/docs/hide
 */
-var hide$2 = function(options) {
+var hide$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "hide",
@@ -17312,7 +17451,7 @@ async function convertValueToCoords(state, options) {
 * object may be passed.
 * @see https://floating-ui.com/docs/offset
 */
-var offset$2 = function(options) {
+var offset$1 = function(options) {
 	if (options === void 0) options = 0;
 	return {
 		name: "offset",
@@ -17338,7 +17477,7 @@ var offset$2 = function(options) {
 * keep it in view when it will overflow the clipping boundary.
 * @see https://floating-ui.com/docs/shift
 */
-var shift$2 = function(options) {
+var shift$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "shift",
@@ -17386,7 +17525,7 @@ var shift$2 = function(options) {
 /**
 * Built-in `limiter` that will stop `shift()` at a certain point.
 */
-var limitShift$2 = function(options) {
+var limitShift$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		options,
@@ -17439,7 +17578,7 @@ var limitShift$2 = function(options) {
 * width of the reference element.
 * @see https://floating-ui.com/docs/size
 */
-var size$2 = function(options) {
+var size$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "size",
@@ -18079,33 +18218,33 @@ function autoUpdate(reference, floating, update, options) {
 * object may be passed.
 * @see https://floating-ui.com/docs/offset
 */
-var offset$1 = offset$2;
+var offset$2 = offset$1;
 /**
 * Optimizes the visibility of the floating element by shifting it in order to
 * keep it in view when it will overflow the clipping boundary.
 * @see https://floating-ui.com/docs/shift
 */
-var shift$1 = shift$2;
+var shift$2 = shift$1;
 /**
 * Optimizes the visibility of the floating element by flipping the `placement`
 * in order to keep it in view when the preferred placement(s) will overflow the
 * clipping boundary. Alternative to `autoPlacement`.
 * @see https://floating-ui.com/docs/flip
 */
-var flip$1 = flip$2;
+var flip$2 = flip$1;
 /**
 * Provides data that allows you to change the size of the floating element —
 * for instance, prevent it from overflowing the clipping boundary or match the
 * width of the reference element.
 * @see https://floating-ui.com/docs/size
 */
-var size$1 = size$2;
+var size$2 = size$1;
 /**
 * Provides data to hide the floating element in applicable situations, such as
 * when it is not in the same clipping context as the reference element.
 * @see https://floating-ui.com/docs/hide
 */
-var hide$1 = hide$2;
+var hide$2 = hide$1;
 /**
 * Provides data to position an inner element of the floating element so that it
 * appears centered to the reference element.
@@ -18115,7 +18254,7 @@ var arrow$2 = arrow$3;
 /**
 * Built-in `limiter` that will stop `shift()` at a certain point.
 */
-var limitShift$1 = limitShift$2;
+var limitShift$2 = limitShift$1;
 /**
 * Computes the `x` and `y` coordinates that will place the floating element
 * next to a given reference element.
@@ -18363,7 +18502,7 @@ var arrow$1 = (options) => {
 * @see https://floating-ui.com/docs/offset
 */
 var offset = (options, deps) => {
-	const result = offset$1(options);
+	const result = offset$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18376,7 +18515,7 @@ var offset = (options, deps) => {
 * @see https://floating-ui.com/docs/shift
 */
 var shift = (options, deps) => {
-	const result = shift$1(options);
+	const result = shift$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18388,7 +18527,7 @@ var shift = (options, deps) => {
 */
 var limitShift = (options, deps) => {
 	return {
-		fn: limitShift$1(options).fn,
+		fn: limitShift$2(options).fn,
 		options: [options, deps]
 	};
 };
@@ -18399,7 +18538,7 @@ var limitShift = (options, deps) => {
 * @see https://floating-ui.com/docs/flip
 */
 var flip = (options, deps) => {
-	const result = flip$1(options);
+	const result = flip$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18413,7 +18552,7 @@ var flip = (options, deps) => {
 * @see https://floating-ui.com/docs/size
 */
 var size = (options, deps) => {
-	const result = size$1(options);
+	const result = size$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18426,7 +18565,7 @@ var size = (options, deps) => {
 * @see https://floating-ui.com/docs/hide
 */
 var hide = (options, deps) => {
-	const result = hide$1(options);
+	const result = hide$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18449,15 +18588,23 @@ var arrow = (options, deps) => {
 };
 //#endregion
 //#region node_modules/@radix-ui/react-popper/dist/index.mjs
-var __defProp$4 = Object.defineProperty;
-var __name$4 = (target, value) => __defProp$4(target, "name", {
+var __defProp$3 = Object.defineProperty;
+var __name$3 = (target, value) => __defProp$3(target, "name", {
 	value,
 	configurable: true
 });
+var Sticky = {
+	Partial: "partial",
+	Always: "always"
+};
+var UpdatePositionStrategy = {
+	Optimized: "optimized",
+	Always: "always"
+};
 var POPPER_NAME = "Popper";
 var [createPopperContext, createPopperScope] = /* @__PURE__ */ createContextScope(POPPER_NAME);
 var [PopperProvider, usePopperContext] = createPopperContext(POPPER_NAME);
-var Popper = /* @__PURE__ */ __name$4((props) => {
+var Popper = /* @__PURE__ */ __name$3((props) => {
 	const { __scopePopper, children } = props;
 	const [anchor, setAnchor] = import_react.useState(null);
 	const [placementState, setPlacementState] = import_react.useState(void 0);
@@ -18471,7 +18618,7 @@ var Popper = /* @__PURE__ */ __name$4((props) => {
 	});
 }, "Popper");
 var ANCHOR_NAME = "PopperAnchor";
-var PopperAnchor = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$4(function PopperAnchor2(props, forwardedRef) {
+var PopperAnchor = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$3(function PopperAnchor2(props, forwardedRef) {
 	const { __scopePopper, virtualRef, ...anchorProps } = props;
 	const context = usePopperContext(ANCHOR_NAME, __scopePopper);
 	const ref = import_react.useRef(null);
@@ -18499,8 +18646,8 @@ var PopperAnchor = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __nam
 }, "PopperAnchor"));
 var CONTENT_NAME$1 = "PopperContent";
 var [PopperContentProvider, useContentContext] = createPopperContext(CONTENT_NAME$1);
-var PopperContent = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$4(function PopperContent2(props, forwardedRef) {
-	const { __scopePopper, side = "bottom", sideOffset = 0, align = "center", alignOffset = 0, arrowPadding = 0, avoidCollisions = true, collisionBoundary = [], collisionPadding: collisionPaddingProp = 0, sticky = "partial", hideWhenDetached = false, updatePositionStrategy = "optimized", onPlaced, ...contentProps } = props;
+var PopperContent = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$3(function PopperContent2(props, forwardedRef) {
+	const { __scopePopper, side = "bottom", sideOffset = 0, align = "center", alignOffset = 0, arrowPadding = 0, avoidCollisions = true, collisionBoundary = [], collisionPadding: collisionPaddingProp = 0, sticky = Sticky.Partial, hideWhenDetached = false, updatePositionStrategy = UpdatePositionStrategy.Optimized, onPlaced, ...contentProps } = props;
 	const context = usePopperContext(CONTENT_NAME$1, __scopePopper);
 	const [content, setContent] = import_react.useState(null);
 	const composedRefs = useComposedRefs(forwardedRef, setContent);
@@ -18526,8 +18673,8 @@ var PopperContent = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __na
 	const { refs, floatingStyles, placement, isPositioned, middlewareData } = useFloating({
 		strategy: "fixed",
 		placement: desiredPlacement,
-		whileElementsMounted: /* @__PURE__ */ __name$4((...args) => {
-			return autoUpdate(...args, { animationFrame: updatePositionStrategy === "always" });
+		whileElementsMounted: /* @__PURE__ */ __name$3((...args) => {
+			return autoUpdate(...args, { animationFrame: updatePositionStrategy === UpdatePositionStrategy.Always });
 		}, "whileElementsMounted"),
 		elements: { reference: context.anchor },
 		middleware: [
@@ -18538,13 +18685,13 @@ var PopperContent = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __na
 			avoidCollisions && shift({
 				mainAxis: true,
 				crossAxis: false,
-				limiter: sticky === "partial" ? limitShift() : void 0,
+				...sticky === Sticky.Partial ? { limiter: limitShift() } : {},
 				...detectOverflowOptions
 			}),
 			avoidCollisions && flip({ ...detectOverflowOptions }),
 			size({
 				...detectOverflowOptions,
-				apply: /* @__PURE__ */ __name$4(({ elements, rects, availableWidth, availableHeight }) => {
+				apply: /* @__PURE__ */ __name$3(({ elements, rects, availableWidth, availableHeight }) => {
 					const { width: anchorWidth, height: anchorHeight } = rects.reference;
 					const contentStyle = elements.floating.style;
 					contentStyle.setProperty("--radix-popper-available-width", `${availableWidth}px`);
@@ -18561,10 +18708,13 @@ var PopperContent = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __na
 				arrowWidth,
 				arrowHeight
 			}),
-			hideWhenDetached && hide({
+			hideWhenDetached && hide(hasExplicitBoundaries ? {
 				strategy: "referenceHidden",
-				...detectOverflowOptions,
-				boundary: hasExplicitBoundaries ? detectOverflowOptions.boundary : void 0
+				...detectOverflowOptions
+			} : {
+				strategy: "referenceHidden",
+				padding: detectOverflowOptions.padding,
+				altBoundary: detectOverflowOptions.altBoundary
 			})
 		]
 	});
@@ -18626,8 +18776,8 @@ var PopperContent = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __na
 function isNotNull(value) {
 	return value !== null;
 }
-__name$4(isNotNull, "isNotNull");
-var transformOrigin = /* @__PURE__ */ __name$4((options) => ({
+__name$3(isNotNull, "isNotNull");
+var transformOrigin = /* @__PURE__ */ __name$3((options) => ({
 	name: "transformOrigin",
 	options,
 	fn(data) {
@@ -18668,18 +18818,15 @@ function getSideAndAlignFromPlacement(placement) {
 	const [side, align = "center"] = placement.split("-");
 	return [side, align];
 }
-__name$4(getSideAndAlignFromPlacement, "getSideAndAlignFromPlacement");
-var Root2 = Popper;
-var Anchor = PopperAnchor;
-var Content = PopperContent;
+__name$3(getSideAndAlignFromPlacement, "getSideAndAlignFromPlacement");
 //#endregion
 //#region node_modules/@radix-ui/react-portal/dist/index.mjs
-var __defProp$3 = Object.defineProperty;
-var __name$3 = (target, value) => __defProp$3(target, "name", {
+var __defProp$2 = Object.defineProperty;
+var __name$2 = (target, value) => __defProp$2(target, "name", {
 	value,
 	configurable: true
 });
-var Portal = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$3(function Portal2(props, forwardedRef) {
+var Portal = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$2(function Portal2(props, forwardedRef) {
 	const { container: containerProp, ...portalProps } = props;
 	const [mounted, setMounted] = import_react.useState(false);
 	useLayoutEffect2(() => setMounted(true), []);
@@ -18691,8 +18838,8 @@ var Portal = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$3(fu
 }, "Portal"));
 //#endregion
 //#region node_modules/@radix-ui/react-presence/dist/index.mjs
-var __defProp$2 = Object.defineProperty;
-var __name$2 = (target, value) => __defProp$2(target, "name", {
+var __defProp$1 = Object.defineProperty;
+var __name$1 = (target, value) => __defProp$1(target, "name", {
 	value,
 	configurable: true
 });
@@ -18701,8 +18848,8 @@ function useStateMachine(initialState, machine) {
 		return machine[state][event] ?? state;
 	}, initialState);
 }
-__name$2(useStateMachine, "useStateMachine");
-var Presence = /* @__PURE__ */ __name$2((props) => {
+__name$1(useStateMachine, "useStateMachine");
+var Presence = /* @__PURE__ */ __name$1((props) => {
 	const { present, children } = props;
 	const presence = usePresence(present);
 	const child = typeof children === "function" ? children({ present: presence.isPresent }) : import_react.Children.only(children);
@@ -18751,7 +18898,7 @@ function usePresence(present) {
 		if (node) {
 			let timeoutId;
 			const ownerWindow = node.ownerDocument.defaultView ?? window;
-			const handleAnimationEnd = /* @__PURE__ */ __name$2((event) => {
+			const handleAnimationEnd = /* @__PURE__ */ __name$1((event) => {
 				const isCurrentAnimation = getAnimationName(stylesRef.current).includes(CSS.escape(event.animationName));
 				if (event.target === node && isCurrentAnimation) {
 					send("ANIMATION_END");
@@ -18764,7 +18911,7 @@ function usePresence(present) {
 					}
 				}
 			}, "handleAnimationEnd");
-			const handleAnimationStart = /* @__PURE__ */ __name$2((event) => {
+			const handleAnimationStart = /* @__PURE__ */ __name$1((event) => {
 				if (event.target === node) prevAnimationNameRef.current = getAnimationName(stylesRef.current);
 			}, "handleAnimationStart");
 			node.addEventListener("animationstart", handleAnimationStart);
@@ -18790,12 +18937,12 @@ function usePresence(present) {
 		}, [])
 	};
 }
-__name$2(usePresence, "usePresence");
+__name$1(usePresence, "usePresence");
 function setRef(ref, value) {
 	if (typeof ref === "function") return ref(value);
 	else if (ref !== null && ref !== void 0) ref.current = value;
 }
-__name$2(setRef, "setRef");
+__name$1(setRef, "setRef");
 function useStableComposedRefs(...refs) {
 	const refsRef = import_react.useRef(refs);
 	refsRef.current = refs;
@@ -18816,11 +18963,11 @@ function useStableComposedRefs(...refs) {
 		};
 	}, []);
 }
-__name$2(useStableComposedRefs, "useStableComposedRefs");
+__name$1(useStableComposedRefs, "useStableComposedRefs");
 function getAnimationName(styles) {
 	return styles?.animationName || "none";
 }
-__name$2(getAnimationName, "getAnimationName");
+__name$1(getAnimationName, "getAnimationName");
 function getElementRef(element) {
 	let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
 	let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -18830,28 +18977,7 @@ function getElementRef(element) {
 	if (mayWarn) return element.props.ref;
 	return element.props.ref || element.ref;
 }
-__name$2(getElementRef, "getElementRef");
-//#endregion
-//#region node_modules/@radix-ui/react-use-previous/dist/index.mjs
-var __defProp$1 = Object.defineProperty;
-var __name$1 = (target, value) => __defProp$1(target, "name", {
-	value,
-	configurable: true
-});
-function usePrevious(value) {
-	const ref = import_react.useRef({
-		value,
-		previous: value
-	});
-	return import_react.useMemo(() => {
-		if (ref.current.value !== value) {
-			ref.current.previous = ref.current.value;
-			ref.current.value = value;
-		}
-		return ref.current.previous;
-	}, [value]);
-}
-__name$1(usePrevious, "usePrevious");
+__name$1(getElementRef, "getElementRef");
 //#endregion
 //#region node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
 var VISUALLY_HIDDEN_STYLES = Object.freeze({
@@ -19688,6 +19814,14 @@ var __name = (target, value) => __defProp(target, "name", {
 	value,
 	configurable: true
 });
+var Position = {
+	ItemAligned: "item-aligned",
+	Popper: "popper"
+};
+var Direction = {
+	LTR: "ltr",
+	RTL: "rtl"
+};
 var OPEN_KEYS = [
 	" ",
 	"Enter",
@@ -19721,6 +19855,15 @@ function SelectProvider(props) {
 		caller: SELECT_NAME
 	});
 	const triggerPointerDownPosRef = import_react.useRef(null);
+	const hasConsumerStoppedPropagationRef = import_react.useRef(false);
+	const [userSelection, setUserSelection] = import_react.useState(null);
+	const handleUserSelect = /* @__PURE__ */ __name((nextValue) => {
+		setUserSelection({
+			value: nextValue,
+			hasConsumerStoppedPropagation: hasConsumerStoppedPropagationRef.current
+		});
+		setValue(nextValue);
+	}, "handleUserSelect");
 	const initialValueRef = import_react.useRef(value);
 	import_react.useEffect(() => {
 		const associatedForm = form ? trigger?.ownerDocument.getElementById(form) : trigger?.form;
@@ -19759,6 +19902,9 @@ function SelectProvider(props) {
 		contentId,
 		value,
 		onValueChange: setValue,
+		hasConsumerStoppedPropagationRef,
+		userSelection,
+		onUserSelect: handleUserSelect,
 		open,
 		onOpenChange: setOpen,
 		dir: direction,
@@ -19771,7 +19917,7 @@ function SelectProvider(props) {
 		nativeSelectKey,
 		isFormControl
 	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root2, {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Popper, {
 		...popperScope,
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectProviderImpl, {
 			scope: __scopeSelect,
@@ -19809,7 +19955,7 @@ var SelectTrigger$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __
 	const [searchRef, handleTypeaheadSearch, resetTypeahead] = useTypeaheadSearch((search) => {
 		const enabledItems = getItems().filter((item) => !item.disabled);
 		const nextItem = findNextItem(enabledItems, search, enabledItems.find((item) => item.value === context.value));
-		if (nextItem !== void 0) context.onValueChange(nextItem.value);
+		if (nextItem !== void 0) context.onUserSelect(nextItem.value);
 	});
 	const handleOpen = /* @__PURE__ */ __name((pointerEvent) => {
 		if (!isDisabled) {
@@ -19821,7 +19967,7 @@ var SelectTrigger$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __
 			y: Math.round(pointerEvent.pageY)
 		};
 	}, "handleOpen");
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Anchor, {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PopperAnchor, {
 		asChild: true,
 		...popperScope,
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.button, {
@@ -19853,7 +19999,10 @@ var SelectTrigger$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __
 			}),
 			onKeyDown: composeEventHandlers(triggerProps.onKeyDown, (event) => {
 				const isTypingAhead = searchRef.current !== "";
-				if (!(event.ctrlKey || event.altKey || event.metaKey) && event.key.length === 1) handleTypeaheadSearch(event.key);
+				if (!(event.ctrlKey || event.altKey || event.metaKey) && event.key.length === 1) {
+					context.hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
+					handleTypeaheadSearch(event.key);
+				}
 				if (isTypingAhead && event.key === " ") return;
 				if (OPEN_KEYS.includes(event.key)) {
 					handleOpen();
@@ -19942,7 +20091,7 @@ var [SelectContentProvider, useSelectContentContext] = createSelectContext(CONTE
 var Slot = /* @__PURE__ */ createSlot("SelectContent.RemoveScroll");
 var SelectContentImpl = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name(function SelectContentImpl2(props, forwardedRef) {
 	const { __scopeSelect } = props;
-	const { position = "item-aligned", onCloseAutoFocus, onEscapeKeyDown, onPointerDownOutside, side, sideOffset, align, alignOffset, arrowPadding, collisionBoundary, collisionPadding, sticky, hideWhenDetached, avoidCollisions, ...contentProps } = props;
+	const { position = Position.ItemAligned, onCloseAutoFocus, onEscapeKeyDown, onPointerDownOutside, side, sideOffset, align, alignOffset, arrowPadding, collisionBoundary, collisionPadding, sticky, hideWhenDetached, avoidCollisions, ...contentProps } = props;
 	const context = useSelectContext(CONTENT_NAME, __scopeSelect);
 	const [content, setContent] = import_react.useState(null);
 	const [viewport, setViewport] = import_react.useState(null);
@@ -19952,6 +20101,8 @@ var SelectContentImpl = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ 
 	const getItems = useCollection(__scopeSelect);
 	const [isPositioned, setIsPositioned] = import_react.useState(false);
 	const firstValidItemFoundRef = import_react.useRef(false);
+	const firstItemFoundRef = import_react.useRef(false);
+	const firstItemTextFoundRef = import_react.useRef(false);
 	import_react.useEffect(() => {
 		if (content) return hideOthers(content);
 	}, [content]);
@@ -20028,18 +20179,24 @@ var SelectContentImpl = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ 
 		if (nextItem) setTimeout(() => nextItem.ref.current?.focus());
 	});
 	const itemRefCallback = import_react.useCallback((node, value, disabled) => {
+		const isFirstItem = !firstItemFoundRef.current;
+		if (isFirstItem) firstItemFoundRef.current = true;
 		const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
 		if (context.value !== void 0 && context.value === value || isFirstValidItem) {
 			setSelectedItem(node);
 			if (isFirstValidItem) firstValidItemFoundRef.current = true;
-		}
+		} else if (isFirstItem) setSelectedItem(node);
 	}, [context.value]);
 	const handleItemLeave = import_react.useCallback(() => content?.focus(), [content]);
 	const itemTextRefCallback = import_react.useCallback((node, value, disabled) => {
+		if (!node) return;
+		const isFirstItem = !firstItemTextFoundRef.current;
+		if (isFirstItem) firstItemTextFoundRef.current = true;
 		const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
 		if (context.value !== void 0 && context.value === value || isFirstValidItem) setSelectedItemText(node);
+		else if (isFirstItem) setSelectedItemText(node);
 	}, [context.value]);
-	const SelectPosition = position === "popper" ? SelectPopperPosition : SelectItemAlignedPosition;
+	const SelectPosition = position === Position.Popper ? SelectPopperPosition : SelectItemAlignedPosition;
 	const popperContentProps = SelectPosition === SelectPopperPosition ? {
 		side,
 		sideOffset,
@@ -20146,7 +20303,7 @@ var SelectItemAlignedPosition = /* @__PURE__ */ import_react.forwardRef(/* @__PU
 			const contentRect = content.getBoundingClientRect();
 			const valueNodeRect = context.valueNode.getBoundingClientRect();
 			const itemTextRect = selectedItemText.getBoundingClientRect();
-			if (context.dir !== "rtl") {
+			if (context.dir !== Direction.RTL) {
 				const itemTextOffset = itemTextRect.left - contentRect.left;
 				const left = valueNodeRect.left - itemTextOffset;
 				const leftDelta = triggerRect.left - left;
@@ -20257,7 +20414,7 @@ var SelectItemAlignedPosition = /* @__PURE__ */ import_react.forwardRef(/* @__PU
 var SelectPopperPosition = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name(function SelectPopperPosition2(props, forwardedRef) {
 	const { __scopeSelect, align = "start", collisionPadding = CONTENT_MARGIN, ...popperProps } = props;
 	const popperScope = usePopperScope(__scopeSelect);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Content, {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PopperContent, {
 		...popperScope,
 		...popperProps,
 		ref: forwardedRef,
@@ -20338,12 +20495,12 @@ var SelectItem$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __nam
 	const composedRefs = useComposedRefs(forwardedRef, useCallbackRef$1((node) => contentContext.itemRefCallback?.(node, value, disabled)));
 	const textId = useId();
 	const pointerTypeRef = import_react.useRef("touch");
-	const handleSelect = /* @__PURE__ */ __name(() => {
-		if (!disabled) {
-			context.onValueChange(value);
-			context.onOpenChange(false);
-		}
-	}, "handleSelect");
+	function handleSelect(event) {
+		context.hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
+		context.onUserSelect(value);
+		context.onOpenChange(false);
+	}
+	__name(handleSelect, "handleSelect");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItemContextProvider, {
 		scope: __scopeSelect,
 		value,
@@ -20371,11 +20528,13 @@ var SelectItem$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __nam
 				ref: composedRefs,
 				onFocus: composeEventHandlers(itemProps.onFocus, () => setIsFocused(true)),
 				onBlur: composeEventHandlers(itemProps.onBlur, () => setIsFocused(false)),
-				onClick: composeEventHandlers(itemProps.onClick, () => {
-					if (pointerTypeRef.current !== "mouse") handleSelect();
+				onClick: composeEventHandlers(itemProps.onClick, (event) => {
+					if (disabled) return;
+					if (pointerTypeRef.current !== "mouse") handleSelect(event);
 				}),
-				onPointerUp: composeEventHandlers(itemProps.onPointerUp, () => {
-					if (pointerTypeRef.current === "mouse") handleSelect();
+				onPointerUp: composeEventHandlers(itemProps.onPointerUp, (event) => {
+					if (disabled) return;
+					if (pointerTypeRef.current === "mouse") handleSelect(event);
 				}),
 				onPointerDown: composeEventHandlers(itemProps.onPointerDown, (event) => {
 					pointerTypeRef.current = event.pointerType;
@@ -20391,7 +20550,7 @@ var SelectItem$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __nam
 				onKeyDown: composeEventHandlers(itemProps.onKeyDown, (event) => {
 					if (disabled || event.target !== event.currentTarget) return;
 					if (contentContext.searchRef?.current !== "" && event.key === " ") return;
-					if (SELECTION_KEYS.includes(event.key)) handleSelect();
+					if (SELECTION_KEYS.includes(event.key)) handleSelect(event);
 					if (event.key === " ") event.preventDefault();
 				})
 			})
@@ -20436,24 +20595,43 @@ var SelectItemText = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __n
 var BUBBLE_INPUT_NAME = "SelectBubbleInput";
 var SelectBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name(function SelectBubbleInput2({ __scopeSelect, ...props }, forwardedRef) {
 	const context = useSelectContext(BUBBLE_INPUT_NAME, __scopeSelect);
-	const { value, onValueChange, required, disabled, name, autoComplete, form } = context;
+	const { value, onValueChange, required, disabled, name, autoComplete, form, userSelection } = context;
 	const { nativeOptions, nativeSelectKey } = context;
 	const ref = import_react.useRef(null);
 	const composedRefs = useComposedRefs(forwardedRef, ref);
 	const selectValue = value ?? "";
-	const prevValue = usePrevious(selectValue);
+	const prevValueRef = import_react.useRef(selectValue);
+	const handledUserSelectionRef = import_react.useRef(userSelection);
+	const isDispatchingUserSelectionRef = import_react.useRef(false);
 	const hasEmptyValueOption = Array.from(nativeOptions).some((option) => (option.props.value ?? "") === "");
 	import_react.useEffect(() => {
 		const select = ref.current;
 		if (!select) return;
 		const selectProto = window.HTMLSelectElement.prototype;
 		const setValue = Object.getOwnPropertyDescriptor(selectProto, "value").set;
-		if (prevValue !== selectValue && setValue) {
-			const event = new Event("change", { bubbles: true });
+		const isNewUserSelection = userSelection !== null && userSelection !== handledUserSelectionRef.current;
+		handledUserSelectionRef.current = userSelection;
+		const valueChanged = prevValueRef.current !== selectValue;
+		prevValueRef.current = selectValue;
+		const isUserInteraction = isNewUserSelection && valueChanged;
+		if (isNewUserSelection && !valueChanged && userSelection.value !== selectValue && !userSelection.hasConsumerStoppedPropagation && setValue) {
+			isDispatchingUserSelectionRef.current = true;
+			try {
+				setValue.call(select, userSelection.value);
+				select.dispatchEvent(new Event("change", { bubbles: true }));
+			} finally {
+				isDispatchingUserSelectionRef.current = false;
+				setValue.call(select, selectValue);
+			}
+			return;
+		}
+		const bubbles = isUserInteraction && !userSelection.hasConsumerStoppedPropagation;
+		if (valueChanged && setValue) {
+			const event = new Event("change", { bubbles });
 			setValue.call(select, selectValue);
 			select.dispatchEvent(event);
 		}
-	}, [prevValue, selectValue]);
+	}, [selectValue, userSelection]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Primitive.select, {
 		"aria-hidden": true,
 		required,
@@ -20462,7 +20640,9 @@ var SelectBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ 
 		autoComplete,
 		disabled,
 		form,
-		onChange: (event) => onValueChange(event.target.value),
+		onChange: (event) => {
+			if (!isDispatchingUserSelectionRef.current) onValueChange(event.target.value);
+		},
 		...props,
 		style: {
 			...VISUALLY_HIDDEN_STYLES,
@@ -20488,11 +20668,13 @@ function useTypeaheadSearch(onSearchChange) {
 	const handleTypeaheadSearch = import_react.useCallback((key) => {
 		const search = searchRef.current + key;
 		handleSearchChange(search);
-		(/* @__PURE__ */ __name((function updateSearch(value) {
+		function updateSearch(value) {
 			searchRef.current = value;
 			window.clearTimeout(timerRef.current);
 			if (value !== "") timerRef.current = window.setTimeout(() => updateSearch(""), 1e3);
-		}), "updateSearch"))(search);
+		}
+		__name(updateSearch, "updateSearch");
+		updateSearch(search);
 	}, [handleSearchChange]);
 	const resetTypeahead = import_react.useCallback(() => {
 		searchRef.current = "";

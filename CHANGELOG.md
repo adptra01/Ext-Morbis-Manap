@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-10-21
+
+### ✨ feat
+
+- **pa-print** — grup font & spasi terpisah untuk ICD-O dan Catatan (`1dd7846`)
+
 ## 2026-10-19
 
 ### 🐛 fix
@@ -17,6 +23,7 @@
 
 ### 🧹 chore
 
+- **changelog** — entri verifikasi batch-upload (0adf057) (`93b777a`)
 - **changelog** — entri verifikasi batch-upload (b6d474d) (`a98df95`)
 - **changelog** — regenerasi untuk entri batch-upload 2026-10-19 (`b0bac2d`)
 - **build** — sinkronkan versi dist/manifest.json ke 1.5.161 (`74b41d3`)
@@ -1861,4 +1868,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0adf057096ce450fce5d2d99c44c16bde5a534e1 -->
+<!-- changelog-upto: 1dd7846b636037526daf74c2407ff897df3b1b73 -->
