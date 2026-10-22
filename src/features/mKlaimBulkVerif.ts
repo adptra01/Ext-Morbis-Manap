@@ -935,14 +935,33 @@ function bindDataTablesRedraw(): void {
 const SS_DTSEARCH_PREFIX = 'ext-bv-dtsearch-';
 const SS_FILTER = 'ext-bv-filter';
 
+/** Input pencarian bawaan DataTables untuk tabel ini (wrapper `*_wrapper`). */
+function getSearchInput(target: TableTarget): HTMLInputElement | null {
+  const table = getTableEl(target);
+  const wrapper =
+    table?.closest<HTMLElement>('.dataTables_wrapper') ??
+    document.getElementById(`${target.sel.replace(/^#/, '')}_wrapper`);
+  return wrapper?.querySelector<HTMLInputElement>('.dataTables_filter input') ?? null;
+}
+
+/** Terapkan kata kunci ke input pencarian DataTables, lalu beri tahu DataTables. */
+function applySearchInput(input: HTMLInputElement, value: string): void {
+  input.value = value;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
+  input.dispatchEvent(new Event('search', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 /** Simpan state filter pencarian sebelum reload, agar tidak hilang. */
 function simpanFilterSebelumReload(): void {
   try {
     TABLES.forEach((t) => {
+      // Utamakan DOM: content script berjalan di isolated world sehingga
+      // `window.jQuery` milik halaman biasanya tidak terlihat.
       const dt = getDataTable(t);
-      if (dt) {
-        sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, String(dt.search() || ''));
-      }
+      const nilai = dt ? String(dt.search() ?? '') : (getSearchInput(t)?.value ?? null);
+      if (nilai !== null) sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, nilai);
     });
     const data: Record<string, string> = {};
     document
@@ -979,12 +998,38 @@ function pulihFilterSetelahReload(): void {
       }
       sessionStorage.removeItem(SS_FILTER);
     }
+
+    // Pencarian DataTables dipulihkan lewat input DOM (bukan API jQuery yang
+    // tidak terlihat dari isolated world). Diverifikasi ulang karena DataTables
+    // bisa mereset input sesaat setelah inisialisasi.
     TABLES.forEach((t) => {
-      const saved = sessionStorage.getItem(SS_DTSEARCH_PREFIX + t.kind);
+      const storageKey = SS_DTSEARCH_PREFIX + t.kind;
+      const saved = sessionStorage.getItem(storageKey);
       if (saved === null) return;
-      const dt = getDataTable(t);
-      if (dt) dt.search(saved).draw();
-      sessionStorage.removeItem(SS_DTSEARCH_PREFIX + t.kind);
+
+      const terapkan = (percobaan: number): void => {
+        const input = getSearchInput(t);
+        if (!input) {
+          if (percobaan < 40) window.setTimeout(() => terapkan(percobaan + 1), 250);
+          else sessionStorage.removeItem(storageKey);
+          return;
+        }
+
+        applySearchInput(input, saved);
+
+        window.setTimeout(() => {
+          const kini = getSearchInput(t)?.value ?? null;
+          if (kini === saved) {
+            sessionStorage.removeItem(storageKey);
+          } else if (percobaan < 10) {
+            terapkan(percobaan + 1);
+          } else {
+            sessionStorage.removeItem(storageKey);
+          }
+        }, 600);
+      };
+
+      terapkan(0);
     });
   } catch {
     /* ignore */

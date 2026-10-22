@@ -866,13 +866,24 @@ var __morbis_feature = (() => {
   }
   var SS_DTSEARCH_PREFIX = "ext-bv-dtsearch-";
   var SS_FILTER = "ext-bv-filter";
+  function getSearchInput(target) {
+    const table = getTableEl(target);
+    const wrapper = table?.closest(".dataTables_wrapper") ?? document.getElementById(`${target.sel.replace(/^#/, "")}_wrapper`);
+    return wrapper?.querySelector(".dataTables_filter input") ?? null;
+  }
+  function applySearchInput(input, value) {
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, key: "a" }));
+    input.dispatchEvent(new Event("search", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
   function simpanFilterSebelumReload() {
     try {
       TABLES.forEach((t) => {
         const dt = getDataTable(t);
-        if (dt) {
-          sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, String(dt.search() || ""));
-        }
+        const nilai = dt ? String(dt.search() ?? "") : getSearchInput(t)?.value ?? null;
+        if (nilai !== null) sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, nilai);
       });
       const data = {};
       document.querySelectorAll(
@@ -903,11 +914,29 @@ var __morbis_feature = (() => {
         sessionStorage.removeItem(SS_FILTER);
       }
       TABLES.forEach((t) => {
-        const saved = sessionStorage.getItem(SS_DTSEARCH_PREFIX + t.kind);
+        const storageKey = SS_DTSEARCH_PREFIX + t.kind;
+        const saved = sessionStorage.getItem(storageKey);
         if (saved === null) return;
-        const dt = getDataTable(t);
-        if (dt) dt.search(saved).draw();
-        sessionStorage.removeItem(SS_DTSEARCH_PREFIX + t.kind);
+        const terapkan = (percobaan) => {
+          const input = getSearchInput(t);
+          if (!input) {
+            if (percobaan < 40) window.setTimeout(() => terapkan(percobaan + 1), 250);
+            else sessionStorage.removeItem(storageKey);
+            return;
+          }
+          applySearchInput(input, saved);
+          window.setTimeout(() => {
+            const kini = getSearchInput(t)?.value ?? null;
+            if (kini === saved) {
+              sessionStorage.removeItem(storageKey);
+            } else if (percobaan < 10) {
+              terapkan(percobaan + 1);
+            } else {
+              sessionStorage.removeItem(storageKey);
+            }
+          }, 600);
+        };
+        terapkan(0);
       });
     } catch {
     }

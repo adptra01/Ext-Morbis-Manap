@@ -15,6 +15,8 @@
 
 ### 🐛 fix
 
+- **mKlaimBulkVerif** — pertahankan filter pencarian saat reload setelah verif/batal verif (`c04e595`)
+- **resume** — jangan timpa baseline 'last form' pada verif + dukung batal verif (`9b77cf7`)
 - **ci** — pin React 19.3.1 agar npm ci tidak gagal (`cd69554`)
 
 ### 🧹 chore
@@ -1891,4 +1893,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 71a0a70b63c32404094428d11a37666c928fd339 -->
+<!-- changelog-upto: c6410a6423603ce9507b876a8e2ca2cda44c5c2c -->
