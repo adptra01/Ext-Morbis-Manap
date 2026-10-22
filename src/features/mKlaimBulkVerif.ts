@@ -980,10 +980,42 @@ function simpanFilterSebelumReload(): void {
   }
 }
 
+/** Minta halaman mengulang query memakai nilai filter yang sudah dipulihkan.
+ *  DataTables membaca filter saat request (ajax.data), bukan saat input
+ *  berubah - jadi tanpa ini tabel tetap menampilkan hasil filter default. */
+function muatUlangDenganFilter(): void {
+  const klikCari = (): void => {
+    const tombol = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        'button, a, input[type="button"], input[type="submit"]',
+      ),
+    ).find((el) => (el.getAttribute('onclick') || '').replace(/\s+/g, '').startsWith('cari('));
+    tombol?.click();
+  };
+
+  const tungguSiap = (percobaan: number): void => {
+    const siap = TABLES.every((t) => {
+      const el = getTableEl(t);
+      return !!el && el.classList.contains('dataTable');
+    });
+    if (siap) {
+      // Beri jeda singkat agar init halaman selesai sebelum reload AJAX.
+      window.setTimeout(klikCari, 250);
+    } else if (percobaan < 60) {
+      window.setTimeout(() => tungguSiap(percobaan + 1), 250);
+    } else {
+      klikCari(); // halaman tidak kunjung init - biar cari() yang menginisialisasi
+    }
+  };
+
+  tungguSiap(0);
+}
+
 /** Pulihkan state filter pencarian setelah reload. */
 function pulihFilterSetelahReload(): void {
   try {
     const raw = sessionStorage.getItem(SS_FILTER);
+    let filterBerubah = false;
     if (raw) {
       const data = JSON.parse(raw) as Record<string, string>;
       for (const [key, val] of Object.entries(data)) {
@@ -991,13 +1023,16 @@ function pulihFilterSetelahReload(): void {
           (document.getElementById(key) as HTMLElement | null) ||
           (document.querySelector(`[name="${key}"]`) as HTMLElement | null);
         if (el) {
-          (el as HTMLInputElement).value = val;
+          const kontrol = el as HTMLInputElement;
+          if (kontrol.value !== val) filterBerubah = true;
+          kontrol.value = val;
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
       sessionStorage.removeItem(SS_FILTER);
     }
+    if (filterBerubah) muatUlangDenganFilter();
 
     // Pencarian DataTables dipulihkan lewat input DOM (bukan API jQuery yang
     // tidak terlihat dari isolated world). Diverifikasi ulang karena DataTables

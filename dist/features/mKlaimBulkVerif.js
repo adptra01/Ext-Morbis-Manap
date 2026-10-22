@@ -898,21 +898,47 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
+  function muatUlangDenganFilter() {
+    const klikCari = () => {
+      const tombol = Array.from(
+        document.querySelectorAll('button, a, input[type="button"], input[type="submit"]')
+      ).find((el) => (el.getAttribute("onclick") || "").replace(/\s+/g, "").startsWith("cari("));
+      tombol?.click();
+    };
+    const tungguSiap = (percobaan) => {
+      const siap = TABLES.every((t) => {
+        const el = getTableEl(t);
+        return !!el && el.classList.contains("dataTable");
+      });
+      if (siap) {
+        window.setTimeout(klikCari, 250);
+      } else if (percobaan < 60) {
+        window.setTimeout(() => tungguSiap(percobaan + 1), 250);
+      } else {
+        klikCari();
+      }
+    };
+    tungguSiap(0);
+  }
   function pulihFilterSetelahReload() {
     try {
       const raw = sessionStorage.getItem(SS_FILTER);
+      let filterBerubah = false;
       if (raw) {
         const data = JSON.parse(raw);
         for (const [key, val] of Object.entries(data)) {
           const el = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
           if (el) {
-            el.value = val;
+            const kontrol = el;
+            if (kontrol.value !== val) filterBerubah = true;
+            kontrol.value = val;
             el.dispatchEvent(new Event("input", { bubbles: true }));
             el.dispatchEvent(new Event("change", { bubbles: true }));
           }
         }
         sessionStorage.removeItem(SS_FILTER);
       }
+      if (filterBerubah) muatUlangDenganFilter();
       TABLES.forEach((t) => {
         const storageKey = SS_DTSEARCH_PREFIX + t.kind;
         const saved = sessionStorage.getItem(storageKey);

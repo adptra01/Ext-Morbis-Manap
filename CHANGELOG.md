@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-10-23
+
+### 🐛 fix
+
+- **mKlaimBulkVerif** — pulihkan filter pencarian lewat input DOM (`2dc3ec7`)
+
 ## 2026-10-22
 
 ### ✨ feat
@@ -1893,4 +1899,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c6410a6423603ce9507b876a8e2ca2cda44c5c2c -->
+<!-- changelog-upto: acbd90c65dd84e91d7f2d00c54fb5d64297c0594 -->
