@@ -9,9 +9,17 @@
 
 ## 2026-10-22
 
+### ✨ feat
+
+- **pa-print** — isi ICD-O dan Catatan dibuat bold (`c7d05af`)
+
 ### 🐛 fix
 
 - **ci** — pin React 19.3.1 agar npm ci tidak gagal (`cd69554`)
+
+### 🧹 chore
+
+- **build** — sinkronkan dist dengan React 19.3.1 (`3f1b63b`)
 
 ## 2026-10-21
 
@@ -1878,4 +1886,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: cd695546cedb377d2e6e3e01d48932164c170d3c -->
+<!-- changelog-upto: c7d05af6e6ec902ac4a4d4be5d591a771b54bb1a -->

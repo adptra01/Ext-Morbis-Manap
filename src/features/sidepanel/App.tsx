@@ -145,12 +145,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['labor'],
   },
   {
-    key: 'laporanKasirTime',
-    name: 'Laporan Kasir Time',
-    desc: 'Flatpickr datetime, auto-fill, waktu di tabel',
-    roles: ['kasir', 'admin'],
-  },
-  {
     key: 'cancelBatal',
     name: 'Tombol Batal (Lab & Radiologi)',
     desc: 'Tombol Batal pada tab Sudah Diinput Lab/Radiologi',

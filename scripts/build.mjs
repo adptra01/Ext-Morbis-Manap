@@ -63,7 +63,6 @@ async function compileFeatureFiles() {
     'openDetailWindowOpen.ts',
     'toolbar.ts',
     'inputHasilPa.ts',
-    'laporanKasirTime.ts',
     'cpptSearchFilter.ts',
     'resumeValidator.ts',
     'antrianTools.ts',
