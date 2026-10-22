@@ -754,6 +754,7 @@ var __morbis_feature = (() => {
       okLabel: "Muat ulang tabel",
       hideCancel: true
     });
+    simpanFilterSebelumReload();
     window.location.reload();
   }
   function waitForTables() {
@@ -863,6 +864,54 @@ var __morbis_feature = (() => {
       }
     });
   }
+  var SS_DTSEARCH_PREFIX = "ext-bv-dtsearch-";
+  var SS_FILTER = "ext-bv-filter";
+  function simpanFilterSebelumReload() {
+    try {
+      TABLES.forEach((t) => {
+        const dt = getDataTable(t);
+        if (dt) {
+          sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, String(dt.search() || ""));
+        }
+      });
+      const data = {};
+      document.querySelectorAll(
+        'input:not([type="checkbox"]):not([type="radio"]), select, textarea'
+      ).forEach((el) => {
+        const key = el.id || el.name;
+        if (!key) return;
+        if (el.closest(`#${CONFIG.barId}`)) return;
+        data[key] = el.value ?? "";
+      });
+      sessionStorage.setItem(SS_FILTER, JSON.stringify(data));
+    } catch {
+    }
+  }
+  function pulihFilterSetelahReload() {
+    try {
+      const raw = sessionStorage.getItem(SS_FILTER);
+      if (raw) {
+        const data = JSON.parse(raw);
+        for (const [key, val] of Object.entries(data)) {
+          const el = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+          if (el) {
+            el.value = val;
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        sessionStorage.removeItem(SS_FILTER);
+      }
+      TABLES.forEach((t) => {
+        const saved = sessionStorage.getItem(SS_DTSEARCH_PREFIX + t.kind);
+        if (saved === null) return;
+        const dt = getDataTable(t);
+        if (dt) dt.search(saved).draw();
+        sessionStorage.removeItem(SS_DTSEARCH_PREFIX + t.kind);
+      });
+    } catch {
+    }
+  }
   function initMKlaimBulkVerifFeature() {
     try {
       injectCSS();
@@ -872,6 +921,7 @@ var __morbis_feature = (() => {
         renderAll();
         bindDataTablesRedraw();
         jagaHidup();
+        pulihFilterSetelahReload();
         document.documentElement.setAttribute("data-ext-bulk-verif", "1");
         const ringkas = TABLES.map((t) => {
           const tbl = getTableEl(t);

@@ -782,6 +782,7 @@ async function jalankanAksi(target: TableTarget): Promise<void> {
     hideCancel: true,
   });
 
+  simpanFilterSebelumReload();
   window.location.reload();
 }
 
@@ -931,6 +932,65 @@ function bindDataTablesRedraw(): void {
   });
 }
 
+const SS_DTSEARCH_PREFIX = 'ext-bv-dtsearch-';
+const SS_FILTER = 'ext-bv-filter';
+
+/** Simpan state filter pencarian sebelum reload, agar tidak hilang. */
+function simpanFilterSebelumReload(): void {
+  try {
+    TABLES.forEach((t) => {
+      const dt = getDataTable(t);
+      if (dt) {
+        sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, String(dt.search() || ''));
+      }
+    });
+    const data: Record<string, string> = {};
+    document
+      .querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+        'input:not([type="checkbox"]):not([type="radio"]), select, textarea',
+      )
+      .forEach((el) => {
+        const key = el.id || el.name;
+        if (!key) return;
+        if (el.closest(`#${CONFIG.barId}`)) return;
+        data[key] = (el as HTMLInputElement).value ?? '';
+      });
+    sessionStorage.setItem(SS_FILTER, JSON.stringify(data));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Pulihkan state filter pencarian setelah reload. */
+function pulihFilterSetelahReload(): void {
+  try {
+    const raw = sessionStorage.getItem(SS_FILTER);
+    if (raw) {
+      const data = JSON.parse(raw) as Record<string, string>;
+      for (const [key, val] of Object.entries(data)) {
+        const el =
+          (document.getElementById(key) as HTMLElement | null) ||
+          (document.querySelector(`[name="${key}"]`) as HTMLElement | null);
+        if (el) {
+          (el as HTMLInputElement).value = val;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+      sessionStorage.removeItem(SS_FILTER);
+    }
+    TABLES.forEach((t) => {
+      const saved = sessionStorage.getItem(SS_DTSEARCH_PREFIX + t.kind);
+      if (saved === null) return;
+      const dt = getDataTable(t);
+      if (dt) dt.search(saved).draw();
+      sessionStorage.removeItem(SS_DTSEARCH_PREFIX + t.kind);
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
 export function initMKlaimBulkVerifFeature(): void {
   try {
     injectCSS();
@@ -941,6 +1001,7 @@ export function initMKlaimBulkVerifFeature(): void {
       renderAll();
       bindDataTablesRedraw();
       jagaHidup();
+      pulihFilterSetelahReload();
       document.documentElement.setAttribute('data-ext-bulk-verif', '1');
       const ringkas = TABLES.map((t) => {
         const tbl = getTableEl(t);
