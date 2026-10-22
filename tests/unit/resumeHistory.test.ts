@@ -207,6 +207,37 @@ describe('logResumeHistory', () => {
     }
   });
 
+  it('verif_action: tidak menimpa "last form" (storeLast) agar baseline tetap utuh', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null });
+    try {
+      const s = memStore();
+      // Baseline snapshot yang bisa disalin ke form.
+      storeLast({ anamnesa: 'DATA ASLI', diagnosa_primary: 'A00' }, '7', 'rajal', s);
+      expect(loadLast('7', 'rajal', s)).toEqual({ anamnesa: 'DATA ASLI', diagnosa_primary: 'A00' });
+
+      // Log entri verifikasi (snapshot parsial).
+      logResumeHistory({
+        idVisit: '7',
+        idResume: 'r1',
+        tipe: 'rajal',
+        aksi: 'ubah',
+        before: { anamnesa: 'DATA ASLI' },
+        after: { jenis: 'RAWAT JALAN', norm: '0001', _source: 'verif_action' },
+        now: 2_000_000,
+        user: 'petugas [Verif]',
+        store: s,
+        fetcher: vi.fn(() => Promise.resolve(new Response('{}', { status: 200 }))),
+      });
+
+      // "Last form" harus tetap snapshot asli, BUKAN snapshot parsial verif.
+      expect(loadLast('7', 'rajal', s)).toEqual({ anamnesa: 'DATA ASLI', diagnosa_primary: 'A00' });
+      // Tapi entri history tetap tercatat (audit).
+      expect(loadHistory('7', 'rajal', s)).toHaveLength(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('dedup 5 detik: after sama → null, tidak nambah entri', () => {
     const s = memStore();
     const now = 1000;

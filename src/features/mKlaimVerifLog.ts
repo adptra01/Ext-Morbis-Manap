@@ -85,7 +85,7 @@ function extractResumeSnapshotFromPage(): FormSnap {
   return snap;
 }
 
-function handleVerifClick(targetBtn: HTMLElement): void {
+function handleVerifClick(targetBtn: HTMLElement, isBatal = false): void {
   const idVisit = extractIdVisit();
   if (!idVisit) return;
 
@@ -101,6 +101,7 @@ function handleVerifClick(targetBtn: HTMLElement): void {
     '';
 
   const petugas = readPetugas();
+  const aksiLabel = isBatal ? 'Batal Verif' : 'Verif';
 
   // Catat riwayat lokal + kirim ke endpoint Reports SIMRS
   try {
@@ -111,14 +112,14 @@ function handleVerifClick(targetBtn: HTMLElement): void {
       aksi: 'ubah',
       before: lastSnap ?? {},
       after: Object.keys(currentSnap).length > 2 ? currentSnap : (lastSnap ?? { _empty: 'true' }),
-      user: `${petugas} [Verif]`,
+      user: `${petugas} [${aksiLabel}]`,
     });
   } catch (e) {
     console.warn('[mKlaimVerifLog] Gagal mencatat history:', e);
   }
 
   // Kirim log penggunaan lokal
-  void logUsage('mKlaimVerif', 'verif_berkas', true, {
+  void logUsage('mKlaimVerif', isBatal ? 'batal_verif_berkas' : 'verif_berkas', true, {
     idVisit,
     tipe,
     petugas,
@@ -127,7 +128,11 @@ function handleVerifClick(targetBtn: HTMLElement): void {
   });
 
   // Notifikasi visual feedback
-  showHistToast('✅ Berkas diverifikasi — snapshot resume berhasil dicatat ke riwayat log.');
+  showHistToast(
+    isBatal
+      ? '🚫 Berkas batal diverifikasi — snapshot resume dicatat ke riwayat log.'
+      : '✅ Berkas diverifikasi — snapshot resume berhasil dicatat ke riwayat log.',
+  );
 }
 
 function isNavTab(el: HTMLElement): boolean {
@@ -186,16 +191,52 @@ export function isVerifButton(el: HTMLElement): boolean {
   return precise || (textMatches && clsStrong);
 }
 
+export function isBatalVerifButton(el: HTMLElement): boolean {
+  if (el.dataset.extVerifBound) return false;
+
+  const text = (el.textContent || '').trim().toLowerCase();
+  const val = (el as HTMLInputElement).value?.trim().toLowerCase() || '';
+  const id = el.id.toLowerCase();
+  const cls = (el.className || '').toLowerCase();
+  const onclick = el.getAttribute('onclick')?.toLowerCase() || '';
+  const dataAction = el.getAttribute('data-action')?.toLowerCase() || '';
+
+  // Tombol "Batal Verif" asli halaman detail M-KLAIM.
+  const precise =
+    el.dataset.extBatalVerif !== undefined ||
+    id.includes('batal-verif') ||
+    id.includes('batalverif') ||
+    cls.includes('batal-verif') ||
+    cls.includes('batalverif') ||
+    /batalverif\s*\(/.test(onclick) ||
+    dataAction.includes('batal-verif') ||
+    dataAction.includes('batalverif');
+
+  const textMatches =
+    text === 'batal verif' ||
+    text === 'batal verifikasi' ||
+    text.includes('batal verifikasi berkas') ||
+    val === 'batal verif' ||
+    val === 'batal verifikasi';
+
+  const clsStrong =
+    cls.includes('batal-verif') || cls.includes('batalverif') || cls.includes('batalverifikasi');
+
+  return precise || (textMatches && clsStrong);
+}
+
 function attachVerifListeners(): void {
   const candidates = document.querySelectorAll<HTMLElement>(
     'button, a, input[type="button"], input[type="submit"], [role="button"]',
   );
 
   candidates.forEach((el) => {
-    if (isVerifButton(el) && !el.dataset.extVerifBound) {
+    const isVerif = isVerifButton(el);
+    const isBatal = isBatalVerifButton(el);
+    if ((isVerif || isBatal) && !el.dataset.extVerifBound) {
       el.dataset.extVerifBound = 'true';
       el.addEventListener('click', () => {
-        handleVerifClick(el);
+        handleVerifClick(el, isBatal);
       });
     }
   });

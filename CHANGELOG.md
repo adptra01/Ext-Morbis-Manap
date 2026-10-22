@@ -19,7 +19,12 @@
 
 ### 🧹 chore
 
+- hapus fitur Laporan Kasir Time Integration (`b890e82`)
 - **build** — sinkronkan dist dengan React 19.3.1 (`3f1b63b`)
+
+### 📌 misc
+
+- ci: publish Edge hanya saat digit minor (ke-2) berubah (`71a0a70`)
 
 ## 2026-10-21
 
@@ -1886,4 +1891,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c7d05af6e6ec902ac4a4d4be5d591a771b54bb1a -->
+<!-- changelog-upto: 71a0a70b63c32404094428d11a37666c928fd339 -->

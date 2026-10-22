@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isVerifButton } from '../../src/features/mKlaimVerifLog.js';
+import { isVerifButton, isBatalVerifButton } from '../../src/features/mKlaimVerifLog.js';
 
 function fakeEl(props: Record<string, unknown> = {}): HTMLElement {
   return {
@@ -65,6 +65,25 @@ describe('mKlaimVerifLog isVerifButton', () => {
   it('menghormati penanda sudah terikat', () => {
     expect(
       isVerifButton(fakeEl({ textContent: 'Verifikasi', dataset: { extVerifBound: 'true' } })),
+    ).toBe(false);
+  });
+
+  it('mengenali tombol batal verifikasi asli', () => {
+    expect(isBatalVerifButton(fakeEl({ id: 'btn-batal-verif' }))).toBe(true);
+    expect(
+      isBatalVerifButton(
+        fakeEl({ getAttribute: (n: string) => (n === 'onclick' ? 'BatalVerif(123)' : null) }),
+      ),
+    ).toBe(true);
+    expect(
+      isBatalVerifButton(fakeEl({ textContent: 'Batal Verif', className: 'batal-verif' })),
+    ).toBe(true);
+  });
+
+  it('menolak tombol verifikasi biasa sebagai batal verif', () => {
+    expect(isBatalVerifButton(fakeEl({ id: 'btn-verif' }))).toBe(false);
+    expect(
+      isBatalVerifButton(fakeEl({ textContent: 'Verifikasi', className: 'btn-verifikasi' })),
     ).toBe(false);
   });
 });

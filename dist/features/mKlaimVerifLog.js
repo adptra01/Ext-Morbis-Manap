@@ -22,6 +22,7 @@ var __morbis_feature = (() => {
   var mKlaimVerifLog_exports = {};
   __export(mKlaimVerifLog_exports, {
     initMklaimVerifLog: () => initMklaimVerifLog,
+    isBatalVerifButton: () => isBatalVerifButton,
     isVerifButton: () => isVerifButton
   });
 
@@ -254,7 +255,10 @@ var __morbis_feature = (() => {
     if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
     const store = opts.store ?? defaultStore();
-    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    const isVerifEntry = opts.after?._source === "verif_action";
+    if (!isVerifEntry) {
+      storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    }
     const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
@@ -273,7 +277,9 @@ var __morbis_feature = (() => {
     const list = loadHistory(opts.idVisit, opts.tipe, store);
     list.push(entry);
     saveHistory(list, opts.idVisit, opts.tipe, store);
-    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    if (!isVerifEntry) {
+      storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    }
     try {
       void postToReports(entry, opts.idVisit, opts.fetcher ?? fetch, store, opts.tipe);
     } catch {
@@ -374,7 +380,7 @@ var __morbis_feature = (() => {
     snap["_verified_at"] = (/* @__PURE__ */ new Date()).toISOString();
     return snap;
   }
-  function handleVerifClick(targetBtn) {
+  function handleVerifClick(targetBtn, isBatal = false) {
     const idVisit = extractIdVisit();
     if (!idVisit) return;
     const tipe = detectTipeResume();
@@ -382,6 +388,7 @@ var __morbis_feature = (() => {
     const currentSnap = extractResumeSnapshotFromPage();
     const idResume = document.getElementById("id_rawat_jalan")?.value || document.getElementById("id_resume_inap")?.value || currentSnap["id_rawat_jalan"] || currentSnap["id_resume_inap"] || "";
     const petugas = readPetugas();
+    const aksiLabel = isBatal ? "Batal Verif" : "Verif";
     try {
       logResumeHistory({
         idVisit,
@@ -390,19 +397,21 @@ var __morbis_feature = (() => {
         aksi: "ubah",
         before: lastSnap ?? {},
         after: Object.keys(currentSnap).length > 2 ? currentSnap : lastSnap ?? { _empty: "true" },
-        user: `${petugas} [Verif]`
+        user: `${petugas} [${aksiLabel}]`
       });
     } catch (e) {
       console.warn("[mKlaimVerifLog] Gagal mencatat history:", e);
     }
-    void logUsage("mKlaimVerif", "verif_berkas", true, {
+    void logUsage("mKlaimVerif", isBatal ? "batal_verif_berkas" : "verif_berkas", true, {
       idVisit,
       tipe,
       petugas,
       btn: targetBtn.textContent?.trim() || targetBtn.id || "btn-verif",
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
-    showHistToast("\u2705 Berkas diverifikasi \u2014 snapshot resume berhasil dicatat ke riwayat log.");
+    showHistToast(
+      isBatal ? "\u{1F6AB} Berkas batal diverifikasi \u2014 snapshot resume dicatat ke riwayat log." : "\u2705 Berkas diverifikasi \u2014 snapshot resume berhasil dicatat ke riwayat log."
+    );
   }
   function isNavTab(el) {
     try {
@@ -428,15 +437,30 @@ var __morbis_feature = (() => {
     const clsStrong = cls.includes("btn-verif") || cls.includes("verifikasi");
     return precise || textMatches && clsStrong;
   }
+  function isBatalVerifButton(el) {
+    if (el.dataset.extVerifBound) return false;
+    const text = (el.textContent || "").trim().toLowerCase();
+    const val = el.value?.trim().toLowerCase() || "";
+    const id = el.id.toLowerCase();
+    const cls = (el.className || "").toLowerCase();
+    const onclick = el.getAttribute("onclick")?.toLowerCase() || "";
+    const dataAction = el.getAttribute("data-action")?.toLowerCase() || "";
+    const precise = el.dataset.extBatalVerif !== void 0 || id.includes("batal-verif") || id.includes("batalverif") || cls.includes("batal-verif") || cls.includes("batalverif") || /batalverif\s*\(/.test(onclick) || dataAction.includes("batal-verif") || dataAction.includes("batalverif");
+    const textMatches = text === "batal verif" || text === "batal verifikasi" || text.includes("batal verifikasi berkas") || val === "batal verif" || val === "batal verifikasi";
+    const clsStrong = cls.includes("batal-verif") || cls.includes("batalverif") || cls.includes("batalverifikasi");
+    return precise || textMatches && clsStrong;
+  }
   function attachVerifListeners() {
     const candidates = document.querySelectorAll(
       'button, a, input[type="button"], input[type="submit"], [role="button"]'
     );
     candidates.forEach((el) => {
-      if (isVerifButton(el) && !el.dataset.extVerifBound) {
+      const isVerif = isVerifButton(el);
+      const isBatal = isBatalVerifButton(el);
+      if ((isVerif || isBatal) && !el.dataset.extVerifBound) {
         el.dataset.extVerifBound = "true";
         el.addEventListener("click", () => {
-          handleVerifClick(el);
+          handleVerifClick(el, isBatal);
         });
       }
     });

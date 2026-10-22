@@ -941,7 +941,10 @@ var __morbis_feature = (() => {
     if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
     const store = opts.store ?? defaultStore2();
-    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    const isVerifEntry = opts.after?._source === "verif_action";
+    if (!isVerifEntry) {
+      storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    }
     const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
@@ -960,7 +963,9 @@ var __morbis_feature = (() => {
     const list = loadHistory(opts.idVisit, opts.tipe, store);
     list.push(entry);
     saveHistory(list, opts.idVisit, opts.tipe, store);
-    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    if (!isVerifEntry) {
+      storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    }
     try {
       void postToReports(entry, opts.idVisit, opts.fetcher ?? fetch, store, opts.tipe);
     } catch {
