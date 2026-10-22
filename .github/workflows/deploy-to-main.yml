@@ -45,6 +45,8 @@ jobs:
   deploy:
     needs: [quality]
     runs-on: ubuntu-24.04
+    outputs:
+      minor_changed: ${{ steps.minor.outputs.changed }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -100,6 +102,23 @@ jobs:
           done
           test -n "${VERSION:-}" || { echo "::error::bump versi gagal"; exit 1; }
           echo "Versi deploy: $VERSION"
+
+      # Publish ke Edge Add-ons HANYA bila digit minor (ke-2) berubah,
+      # mis. v1.5.x -> v1.6.x (request update ke Edge). Perubahan patch
+      # saja (v1.5.164 -> v1.5.165) TIDAK mengirim request ke Edge.
+      - name: Deteksi perubahan digit minor (ke-2)
+        id: minor
+        if: github.ref_type != 'tag'
+        run: |
+          OLD_VER=$(git show origin/main:manifest.json 2>/dev/null | jq -r .version 2>/dev/null || echo "")
+          OLD_MINOR=$(echo "$OLD_VER" | cut -d. -f2)
+          NEW_MINOR=$(echo "$VERSION" | cut -d. -f2)
+          echo "minor lama: ${OLD_MINOR:-?} -> baru: $NEW_MINOR"
+          if [ -n "$OLD_MINOR" ] && [ "$OLD_MINOR" != "$NEW_MINOR" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
 
       - uses: actions/setup-node@v5
         with:
@@ -267,6 +286,6 @@ jobs:
   # push dev (sebelumnya tiap deploy staging ikut di-publish ke Store).
   publish-edge:
     needs: [deploy]
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' || needs.deploy.outputs.minor_changed == 'true'
     uses: ./.github/workflows/publish-edge.yml
     secrets: inherit
