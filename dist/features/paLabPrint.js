@@ -567,7 +567,7 @@ var __morbis_feature = (() => {
           hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
           const isKesimpulan = normTitle(s.title) === "kesimpulan";
           const isIcdo = normTitle(s.title) === "icdo";
-          const boldAll = isKesimpulan || normTitle(s.title) === "saran";
+          const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
           const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
           const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
           s.items.forEach((it, i) => {
@@ -598,7 +598,7 @@ var __morbis_feature = (() => {
         }
         const isKesimpulan = normTitle(s.title) === "kesimpulan";
         const isIcdo = normTitle(s.title) === "icdo";
-        const boldAll = isKesimpulan || normTitle(s.title) === "saran";
+        const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
           const mk = splitListMarker(it);
@@ -962,10 +962,11 @@ var __morbis_feature = (() => {
         }
 
         /* Isi ICD-O yang dirender server DENGAN judul section sendiri:
-           grup font & spasi sendiri, terpisah dari Isi. Varian tanpa
-           judul memakai .section-isi-bare (grup ICD-O yang sama). */
+           grup font & spasi sendiri, terpisah dari Isi, dan selalu bold.
+           Varian tanpa judul memakai .section-isi-bare (grup ICD-O sama). */
         .section-icdo {
             font-size: var(--pa-icdo-fs, 6pt);
+            font-weight: bold;
             line-height: var(--pa-icdo-lh, 1.2);
         }
 
@@ -1010,13 +1011,15 @@ var __morbis_feature = (() => {
         /* CATATAN: label + list gantung \u2014 baris lanjutan rata di bawah
            dash pertama ("Catatan: - \u2026" lalu "- \u2026" sejajar di bawahnya).
            Label tetap grup Judul Bagian Isi (heading); isi Catatan punya
-           grup font & spasi baris sendiri (\u2699\uFE0F Gaya \u2192 Catatan). */
+           grup font & spasi baris sendiri (\u2699\uFE0F Gaya \u2192 Catatan) dan
+           seluruh isinya bold (permintaan user). */
         .section-catatan {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
             font-size: var(--pa-catatan-fs, 5pt);
+            font-weight: bold;
             line-height: var(--pa-catatan-lh, 1.25);
             text-align: justify;
         }

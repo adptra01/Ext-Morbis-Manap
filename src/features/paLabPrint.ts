@@ -683,7 +683,7 @@ whenFeatureEnabled('paLabPrint', function () {
         // tapi SARAN tetap grup font Isi (bukan grup Kesimpulan).
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
         const isIcdo = normTitle(s.title) === 'icdo';
-        const boldAll = isKesimpulan || normTitle(s.title) === 'saran';
+        const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === 'saran';
         // Kesimpulan & ICD-O ikut grup gaya sendiri (bukan grup Isi).
         const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
         const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
@@ -810,7 +810,7 @@ whenFeatureEnabled('paLabPrint', function () {
         // sejajar di bawah teks — bukan di bawah penanda.
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
         const isIcdo = normTitle(s.title) === 'icdo';
-        const boldAll = isKesimpulan || normTitle(s.title) === 'saran';
+        const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === 'saran';
         const isi =
           '<div class="' +
           (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
@@ -1300,10 +1300,11 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         /* Isi ICD-O yang dirender server DENGAN judul section sendiri:
-           grup font & spasi sendiri, terpisah dari Isi. Varian tanpa
-           judul memakai .section-isi-bare (grup ICD-O yang sama). */
+           grup font & spasi sendiri, terpisah dari Isi, dan selalu bold.
+           Varian tanpa judul memakai .section-isi-bare (grup ICD-O sama). */
         .section-icdo {
             font-size: var(--pa-icdo-fs, 6pt);
+            font-weight: bold;
             line-height: var(--pa-icdo-lh, 1.2);
         }
 
@@ -1348,13 +1349,15 @@ whenFeatureEnabled('paLabPrint', function () {
         /* CATATAN: label + list gantung — baris lanjutan rata di bawah
            dash pertama ("Catatan: - …" lalu "- …" sejajar di bawahnya).
            Label tetap grup Judul Bagian Isi (heading); isi Catatan punya
-           grup font & spasi baris sendiri (⚙️ Gaya → Catatan). */
+           grup font & spasi baris sendiri (⚙️ Gaya → Catatan) dan
+           seluruh isinya bold (permintaan user). */
         .section-catatan {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
             font-size: var(--pa-catatan-fs, 5pt);
+            font-weight: bold;
             line-height: var(--pa-catatan-lh, 1.25);
             text-align: justify;
         }
