@@ -7,11 +7,21 @@
 
 ---
 
+## 2026-10-22
+
+### 🐛 fix
+
+- **ci** — pin React 19.3.1 agar npm ci tidak gagal (`cd69554`)
+
 ## 2026-10-21
 
 ### ✨ feat
 
 - **pa-print** — grup font & spasi terpisah untuk ICD-O dan Catatan (`1dd7846`)
+
+### 📌 misc
+
+- Update import paths in popup.js and sidepanel.js to reference new chunk versions (`c39311e`)
 
 ## 2026-10-19
 
@@ -1868,4 +1878,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 1dd7846b636037526daf74c2407ff897df3b1b73 -->
+<!-- changelog-upto: cd695546cedb377d2e6e3e01d48932164c170d3c -->
