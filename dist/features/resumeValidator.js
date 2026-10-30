@@ -2166,11 +2166,11 @@ var __morbis_feature = (() => {
       } else {
         runRanapValidation(fail, softFail, failText);
       }
-      if (soft.length > 0) showSoftToast(soft);
       if (hard.length > 0) {
         warnAll(hard);
         return false;
       }
+      if (soft.length > 0) showSoftToast(soft);
       return true;
     }
     function runRanapValidation(fail, softFail, failText) {
@@ -2435,6 +2435,19 @@ var __morbis_feature = (() => {
       confirmExt({
         title: "Validasi Gagal (" + errs.length + " masalah)",
         message: bulletList,
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+    }
+    function showSoftToast(soft) {
+      var lines = [];
+      for (var i = 0; i < soft.length; i++) {
+        lines.push("\u2022 " + soft[i].msg);
+      }
+      confirmExt({
+        title: "Perhatian (" + soft.length + " catatan)",
+        message: lines.join("\n") + "\n\nResume tetap bisa disimpan.",
         variant: "warning",
         okLabel: "OK",
         hideCancel: true
