@@ -81,6 +81,7 @@ async function compileFeatureFiles() {
     'penjualanResepAntrian.ts',
     'telaahResepPrint.ts',
     'paLabPrint.ts',
+    'resepAsliPrint.ts',
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
