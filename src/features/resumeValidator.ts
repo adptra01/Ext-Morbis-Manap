@@ -868,11 +868,11 @@ whenFeatureEnabled('resumeValidator', function () {
       runRanapValidation(fail, softFail, failText);
     }
 
-    if (soft.length > 0) showSoftToast(soft);
     if (hard.length > 0) {
       warnAll(hard);
       return false;
     }
+    if (soft.length > 0) showSoftToast(soft);
     return true;
   }
 
@@ -1219,6 +1219,26 @@ whenFeatureEnabled('resumeValidator', function () {
     confirmExt({
       title: 'Validasi Gagal (' + errs.length + ' masalah)',
       message: bulletList,
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
+  }
+
+  /**
+   * SOFT tier: peringatan yang TIDAK memblok simpan. Ditampilkan sebagai
+   * dialog info supaya user tahu ada field yang perlu dirapikan, tapi
+   * resume tetap tersimpan. Tidak dipanggil saat ada hard error (dialog
+   * hard yang lebih penting, dan dua dialog bertumpuk membingungkan).
+   */
+  function showSoftToast(soft: Array<{ msg: string; id: string }>): void {
+    var lines: string[] = [];
+    for (var i = 0; i < soft.length; i++) {
+      lines.push('\u2022 ' + soft[i].msg);
+    }
+    confirmExt({
+      title: 'Perhatian (' + soft.length + ' catatan)',
+      message: lines.join('\n') + '\n\nResume tetap bisa disimpan.',
       variant: 'warning',
       okLabel: 'OK',
       hideCancel: true,

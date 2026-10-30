@@ -1966,16 +1966,7 @@ var __morbis_feature = (() => {
       });
     }
     function addRequiredAttributes(tipe) {
-      var ids = tipe === "rajal" ? ["anamnesa", "catatan", "terapi_pengobatan", "jenis_kasus", "tindak_lanjut"] : [
-        "alasan_rawat",
-        "anamnesa",
-        "diagnosa_primary",
-        "kode_diagnosa_utama",
-        "jenis_kasus",
-        "keadaan_keluar",
-        "cara_keluar",
-        "tgl_keluar2"
-      ];
+      var ids = tipe === "rajal" ? ["anamnesa"] : ["alasan_rawat", "anamnesa"];
       ids.forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.required = true;
@@ -2156,9 +2147,13 @@ var __morbis_feature = (() => {
     }
     function runValidation(tipe) {
       clearErrors();
-      var errs = [];
+      var hard = [];
+      var soft = [];
       function fail(ok, msg, id) {
-        if (!ok) errs.push({ msg, id });
+        if (!ok) hard.push({ msg, id });
+      }
+      function softFail(ok, msg, id) {
+        if (!ok) soft.push({ msg, id });
       }
       function failText(id, label) {
         const v = val(id);
@@ -2167,17 +2162,18 @@ var __morbis_feature = (() => {
           fail(false, label + " tidak boleh hanya berisi simbol atau karakter khusus", id);
       }
       if (tipe === "rajal") {
-        runRajalValidation(fail, failText);
+        runRajalValidation(fail, softFail, failText);
       } else {
-        runRanapValidation(fail, failText);
+        runRanapValidation(fail, softFail, failText);
       }
-      if (errs.length > 0) {
-        warnAll(errs);
+      if (soft.length > 0) showSoftToast(soft);
+      if (hard.length > 0) {
+        warnAll(hard);
         return false;
       }
       return true;
     }
-    function runRanapValidation(fail, failText) {
+    function runRanapValidation(fail, softFail, failText) {
       fail(!!val("norm"), "No. RM harus diisi", "norm");
       fail(!!val("pasien"), "Nama pasien harus diisi", "pasien");
       fail(!!val("id_visit"), "Data kunjungan tidak valid", "pasien");
@@ -2185,21 +2181,21 @@ var __morbis_feature = (() => {
       failText("anamnesa", "Anamnesa");
       failText("diagnosa_primary", "Diagnosa primary");
       failText("terapi_pengobatan", "Terapi/pengobatan");
-      fail(
+      softFail(
         !!val("kode_diagnosa_utama"),
-        "Kode ICD-10 Diagnosa Utama harus diisi",
+        "Kode ICD-10 Diagnosa Utama belum diisi",
         "kode_diagnosa_utama"
       );
       if (val("kode_diagnosa_utama") && !isEmptyish(val("kode_diagnosa_utama")))
-        fail(
+        softFail(
           isICD10(val("kode_diagnosa_utama")),
-          "Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)",
+          "Format ICD-10 Utama kurang pas (contoh: A00, B20.9) \u2014 akan dicek kembali saat Simpan",
           "kode_diagnosa_utama"
         );
       if (val("diagnosa_utama") && !kodeOk("kode_diagnosa_utama", isICD10))
-        fail(
+        softFail(
           !!val("id_diagnosa_utama"),
-          "Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)",
+          "Diagnosa Utama sebaiknya dipilih dari autocomplete",
           "diagnosa_utama"
         );
       for (var si = 1; si <= 10; si++) {
@@ -2207,15 +2203,11 @@ var __morbis_feature = (() => {
         var nDS = val("diagnosa_sekunder" + si);
         var iDS = val("id_diagnosa_sekunder" + si);
         if (kDS && !isEmptyish(kDS))
-          fail(
-            isICD10(kDS),
-            "Format kode ICD-10 Diagnosa Sekunder " + si + " tidak valid",
-            "kode_diagnosa_sekunder" + si
-          );
+          softFail(isICD10(kDS), "Format ICD-10 Sekunder " + si, "kode_diagnosa_sekunder" + si);
         if (nDS && !isEmptyish(nDS) && !kodeOk("kode_diagnosa_sekunder" + si, isICD10))
-          fail(
+          softFail(
             !!iDS,
-            "Diagnosa Sekunder " + si + " harus dipilih dari hasil pencarian",
+            "Diagnosa Sekunder " + si + " sebaiknya dipilih autocomplete",
             "diagnosa_sekunder" + si
           );
       }
@@ -2224,88 +2216,80 @@ var __morbis_feature = (() => {
         var nTK = val("tindakan" + ti);
         var iTK = val("id_tindakan" + ti);
         if (kTK && !isEmptyish(kTK))
-          fail(
-            isICD9(kTK),
-            "Format kode ICD-9 Tindakan " + ti + " tidak valid (contoh: 45.16)",
-            "kode_tindakan" + ti
-          );
+          softFail(isICD9(kTK), "Format ICD-9 Tindakan " + ti, "kode_tindakan" + ti);
         if (nTK && !isEmptyish(nTK) && !kodeOk("kode_tindakan" + ti, isICD9))
-          fail(
-            !!iTK,
-            "Tindakan " + ti + " harus dipilih dari hasil pencarian (autocomplete)",
-            "tindakan" + ti
-          );
+          softFail(!!iTK, "Tindakan " + ti + " sebaiknya dipilih autocomplete", "tindakan" + ti);
       }
       var td = val("td_pulang") || val("tensi");
       if (td && !isEmptyish(td))
-        fail(
+        softFail(
           isNormalBP(td),
-          "Tekanan darah pulang tidak valid (contoh: 120/80)",
+          "Format tekanan darah pulang kurang pas (contoh: 120/80)",
           val("td_pulang") ? "td_pulang" : "tensi"
         );
       var keadaanKeluar = val("keadaan_keluar");
       var isMeninggal2 = keadaanKeluar && /meninggal\s*dunia/i.test(keadaanKeluar);
       var nadi = val("nadi_pulang");
       if (!isMeninggal2 && nadi && !isEmptyish(nadi))
-        fail(isValidVital(nadi, 20, 250), "Nadi pulang harus 20-250", "nadi_pulang");
+        softFail(isValidVital(nadi, 20, 250), "Nadi pulang harus 20-250", "nadi_pulang");
       var suhu = val("suhu_pulang");
       if (!isMeninggal2 && suhu && !isEmptyish(suhu))
-        fail(isValidVital(suhu, 30, 45), "Suhu pulang harus 30-45\xB0C", "suhu_pulang");
+        softFail(isValidVital(suhu, 30, 45), "Suhu pulang harus 30-45\xB0C", "suhu_pulang");
       var rr = val("rr_pulang");
       if (!isMeninggal2 && rr && !isEmptyish(rr))
-        fail(isValidVital(rr, 4, 120), "RR pulang harus 4-120", "rr_pulang");
+        softFail(isValidVital(rr, 4, 120), "RR pulang harus 4-120", "rr_pulang");
       var spo2 = val("spo2_pulang");
       if (!isMeninggal2 && spo2 && !isEmptyish(spo2))
-        fail(isValidVital(spo2, 50, 100), "SpO2 pulang harus 50-100%", "spo2_pulang");
+        softFail(isValidVital(spo2, 50, 100), "SpO2 pulang harus 50-100%", "spo2_pulang");
       fail(!!val("jenis_kasus"), "Jenis kasus harus dipilih", "jenis_kasus");
       fail(!!val("keadaan_keluar"), "Keadaan keluar harus dipilih", "keadaan_keluar");
       fail(!!val("cara_keluar"), "Cara keluar harus dipilih", "cara_keluar");
       fail(!!(val("tgl_keluar2") || val("tgl_keluar")), "Tanggal keluar harus diisi", "tgl_keluar2");
       var gcsE = val("gcs_e");
       if (!isMeninggal2 && gcsE && !isEmptyish(gcsE))
-        fail(isValidVital(gcsE, 1, 4), "GCS Eye harus 1-4", "gcs_e");
+        softFail(isValidVital(gcsE, 1, 4), "GCS Eye harus 1-4", "gcs_e");
       var gcsM = val("gcs_m");
       if (!isMeninggal2 && gcsM && !isEmptyish(gcsM))
-        fail(isValidVital(gcsM, 1, 6), "GCS Motor harus 1-6", "gcs_m");
+        softFail(isValidVital(gcsM, 1, 6), "GCS Motor harus 1-6", "gcs_m");
       var gcsV = val("gcs_v");
       if (!isMeninggal2 && gcsV && !isEmptyish(gcsV))
-        fail(isValidVital(gcsV, 1, 5), "GCS Verbal harus 1-5", "gcs_v");
+        softFail(isValidVital(gcsV, 1, 5), "GCS Verbal harus 1-5", "gcs_v");
       var gcsE2 = val("gcs_e");
       var gcsM2 = val("gcs_m");
       if (!isMeninggal2 && gcsE2 && gcsM2 && gcsV && !isEmptyish(gcsE2) && !isEmptyish(gcsM2) && !isEmptyish(gcsV)) {
         var gcsTotal = Number(gcsE2) + Number(gcsM2) + Number(gcsV);
-        fail(
+        softFail(
           isValidVital(String(gcsTotal), 3, 15),
-          "Total GCS (E+M+V) harus 3-15, saat ini " + gcsTotal,
+          "Total GCS (E+M+V) biasanya 3-15, saat ini " + gcsTotal,
           "gcs_v"
         );
       }
       var opsiA = radioVal("pasien_rujuk_masuk_opsi").toLowerCase();
       if (opsiA === "ya")
-        fail(
+        softFail(
           hasRadio("pasien_rujuk_masuk"),
           "Alasan Datang poin A: pilih asal rujukan masuk",
           "pasien_rujuk_masuk_opsi-ya"
         );
       var opsiB = radioVal("pasien_rujuk_dikembalikan_opsi").toLowerCase();
       if (opsiB === "ya")
-        fail(
+        softFail(
           hasRadio("pasien_rujuk_dikembalikan"),
           "Alasan Datang poin B: pilih asal rujukan dikembalikan",
           "pasien_rujuk_dikembalikan_opsi-ya"
         );
       var opsiC = radioVal("pasien_dirujuk_keluar_opsi").toLowerCase();
       if (opsiC === "ya")
-        fail(
+        softFail(
           hasRadio("pasien_rujuk_keluar"),
           "Alasan Datang poin C: pilih rujukan keluar",
           "pasien_dirujuk_keluar_opsi-ya"
         );
       var kb = radioVal("menggunakan_kb_opsi").toLowerCase();
       if (kb === "ya") {
-        fail(!!val("jenis_kb"), "Pelayanan KB: jenis KB harus dipilih", "jenis_kb");
-        fail(!!val("waktu_kb"), "Pelayanan KB: waktu KB harus dipilih", "waktu_kb");
-        fail(
+        softFail(!!val("jenis_kb"), "Pelayanan KB: jenis KB belum dipilih", "jenis_kb");
+        softFail(!!val("waktu_kb"), "Pelayanan KB: waktu KB belum dipilih", "waktu_kb");
+        softFail(
           hasChecked(".monitoring_kb"),
           "Pelayanan KB: pilih minimal satu monitoring KB",
           "monitoring_kb-komplikasi_kb"
@@ -2313,7 +2297,7 @@ var __morbis_feature = (() => {
       }
       var covid = radioVal("cek_status_covid").toLowerCase();
       if (covid === "1")
-        fail(!!val("status_covid"), "Status COVID: pilih jenis COVID", "status_covid");
+        softFail(!!val("status_covid"), "Status COVID: pilih jenis COVID", "status_covid");
       var tglMasuk = val("tgl_masuk") || val("tgl_masuk2");
       var tglKeluar = val("tgl_keluar2") || val("tgl_keluar");
       if (tglMasuk && tglKeluar) {
@@ -2332,14 +2316,14 @@ var __morbis_feature = (() => {
           return isNaN(t) ? 0 : t;
         };
         var parseDMY = parseDMY2;
-        fail(
+        softFail(
           parseDMY2(tglKeluar) >= parseDMY2(tglMasuk),
-          "Tanggal keluar tidak boleh sebelum tanggal masuk",
+          "Tanggal keluar sebaiknya tidak sebelum tanggal masuk",
           "tgl_keluar2"
         );
       }
     }
-    function runRajalValidation(fail, failText) {
+    function runRajalValidation(fail, softFail, failText) {
       fail(!!val("id_visit"), "Data kunjungan tidak valid", "id_visit");
       fail(!!val("nama_pasien"), "Nama pasien harus diisi", "nama_pasien");
       failText("anamnesa", "Anamnesa");
@@ -2349,7 +2333,7 @@ var __morbis_feature = (() => {
       optText.forEach(function(id) {
         const v = val(id);
         if (v && !isEmptyish(v) && !isUsableText(v))
-          fail(
+          softFail(
             false,
             (id === "pemeriksaan_fisik" ? "Pemeriksaan fisik" : id === "planning" ? "Planning" : "Tindakan") + " tidak boleh hanya berisi simbol atau karakter khusus",
             id
@@ -2362,15 +2346,15 @@ var __morbis_feature = (() => {
         const nama = (row?.querySelector('input[name="nama[]"]')?.value || "").trim();
         const errId = inp.id || `kode10-${i}`;
         if (kode && !isEmptyish(kode) && !isICD10(kode))
-          fail(
+          softFail(
             false,
-            "Format kode ICD-10 baris " + (i + 1) + " tidak valid (contoh: A00, B20.9)",
+            "Format ICD-10 baris " + (i + 1) + " kurang pas (contoh: A00, B20.9)",
             errId
           );
         if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD10(kode))
-          fail(
+          softFail(
             false,
-            "Diagnosa baris " + (i + 1) + " harus dipilih dari hasil pencarian (autocomplete)",
+            "Diagnosa baris " + (i + 1) + " sebaiknya dipilih dari autocomplete",
             errId
           );
       });
@@ -2381,35 +2365,39 @@ var __morbis_feature = (() => {
         const nama = (row?.querySelector('input[name="namaTindakan[]"]')?.value || "").trim();
         const errId = inp.id || `kode9-${i}`;
         if (kode && !isEmptyish(kode) && !isICD9(kode))
-          fail(
+          softFail(
             false,
-            "Format kode ICD-9 Tindakan baris " + (i + 1) + " tidak valid (contoh: 45.16)",
+            "Format ICD-9 Tindakan baris " + (i + 1) + " kurang pas (contoh: 45.16)",
             errId
           );
         if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD9(kode))
-          fail(
+          softFail(
             false,
-            "Tindakan baris " + (i + 1) + " harus dipilih dari hasil pencarian (autocomplete)",
+            "Tindakan baris " + (i + 1) + " sebaiknya dipilih dari autocomplete",
             errId
           );
       });
       const tensi = val("tensi");
       if (tensi && !isEmptyish(tensi))
-        fail(isNormalBP(tensi), "Tekanan darah tidak valid (contoh: 120/80)", "tensi");
+        softFail(isNormalBP(tensi), "Format tekanan darah kurang pas (contoh: 120/80)", "tensi");
       const nadi = val("nadi");
-      if (nadi && !isEmptyish(nadi)) fail(isValidVital(nadi, 20, 250), "Nadi harus 20-250", "nadi");
+      if (nadi && !isEmptyish(nadi))
+        softFail(isValidVital(nadi, 20, 250), "Nadi biasanya 20-250", "nadi");
       const suhu = val("suhu");
-      if (suhu && !isEmptyish(suhu)) fail(isValidVital(suhu, 30, 45), "Suhu harus 30-45\xB0C", "suhu");
+      if (suhu && !isEmptyish(suhu))
+        softFail(isValidVital(suhu, 30, 45), "Suhu biasanya 30-45\xB0C", "suhu");
       const nafas = val("nafas");
-      if (nafas && !isEmptyish(nafas)) fail(isValidVital(nafas, 4, 80), "Nafas harus 4-80", "nafas");
+      if (nafas && !isEmptyish(nafas))
+        softFail(isValidVital(nafas, 4, 80), "RR biasanya 4-80", "nafas");
       const spo2 = val("spo2");
-      if (spo2 && !isEmptyish(spo2)) fail(isValidVital(spo2, 50, 100), "SpO2 harus 50-100%", "spo2");
+      if (spo2 && !isEmptyish(spo2))
+        softFail(isValidVital(spo2, 50, 100), "SpO2 biasanya 50-100%", "spo2");
       const tinggi = val("tinggi");
       if (tinggi && !isEmptyish(tinggi))
-        fail(isValidVital(tinggi, 30, 250), "Tinggi badan harus 30-250 cm", "tinggi");
+        softFail(isValidVital(tinggi, 30, 250), "Tinggi badan biasanya 30-250 cm", "tinggi");
       const berat = val("berat");
       if (berat && !isEmptyish(berat))
-        fail(isValidVital(berat, 1, 500), "Berat badan harus 1-500 kg", "berat");
+        softFail(isValidVital(berat, 1, 500), "Berat badan biasanya 1-500 kg", "berat");
       fail(!!val("jenis_kasus"), "Jenis kasus harus dipilih", "jenis_kasus");
       fail(!!val("tindak_lanjut"), "Tindak lanjut harus dipilih", "tindak_lanjut");
     }

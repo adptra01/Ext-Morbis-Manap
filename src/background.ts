@@ -323,6 +323,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Telaah Berkas (M-KLAIM)',
       description: 'Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC',
     },
+    partialBerkas: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Pasien Partial (M-KLAIM)',
+      description: 'Tandai Pasien Partial di list + footer detail klaim, sinkron lintas-PC',
+    },
     mKlaimVerifLog: {
       enabled: true,
       allowedRoles: ['casemix', 'admin'],

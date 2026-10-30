@@ -901,7 +901,9 @@ var __morbis_feature = (() => {
   function muatUlangDenganFilter() {
     const klikCari = () => {
       const tombol = Array.from(
-        document.querySelectorAll('button, a, input[type="button"], input[type="submit"]')
+        document.querySelectorAll(
+          'button, a, input[type="button"], input[type="submit"]'
+        )
       ).find((el) => (el.getAttribute("onclick") || "").replace(/\s+/g, "").startsWith("cari("));
       tombol?.click();
     };
