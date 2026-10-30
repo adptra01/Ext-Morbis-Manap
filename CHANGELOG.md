@@ -7,10 +7,17 @@
 
 ---
 
+## 2026-10-30
+
+### ✨ feat
+
+- **mKlaimPartial** — mark pasien partial sinkron lintas-PC (`99f36c0`)
+
 ## 2026-10-23
 
 ### 🐛 fix
 
+- **resumeValidator** — toleransi inputan 2-tier (soft warning vs hard error) (`bfdbf71`)
 - **mKlaimBulkVerif** — terapkan ulang filter halaman setelah reload (`a1f5010`)
 - **mKlaimBulkVerif** — pulihkan filter pencarian lewat input DOM (`2dc3ec7`)
 
@@ -1900,4 +1907,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6f773cd767692b2c42990d48c203bd0902ae8fd3 -->
+<!-- changelog-upto: 99f36c05336cc123ac6e8eba397bfd3f9a512bcc -->
