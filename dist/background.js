@@ -368,6 +368,12 @@ var __morbis_bg = (() => {
         allowedRoles: ["labor", "admin"],
         name: "Cetak Hasil Lab PA (Redesign)",
         description: "Redesign format cetak Laporan Hasil Pemeriksaan PA (kop instansi, info pasien, hasil) agar rapi saat tampil & dicetak A4"
+      },
+      resepAsli: {
+        enabled: true,
+        allowedRoles: ["admin", "apotek"],
+        name: "Cetak Resep Asli (Rawat Inap)",
+        description: "Format ulang halaman cetak resep asli rawat inap - header 3 kolom, metadata pasien+dokter, daftar obat rapi, checklist telaah, adaptive density"
       }
     }
   };
