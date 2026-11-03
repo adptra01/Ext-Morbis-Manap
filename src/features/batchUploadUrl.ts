@@ -318,13 +318,10 @@ function showBatchUploadModal(): void {
           <label><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
         </div>
         <div id="ext-file-section">
-          <div id="ext-dropzone" style="border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;cursor:pointer;background:#f8fafc;transition:background .15s,border-color .15s;">
-            <div style="font-size:14px;color:#475569;margin-bottom:6px;">Seret file ke sini, atau klik untuk memilih</div>
-            <div style="font-size:11px;color:#94a3b8;">PDF, JPG, PNG, GIF — maks. ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} file</div>
+          <div id="ext-dropzone" style="border:2px dashed #cbd5e1;border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;background:#f8fafc;transition:background .15s,border-color .15s;">
+            <div style="font-size:14px;color:#475569;font-weight:600;margin-bottom:6px;">Seret banyak file ke sini, atau klik untuk memilih</div>
+            <div style="font-size:12px;color:#94a3b8;">PDF, JPG, PNG, GIF — otomatis terdeteksi & siap di-upload (maks. ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} file)</div>
             <input type="file" id="ext-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.gif" style="display:none;">
-          </div>
-          <div style="margin-top: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-analyze-file-btn">${Icons.search} Analisis File</button>
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
@@ -344,7 +341,7 @@ function showBatchUploadModal(): void {
         <div class="ext-modal-buttons">
           <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button>
           <button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">${Icons.xClose} Batalkan Upload</button>
-          <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button>
+          <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 Dokumen</button>
           <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
         </div>
       </div>
@@ -354,7 +351,6 @@ function showBatchUploadModal(): void {
       document
         .getElementById('ext-modal-close-btn')
         ?.addEventListener('click', () => modal?.classList.remove('show'));
-      document.getElementById('ext-analyze-file-btn')?.addEventListener('click', analyzeFiles);
       document.getElementById('ext-file-input')?.addEventListener('change', () => {
         analyzeFiles();
       });
@@ -456,12 +452,11 @@ function closeBatchModal(): void {
       buttonsContainer.innerHTML =
         '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button><button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">' +
         Icons.xClose +
-        ' Batalkan Upload</button><button id="ext-analyze-file-btn" class="ext-btn ext-btn-purple">${Icons.search} Analisis File</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
+        ' Batalkan Upload</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 Dokumen</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
         Icons.upload +
         ' Mulai Upload</button>';
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
       document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', cancelBatchUpload);
-      document.getElementById('ext-analyze-file-btn')?.addEventListener('click', analyzeFiles);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
       document.getElementById('ext-start-upload-btn')?.addEventListener('click', startBatchUpload);
     }
@@ -647,7 +642,6 @@ function updateStatus(text: string): void {
 
 function toggleUIProcessingState(isUploading: boolean): void {
   const elementsToToggle = [
-    'ext-analyze-file-btn',
     'ext-cancel-btn',
     'ext-test-single-btn',
     'ext-start-upload-btn',
@@ -1658,8 +1652,8 @@ async function runBatchQueue(): Promise<void> {
 async function testSingleUpload(): Promise<void> {
   if (batchQueue.length === 0) {
     void confirmLegacy({
-      title: 'Tidak ada URL',
-      message: 'Tidak ada URL untuk ditest.',
+      title: 'Tidak ada dokumen',
+      message: 'Tidak ada dokumen untuk ditest.',
       variant: 'warning',
       okLabel: 'OK',
       hideCancel: true,
@@ -1705,8 +1699,8 @@ async function testSingleUpload(): Promise<void> {
 function startBatchUpload(): void {
   if (batchQueue.length === 0) {
     void confirmLegacy({
-      title: 'Tidak ada URL',
-      message: 'Tidak ada URL untuk diproses.',
+      title: 'Tidak ada dokumen',
+      message: 'Tidak ada dokumen untuk diproses.',
       variant: 'warning',
       okLabel: 'OK',
       hideCancel: true,
