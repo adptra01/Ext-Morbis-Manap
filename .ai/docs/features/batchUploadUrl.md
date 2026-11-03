@@ -194,6 +194,10 @@ Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
    HTML/JS**. Nama file berisi `'`, `\`, `<`, `&`, atau `</script>` → JS string pecah →
    preview blank ("diblokir"). Nama dengan spasi aman (fetch auto-encode, HTTP 200).
    Sanitasi nama upload = kewajiban, bukan pilihan.
+   Karena itu halaman detail menyuntik **banner peringatan** bila ada berkas
+   kunjungan yang sudah ter-upload tapi tidak dirender (selisih nama antara
+   halaman dokumen-pasien dan partial `div-file-upload`, lihat
+   `shared/documentVisibility.ts`) — mencegah upload ulang berkas yang sudah masuk.
 6. **Semua file di halaman dokumen-pasien mengembalikan HTTP 200** (cek 70/70 file,
    2026-09-18) — file di disk aman; masalahnya data entry/penamaan, bukan file hilang.
 

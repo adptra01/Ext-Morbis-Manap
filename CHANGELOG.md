@@ -9,6 +9,11 @@
 
 ## 2026-11-03
 
+### ✨ feat
+
+- resepAsli samakan style telaah + gate depo ranap/RI-IGD + sembunyikan telaah resep depo ranap (`bb9eddb`)
+- resepAsli samakan style telaah + gate depo ranap/RI-IGD + sembunyikan telaah resep depo ranap (`be3e071`)
+
 ### 🐛 fix
 
 - hindari substring 'lab' di nama upload + daftar lengkap dokumen di halaman detail (`7db3db9`)
@@ -1915,4 +1920,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0d0e65d7f70cbabd4f68883a5bdb17f1ba23d336 -->
+<!-- changelog-upto: bb9eddbd1adf4b56290a69063b61250f74e0057e -->

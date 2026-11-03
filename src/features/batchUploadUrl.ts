@@ -22,6 +22,7 @@ import {
   verifyDocumentSaved,
   type SaveVerification,
 } from './shared/uploadVerification.js';
+import { findHiddenDocuments } from './shared/documentVisibility.js';
 
 const g = getMorbisGlobals();
 
@@ -204,6 +205,19 @@ function cancelBatchUpload(): void {
   isProcessing = false;
 }
 
+/**
+ * Siapkan signal baru untuk aksi berikutnya.
+ *
+ * `cancelBatchUpload()` sengaja TIDAK membuat controller baru — loop batch
+ * memeriksa `.aborted` pada controller yang sama untuk berhenti. Jadi setiap
+ * aksi baru (buka modal, crawl, test, jalankan batch) WAJIB memanggil ini;
+ * kalau tidak, semua `fetch` langsung gagal dengan
+ * "signal is aborted without reason".
+ */
+function resetBatchAbort(): void {
+  _batchAbortController = new AbortController();
+}
+
 function extractUrls(inputText: string): string[] {
   if (!inputText || typeof inputText !== 'string') return [];
 
@@ -286,6 +300,7 @@ function parseMetadataFromUrl(url: string): BatchItem {
 }
 
 function showBatchUploadModal(): void {
+  resetBatchAbort();
   let modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId) as HTMLElement | null;
   if (!modal) {
     modal = document.createElement('div');
@@ -695,6 +710,7 @@ async function crawlDokumenPasien(): Promise<void> {
   }
 
   updateStatus('Sedang mencari dokumen di rekam medis...');
+  resetBatchAbort();
   const crawlBtn = document.getElementById('ext-crawl-btn') as HTMLButtonElement | null;
   if (crawlBtn) {
     crawlBtn.disabled = true;
@@ -775,7 +791,10 @@ async function crawlDokumenPasien(): Promise<void> {
     updatePreview(batchQueue);
     updateStatus(`${batchQueue.length} dokumen berhasil ditemukan!`);
   } catch (err) {
-    updateStatus('Error: ' + (err as Error).message);
+    // Cancel bukan error — loop/aksi baru yang memanggil resetBatchAbort()
+    // akan membuat signal segar, jadi cukup beri tahu pengguna.
+    if ((err as Error)?.name === 'AbortError') updateStatus('Dibatalkan.');
+    else updateStatus('Error: ' + (err as Error).message);
   } finally {
     if (crawlBtn) {
       crawlBtn.disabled = false;
@@ -1378,7 +1397,7 @@ async function runBatchQueue(): Promise<void> {
 
   // New batch run — reset the shared cancellation signal so a batch started
   // after a cancel does not begin already-aborted.
-  _batchAbortController = new AbortController();
+  resetBatchAbort();
   resetDocRowsCache();
 
   isProcessing = true;
@@ -1558,6 +1577,7 @@ async function testSingleUpload(): Promise<void> {
   }
   if (isProcessing) return;
   isProcessing = true;
+  resetBatchAbort();
   toggleUIProcessingState(true);
 
   const firstItem = batchQueue[0];
@@ -1645,6 +1665,7 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
   }
 
   try {
+    resetBatchAbort();
     const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
     const response = await fetch(targetUrl);
 
@@ -1720,7 +1741,7 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
 async function runBatchQueueToSidepanel(): Promise<void> {
   // New batch run — reset the shared cancellation signal (mirrors runBatchQueue)
   // so a sidepanel batch never inherits a stale aborted controller.
-  _batchAbortController = new AbortController();
+  resetBatchAbort();
   resetDocRowsCache();
   try {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1820,6 +1841,7 @@ function sendProgress(
 
 async function testSingleUploadToSidepanel(): Promise<void> {
   if (batchQueue.length === 0) return;
+  resetBatchAbort();
   const firstItem = batchQueue[0];
   const urlParams = new URLSearchParams(window.location.search);
   const idVisitStr = urlParams.get('id_visit') || '';
@@ -1918,97 +1940,128 @@ function injectBatchUploadCSS(): void {
 }
 
 /**
- * Suntikkan daftar LENGKAP dokumen pasien ke halaman detail.
- * Server hanya menampilkan satu file per slot (File Upload, SEP, Lab), jadi
- * dokumen Lain-lain yang namanya mengandung 'lab' tidak pernah terlihat.
- * Daftar ini menampilkan semua dokumen dari halaman dokumen-pasien, sehingga
- * pengguna bisa membuka dokumen apa pun walau slot server menyembunyikannya.
+ * Beri tahu bila ada berkas kunjungan ini yang SUDAH ter-upload tapi TIDAK
+ * dirender di halaman klaim.
+ *
+ * Server hanya merender satu file terbaru per slot (`div-file-upload`), jadi
+ * dokumen `Lain-lain` (mis. nama mengandung `lab`) atau file yang tertimpa di
+ * slot yang sama hilang dari tampilan walau tetap ada di daftar dokumen pasien.
+ * Banner ini mencegah pengguna meng-upload ulang berkas yang sebenarnya sudah
+ * masuk. Tidak merender apa pun bila semua dokumen tampil.
  */
-async function injectFullDocumentList(): Promise<void> {
+async function injectMissingDocumentAlert(): Promise<void> {
+  const SID = 'ext-missing-doc-alert';
+  if (document.getElementById(SID)) return;
   const idVisit = new URLSearchParams(window.location.search).get('id_visit');
   if (!idVisit) return;
 
-  const rows: { no: string; name: string; jenis: string; ket: string; tgl: string; url: string }[] =
-    [];
+  const docs: { name: string; jenis: string; ket: string; tgl: string; url: string }[] = [];
+  let visibleText;
   try {
-    const resp = await fetch(
-      `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`,
-      { credentials: 'same-origin', cache: 'no-store', signal: _getBatchAbortSignal() },
-    );
-    if (!resp.ok) return;
-    const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-    const table = doc.querySelector<HTMLTableElement>('table.data-list.tabel');
+    const [listResp, partialResp] = await Promise.all([
+      fetch(
+        `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`,
+        { credentials: 'same-origin', cache: 'no-store' },
+      ),
+      fetch(
+        `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
+        { credentials: 'same-origin', cache: 'no-store' },
+      ),
+    ]);
+    if (!listResp.ok || !partialResp.ok) return;
+    visibleText = await partialResp.text();
+    const doc = new DOMParser().parseFromString(await listResp.text(), 'text/html');
+    const table = findDocumentTable(doc);
     if (!table) return;
-    const trs = Array.from(table.querySelectorAll('tr')).slice(1);
-    for (const tr of trs) {
+    for (const tr of Array.from(table.querySelectorAll('tr')).slice(1)) {
+      const href = tr.querySelector('a[href*="/assets/dokumen-pasien/"]')?.getAttribute('href');
+      if (!href) continue;
+      const name = decodeURIComponent(href.split('?')[0].split('/').pop() || '');
+      if (!name) continue;
       const cells = Array.from(tr.querySelectorAll('td'));
-      if (cells.length < 2) continue;
-      const link = tr.querySelector<HTMLAnchorElement>('a[href*="/assets/dokumen-pasien/"]');
-      if (!link) continue;
-      const href = link.getAttribute('href') || '';
-      const fullUrl = href.startsWith('http') ? href : `${window.location.origin}${href}`;
-      rows.push({
-        no: (cells[0]?.textContent || '').trim(),
-        name: (cells[1]?.textContent || '').trim(),
+      docs.push({
+        name,
         jenis: (cells[2]?.textContent || '').trim(),
         ket: (cells[3]?.textContent || '').trim(),
         tgl: (cells[4]?.textContent || '').trim(),
-        url: fullUrl,
+        url: href.startsWith('http') ? href : `${window.location.origin}${href}`,
       });
     }
   } catch {
     return;
   }
-  if (rows.length === 0) return;
 
-  const SID = 'ext-full-doc-list';
-  if (document.getElementById(SID)) return;
+  const hidden = findHiddenDocuments(
+    docs.map((d) => d.name),
+    visibleText,
+  );
+  if (hidden.length === 0) return;
+  const hiddenSet = new Set(hidden);
+  const missing = docs.filter((d) => hiddenSet.has(d.name));
 
-  const section = document.createElement('div');
-  section.id = SID;
-  section.className = 'isidalam';
-  section.style.cssText = 'page-break-after:always;margin-top:12px;';
+  const box = document.createElement('div');
+  box.id = SID;
+  box.style.cssText =
+    'margin:10px 0;border:1px solid #f59e0b;background:#fffbeb;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;';
 
-  const head = document.createElement('div');
-  head.className = 'panel-heading no-print';
-  const cb = document.createElement('input');
-  cb.type = 'checkbox';
-  cb.setAttribute('onclick', "checkedPrint(this, 'ext-full-doc-list')");
-  head.appendChild(cb);
-  const span = document.createElement('span');
-  span.textContent = 'Semua Dokumen Pasien (daftar lengkap)';
-  head.appendChild(span);
-  section.appendChild(head);
+  const title = document.createElement('div');
+  title.style.cssText = 'font-weight:700;display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
+  const label = document.createElement('span');
+  label.textContent = `⚠ ${missing.length} berkas kunjungan ini tidak tampil di daftar dokumen`;
+  title.appendChild(label);
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.textContent = 'Lihat';
+  toggle.style.cssText =
+    'margin-left:auto;padding:3px 10px;font-size:11px;font-weight:600;border:1px solid #f59e0b;background:#fff;color:#92400e;border-radius:6px;cursor:pointer;';
+  title.appendChild(toggle);
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = 'Tutup';
+  close.style.cssText = toggle.style.cssText;
+  close.addEventListener('click', () => box.remove());
+  title.appendChild(close);
+  box.appendChild(title);
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'margin-top:4px;font-size:11px;color:#a16207;';
+  hint.textContent =
+    'Berkas sudah ter-upload tapi disembunyikan server (hanya 1 file terbaru per slot) — jangan upload ulang.';
+  box.appendChild(hint);
 
   const list = document.createElement('div');
-  list.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
-  for (const r of rows) {
+  list.style.cssText = 'display:none;margin-top:8px;flex-direction:column;gap:6px;';
+  for (const d of missing) {
     const row = document.createElement('div');
     row.style.cssText =
-      'border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;';
+      'border:1px solid #fde68a;border-radius:6px;padding:6px 8px;background:#fff;display:flex;flex-direction:column;gap:2px;';
     const a = document.createElement('a');
-    a.href = r.url;
+    a.href = d.url;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.textContent = r.name;
+    a.textContent = d.name;
     a.style.cssText =
       'font-weight:600;font-size:12px;color:#1d4ed8;text-decoration:none;word-break:break-all;';
     row.appendChild(a);
     const meta = document.createElement('div');
     meta.style.cssText = 'font-size:11px;color:#4b5563;';
-    meta.textContent = `${r.jenis || '-'} | ${r.ket || '-'} | ${r.tgl || '-'}`;
+    meta.textContent = `${d.jenis || '-'} | ${d.ket || '-'} | ${d.tgl || '-'}`;
     row.appendChild(meta);
     list.appendChild(row);
   }
-  section.appendChild(list);
+  box.appendChild(list);
 
-  // Sisipkan setelah section "Cetak File Upload" (atau setelah body).
+  toggle.addEventListener('click', () => {
+    const open = list.style.display === 'flex';
+    list.style.display = open ? 'none' : 'flex';
+    toggle.textContent = open ? 'Lihat' : 'Sembunyikan';
+  });
+
   const anchor = document.getElementById('file-upload') || document.body;
-  if (anchor.parentNode) {
-    anchor.parentNode.insertBefore(section, anchor.nextSibling);
-  } else {
-    document.body.appendChild(section);
-  }
+  if (anchor.parentNode) anchor.parentNode.insertBefore(box, anchor.nextSibling);
+  else document.body.appendChild(box);
 }
 
 function initBatchUploadUrlFeature(): void {
@@ -2020,7 +2073,7 @@ function initBatchUploadUrlFeature(): void {
   if (!hasIdVisitParam()) return;
 
   injectBatchUploadCSS();
-  void injectFullDocumentList();
+  void injectMissingDocumentAlert();
 
   // Report page context on load
   chrome.runtime

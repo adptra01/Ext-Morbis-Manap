@@ -628,10 +628,7 @@
     "http://103.147.236.140/*",
     "http://103.147.236.138/*",
     "http://192.168.8.4/*",
-    "http://dev.rsudkotajambi.id/*",
-    "http://127.0.0.1/*",
-    "http://localhost/*",
-    "http://*.ddev.site/*"
+    "http://dev.rsudkotajambi.id/*"
   ],
   "web_accessible_resources": [
     {
