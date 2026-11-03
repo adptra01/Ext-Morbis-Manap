@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-11-04
+
+### ✨ feat
+
+- **batchUpload** — ganti Mode Manual (Paste URL) dengan dropzone upload file (`9092c57`)
+
 ## 2026-11-03
 
 ### ✨ feat
@@ -26,6 +32,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync (`4df5c60`)
 - **dist** — sync (`b9ec7bf`)
 - **dist** — sync (`7044b20`)
 - **dist** — sync (`a3d51c3`)
@@ -1935,4 +1942,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: eee8f61317939389e8914f543411dabc8bdde8bf -->
+<!-- changelog-upto: 9092c579b687262b99db350e94830a309d273fa6 -->
