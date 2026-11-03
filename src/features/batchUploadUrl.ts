@@ -314,20 +314,15 @@ function showBatchUploadModal(): void {
           <button class="ext-modal-close" id="ext-modal-close-btn">${Icons.xClose}</button>
         </div>
         <div class="ext-mode-radio">
-          <label><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
-          <label><input type="radio" name="ext-upload-mode" value="file"> Upload File (dari komputer)</label>
+          <label><input type="radio" name="ext-upload-mode" value="file" checked> Upload File (dari komputer)</label>
           <label><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
         </div>
-        <div id="ext-manual-section">
-          <label class="ext-input-label">Paste URL Dokumen (satu per baris):</label>
-          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
-          <div style="margin-top: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${Icons.search} Analisis URL</button>
+        <div id="ext-file-section">
+          <div id="ext-dropzone" style="border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;cursor:pointer;background:#f8fafc;transition:background .15s,border-color .15s;">
+            <div style="font-size:14px;color:#475569;margin-bottom:6px;">Seret file ke sini, atau klik untuk memilih</div>
+            <div style="font-size:11px;color:#94a3b8;">PDF, JPG, PNG, GIF — maks. ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} file</div>
+            <input type="file" id="ext-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.gif" style="display:none;">
           </div>
-        </div>
-        <div id="ext-file-section" style="display: none;">
-          <label class="ext-input-label">Pilih file dari komputer:</label>
-          <input type="file" id="ext-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.gif" style="margin: 8px 0; display: block;">
           <div style="margin-top: 12px; display: flex; gap: 10px;">
             <button class="ext-btn ext-btn-purple" id="ext-analyze-file-btn">${Icons.search} Analisis File</button>
           </div>
@@ -359,11 +354,39 @@ function showBatchUploadModal(): void {
       document
         .getElementById('ext-modal-close-btn')
         ?.addEventListener('click', () => modal?.classList.remove('show'));
-      document.getElementById('ext-analyze-btn')?.addEventListener('click', analyzeUrls);
       document.getElementById('ext-analyze-file-btn')?.addEventListener('click', analyzeFiles);
       document.getElementById('ext-file-input')?.addEventListener('change', () => {
         analyzeFiles();
       });
+
+      // Dropzone: klik + drag & drop
+      const dropzone = document.getElementById('ext-dropzone') as HTMLElement | null;
+      const fileInput = document.getElementById('ext-file-input') as HTMLInputElement | null;
+      if (dropzone && fileInput) {
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropzone.style.background = '#e0e7ff';
+          dropzone.style.borderColor = '#6366f1';
+        });
+        dropzone.addEventListener('dragleave', () => {
+          dropzone.style.background = '#f8fafc';
+          dropzone.style.borderColor = '#cbd5e1';
+        });
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropzone.style.background = '#f8fafc';
+          dropzone.style.borderColor = '#cbd5e1';
+          if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+            // Transfer dropped files into the input element
+            const dt = new DataTransfer();
+            for (let i = 0; i < e.dataTransfer.files.length; i++)
+              dt.items.add(e.dataTransfer.files[i]);
+            fileInput.files = dt.files;
+            analyzeFiles();
+          }
+        });
+      }
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
       document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', cancelBatchUpload);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
@@ -372,19 +395,12 @@ function showBatchUploadModal(): void {
       document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
         radio.addEventListener('change', (e) => {
           const target = e.target as HTMLInputElement;
-          const manual = document.getElementById('ext-manual-section') as HTMLElement | null;
           const auto = document.getElementById('ext-auto-section') as HTMLElement | null;
           const fileSec = document.getElementById('ext-file-section') as HTMLElement | null;
-          if (target.value === 'manual') {
-            if (manual) manual.style.display = 'block';
-            if (auto) auto.style.display = 'none';
-            if (fileSec) fileSec.style.display = 'none';
-          } else if (target.value === 'file') {
-            if (manual) manual.style.display = 'none';
+          if (target.value === 'file') {
             if (auto) auto.style.display = 'none';
             if (fileSec) fileSec.style.display = 'block';
           } else {
-            if (manual) manual.style.display = 'none';
             if (auto) auto.style.display = 'block';
             if (fileSec) fileSec.style.display = 'none';
           }
@@ -413,10 +429,8 @@ function showBatchUploadModal(): void {
     if (m !== modal) m.classList.remove('show');
   });
   modal.classList.add('show');
-  const textarea = document.getElementById(
-    BATCH_UPLOAD_URL_CONFIG.textareaId,
-  ) as HTMLTextAreaElement | null;
-  textarea?.focus();
+  const dropzone = document.getElementById('ext-dropzone');
+  dropzone?.focus();
 }
 
 function closeBatchModal(): void {
@@ -442,11 +456,12 @@ function closeBatchModal(): void {
       buttonsContainer.innerHTML =
         '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button><button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">' +
         Icons.xClose +
-        ' Batalkan Upload</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
+        ' Batalkan Upload</button><button id="ext-analyze-file-btn" class="ext-btn ext-btn-purple">${Icons.search} Analisis File</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
         Icons.upload +
         ' Mulai Upload</button>';
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
       document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', cancelBatchUpload);
+      document.getElementById('ext-analyze-file-btn')?.addEventListener('click', analyzeFiles);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
       document.getElementById('ext-start-upload-btn')?.addEventListener('click', startBatchUpload);
     }
@@ -632,13 +647,13 @@ function updateStatus(text: string): void {
 
 function toggleUIProcessingState(isUploading: boolean): void {
   const elementsToToggle = [
-    'ext-analyze-btn',
+    'ext-analyze-file-btn',
     'ext-cancel-btn',
     'ext-test-single-btn',
     'ext-start-upload-btn',
     'ext-modal-close-btn',
     'ext-crawl-btn',
-    BATCH_UPLOAD_URL_CONFIG.textareaId,
+    'ext-file-input',
   ];
 
   document.querySelectorAll<HTMLInputElement>('input[name="ext-upload-mode"]').forEach((radio) => {
@@ -657,61 +672,12 @@ function toggleUIProcessingState(isUploading: boolean): void {
     const el = document.getElementById(id) as HTMLButtonElement | HTMLTextAreaElement | null;
     if (el) {
       el.disabled = isUploading;
-      if (id === 'ext-modal-close-btn' || id === BATCH_UPLOAD_URL_CONFIG.textareaId) {
+      if (id === 'ext-modal-close-btn') {
         el.style.opacity = isUploading ? '0.5' : '1';
-        el.style.cursor = isUploading
-          ? 'not-allowed'
-          : id === BATCH_UPLOAD_URL_CONFIG.textareaId
-            ? 'text'
-            : 'pointer';
+        el.style.cursor = isUploading ? 'not-allowed' : 'pointer';
       }
     }
   });
-}
-
-function analyzeUrls(): void {
-  const textarea = document.getElementById(
-    BATCH_UPLOAD_URL_CONFIG.textareaId,
-  ) as HTMLTextAreaElement | null;
-  const inputText = textarea?.value.trim() || '';
-
-  if (!inputText) {
-    void confirmLegacy({
-      title: 'Tidak ada URL',
-      message: 'Silakan paste URL terlebih dahulu.',
-      variant: 'warning',
-      okLabel: 'OK',
-      hideCancel: true,
-    });
-    return;
-  }
-
-  const urls = extractUrls(inputText);
-  if (urls.length === 0) {
-    void confirmLegacy({
-      title: 'Tidak ada URL valid',
-      message: 'Pastikan URL mengandung ekstensi file yang didukung.',
-      variant: 'warning',
-      okLabel: 'OK',
-      hideCancel: true,
-    });
-    return;
-  }
-
-  if (urls.length > BATCH_UPLOAD_URL_CONFIG.maxBatchSize) {
-    void confirmLegacy({
-      title: 'Terlalu banyak URL',
-      message: `Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} URL per batch.`,
-      variant: 'warning',
-      okLabel: 'OK',
-      hideCancel: true,
-    });
-    return;
-  }
-
-  batchQueue = urls.map((url) => parseMetadataFromUrl(url));
-  updatePreview(batchQueue);
-  updateStatus(`${urls.length} URL siap diproses`);
 }
 
 function extractNormFromName(name: string): string {
