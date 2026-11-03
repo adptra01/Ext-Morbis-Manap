@@ -16,6 +16,7 @@
 
 ### 🐛 fix
 
+- **antrolKirim** — sembunyikan log 'message channel closed' (noise, retry otomatis) (`2982440`)
 - **toolbar** — jadwal render lebih tangguh + log diagnostik (idempotent, coba ulang 3s) (`fcbc44e`)
 - **batchUpload** — bukti berkas tampil dari DOM + semua section, bukan partial file-upload (`791d730`)
 - **batchUpload** — reset signal abort tiap aksi + banner berkas tak tampil (`a84d33b`)
@@ -23,6 +24,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync (`a3d51c3`)
 - **dist** — sync versi 1.5.178 (`a29c7f0`)
 - **dist** — sync versi 1.5.177 (`2acc05d`)
 - **dist** — sync versi 1.5.176 (`af80780`)
@@ -1929,4 +1931,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9e1b5a724624956cf43f03f5da66d4a41b5b7f9b -->
+<!-- changelog-upto: 29824406cf4a6a7b4f98dc9d716dbdfd7413b7a1 -->
