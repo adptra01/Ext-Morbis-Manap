@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { rewriteUploadFilename } from '../../src/features/shared/uploadName';
 
-const NAME_RE = /^upload_\d{8}_\d+_[a-z0-9]{6}\.pdf$/;
+const NAME_RE = /^upload-ulang-\d{8}-\d{6}-\d{4}\.pdf$/;
 
 describe('rewriteUploadFilename', () => {
   it('returns upload_<YYYYMMDD>_<ts>_<rand>.pdf pattern', () => {
@@ -29,5 +29,12 @@ describe('rewriteUploadFilename', () => {
     const a = rewriteUploadFilename({ filename: 'abc.pdf' });
     const b = rewriteUploadFilename({ filename: 'abc.pdf' });
     expect(a).not.toBe(b);
+  });
+
+  it('never contains "lab" substring (case-insensitive) — server hides those', () => {
+    for (let i = 0; i < 200; i++) {
+      const name = rewriteUploadFilename({ filename: 'scan.pdf' });
+      expect(name.toLowerCase()).not.toContain('lab');
+    }
   });
 });

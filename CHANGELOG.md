@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- registrasi fitur resepAsli ke build.mjs, background.ts, manifest.json (`ff6417f`)
+- tambah fitur cetak resep asli rawat inap (resepAsliPrint.ts) (`6a572be`)
 - **mKlaimPartial** — mark pasien partial sinkron lintas-PC (`99f36c0`)
 
 ## 2026-10-23
@@ -1907,4 +1909,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 99f36c05336cc123ac6e8eba397bfd3f9a512bcc -->
+<!-- changelog-upto: ff6417fc6f64b9b156e4aa32e69dccb06cb6c287 -->

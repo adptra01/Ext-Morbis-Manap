@@ -1058,12 +1058,15 @@ async function getDocRowsSnapshot(
 async function isDocumentVisibleOnCurrentPage(fileName: string): Promise<boolean | null> {
   // Hanya relevan di halaman modul klaim (tempat fitur ini dipakai).
   if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
+  const idVisit = new URLSearchParams(window.location.search).get('id_visit');
+  if (!idVisit) return null;
   try {
-    const response = await fetch(window.location.href, {
-      credentials: 'same-origin',
-      cache: 'no-store',
-      signal: _getBatchAbortSignal(),
-    });
+    // Nama file dimuat lewat AJAX ke partial div-file-upload, bukan di
+    // HTML mentah halaman detail — baca partial-nya supaya bukti nyata.
+    const response = await fetch(
+      `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
+      { credentials: 'same-origin', cache: 'no-store', signal: _getBatchAbortSignal() },
+    );
     if (!response.ok) return null;
     return isSavedByResponseBody(await response.text(), fileName);
   } catch {
@@ -1914,6 +1917,100 @@ function injectBatchUploadCSS(): void {
   injectSharedCSS();
 }
 
+/**
+ * Suntikkan daftar LENGKAP dokumen pasien ke halaman detail.
+ * Server hanya menampilkan satu file per slot (File Upload, SEP, Lab), jadi
+ * dokumen Lain-lain yang namanya mengandung 'lab' tidak pernah terlihat.
+ * Daftar ini menampilkan semua dokumen dari halaman dokumen-pasien, sehingga
+ * pengguna bisa membuka dokumen apa pun walau slot server menyembunyikannya.
+ */
+async function injectFullDocumentList(): Promise<void> {
+  const idVisit = new URLSearchParams(window.location.search).get('id_visit');
+  if (!idVisit) return;
+
+  const rows: { no: string; name: string; jenis: string; ket: string; tgl: string; url: string }[] =
+    [];
+  try {
+    const resp = await fetch(
+      `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`,
+      { credentials: 'same-origin', cache: 'no-store', signal: _getBatchAbortSignal() },
+    );
+    if (!resp.ok) return;
+    const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
+    const table = doc.querySelector<HTMLTableElement>('table.data-list.tabel');
+    if (!table) return;
+    const trs = Array.from(table.querySelectorAll('tr')).slice(1);
+    for (const tr of trs) {
+      const cells = Array.from(tr.querySelectorAll('td'));
+      if (cells.length < 2) continue;
+      const link = tr.querySelector<HTMLAnchorElement>('a[href*="/assets/dokumen-pasien/"]');
+      if (!link) continue;
+      const href = link.getAttribute('href') || '';
+      const fullUrl = href.startsWith('http') ? href : `${window.location.origin}${href}`;
+      rows.push({
+        no: (cells[0]?.textContent || '').trim(),
+        name: (cells[1]?.textContent || '').trim(),
+        jenis: (cells[2]?.textContent || '').trim(),
+        ket: (cells[3]?.textContent || '').trim(),
+        tgl: (cells[4]?.textContent || '').trim(),
+        url: fullUrl,
+      });
+    }
+  } catch {
+    return;
+  }
+  if (rows.length === 0) return;
+
+  const SID = 'ext-full-doc-list';
+  if (document.getElementById(SID)) return;
+
+  const section = document.createElement('div');
+  section.id = SID;
+  section.className = 'isidalam';
+  section.style.cssText = 'page-break-after:always;margin-top:12px;';
+
+  const head = document.createElement('div');
+  head.className = 'panel-heading no-print';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.setAttribute('onclick', "checkedPrint(this, 'ext-full-doc-list')");
+  head.appendChild(cb);
+  const span = document.createElement('span');
+  span.textContent = 'Semua Dokumen Pasien (daftar lengkap)';
+  head.appendChild(span);
+  section.appendChild(head);
+
+  const list = document.createElement('div');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+  for (const r of rows) {
+    const row = document.createElement('div');
+    row.style.cssText =
+      'border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;';
+    const a = document.createElement('a');
+    a.href = r.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = r.name;
+    a.style.cssText =
+      'font-weight:600;font-size:12px;color:#1d4ed8;text-decoration:none;word-break:break-all;';
+    row.appendChild(a);
+    const meta = document.createElement('div');
+    meta.style.cssText = 'font-size:11px;color:#4b5563;';
+    meta.textContent = `${r.jenis || '-'} | ${r.ket || '-'} | ${r.tgl || '-'}`;
+    row.appendChild(meta);
+    list.appendChild(row);
+  }
+  section.appendChild(list);
+
+  // Sisipkan setelah section "Cetak File Upload" (atau setelah body).
+  const anchor = document.getElementById('file-upload') || document.body;
+  if (anchor.parentNode) {
+    anchor.parentNode.insertBefore(section, anchor.nextSibling);
+  } else {
+    document.body.appendChild(section);
+  }
+}
+
 function initBatchUploadUrlFeature(): void {
   if (
     !g.currentConfig?.features?.batchUpload?.enabled ||
@@ -1923,6 +2020,7 @@ function initBatchUploadUrlFeature(): void {
   if (!hasIdVisitParam()) return;
 
   injectBatchUploadCSS();
+  void injectFullDocumentList();
 
   // Report page context on load
   chrome.runtime

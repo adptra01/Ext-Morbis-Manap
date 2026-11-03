@@ -14,10 +14,14 @@ export interface UploadNameSource {
 
 function generateTimestampName(ext: string): string {
   const now = new Date();
-  const timestamp = now.getTime(); // milliseconds since epoch
-  const random = Math.random().toString(36).substring(2, 8); // 6 chars random
   const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-  return `upload_${dateStr}_${timestamp}_${random}${ext}`;
+  const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, ''); // HHMMSS
+  // Angka acak (bukan base-36) — hindari substring 'lab'/'LABOR' yang
+  // membuat server menyembunyikan dokumen dari slot "Cetak File Upload".
+  const random = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, '0');
+  return `upload-ulang-${dateStr}-${timeStr}-${random}${ext}`;
 }
 
 export function rewriteUploadFilename(_item: UploadNameSource, _customBase?: string): string {
