@@ -41,6 +41,7 @@ const BATCH_UPLOAD_URL_CONFIG = {
 interface BatchItem {
   filename: string;
   norm: string;
+  file?: File;
   tanggal: string;
   jenis_dokumen: string;
   keterangan: string;
@@ -314,6 +315,7 @@ function showBatchUploadModal(): void {
         </div>
         <div class="ext-mode-radio">
           <label><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
+          <label><input type="radio" name="ext-upload-mode" value="file"> Upload File (dari komputer)</label>
           <label><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
         </div>
         <div id="ext-manual-section">
@@ -321,6 +323,13 @@ function showBatchUploadModal(): void {
           <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
           <div style="margin-top: 12px; display: flex; gap: 10px;">
             <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${Icons.search} Analisis URL</button>
+          </div>
+        </div>
+        <div id="ext-file-section" style="display: none;">
+          <label class="ext-input-label">Pilih file dari komputer:</label>
+          <input type="file" id="ext-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.gif" style="margin: 8px 0; display: block;">
+          <div style="margin-top: 12px; display: flex; gap: 10px;">
+            <button class="ext-btn ext-btn-purple" id="ext-analyze-file-btn">${Icons.search} Analisis File</button>
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
@@ -351,6 +360,10 @@ function showBatchUploadModal(): void {
         .getElementById('ext-modal-close-btn')
         ?.addEventListener('click', () => modal?.classList.remove('show'));
       document.getElementById('ext-analyze-btn')?.addEventListener('click', analyzeUrls);
+      document.getElementById('ext-analyze-file-btn')?.addEventListener('click', analyzeFiles);
+      document.getElementById('ext-file-input')?.addEventListener('change', () => {
+        analyzeFiles();
+      });
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
       document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', cancelBatchUpload);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
@@ -361,12 +374,19 @@ function showBatchUploadModal(): void {
           const target = e.target as HTMLInputElement;
           const manual = document.getElementById('ext-manual-section') as HTMLElement | null;
           const auto = document.getElementById('ext-auto-section') as HTMLElement | null;
+          const fileSec = document.getElementById('ext-file-section') as HTMLElement | null;
           if (target.value === 'manual') {
             if (manual) manual.style.display = 'block';
             if (auto) auto.style.display = 'none';
+            if (fileSec) fileSec.style.display = 'none';
+          } else if (target.value === 'file') {
+            if (manual) manual.style.display = 'none';
+            if (auto) auto.style.display = 'none';
+            if (fileSec) fileSec.style.display = 'block';
           } else {
             if (manual) manual.style.display = 'none';
             if (auto) auto.style.display = 'block';
+            if (fileSec) fileSec.style.display = 'none';
           }
           batchQueue = [];
           updatePreview([]);
@@ -692,6 +712,89 @@ function analyzeUrls(): void {
   batchQueue = urls.map((url) => parseMetadataFromUrl(url));
   updatePreview(batchQueue);
   updateStatus(`${urls.length} URL siap diproses`);
+}
+
+function extractNormFromName(name: string): string {
+  const nameWithoutExt = name.replace(/\.[^/.]+$/, '');
+  const parts = nameWithoutExt.split(/[-_\s]+/);
+  const candidates = parts.filter((p) => {
+    const isNumeric = /^\d+$/.test(p);
+    const len = p.length;
+    return isNumeric && len >= 6 && len <= 12 && len !== 10 && len !== 13;
+  });
+  if (candidates.length > 0) return candidates[0];
+  return '';
+}
+
+function analyzeFiles(): void {
+  const input = document.getElementById('ext-file-input') as HTMLInputElement | null;
+  const files = input?.files;
+  if (!files || files.length === 0) {
+    void confirmLegacy({
+      title: 'Tidak ada file',
+      message: 'Pilih file terlebih dahulu.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
+    return;
+  }
+
+  const supported = BATCH_UPLOAD_URL_CONFIG.supportedExtensions;
+  const validFiles: File[] = [];
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const lower = f.name.toLowerCase();
+    if (!supported.some((ext) => lower.endsWith(ext))) continue;
+    if (f.size === 0) continue;
+    validFiles.push(f);
+  }
+
+  if (validFiles.length === 0) {
+    void confirmLegacy({
+      title: 'Tidak ada file valid',
+      message: 'Pastikan file berupa PDF/JPG/PNG/GIF dan tidak kosong.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
+    return;
+  }
+
+  if (validFiles.length > BATCH_UPLOAD_URL_CONFIG.maxBatchSize) {
+    void confirmLegacy({
+      title: 'Terlalu banyak file',
+      message: `Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} file per batch.`,
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
+    return;
+  }
+
+  const tanggal = getTanggalMasukFromPage();
+  batchQueue = validFiles.map((file) => {
+    const filename = file.name;
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    const norm = extractNormFromName(filename);
+    const keteranganParts = nameWithoutExt
+      .split(/[-_\s]+/)
+      .filter((p) => !/^\d{10}$/.test(p) && p !== norm);
+    const keterangan = keteranganParts.join(' ').trim() || nameWithoutExt.replace(/[-_]+/g, ' ');
+    return {
+      filename,
+      norm,
+      tanggal,
+      jenis_dokumen: 'Lain-lain',
+      keterangan,
+      url: '',
+      file,
+      status: 'pending',
+    };
+  });
+
+  updatePreview(batchQueue);
+  updateStatus(`${validFiles.length} file siap diproses`);
 }
 
 async function crawlDokumenPasien(): Promise<void> {
@@ -1261,8 +1364,15 @@ async function processAndUploadSingleUrl(
     // Semua dokumen dikonversi ke PDF (permintaan user). Konversi internal
     // (bukan pdf.js halaman yang rapuh — dulu error 'Invalid PDF structure'
     // dan fallback-nya meng-upload placeholder teks sebagai dokumen palsu).
-    let file = await fetchFileFromUrl(metadata.url, uploadName);
-    updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
+    let file: File;
+    if (metadata.file) {
+      // Upload langsung dari file lokal (tanpa fetch URL).
+      file = new File([metadata.file], metadata.file.name, { type: metadata.file.type });
+      updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
+    } else {
+      file = await fetchFileFromUrl(metadata.url, uploadName);
+      updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
+    }
     file = await convertFileToPdf(file);
 
     const formData = new FormData();
