@@ -367,7 +367,12 @@ async function pollOnce(): Promise<void> {
       stopWatchDead('konteks extension mati (extension diperbarui/dimuat ulang?)');
       return;
     }
-    console.warn(LOG_PREFIX, 'poll gagal (background):', (e as Error).message);
+    const msg = (e as Error)?.message || '';
+    // Service worker MV3 kadang idle/terminated sebelum merespons — channel
+    // tertutup. Bukan error nyata; retry otomatis di poll berikutnya, jadi
+    // tidak perlu di-log (menghindari spam console).
+    if (/message channel closed|Extension context invalidated/i.test(msg)) return;
+    console.warn(LOG_PREFIX, 'poll gagal (background):', msg);
     return;
   }
   if (!res.ok || res.status === 304) return; // sinyal sama → tidak ada perubahan
