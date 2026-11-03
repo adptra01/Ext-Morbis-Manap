@@ -22,7 +22,6 @@ import {
   verifyDocumentSaved,
   type SaveVerification,
 } from './shared/uploadVerification.js';
-import { findHiddenDocuments } from './shared/documentVisibility.js';
 
 const g = getMorbisGlobals();
 
@@ -1955,134 +1954,6 @@ function injectBatchUploadCSS(): void {
   injectSharedCSS();
 }
 
-/**
- * Beri tahu bila ada berkas kunjungan ini yang SUDAH ter-upload tapi TIDAK
- * dirender di halaman klaim.
- *
- * Server hanya merender satu file terbaru per slot (file upload, SEP, hasil lab,
- * radiologi, …), jadi dokumen `Lain-lain` (mis. nama mengandung `lab`) atau file
- * yang tertimpa di slot yang sama bisa tidak terlihat walau tetap ada di daftar
- * dokumen pasien. Banner ini mencegah pengguna meng-upload ulang berkas yang
- * sebenarnya sudah masuk — dan sebaliknya harus tahu kalau berkasnya memang
- * tampil di section lain (mis. Hasil Lab), bukan cuma di slot file upload.
- *
- * Bukti "tampil" = DOM terender + resource yang sudah dimuat (semua section),
- * bukan satu partial saja. Tidak merender apa pun bila semua dokumen tampil.
- */
-async function injectMissingDocumentAlert(): Promise<void> {
-  const SID = 'ext-missing-doc-alert';
-  if (document.getElementById(SID)) return;
-  const idVisit = new URLSearchParams(window.location.search).get('id_visit');
-  if (!idVisit) return;
-
-  const docs: { name: string; jenis: string; ket: string; tgl: string; url: string }[] = [];
-  try {
-    const listResp = await fetch(
-      `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`,
-      { credentials: 'same-origin', cache: 'no-store' },
-    );
-    if (!listResp.ok) return;
-    const doc = new DOMParser().parseFromString(await listResp.text(), 'text/html');
-    const table = findDocumentTable(doc);
-    if (!table) return;
-    for (const tr of Array.from(table.querySelectorAll('tr')).slice(1)) {
-      const href = tr.querySelector('a[href*="/assets/dokumen-pasien/"]')?.getAttribute('href');
-      if (!href) continue;
-      const name = decodeURIComponent(href.split('?')[0].split('/').pop() || '');
-      if (!name) continue;
-      const cells = Array.from(tr.querySelectorAll('td'));
-      docs.push({
-        name,
-        jenis: (cells[2]?.textContent || '').trim(),
-        ket: (cells[3]?.textContent || '').trim(),
-        tgl: (cells[4]?.textContent || '').trim(),
-        url: href.startsWith('http') ? href : `${window.location.origin}${href}`,
-      });
-    }
-  } catch {
-    return;
-  }
-  if (docs.length === 0) return;
-
-  // Section halaman dimuat AJAX dan bisa datang belakangan (lab, radiologi, SEP)
-  // → baca DOM beberapa kali; gabungan hasilnya hanya bisa menambah "tampil".
-  const names = docs.map((d) => d.name);
-  let visibleText = getRenderedPageText();
-  let hidden = findHiddenDocuments(names, visibleText);
-  for (let attempt = 0; attempt < 3 && hidden.length > 0; attempt++) {
-    await sleep(700);
-    visibleText += `\n${getRenderedPageText()}`;
-    hidden = findHiddenDocuments(names, visibleText);
-  }
-  if (hidden.length === 0) return;
-  const hiddenSet = new Set(hidden);
-  const missing = docs.filter((d) => hiddenSet.has(d.name));
-
-  const box = document.createElement('div');
-  box.id = SID;
-  box.style.cssText =
-    'margin:10px 0;border:1px solid #f59e0b;background:#fffbeb;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;';
-
-  const title = document.createElement('div');
-  title.style.cssText = 'font-weight:700;display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
-  const label = document.createElement('span');
-  label.textContent = `⚠ ${missing.length} berkas kunjungan ini ada di daftar dokumen tapi tidak tampil di halaman ini`;
-  title.appendChild(label);
-
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.textContent = 'Lihat';
-  toggle.style.cssText =
-    'margin-left:auto;padding:3px 10px;font-size:11px;font-weight:600;border:1px solid #f59e0b;background:#fff;color:#92400e;border-radius:6px;cursor:pointer;';
-  title.appendChild(toggle);
-
-  const close = document.createElement('button');
-  close.type = 'button';
-  close.textContent = 'Tutup';
-  close.style.cssText = toggle.style.cssText;
-  close.addEventListener('click', () => box.remove());
-  title.appendChild(close);
-  box.appendChild(title);
-
-  const hint = document.createElement('div');
-  hint.style.cssText = 'margin-top:4px;font-size:11px;color:#a16207;';
-  hint.textContent =
-    'Berkas sudah ter-upload tapi tidak dirender di section mana pun (server hanya menampilkan 1 file terbaru per slot) — jangan upload ulang.';
-  box.appendChild(hint);
-
-  const list = document.createElement('div');
-  list.style.cssText = 'display:none;margin-top:8px;flex-direction:column;gap:6px;';
-  for (const d of missing) {
-    const row = document.createElement('div');
-    row.style.cssText =
-      'border:1px solid #fde68a;border-radius:6px;padding:6px 8px;background:#fff;display:flex;flex-direction:column;gap:2px;';
-    const a = document.createElement('a');
-    a.href = d.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = d.name;
-    a.style.cssText =
-      'font-weight:600;font-size:12px;color:#1d4ed8;text-decoration:none;word-break:break-all;';
-    row.appendChild(a);
-    const meta = document.createElement('div');
-    meta.style.cssText = 'font-size:11px;color:#4b5563;';
-    meta.textContent = `${d.jenis || '-'} | ${d.ket || '-'} | ${d.tgl || '-'}`;
-    row.appendChild(meta);
-    list.appendChild(row);
-  }
-  box.appendChild(list);
-
-  toggle.addEventListener('click', () => {
-    const open = list.style.display === 'flex';
-    list.style.display = open ? 'none' : 'flex';
-    toggle.textContent = open ? 'Lihat' : 'Sembunyikan';
-  });
-
-  const anchor = document.getElementById('file-upload') || document.body;
-  if (anchor.parentNode) anchor.parentNode.insertBefore(box, anchor.nextSibling);
-  else document.body.appendChild(box);
-}
-
 function initBatchUploadUrlFeature(): void {
   if (
     !g.currentConfig?.features?.batchUpload?.enabled ||
@@ -2092,7 +1963,6 @@ function initBatchUploadUrlFeature(): void {
   if (!hasIdVisitParam()) return;
 
   injectBatchUploadCSS();
-  void injectMissingDocumentAlert();
 
   // Report page context on load
   chrome.runtime
