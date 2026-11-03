@@ -1,0 +1,134 @@
+"use strict";
+(() => {
+  // src/core.ts
+  var ROLES = {
+    CASEMIX: "casemix",
+    KASIR: "kasir",
+    DOKTER: "dokter",
+    APOTEK: "apotek",
+    ADMIN: "admin",
+    LABOR: "labor",
+    PENDAFTARAN: "pendaftaran"
+  };
+  var currentConfig = null;
+  var isExtensionEnabled = true;
+  function log(...args) {
+    console.log("[MORBIS Ext]", ...args);
+  }
+  async function loadConfig() {
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
+      if (resp?.config) {
+        currentConfig = resp.config;
+        isExtensionEnabled = currentConfig.extensionEnabled;
+        log("Config loaded (migrated), role:", currentConfig.currentRole);
+        return currentConfig;
+      }
+    } catch {
+    }
+    try {
+      const result = await chrome.storage.sync.get("extensionConfig");
+      currentConfig = result.extensionConfig ?? null;
+      if (!currentConfig) {
+        currentConfig = { extensionEnabled: true, currentRole: "admin", features: {} };
+      }
+      isExtensionEnabled = currentConfig.extensionEnabled;
+      log("Config loaded, role:", currentConfig.currentRole);
+      return currentConfig;
+    } catch (error) {
+      console.error("[MORBIS Ext] Error loading config:", error);
+      currentConfig = { extensionEnabled: true, currentRole: "admin", features: {} };
+      isExtensionEnabled = true;
+      return currentConfig;
+    }
+  }
+  async function loadCustomUrls() {
+    try {
+      const result = await chrome.storage.sync.get("extensionCustomUrls");
+      const saved = result.extensionCustomUrls;
+      const defaults = [
+        { id: "default-1", url: "http://192.168.8.4", enabled: true, isDefault: true },
+        { id: "default-2", url: "http://103.147.236.140", enabled: true, isDefault: true }
+      ];
+      if (!saved) return defaults;
+      const merged = structuredClone(defaults);
+      saved.forEach(function(u) {
+        if (!u.isDefault) merged.push(u);
+      });
+      merged.forEach(function(u) {
+        const m = saved.find(function(s) {
+          return s.id === u.id;
+        });
+        if (m && u.isDefault) u.enabled = m.enabled;
+      });
+      return merged;
+    } catch (error) {
+      console.error("[MORBIS Ext] Error loading URLs:", error);
+      return [];
+    }
+  }
+  async function saveCustomUrls(_urls) {
+    log("Custom URLs saved via background");
+  }
+  async function saveConfig(config) {
+    currentConfig = config;
+    log("Config saved via background");
+  }
+  function getCurrentRole() {
+    return currentConfig?.currentRole ?? "admin";
+  }
+  async function setCurrentRole(role) {
+    if (!currentConfig) await loadConfig();
+    try {
+      await chrome.runtime.sendMessage({ type: "SET_ROLE", role });
+    } catch {
+      if (currentConfig) {
+        await chrome.storage.sync.set({ extensionConfig: { ...currentConfig, currentRole: role } });
+      }
+    }
+    if (currentConfig) {
+      currentConfig.currentRole = role;
+    }
+    log("Role changed to:", role);
+    return role;
+  }
+  function isFeatureAllowed(featureKey, role) {
+    if (!role) role = getCurrentRole();
+    if (role === "admin") return true;
+    return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
+  }
+  var ExtensionCore = {
+    ROLES,
+    getCurrentRole,
+    setCurrentRole,
+    isFeatureAllowed,
+    getConfig: () => currentConfig
+  };
+  chrome.runtime.onMessage.addListener(function(message) {
+    if (message.type === "CONFIG_CHANGED") {
+      log("Config changed by background, reloading...");
+      window.location.reload();
+    }
+  });
+  var _window = window;
+  _window.ExtensionCore = ExtensionCore;
+  if (typeof _window.featureModules === "undefined") {
+    _window.featureModules = {};
+  }
+  Object.defineProperty(_window, "currentConfig", {
+    get: () => currentConfig,
+    configurable: true,
+    enumerable: true
+  });
+  Object.defineProperty(_window, "isExtensionEnabled", {
+    get: () => isExtensionEnabled,
+    configurable: true,
+    enumerable: true
+  });
+  _window.loadConfig = loadConfig;
+  _window.loadCustomUrls = loadCustomUrls;
+  _window.saveConfig = saveConfig;
+  _window.saveCustomUrls = saveCustomUrls;
+  _window.log = log;
+  _window.ROLES = ROLES;
+})();
