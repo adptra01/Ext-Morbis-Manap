@@ -318,5 +318,12 @@ function renderToolbar(): void {
   if (shortcutOk) initBpjsRevisionHistory(bar);
 }
 
-if (document.readyState === 'complete') setTimeout(renderToolbar, 500);
-else window.addEventListener('load', () => setTimeout(renderToolbar, 500));
+function scheduleToolbar(): void {
+  const fire = () => setTimeout(renderToolbar, 500);
+  if (document.readyState === 'complete') fire();
+  else window.addEventListener('load', fire);
+  // Partial halaman detail dimuat lewat AJAX (kadang setelah 'load') —
+  // coba lagi sekali sebentar, renderToolbar idempotent.
+  setTimeout(renderToolbar, 3000);
+}
+scheduleToolbar();
