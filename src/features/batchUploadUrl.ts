@@ -1070,27 +1070,43 @@ async function getDocRowsSnapshot(
 }
 
 /**
- * Cek apakah nama file kita muncul di halaman yang sedang dibuka (mis. preview
- * `div-file-upload` di halaman klaim). Dokumen M-KLAIM bisa tampil di sini walau
- * tidak terdaftar di halaman dokumen-pasien.
+ * Teks halaman yang BENAR-BENAR dirender ke pengguna.
+ *
+ * Setiap section (file upload, SEP, hasil lab, radiologi, …) memuat partial
+ * sendiri dan menulis nama berkasnya inline (`var url = '/assets/dokumen-pasien/…'`),
+ * jadi DOM halaman + resource yang sudah dimuat adalah bukti paling jujur —
+ * jauh lebih lengkap daripada membaca satu partial saja.
+ */
+function getRenderedPageText(): string {
+  const loaded = performance
+    .getEntriesByType('resource')
+    .map((entry) => entry.name)
+    .filter((name) => name.includes('/assets/dokumen-pasien/'));
+  return `${document.documentElement.outerHTML}\n${loaded.join('\n')}`;
+}
+
+/**
+ * Cek apakah nama file kita muncul di halaman yang sedang dibuka (section mana
+ * pun: file upload, SEP, hasil lab, …). Dokumen M-KLAIM bisa tampil di salah
+ * satunya walau tidak terdaftar di halaman dokumen-pasien.
  */
 async function isDocumentVisibleOnCurrentPage(fileName: string): Promise<boolean | null> {
   // Hanya relevan di halaman modul klaim (tempat fitur ini dipakai).
   if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
   const idVisit = new URLSearchParams(window.location.search).get('id_visit');
   if (!idVisit) return null;
+  // DOM bisa belum memuat dokumen yang baru di-upload → cek partial slot upload
+  // yang selalu fresh. Section lain sudah tercermin di DOM.
   try {
-    // Nama file dimuat lewat AJAX ke partial div-file-upload, bukan di
-    // HTML mentah halaman detail — baca partial-nya supaya bukti nyata.
     const response = await fetch(
       `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
       { credentials: 'same-origin', cache: 'no-store', signal: _getBatchAbortSignal() },
     );
-    if (!response.ok) return null;
-    return isSavedByResponseBody(await response.text(), fileName);
+    if (response.ok && isSavedByResponseBody(await response.text(), fileName)) return true;
   } catch {
-    return null;
+    // Partial tidak terbaca — DOM tetap dipakai sebagai bukti.
   }
+  return isSavedByResponseBody(getRenderedPageText(), fileName) ? true : null;
 }
 
 interface UploadVerificationOutcome {
@@ -1943,11 +1959,15 @@ function injectBatchUploadCSS(): void {
  * Beri tahu bila ada berkas kunjungan ini yang SUDAH ter-upload tapi TIDAK
  * dirender di halaman klaim.
  *
- * Server hanya merender satu file terbaru per slot (`div-file-upload`), jadi
- * dokumen `Lain-lain` (mis. nama mengandung `lab`) atau file yang tertimpa di
- * slot yang sama hilang dari tampilan walau tetap ada di daftar dokumen pasien.
- * Banner ini mencegah pengguna meng-upload ulang berkas yang sebenarnya sudah
- * masuk. Tidak merender apa pun bila semua dokumen tampil.
+ * Server hanya merender satu file terbaru per slot (file upload, SEP, hasil lab,
+ * radiologi, …), jadi dokumen `Lain-lain` (mis. nama mengandung `lab`) atau file
+ * yang tertimpa di slot yang sama bisa tidak terlihat walau tetap ada di daftar
+ * dokumen pasien. Banner ini mencegah pengguna meng-upload ulang berkas yang
+ * sebenarnya sudah masuk — dan sebaliknya harus tahu kalau berkasnya memang
+ * tampil di section lain (mis. Hasil Lab), bukan cuma di slot file upload.
+ *
+ * Bukti "tampil" = DOM terender + resource yang sudah dimuat (semua section),
+ * bukan satu partial saja. Tidak merender apa pun bila semua dokumen tampil.
  */
 async function injectMissingDocumentAlert(): Promise<void> {
   const SID = 'ext-missing-doc-alert';
@@ -1956,20 +1976,12 @@ async function injectMissingDocumentAlert(): Promise<void> {
   if (!idVisit) return;
 
   const docs: { name: string; jenis: string; ket: string; tgl: string; url: string }[] = [];
-  let visibleText;
   try {
-    const [listResp, partialResp] = await Promise.all([
-      fetch(
-        `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`,
-        { credentials: 'same-origin', cache: 'no-store' },
-      ),
-      fetch(
-        `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
-        { credentials: 'same-origin', cache: 'no-store' },
-      ),
-    ]);
-    if (!listResp.ok || !partialResp.ok) return;
-    visibleText = await partialResp.text();
+    const listResp = await fetch(
+      `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`,
+      { credentials: 'same-origin', cache: 'no-store' },
+    );
+    if (!listResp.ok) return;
     const doc = new DOMParser().parseFromString(await listResp.text(), 'text/html');
     const table = findDocumentTable(doc);
     if (!table) return;
@@ -1990,11 +2002,18 @@ async function injectMissingDocumentAlert(): Promise<void> {
   } catch {
     return;
   }
+  if (docs.length === 0) return;
 
-  const hidden = findHiddenDocuments(
-    docs.map((d) => d.name),
-    visibleText,
-  );
+  // Section halaman dimuat AJAX dan bisa datang belakangan (lab, radiologi, SEP)
+  // → baca DOM beberapa kali; gabungan hasilnya hanya bisa menambah "tampil".
+  const names = docs.map((d) => d.name);
+  let visibleText = getRenderedPageText();
+  let hidden = findHiddenDocuments(names, visibleText);
+  for (let attempt = 0; attempt < 3 && hidden.length > 0; attempt++) {
+    await sleep(700);
+    visibleText += `\n${getRenderedPageText()}`;
+    hidden = findHiddenDocuments(names, visibleText);
+  }
   if (hidden.length === 0) return;
   const hiddenSet = new Set(hidden);
   const missing = docs.filter((d) => hiddenSet.has(d.name));
@@ -2007,7 +2026,7 @@ async function injectMissingDocumentAlert(): Promise<void> {
   const title = document.createElement('div');
   title.style.cssText = 'font-weight:700;display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
   const label = document.createElement('span');
-  label.textContent = `⚠ ${missing.length} berkas kunjungan ini tidak tampil di daftar dokumen`;
+  label.textContent = `⚠ ${missing.length} berkas kunjungan ini ada di daftar dokumen tapi tidak tampil di halaman ini`;
   title.appendChild(label);
 
   const toggle = document.createElement('button');
@@ -2028,7 +2047,7 @@ async function injectMissingDocumentAlert(): Promise<void> {
   const hint = document.createElement('div');
   hint.style.cssText = 'margin-top:4px;font-size:11px;color:#a16207;';
   hint.textContent =
-    'Berkas sudah ter-upload tapi disembunyikan server (hanya 1 file terbaru per slot) — jangan upload ulang.';
+    'Berkas sudah ter-upload tapi tidak dirender di section mana pun (server hanya menampilkan 1 file terbaru per slot) — jangan upload ulang.';
   box.appendChild(hint);
 
   const list = document.createElement('div');

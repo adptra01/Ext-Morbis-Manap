@@ -16,7 +16,12 @@
 
 ### 🐛 fix
 
+- **batchUpload** — reset signal abort tiap aksi + banner berkas tak tampil (`a84d33b`)
 - hindari substring 'lab' di nama upload + daftar lengkap dokumen di halaman detail (`7db3db9`)
+
+### 🧹 chore
+
+- **dist** — sync versi 1.5.176 (`af80780`)
 
 ## 2026-10-30
 
@@ -1920,4 +1925,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: bb9eddbd1adf4b56290a69063b61250f74e0057e -->
+<!-- changelog-upto: af807800feea21e456569ac68e14a79519917b4e -->
