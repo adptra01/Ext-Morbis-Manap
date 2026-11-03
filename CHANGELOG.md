@@ -11,7 +11,12 @@
 
 ### ✨ feat
 
+- **batchUpload** — hapus tombol Analisis File — auto-deteksi langsung saat pilih/drop file (`d4900a0`)
 - **batchUpload** — ganti Mode Manual (Paste URL) dengan dropzone upload file (`9092c57`)
+
+### 🧹 chore
+
+- **dist** — sync (`bc57291`)
 
 ## 2026-11-03
 
@@ -1942,4 +1947,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9092c579b687262b99db350e94830a309d273fa6 -->
+<!-- changelog-upto: d4900a0e00a942d66fd28b65004df462ed58ced9 -->
