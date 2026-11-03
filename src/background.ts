@@ -350,6 +350,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Format ulang halaman cetak resep asli rawat inap - header 3 kolom, metadata pasien+dokter, daftar obat rapi, checklist telaah, adaptive density',
     },
+    hideTelaahDepoRanap: {
+      enabled: true,
+      allowedRoles: ['admin', 'apotek'],
+      name: 'Sembunyikan Telaah Resep (Depo Ranap)',
+      description:
+        'Sembunyikan section checklist telaah resep di halaman detail untuk unit DEPO RANAP',
+    },
   },
 };
 

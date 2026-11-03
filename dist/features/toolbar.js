@@ -1406,4 +1406,3 @@ var __morbis_feature = (() => {
   if (document.readyState === "complete") setTimeout(renderToolbar, 500);
   else window.addEventListener("load", () => setTimeout(renderToolbar, 500));
 })();
-//# sourceMappingURL=toolbar.js.map

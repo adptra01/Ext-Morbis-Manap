@@ -82,6 +82,7 @@ async function compileFeatureFiles() {
     'telaahResepPrint.ts',
     'paLabPrint.ts',
     'resepAsliPrint.ts',
+    'hideTelaahDepoRanap.ts',
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',

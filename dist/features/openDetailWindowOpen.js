@@ -57,4 +57,3 @@ var __morbis_feature = (() => {
     };
   });
 })();
-//# sourceMappingURL=openDetailWindowOpen.js.map

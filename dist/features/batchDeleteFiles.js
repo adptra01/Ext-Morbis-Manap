@@ -967,4 +967,3 @@ Tindakan ini tidak bisa di-undo.`,
     };
   }
 })();
-//# sourceMappingURL=batchDeleteFiles.js.map

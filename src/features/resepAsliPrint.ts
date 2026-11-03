@@ -1,4 +1,5 @@
 import { whenFeatureEnabled } from './shared/featureGate.js';
+import { isResepAsliAllowed } from './shared/unitGate.js';
 whenFeatureEnabled('resepAsli', function () {
   'use strict';
 
@@ -12,6 +13,8 @@ whenFeatureEnabled('resepAsli', function () {
 
     const root = document.querySelector('.halaman');
     if (!root || root.getAttribute(PAGE_GUARD)) return;
+    // Gate: hanya jalan untuk DEPO RANAP atau pasien rawat inap/IGD.
+    if (!isResepAsliAllowed(document)) return;
     const page: Element = root;
     page.setAttribute(PAGE_GUARD, '1');
 
@@ -43,6 +46,10 @@ whenFeatureEnabled('resepAsli', function () {
       });
     });
     const getMeta = (label: string): string => metaMap.get(label) ?? '';
+
+    // Tabel admin (Hitung/Timbang/Kemas/Paraf) — sama seperti telaah.
+    const medsTables = Array.from(page.querySelectorAll('table.resep-item'));
+    const adminTable = medsTables[1];
 
     // --- params ---
     const params = new URLSearchParams(window.location.search);
@@ -468,6 +475,37 @@ whenFeatureEnabled('resepAsli', function () {
         .join('') +
       '</tbody></table>';
 
+    // Tabel admin (Hitung/Timbang/Kemas/Paraf). Baris header sumber memuat sel
+    // kosong → filter, lalu tambah kolom "Paraf" sesuai template.
+    const adminHeads: string[] = adminTable
+      ? Array.from(adminTable.querySelectorAll('tr:first-child td'))
+          .map((td) => txt(td))
+          .filter(Boolean)
+      : ['Hitung', 'Timbang', 'Kemas'];
+    if (!adminHeads.some((h) => /paraf/i.test(h))) adminHeads.push('Paraf');
+    const adminCols = adminHeads.length;
+
+    const adminHtml =
+      '<table class="t-admin">' +
+      '<thead><tr>' +
+      adminHeads.map((h) => '<th class="c">' + esc(h) + '</th>').join('') +
+      '</tr></thead><tbody><tr>' +
+      Array.from({ length: adminCols })
+        .map(() => '<td class="blk"></td>')
+        .join('') +
+      '</tr></tbody></table>';
+
+    // Grid lampiran 3 kolom: Srt. Rujuk Balik | Surat Iter | Hasil Lab.
+    const lampiranHtml =
+      '<table class="t-admin t-lampiran">' +
+      '<thead><tr>' +
+      '<th class="c third">Srt. Rujuk Balik</th>' +
+      '<th class="c third">Surat Iter</th>' +
+      '<th class="c third">Hasil Lab</th>' +
+      '</tr></thead><tbody>' +
+      '<tr><td class="blk"></td><td class="blk"></td><td class="blk"></td></tr>' +
+      '</tbody></table>';
+
     const bawahHtml =
       '<table class="t-check">' +
       '<thead>' +
@@ -512,6 +550,8 @@ whenFeatureEnabled('resepAsli', function () {
             .join('<br/>') +
           '</div></div>'
         : '') +
+      adminHtml +
+      lampiranHtml +
       '</section>' +
       '<section class="t-right">' +
       doctorMetaHtml +

@@ -208,4 +208,3 @@ var __morbis_feature = (() => {
     console.warn("[Scroll Buttons] featureModules not defined, module registration skipped");
   }
 })();
-//# sourceMappingURL=scrollButtons.js.map

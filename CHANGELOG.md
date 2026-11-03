@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-11-03
+
+### 🐛 fix
+
+- hindari substring 'lab' di nama upload + daftar lengkap dokumen di halaman detail (`7db3db9`)
+
 ## 2026-10-30
 
 ### ✨ feat
@@ -1909,4 +1915,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ff6417fc6f64b9b156e4aa32e69dccb06cb6c287 -->
+<!-- changelog-upto: 0d0e65d7f70cbabd4f68883a5bdb17f1ba23d336 -->

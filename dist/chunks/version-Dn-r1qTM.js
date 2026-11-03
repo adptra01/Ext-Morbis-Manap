@@ -1,11 +1,11 @@
-//#region \0rolldown/runtime.js
+// \0rolldown/runtime.js
 var __create = Object.create;
 var __defProp$22 = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod, mod.exports), cb = null), mod.exports);
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
 		key = keys[i];
@@ -20,8 +20,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	value: mod,
 	enumerable: true
 }) : target, mod));
-//#endregion
-//#region node_modules/scheduler/cjs/scheduler.production.js
+// node_modules/scheduler/cjs/scheduler.production.js
 /**
 * @license React
 * scheduler.production.js
@@ -275,13 +274,11 @@ var require_scheduler_production = /* @__PURE__ */ __commonJSMin(((exports) => {
 		};
 	};
 }));
-//#endregion
-//#region node_modules/scheduler/index.js
+// node_modules/scheduler/index.js
 var require_scheduler = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_scheduler_production();
 }));
-//#endregion
-//#region node_modules/react/cjs/react.production.js
+// node_modules/react/cjs/react.production.js
 /**
 * @license React
 * react.production.js
@@ -667,13 +664,11 @@ var require_react_production = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 	exports.version = "19.3.1";
 }));
-//#endregion
-//#region node_modules/react/index.js
+// node_modules/react/index.js
 var require_react = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_production();
 }));
-//#endregion
-//#region node_modules/react-dom/cjs/react-dom.production.js
+// node_modules/react-dom/cjs/react-dom.production.js
 /**
 * @license React
 * react-dom.production.js
@@ -825,8 +820,7 @@ var require_react_dom_production = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 	exports.version = "19.3.1";
 }));
-//#endregion
-//#region node_modules/react-dom/index.js
+// node_modules/react-dom/index.js
 var require_react_dom = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function checkDCE() {
 		if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === "undefined" || typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE !== "function") return;
@@ -839,8 +833,7 @@ var require_react_dom = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	checkDCE();
 	module.exports = require_react_dom_production();
 }));
-//#endregion
-//#region node_modules/react-dom/cjs/react-dom-client.production.js
+// node_modules/react-dom/cjs/react-dom-client.production.js
 /**
 * @license React
 * react-dom-client.production.js
@@ -11414,8 +11407,7 @@ var require_react_dom_client_production = /* @__PURE__ */ __commonJSMin(((export
 		return new ReactDOMRoot(options);
 	};
 }));
-//#endregion
-//#region node_modules/react-dom/client.js
+// node_modules/react-dom/client.js
 var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function checkDCE() {
 		if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === "undefined" || typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE !== "function") return;
@@ -11428,8 +11420,7 @@ var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	checkDCE();
 	module.exports = require_react_dom_client_production();
 }));
-//#endregion
-//#region src/shared/messaging.ts
+// src/shared/messaging.ts
 var MessageTypes = {
 	GET_ALL: "GET_ALL",
 	GET_CONFIG: "GET_CONFIG",
@@ -11462,8 +11453,7 @@ function sendMessage(message) {
 		});
 	});
 }
-//#endregion
-//#region node_modules/react/cjs/react-jsx-runtime.production.js
+// node_modules/react/cjs/react-jsx-runtime.production.js
 /**
 * @license React
 * react-jsx-runtime.production.js
@@ -11497,13 +11487,11 @@ var require_react_jsx_runtime_production = /* @__PURE__ */ __commonJSMin(((expor
 	exports.jsx = jsxProd;
 	exports.jsxs = jsxProd;
 }));
-//#endregion
-//#region node_modules/react/jsx-runtime.js
+// node_modules/react/jsx-runtime.js
 var require_jsx_runtime = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_jsx_runtime_production();
 }));
-//#endregion
-//#region src/ui/components/ErrorBoundary.tsx
+// src/ui/components/ErrorBoundary.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();
 var ErrorBoundary = class extends import_react.Component {
@@ -11538,8 +11526,7 @@ var ErrorBoundary = class extends import_react.Component {
 		return this.props.children;
 	}
 };
-//#endregion
-//#region node_modules/@radix-ui/primitive/dist/index.mjs
+// node_modules/@radix-ui/primitive/dist/index.mjs
 var __defProp$21 = Object.defineProperty;
 var __name$21 = (target, value) => __defProp$21(target, "name", {
 	value,
@@ -11581,8 +11568,7 @@ function isFrame(element) {
 	return element.tagName === "IFRAME";
 }
 __name$21(isFrame, "isFrame");
-//#endregion
-//#region node_modules/@radix-ui/react-compose-refs/dist/index.mjs
+// node_modules/@radix-ui/react-compose-refs/dist/index.mjs
 var __defProp$20 = Object.defineProperty;
 var __name$20 = (target, value) => __defProp$20(target, "name", {
 	value,
@@ -11615,8 +11601,7 @@ function useComposedRefs(...refs) {
 	return import_react.useCallback(composeRefs(...refs), refs);
 }
 __name$20(useComposedRefs, "useComposedRefs");
-//#endregion
-//#region node_modules/@radix-ui/react-context/dist/index.mjs
+// node_modules/@radix-ui/react-context/dist/index.mjs
 var __defProp$19 = Object.defineProperty;
 var __name$19 = (target, value) => __defProp$19(target, "name", {
 	value,
@@ -11717,11 +11702,9 @@ function composeContextScopes(...scopes) {
 	return createScope;
 }
 __name$19(composeContextScopes, "composeContextScopes");
-//#endregion
-//#region node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
+// node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
 var useLayoutEffect2 = globalThis?.document ? import_react.useLayoutEffect : () => {};
-//#endregion
-//#region node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
+// node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
 var __defProp$18 = Object.defineProperty;
 var __name$18 = (target, value) => __defProp$18(target, "name", {
 	value,
@@ -11743,8 +11726,7 @@ function useEffectEvent(callback) {
 	return import_react.useMemo(() => ((...args) => ref.current?.(...args)), []);
 }
 __name$18(useEffectEvent, "useEffectEvent");
-//#endregion
-//#region node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
+// node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
 var __defProp$17 = Object.defineProperty;
 var __name$17 = (target, value) => __defProp$17(target, "name", {
 	value,
@@ -11845,8 +11827,7 @@ function useControllableStateReducer(reducer, userArgs, initialArg, init) {
 	return [state, dispatch];
 }
 __name$17(useControllableStateReducer, "useControllableStateReducer");
-//#endregion
-//#region node_modules/@radix-ui/react-use-size/dist/index.mjs
+// node_modules/@radix-ui/react-use-size/dist/index.mjs
 var __defProp$16 = Object.defineProperty;
 var __name$16 = (target, value) => __defProp$16(target, "name", {
 	value,
@@ -11887,8 +11868,7 @@ function useSize(element) {
 	return size;
 }
 __name$16(useSize, "useSize");
-//#endregion
-//#region node_modules/@radix-ui/react-slot/dist/index.mjs
+// node_modules/@radix-ui/react-slot/dist/index.mjs
 var import_react_dom = /* @__PURE__ */ __toESM(require_react_dom(), 1);
 var __defProp$15 = Object.defineProperty;
 var __name$15 = (target, value) => __defProp$15(target, "name", {
@@ -12000,8 +11980,7 @@ var createSlottableError = /* @__PURE__ */ __name$15((ownerName) => {
 	return `${ownerName} failed to slot onto its \`Slottable\`. Expected \`Slottable\` to receive a single React element child.`;
 }, "createSlottableError");
 var use = import_react[" use ".trim().toString()];
-//#endregion
-//#region node_modules/@radix-ui/react-primitive/dist/index.mjs
+// node_modules/@radix-ui/react-primitive/dist/index.mjs
 var __defProp$14 = Object.defineProperty;
 var __name$14 = (target, value) => __defProp$14(target, "name", {
 	value,
@@ -12046,8 +12025,7 @@ function dispatchDiscreteCustomEvent(target, event) {
 	if (target) import_react_dom.flushSync(() => target.dispatchEvent(event));
 }
 __name$14(dispatchDiscreteCustomEvent, "dispatchDiscreteCustomEvent");
-//#endregion
-//#region node_modules/@radix-ui/react-switch/dist/index.mjs
+// node_modules/@radix-ui/react-switch/dist/index.mjs
 var __defProp$13 = Object.defineProperty;
 var __name$13 = (target, value) => __defProp$13(target, "name", {
 	value,
@@ -12227,8 +12205,7 @@ function getState(checked) {
 	return checked ? "checked" : "unchecked";
 }
 __name$13(getState, "getState");
-//#endregion
-//#region node_modules/clsx/dist/clsx.mjs
+// node_modules/clsx/dist/clsx.mjs
 function r(e) {
 	var t, f, n = "";
 	if ("string" == typeof e || "number" == typeof e) n += e;
@@ -12242,8 +12219,7 @@ function clsx() {
 	for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
 	return n;
 }
-//#endregion
-//#region node_modules/tailwind-merge/dist/bundle-mjs.mjs
+// node_modules/tailwind-merge/dist/bundle-mjs.mjs
 /**
 * Concatenates two arrays faster than the array spread operator.
 */
@@ -15701,13 +15677,11 @@ var getDefaultConfig = () => {
 	};
 };
 var twMerge = /*#__PURE__*/ createTailwindMerge(getDefaultConfig);
-//#endregion
-//#region src/ui/lib/utils.ts
+// src/ui/lib/utils.ts
 function cn(...inputs) {
 	return twMerge(clsx(inputs));
 }
-//#endregion
-//#region src/ui/components/switch.tsx
+// src/ui/components/switch.tsx
 var Switch = (0, import_react.forwardRef)(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch$1, {
 	className: cn("peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent", "transition-colors duration-200 ease-in-out", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1", "disabled:cursor-not-allowed disabled:opacity-50", "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input", className),
 	...props,
@@ -15715,8 +15689,7 @@ var Switch = (0, import_react.forwardRef)(({ className, ...props }, ref) => /* @
 	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchThumb, { className: cn("pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0", "transition-transform duration-200 ease-in-out", "data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0") })
 }));
 Switch.displayName = Switch$1.displayName;
-//#endregion
-//#region node_modules/@radix-ui/number/dist/index.mjs
+// node_modules/@radix-ui/number/dist/index.mjs
 var __defProp$12 = Object.defineProperty;
 var __name$12 = (target, value) => __defProp$12(target, "name", {
 	value,
@@ -15726,8 +15699,7 @@ function clamp$1(value, [min, max]) {
 	return Math.min(max, Math.max(min, value));
 }
 __name$12(clamp$1, "clamp");
-//#endregion
-//#region node_modules/@radix-ui/react-collection/dist/index.mjs
+// node_modules/@radix-ui/react-collection/dist/index.mjs
 var __defProp$11 = Object.defineProperty;
 var __name$11 = (target, value) => __defProp$11(target, "name", {
 	value,
@@ -16255,8 +16227,7 @@ function getChildListObserver(callback) {
 	});
 }
 __name$11(getChildListObserver, "getChildListObserver");
-//#endregion
-//#region node_modules/@radix-ui/react-direction/dist/index.mjs
+// node_modules/@radix-ui/react-direction/dist/index.mjs
 var __defProp$10 = Object.defineProperty;
 var __name$10 = (target, value) => __defProp$10(target, "name", {
 	value,
@@ -16268,8 +16239,7 @@ function useDirection(localDir) {
 	return localDir || globalDir || "ltr";
 }
 __name$10(useDirection, "useDirection");
-//#endregion
-//#region node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
+// node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
 var __defProp$9 = Object.defineProperty;
 var __name$9 = (target, value) => __defProp$9(target, "name", {
 	value,
@@ -16283,8 +16253,7 @@ function useCallbackRef$1(callback) {
 	return import_react.useMemo(() => ((...args) => callbackRef.current?.(...args)), []);
 }
 __name$9(useCallbackRef$1, "useCallbackRef");
-//#endregion
-//#region node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+// node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
 var __defProp$8 = Object.defineProperty;
 var __name$8 = (target, value) => __defProp$8(target, "name", {
 	value,
@@ -16547,8 +16516,7 @@ function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
 	else target.dispatchEvent(event);
 }
 __name$8(handleAndDispatchCustomEvent, "handleAndDispatchCustomEvent");
-//#endregion
-//#region node_modules/@radix-ui/react-focus-guards/dist/index.mjs
+// node_modules/@radix-ui/react-focus-guards/dist/index.mjs
 var __defProp$7 = Object.defineProperty;
 var __name$7 = (target, value) => __defProp$7(target, "name", {
 	value,
@@ -16593,8 +16561,7 @@ function createFocusGuard() {
 	return element;
 }
 __name$7(createFocusGuard, "createFocusGuard");
-//#endregion
-//#region node_modules/@radix-ui/react-focus-scope/dist/index.mjs
+// node_modules/@radix-ui/react-focus-scope/dist/index.mjs
 var __defProp$6 = Object.defineProperty;
 var __name$6 = (target, value) => __defProp$6(target, "name", {
 	value,
@@ -16799,8 +16766,7 @@ function removeLinks(items) {
 	return items.filter((item) => item.tagName !== "A");
 }
 __name$6(removeLinks, "removeLinks");
-//#endregion
-//#region node_modules/@radix-ui/react-id/dist/index.mjs
+// node_modules/@radix-ui/react-id/dist/index.mjs
 var __defProp$5 = Object.defineProperty;
 var __name$5 = (target, value) => __defProp$5(target, "name", {
 	value,
@@ -16816,8 +16782,7 @@ function useId(deterministicId) {
 	return deterministicId || (id ? `radix-${id}` : "");
 }
 __name$5(useId, "useId");
-//#endregion
-//#region node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
+// node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
 /**
 * Custom positioning reference element.
 * @see https://floating-ui.com/docs/virtual-elements
@@ -16945,8 +16910,7 @@ function rectToClientRect(rect) {
 		y
 	};
 }
-//#endregion
-//#region node_modules/@floating-ui/core/dist/floating-ui.core.mjs
+// node_modules/@floating-ui/core/dist/floating-ui.core.mjs
 function computeCoordsFromPlacement(_ref, placement, rtl) {
 	let { reference, floating } = _ref;
 	const sideAxis = getSideAxis(placement);
@@ -17162,7 +17126,7 @@ var arrow$3 = (options) => ({
 * clipping boundary. Alternative to `autoPlacement`.
 * @see https://floating-ui.com/docs/flip
 */
-var flip$2 = function(options) {
+var flip$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "flip",
@@ -17243,7 +17207,7 @@ function isAnySideFullyClipped(overflow) {
 * when it is not in the same clipping context as the reference element.
 * @see https://floating-ui.com/docs/hide
 */
-var hide$2 = function(options) {
+var hide$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "hide",
@@ -17312,7 +17276,7 @@ async function convertValueToCoords(state, options) {
 * object may be passed.
 * @see https://floating-ui.com/docs/offset
 */
-var offset$2 = function(options) {
+var offset$1 = function(options) {
 	if (options === void 0) options = 0;
 	return {
 		name: "offset",
@@ -17338,7 +17302,7 @@ var offset$2 = function(options) {
 * keep it in view when it will overflow the clipping boundary.
 * @see https://floating-ui.com/docs/shift
 */
-var shift$2 = function(options) {
+var shift$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "shift",
@@ -17386,7 +17350,7 @@ var shift$2 = function(options) {
 /**
 * Built-in `limiter` that will stop `shift()` at a certain point.
 */
-var limitShift$2 = function(options) {
+var limitShift$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		options,
@@ -17439,7 +17403,7 @@ var limitShift$2 = function(options) {
 * width of the reference element.
 * @see https://floating-ui.com/docs/size
 */
-var size$2 = function(options) {
+var size$1 = function(options) {
 	if (options === void 0) options = {};
 	return {
 		name: "size",
@@ -17486,8 +17450,7 @@ var size$2 = function(options) {
 		}
 	};
 };
-//#endregion
-//#region node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
+// node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
 function hasWindow() {
 	return typeof window !== "undefined";
 }
@@ -17599,8 +17562,7 @@ function getOverflowAncestors(node, list, traverseIframes) {
 function getFrameElement(win) {
 	return win.parent && Object.getPrototypeOf(win.parent) ? win.frameElement : null;
 }
-//#endregion
-//#region node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
+// node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getCssDimensions(element) {
 	const css = getComputedStyle$1(element);
 	let width = parseFloat(css.width) || 0;
@@ -18079,33 +18041,33 @@ function autoUpdate(reference, floating, update, options) {
 * object may be passed.
 * @see https://floating-ui.com/docs/offset
 */
-var offset$1 = offset$2;
+var offset$2 = offset$1;
 /**
 * Optimizes the visibility of the floating element by shifting it in order to
 * keep it in view when it will overflow the clipping boundary.
 * @see https://floating-ui.com/docs/shift
 */
-var shift$1 = shift$2;
+var shift$2 = shift$1;
 /**
 * Optimizes the visibility of the floating element by flipping the `placement`
 * in order to keep it in view when the preferred placement(s) will overflow the
 * clipping boundary. Alternative to `autoPlacement`.
 * @see https://floating-ui.com/docs/flip
 */
-var flip$1 = flip$2;
+var flip$2 = flip$1;
 /**
 * Provides data that allows you to change the size of the floating element —
 * for instance, prevent it from overflowing the clipping boundary or match the
 * width of the reference element.
 * @see https://floating-ui.com/docs/size
 */
-var size$1 = size$2;
+var size$2 = size$1;
 /**
 * Provides data to hide the floating element in applicable situations, such as
 * when it is not in the same clipping context as the reference element.
 * @see https://floating-ui.com/docs/hide
 */
-var hide$1 = hide$2;
+var hide$2 = hide$1;
 /**
 * Provides data to position an inner element of the floating element so that it
 * appears centered to the reference element.
@@ -18115,7 +18077,7 @@ var arrow$2 = arrow$3;
 /**
 * Built-in `limiter` that will stop `shift()` at a certain point.
 */
-var limitShift$1 = limitShift$2;
+var limitShift$2 = limitShift$1;
 /**
 * Computes the `x` and `y` coordinates that will place the floating element
 * next to a given reference element.
@@ -18133,8 +18095,7 @@ var computePosition = (reference, floating, options) => {
 		platform: platformWithCache
 	});
 };
-//#endregion
-//#region node_modules/@floating-ui/react-dom/dist/floating-ui.react-dom.mjs
+// node_modules/@floating-ui/react-dom/dist/floating-ui.react-dom.mjs
 var index = typeof document !== "undefined" ? import_react.useLayoutEffect : function noop() {};
 function deepEqual(a, b) {
 	if (a === b) return true;
@@ -18363,7 +18324,7 @@ var arrow$1 = (options) => {
 * @see https://floating-ui.com/docs/offset
 */
 var offset = (options, deps) => {
-	const result = offset$1(options);
+	const result = offset$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18376,7 +18337,7 @@ var offset = (options, deps) => {
 * @see https://floating-ui.com/docs/shift
 */
 var shift = (options, deps) => {
-	const result = shift$1(options);
+	const result = shift$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18388,7 +18349,7 @@ var shift = (options, deps) => {
 */
 var limitShift = (options, deps) => {
 	return {
-		fn: limitShift$1(options).fn,
+		fn: limitShift$2(options).fn,
 		options: [options, deps]
 	};
 };
@@ -18399,7 +18360,7 @@ var limitShift = (options, deps) => {
 * @see https://floating-ui.com/docs/flip
 */
 var flip = (options, deps) => {
-	const result = flip$1(options);
+	const result = flip$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18413,7 +18374,7 @@ var flip = (options, deps) => {
 * @see https://floating-ui.com/docs/size
 */
 var size = (options, deps) => {
-	const result = size$1(options);
+	const result = size$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18426,7 +18387,7 @@ var size = (options, deps) => {
 * @see https://floating-ui.com/docs/hide
 */
 var hide = (options, deps) => {
-	const result = hide$1(options);
+	const result = hide$2(options);
 	return {
 		name: result.name,
 		fn: result.fn,
@@ -18447,8 +18408,7 @@ var arrow = (options, deps) => {
 		options: [options, deps]
 	};
 };
-//#endregion
-//#region node_modules/@radix-ui/react-popper/dist/index.mjs
+// node_modules/@radix-ui/react-popper/dist/index.mjs
 var __defProp$4 = Object.defineProperty;
 var __name$4 = (target, value) => __defProp$4(target, "name", {
 	value,
@@ -18672,8 +18632,7 @@ __name$4(getSideAndAlignFromPlacement, "getSideAndAlignFromPlacement");
 var Root2 = Popper;
 var Anchor = PopperAnchor;
 var Content = PopperContent;
-//#endregion
-//#region node_modules/@radix-ui/react-portal/dist/index.mjs
+// node_modules/@radix-ui/react-portal/dist/index.mjs
 var __defProp$3 = Object.defineProperty;
 var __name$3 = (target, value) => __defProp$3(target, "name", {
 	value,
@@ -18689,8 +18648,7 @@ var Portal = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$3(fu
 		ref: forwardedRef
 	}), container) : null;
 }, "Portal"));
-//#endregion
-//#region node_modules/@radix-ui/react-presence/dist/index.mjs
+// node_modules/@radix-ui/react-presence/dist/index.mjs
 var __defProp$2 = Object.defineProperty;
 var __name$2 = (target, value) => __defProp$2(target, "name", {
 	value,
@@ -18831,8 +18789,7 @@ function getElementRef(element) {
 	return element.props.ref || element.ref;
 }
 __name$2(getElementRef, "getElementRef");
-//#endregion
-//#region node_modules/@radix-ui/react-use-previous/dist/index.mjs
+// node_modules/@radix-ui/react-use-previous/dist/index.mjs
 var __defProp$1 = Object.defineProperty;
 var __name$1 = (target, value) => __defProp$1(target, "name", {
 	value,
@@ -18852,8 +18809,7 @@ function usePrevious(value) {
 	}, [value]);
 }
 __name$1(usePrevious, "usePrevious");
-//#endregion
-//#region node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
+// node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
 var VISUALLY_HIDDEN_STYLES = Object.freeze({
 	position: "absolute",
 	border: 0,
@@ -18866,8 +18822,7 @@ var VISUALLY_HIDDEN_STYLES = Object.freeze({
 	whiteSpace: "nowrap",
 	wordWrap: "normal"
 });
-//#endregion
-//#region node_modules/aria-hidden/dist/es2015/index.js
+// node_modules/aria-hidden/dist/es2015/index.js
 var getDefaultParent = function(originalTarget) {
 	if (typeof document === "undefined") return null;
 	return (Array.isArray(originalTarget) ? originalTarget[0] : originalTarget).ownerDocument.body;
@@ -18972,8 +18927,7 @@ var hideOthers = function(originalTarget, parentNode, markerName) {
 	targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll("[aria-live], script")));
 	return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
 };
-//#endregion
-//#region node_modules/tslib/tslib.es6.mjs
+// node_modules/tslib/tslib.es6.mjs
 var __assign = function() {
 	__assign = Object.assign || function __assign(t) {
 		for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -19001,8 +18955,7 @@ function __spreadArray(to, from, pack) {
 	}
 	return to.concat(ar || Array.prototype.slice.call(from));
 }
-//#endregion
-//#region node_modules/react-remove-scroll-bar/dist/es2015/constants.js
+// node_modules/react-remove-scroll-bar/dist/es2015/constants.js
 var zeroRightClassName = "right-scroll-bar-position";
 var fullWidthClassName = "width-before-scroll-bar";
 var noScrollbarsClassName = "with-scroll-bars-hidden";
@@ -19011,8 +18964,7 @@ var noScrollbarsClassName = "with-scroll-bars-hidden";
 * ! might be undefined ! use will fallback!
 */
 var removedBarSizeVariable = "--removed-body-scroll-bar-size";
-//#endregion
-//#region node_modules/use-callback-ref/dist/es2015/assignRef.js
+// node_modules/use-callback-ref/dist/es2015/assignRef.js
 /**
 * Assigns a value for a given ref, no matter of the ref format
 * @param {RefObject} ref - a callback function or ref object
@@ -19031,8 +18983,7 @@ function assignRef(ref, value) {
 	else if (ref) ref.current = value;
 	return ref;
 }
-//#endregion
-//#region node_modules/use-callback-ref/dist/es2015/useRef.js
+// node_modules/use-callback-ref/dist/es2015/useRef.js
 /**
 * creates a MutableRef with ref change callback
 * @param initialValue - initial ref value
@@ -19069,8 +19020,7 @@ function useCallbackRef(initialValue, callback) {
 	ref.callback = callback;
 	return ref.facade;
 }
-//#endregion
-//#region node_modules/use-callback-ref/dist/es2015/useMergeRef.js
+// node_modules/use-callback-ref/dist/es2015/useMergeRef.js
 var useIsomorphicLayoutEffect = typeof window !== "undefined" ? import_react.useLayoutEffect : import_react.useEffect;
 var currentValues = /* @__PURE__ */ new WeakMap();
 /**
@@ -19110,8 +19060,7 @@ function useMergeRefs(refs, defaultValue) {
 	}, [refs]);
 	return callbackRef;
 }
-//#endregion
-//#region node_modules/use-sidecar/dist/es2015/medium.js
+// node_modules/use-sidecar/dist/es2015/medium.js
 function ItoI(a) {
 	return a;
 }
@@ -19190,8 +19139,7 @@ function createSidecarMedium(options) {
 	}, options);
 	return medium;
 }
-//#endregion
-//#region node_modules/use-sidecar/dist/es2015/exports.js
+// node_modules/use-sidecar/dist/es2015/exports.js
 var SideCar = function(_a) {
 	var sideCar = _a.sideCar, rest = __rest(_a, ["sideCar"]);
 	if (!sideCar) throw new Error("Sidecar: please provide `sideCar` property to import the right car");
@@ -19204,11 +19152,9 @@ function exportSidecar(medium, exported) {
 	medium.useMedium(exported);
 	return SideCar;
 }
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/medium.js
+// node_modules/react-remove-scroll/dist/es2015/medium.js
 var effectCar = createSidecarMedium();
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/UI.js
+// node_modules/react-remove-scroll/dist/es2015/UI.js
 var nothing = function() {};
 /**
 * Removes scrollbar from the page and contain the scroll within the Lock
@@ -19266,8 +19212,7 @@ RemoveScroll.classNames = {
 var getNonce = function() {
 	if (typeof __webpack_nonce__ !== "undefined") return __webpack_nonce__;
 };
-//#endregion
-//#region node_modules/react-style-singleton/dist/es2015/singleton.js
+// node_modules/react-style-singleton/dist/es2015/singleton.js
 function makeStyleTag() {
 	if (!document) return null;
 	var tag = document.createElement("style");
@@ -19305,8 +19250,7 @@ var stylesheetSingleton = function() {
 		}
 	};
 };
-//#endregion
-//#region node_modules/react-style-singleton/dist/es2015/hook.js
+// node_modules/react-style-singleton/dist/es2015/hook.js
 /**
 * creates a hook to control style singleton
 * @see {@link styleSingleton} for a safer component version
@@ -19327,8 +19271,7 @@ var styleHookSingleton = function() {
 		}, [styles && isDynamic]);
 	};
 };
-//#endregion
-//#region node_modules/react-style-singleton/dist/es2015/component.js
+// node_modules/react-style-singleton/dist/es2015/component.js
 /**
 * create a Component to add styles on demand
 * - styles are added when first instance is mounted
@@ -19344,8 +19287,7 @@ var styleSingleton = function() {
 	};
 	return Sheet;
 };
-//#endregion
-//#region node_modules/react-remove-scroll-bar/dist/es2015/utils.js
+// node_modules/react-remove-scroll-bar/dist/es2015/utils.js
 var zeroGap = {
 	left: 0,
 	top: 0,
@@ -19379,8 +19321,7 @@ var getGapWidth = function(gapMode) {
 		gap: Math.max(0, windowWidth - documentWidth + offsets[2] - offsets[0])
 	};
 };
-//#endregion
-//#region node_modules/react-remove-scroll-bar/dist/es2015/component.js
+// node_modules/react-remove-scroll-bar/dist/es2015/component.js
 var Style = styleSingleton();
 var lockAttribute = "data-scroll-locked";
 var getStyles = function(_a, allowRelative, gapMode, important) {
@@ -19417,8 +19358,7 @@ var RemoveScrollBar = function(_a) {
 	}, [gapMode]);
 	return import_react.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
 };
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/aggresiveCapture.js
+// node_modules/react-remove-scroll/dist/es2015/aggresiveCapture.js
 var passiveSupported = false;
 if (typeof window !== "undefined") try {
 	var options = Object.defineProperty({}, "passive", { get: function() {
@@ -19431,8 +19371,7 @@ if (typeof window !== "undefined") try {
 	passiveSupported = false;
 }
 var nonPassive = passiveSupported ? { passive: false } : false;
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/handleScroll.js
+// node_modules/react-remove-scroll/dist/es2015/handleScroll.js
 var alwaysContainsScroll = function(node) {
 	return node.tagName === "TEXTAREA";
 };
@@ -19514,8 +19453,7 @@ var handleScroll = function(axis, endTarget, event, sourceDelta, noOverscroll) {
 	else if (!isDeltaPositive && (noOverscroll && Math.abs(availableScrollTop) < 1 || !noOverscroll && -delta > availableScrollTop)) shouldCancelScroll = true;
 	return shouldCancelScroll;
 };
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/SideEffect.js
+// node_modules/react-remove-scroll/dist/es2015/SideEffect.js
 var getTouchXY = function(event) {
 	return "changedTouches" in event ? [event.changedTouches[0].clientX, event.changedTouches[0].clientY] : [0, 0];
 };
@@ -19669,11 +19607,9 @@ function getOutermostShadowParent(node) {
 	}
 	return shadowParent;
 }
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/sidecar.js
+// node_modules/react-remove-scroll/dist/es2015/sidecar.js
 var sidecar_default = exportSidecar(effectCar, RemoveScrollSideCar);
-//#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/Combination.js
+// node_modules/react-remove-scroll/dist/es2015/Combination.js
 var ReactRemoveScroll = import_react.forwardRef(function(props, ref) {
 	return import_react.createElement(RemoveScroll, __assign({}, props, {
 		ref,
@@ -19681,8 +19617,7 @@ var ReactRemoveScroll = import_react.forwardRef(function(props, ref) {
 	}));
 });
 ReactRemoveScroll.classNames = RemoveScroll.classNames;
-//#endregion
-//#region node_modules/@radix-ui/react-select/dist/index.mjs
+// node_modules/@radix-ui/react-select/dist/index.mjs
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", {
 	value,
@@ -20521,8 +20456,7 @@ function wrapArray(array, startIndex) {
 	return array.map((_, index) => array[(startIndex + index) % array.length]);
 }
 __name(wrapArray, "wrapArray");
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
+// node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20530,8 +20464,7 @@ __name(wrapArray, "wrapArray");
 * See the LICENSE file in the root directory of this source tree.
 */
 var toKebabCase = (string) => string?.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
+// node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20547,8 +20480,7 @@ function toLucideIconData(iconName, iconNode, aliases = []) {
 		...aliases.length > 0 ? { aliases } : {}
 	};
 }
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
+// node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20569,8 +20501,7 @@ var toCamelCase = (string) => {
 	}
 	return out;
 };
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
+// node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20581,8 +20512,7 @@ var toPascalCase = (string) => {
 	const camelCase = toCamelCase(string);
 	return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
 };
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
+// node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20592,8 +20522,7 @@ var toPascalCase = (string) => {
 var mergeClasses = (...classes) => classes.filter((className, index, array) => {
 	return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
 }).join(" ").trim();
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/defaultAttributes.mjs
+// node_modules/lucide-react/dist/esm/shared/src/build/defaultAttributes.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20611,8 +20540,7 @@ var defaultAttributes = {
 	"stroke-linecap": "round",
 	"stroke-linejoin": "round"
 };
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
+// node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20666,8 +20594,7 @@ function buildLucideIconNode(icon, params = {}) {
 		})
 	];
 }
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
+// node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20687,8 +20614,7 @@ function buildLucideIconForReact(icon, params = {}) {
 		}
 	});
 }
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
+// node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20699,8 +20625,7 @@ var hasA11yProp = (props) => {
 	for (const prop in props) if (prop.startsWith("aria-") || prop === "role" || prop === "title") return true;
 	return false;
 };
-//#endregion
-//#region node_modules/lucide-react/dist/esm/context.mjs
+// node_modules/lucide-react/dist/esm/context.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20709,8 +20634,7 @@ var hasA11yProp = (props) => {
 */
 var LucideContext = (0, import_react.createContext)({});
 var useLucideContext = () => (0, import_react.useContext)(LucideContext);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/Icon.mjs
+// node_modules/lucide-react/dist/esm/Icon.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20740,8 +20664,7 @@ var Icon = (0, import_react.forwardRef)(({ color, size, width, height, strokeWid
 		...svgAttributes
 	}, [...builtIconNode.map(([tag, attrs]) => (0, import_react.createElement)(tag, attrs)), ...Array.isArray(children) ? children : [children]]);
 });
-//#endregion
-//#region node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+// node_modules/lucide-react/dist/esm/createLucideIcon.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20759,8 +20682,7 @@ function createLucideIcon(iconDataOrName, iconNode = [], aliases = []) {
 	if (iconData.name) Component.displayName = toPascalCase(iconData.name);
 	return Component;
 }
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
+// node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20777,8 +20699,7 @@ var __iconData$4 = {
 };
 __iconData$4.node;
 var ChevronDown = createLucideIcon(__iconData$4);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/plus.mjs
+// node_modules/lucide-react/dist/esm/icons/plus.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20798,8 +20719,7 @@ var __iconData$3 = {
 };
 __iconData$3.node;
 var Plus = createLucideIcon(__iconData$3);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/refresh-cw.mjs
+// node_modules/lucide-react/dist/esm/icons/refresh-cw.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20830,8 +20750,7 @@ var __iconData$2 = {
 };
 __iconData$2.node;
 var RefreshCw = createLucideIcon(__iconData$2);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/rotate-ccw.mjs
+// node_modules/lucide-react/dist/esm/icons/rotate-ccw.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20851,8 +20770,7 @@ var __iconData$1 = {
 };
 __iconData$1.node;
 var RotateCcw = createLucideIcon(__iconData$1);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/x.mjs
+// node_modules/lucide-react/dist/esm/icons/x.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -20872,8 +20790,7 @@ var __iconData = {
 };
 __iconData.node;
 var X = createLucideIcon(__iconData);
-//#endregion
-//#region src/ui/components/select.tsx
+// src/ui/components/select.tsx
 var Select = Select$1;
 var SelectValue = SelectValue$1;
 var SelectTrigger = (0, import_react.forwardRef)(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectTrigger$1, {
@@ -20917,8 +20834,7 @@ var SelectItem = (0, import_react.forwardRef)(({ className, children, ...props }
 	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItemText, { children })
 }));
 SelectItem.displayName = SelectItem$1.displayName;
-//#endregion
-//#region src/ui/components/input.tsx
+// src/ui/components/input.tsx
 var Input = (0, import_react.forwardRef)(({ className, type, ...props }, ref) => {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 		type,
@@ -20928,8 +20844,7 @@ var Input = (0, import_react.forwardRef)(({ className, type, ...props }, ref) =>
 	});
 });
 Input.displayName = "Input";
-//#endregion
-//#region node_modules/class-variance-authority/dist/index.mjs
+// node_modules/class-variance-authority/dist/index.mjs
 /**
 * Copyright 2022 Joe Bell. All rights reserved.
 *
@@ -20981,8 +20896,7 @@ var cva = (base, config) => (props) => {
 		] : acc;
 	}, []), props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
 };
-//#endregion
-//#region src/ui/components/button.tsx
+// src/ui/components/button.tsx
 var buttonVariants = cva("inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0", {
 	variants: {
 		variant: {
@@ -21021,8 +20935,7 @@ var Button = (0, import_react.forwardRef)(({ className, variant, size, ...props 
 	});
 });
 Button.displayName = "Button";
-//#endregion
-//#region src/shared/version.ts
+// src/shared/version.ts
 /**
 * Versi ekstensi untuk UI (popup & side panel).
 *
@@ -21043,5 +20956,4 @@ function getVersionBadge() {
 	const v = getExtensionVersion();
 	return v ? `v${v}` : "";
 }
-//#endregion
 export { __toESM as S, require_jsx_runtime as _, SelectContent as a, require_client as b, SelectValue as c, RefreshCw as d, Plus as f, ErrorBoundary as g, cn as h, Select as i, X as l, Switch as m, Button as n, SelectItem as o, createLucideIcon as p, Input as r, SelectTrigger as s, getVersionBadge as t, RotateCcw as u, MessageTypes as v, require_react as x, sendMessage as y };

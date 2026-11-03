@@ -32,6 +32,36 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/unitGate.ts
+  function isDepoRanap(doc = document) {
+    const text = (doc.body?.textContent || "").toUpperCase();
+    return text.includes("DEPO RANAP");
+  }
+  function isRawatInapAtauIgd(doc = document) {
+    const metaMap = /* @__PURE__ */ new Map();
+    doc.querySelectorAll("table").forEach((t) => {
+      t.querySelectorAll("tr").forEach((tr) => {
+        const tds = tr.querySelectorAll("td");
+        if (tds.length < 2) return;
+        const label = (tds[0]?.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+        const value = (tds[1]?.textContent || "").replace(/\s+/g, " ").trim();
+        if (label && !metaMap.has(label)) metaMap.set(label, value);
+      });
+    });
+    const ruangan = (metaMap.get("ruangan") || metaMap.get("ruangan/poli") || "").toUpperCase();
+    const kelas = (metaMap.get("kelas") || metaMap.get("kelas rawat") || "").toUpperCase();
+    const jenis = (metaMap.get("jenis kunjungan") || metaMap.get("jenis") || "").toUpperCase();
+    if (ruangan.includes("IGD") || ruangan.includes("RAWAT INAP")) return true;
+    if (kelas.includes("IGD") || kelas.includes("RAWAT INAP")) return true;
+    if (jenis.includes("RAWAT INAP") || jenis.includes("IGD")) return true;
+    const bodyText = (doc.body?.textContent || "").toUpperCase();
+    if (bodyText.includes("RAWAT INAP") || bodyText.includes("IGD")) return true;
+    return false;
+  }
+  function isResepAsliAllowed(doc = document) {
+    return isDepoRanap(doc) || isRawatInapAtauIgd(doc);
+  }
+
   // src/features/resepAsliPrint.ts
   whenFeatureEnabled("resepAsli", function() {
     "use strict";
@@ -39,6 +69,7 @@ var __morbis_feature = (() => {
       const PAGE_GUARD = "ext-resepAsli-proc";
       const root = document.querySelector(".halaman");
       if (!root || root.getAttribute(PAGE_GUARD)) return;
+      if (!isResepAsliAllowed(document)) return;
       const page = root;
       page.setAttribute(PAGE_GUARD, "1");
       const txt = (el) => (el?.textContent || "").replace(/\s+/g, " ").trim();
@@ -60,6 +91,8 @@ var __morbis_feature = (() => {
         });
       });
       const getMeta = (label) => metaMap.get(label) ?? "";
+      const medsTables = Array.from(page.querySelectorAll("table.resep-item"));
+      const adminTable = medsTables[1];
       const params = new URLSearchParams(window.location.search);
       const resepId = params.get("id") || params.get("id_resep") || "";
       let noSep = "";
@@ -135,7 +168,8 @@ var __morbis_feature = (() => {
       await fetchDetailData();
       if (!diagnosisUtama.length) {
         const d = getMeta("Diagnosa");
-        if (d) diagnosisUtama = d.split(",").map((s) => s.trim()).filter(Boolean);
+        if (d)
+          diagnosisUtama = d.split(",").map((s) => s.trim()).filter(Boolean);
       }
       const jk = getMeta("Jenis Kelamin");
       const jkShort = /^perempuan$/i.test(jk) ? "P" : /^laki-laki$/i.test(jk) ? "L" : jk;
@@ -303,8 +337,13 @@ var __morbis_feature = (() => {
       const checkTable = (title, rows) => '<table class="t-check"><thead><tr><th class="l" colspan="2">' + esc(title) + '</th><th class="yt">Y/T</th></tr></thead><tbody>' + rows.map(
         ([num, item]) => '<tr><td class="num">' + esc(num) + "</td><td>" + esc(item) + '</td><td class="yt"></td></tr>'
       ).join("") + "</tbody></table>";
+      const adminHeads = adminTable ? Array.from(adminTable.querySelectorAll("tr:first-child td")).map((td) => txt(td)).filter(Boolean) : ["Hitung", "Timbang", "Kemas"];
+      if (!adminHeads.some((h) => /paraf/i.test(h))) adminHeads.push("Paraf");
+      const adminCols = adminHeads.length;
+      const adminHtml = '<table class="t-admin"><thead><tr>' + adminHeads.map((h) => '<th class="c">' + esc(h) + "</th>").join("") + "</tr></thead><tbody><tr>" + Array.from({ length: adminCols }).map(() => '<td class="blk"></td>').join("") + "</tr></tbody></table>";
+      const lampiranHtml = '<table class="t-admin t-lampiran"><thead><tr><th class="c third">Srt. Rujuk Balik</th><th class="c third">Surat Iter</th><th class="c third">Hasil Lab</th></tr></thead><tbody><tr><td class="blk"></td><td class="blk"></td><td class="blk"></td></tr></tbody></table>';
       const bawahHtml = '<table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c" colspan="2">Waktu Tunggu</td></tr><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr><tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>';
-      const html = '<header class="t-head"><img class="t-logo" alt="Logo" src="' + esc("/assets/images/logo/Kota Jambi.png") + '"/><div class="t-bhead"><h1 class="t-hname">RSUD H. ABDUL MANAP</h1><div class="t-hsub">Jl. Sk. Rd. Syahbudin, Mayang Mangurai, Alam Barajo, Kota Jambi<br/>Telp: (0741) 5910190</div></div><div class="t-antrian">' + formatAntrian("") + '</div></header><main class="t-main"><section class="t-left">' + patientMetaHtml + '<div class="t-meds">' + medListHtml + "</div>" + (catatan.trim() !== "" ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' + esc(catatan).split("\n").map((l) => l.trim()).filter(Boolean).join("<br/>") + "</div></div>" : "") + '</section><section class="t-right">' + doctorMetaHtml + (telaahResep.length ? checkTable("Telaah Resep", telaahResep) : "") + (telaahObat.length ? checkTable("Telaah Obat", telaahObat) : "") + bawahHtml + '</section></main><footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';
+      const html = '<header class="t-head"><img class="t-logo" alt="Logo" src="' + esc("/assets/images/logo/Kota Jambi.png") + '"/><div class="t-bhead"><h1 class="t-hname">RSUD H. ABDUL MANAP</h1><div class="t-hsub">Jl. Sk. Rd. Syahbudin, Mayang Mangurai, Alam Barajo, Kota Jambi<br/>Telp: (0741) 5910190</div></div><div class="t-antrian">' + formatAntrian("") + '</div></header><main class="t-main"><section class="t-left">' + patientMetaHtml + '<div class="t-meds">' + medListHtml + "</div>" + (catatan.trim() !== "" ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' + esc(catatan).split("\n").map((l) => l.trim()).filter(Boolean).join("<br/>") + "</div></div>" : "") + adminHtml + lampiranHtml + '</section><section class="t-right">' + doctorMetaHtml + (telaahResep.length ? checkTable("Telaah Resep", telaahResep) : "") + (telaahObat.length ? checkTable("Telaah Obat", telaahObat) : "") + bawahHtml + '</section></main><footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';
       page.innerHTML = html;
       if (resepId) {
         void (async () => {
@@ -422,4 +461,3 @@ var __morbis_feature = (() => {
     apply();
   });
 })();
-//# sourceMappingURL=resepAsliPrint.js.map

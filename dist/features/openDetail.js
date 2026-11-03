@@ -16,7 +16,7 @@ var __morbis_feature = (() => {
   var _eventIdCounter = 0;
   var MAX_HANDLED_EVENTS = 1e3;
   function _getEventId(e) {
-    return e.__extId ?? (e.__extId = ++_eventIdCounter);
+    return e.__extId ??= ++_eventIdCounter;
   }
   function _cleanupHandledEvents() {
     if (_handledEvents.size > MAX_HANDLED_EVENTS) {
@@ -367,4 +367,3 @@ var __morbis_feature = (() => {
     console.warn("[OpenDetail] featureModules not defined, module registration skipped");
   }
 })();
-//# sourceMappingURL=openDetail.js.map
