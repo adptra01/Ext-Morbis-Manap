@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **batchUpload** — tambah mode Upload File (pilih dari komputer) (`eee8f61`)
 - **batchUpload** — hapus banner 'berkas tidak tampil di halaman' (`1c02e33`)
 - resepAsli samakan style telaah + gate depo ranap/RI-IGD + sembunyikan telaah resep depo ranap (`bb9eddb`)
 - resepAsli samakan style telaah + gate depo ranap/RI-IGD + sembunyikan telaah resep depo ranap (`be3e071`)
@@ -25,6 +26,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync (`b9ec7bf`)
 - **dist** — sync (`7044b20`)
 - **dist** — sync (`a3d51c3`)
 - **dist** — sync versi 1.5.178 (`a29c7f0`)
@@ -1933,4 +1935,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 1c02e331bbfe82528d2f481e1730ed9335b53214 -->
+<!-- changelog-upto: eee8f61317939389e8914f543411dabc8bdde8bf -->
