@@ -955,6 +955,9 @@ ${xrefOffset}
   }
   var batchQueue = [];
   var isProcessing = false;
+  function isUploadCandidate(item) {
+    return item.selected !== false && item.status !== "success";
+  }
   var _batchAbortController = null;
   function _getBatchAbortSignal() {
     if (!_batchAbortController) _batchAbortController = new AbortController();
@@ -1902,7 +1905,7 @@ ${xrefOffset}
     let errorCount = 0;
     let unverifiedCount = 0;
     let cancelled = false;
-    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const itemsToUpload = batchQueue.filter(isUploadCandidate);
     const total = itemsToUpload.length;
     if (total === 0) {
       void confirmLegacy({
@@ -2160,7 +2163,7 @@ ${xrefOffset}
       let successCount = 0;
       let errorCount = 0;
       let unverifiedCount = 0;
-      const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+      const itemsToUpload = batchQueue.filter(isUploadCandidate);
       const total = itemsToUpload.length;
       if (total === 0) {
         chrome.runtime.sendMessage({
