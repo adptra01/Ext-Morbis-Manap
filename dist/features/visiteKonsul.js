@@ -67,13 +67,15 @@ var __morbis_feature = (() => {
     });
     const j = await res.json();
     if (!j?.ok) return [];
-    return (j.data || []).map((r) => ({
-      id: r.id,
-      jenis: r.jenis,
-      nama_dokter: r.nama_dokter,
-      id_dokter: r.id_dokter,
-      saving: false
-    }));
+    return (j.data || []).map(
+      (r) => ({
+        id: r.id,
+        jenis: r.jenis,
+        nama_dokter: r.nama_dokter,
+        id_dokter: r.id_dokter,
+        saving: false
+      })
+    );
   }
   async function apiSave(idVisit, row, user) {
     const res = await fetch(`${API}/save`, {
@@ -281,7 +283,9 @@ var __morbis_feature = (() => {
     if (!idVisit) return;
     injectStyles();
     const user = readPetugas();
-    let host = document.querySelector("#main-content, .content, main, #content");
+    let host = document.querySelector(
+      "#main-content, .content, main, #content"
+    );
     if (!host) host = document.body;
     const card = document.createElement("div");
     card.className = "ext-vk-card";

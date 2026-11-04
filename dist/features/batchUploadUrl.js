@@ -804,10 +804,6 @@ ${xrefOffset}
     }
     return count;
   }
-  function isSavedByResponseBody(responseBody, fileName) {
-    const needle = documentMatchNeedle(fileName);
-    return needle.length >= MIN_NEEDLE_LENGTH && normalizeForMatch(responseBody).includes(needle);
-  }
   function rowForDisplay(row, maxLength = 160) {
     const clean = String(row ?? "").replace(/\s+/g, " ").trim();
     if (clean.length <= maxLength) return clean;
@@ -839,9 +835,6 @@ ${xrefOffset}
       rowsBeforeCount: before ? before.length : null,
       rowsAfterCount: after ? after.length : null
     };
-    if (isSavedByResponseBody(input.responseBody, input.fileName)) {
-      return { ...result, status: "saved", matchedNeedle: fileNeedle };
-    }
     if (before === null || after === null) return result;
     for (const needle of needles) {
       if (countDocumentMatches(after, [needle]) > countDocumentMatches(before, [needle])) {
@@ -1349,6 +1342,18 @@ ${xrefOffset}
       }
     });
   }
+  function getPatientNormFromPage() {
+    const el = document.querySelector('#norm, input[name="norm"]');
+    return (el?.value || "").trim();
+  }
+  function resolveNorm(metadata) {
+    const candidates = [metadata.norm, getPatientNormFromPage()];
+    for (const candidate of candidates) {
+      const value = String(candidate ?? "").trim();
+      if (/^\d{1,12}$/.test(value)) return value;
+    }
+    return "";
+  }
   function extractNormFromName(name) {
     const nameWithoutExt = name.replace(/\.[^/.]+$/, "");
     const parts = nameWithoutExt.split(/[-_\s]+/);
@@ -1406,7 +1411,7 @@ ${xrefOffset}
     batchQueue = validFiles.map((file) => {
       const filename = file.name;
       const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
-      const norm = extractNormFromName(filename);
+      const norm = getPatientNormFromPage() || extractNormFromName(filename);
       const keteranganParts = nameWithoutExt.split(/[-_\s]+/).filter((p) => !/^\d{10}$/.test(p) && p !== norm);
       const keterangan = keteranganParts.join(" ").trim() || nameWithoutExt.replace(/[-_]+/g, " ");
       return {
@@ -1681,25 +1686,6 @@ ${xrefOffset}
     else _docRowsLookupFailures += 1;
     return rows;
   }
-  function getRenderedPageText() {
-    const loaded = performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("/assets/dokumen-pasien/"));
-    return `${document.documentElement.outerHTML}
-${loaded.join("\n")}`;
-  }
-  async function isDocumentVisibleOnCurrentPage(fileName) {
-    if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
-    const idVisit = new URLSearchParams(window.location.search).get("id_visit");
-    if (!idVisit) return null;
-    try {
-      const response = await fetch(
-        `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
-        { credentials: "same-origin", cache: "no-store", signal: _getBatchAbortSignal() }
-      );
-      if (response.ok && isSavedByResponseBody(await response.text(), fileName)) return true;
-    } catch {
-    }
-    return isSavedByResponseBody(getRenderedPageText(), fileName) ? true : null;
-  }
   function describeVerification(result) {
     const parts = [];
     parts.push(
@@ -1712,12 +1698,9 @@ ${loaded.join("\n")}`;
     }
     return parts.join(", ");
   }
-  async function verifyDocumentUpload(idVisit, fileName, extraNeedles, responseBodyForProof, rowsBefore) {
-    if (isSavedByResponseBody(responseBodyForProof, fileName)) {
-      return { status: "saved", detail: "nama file terbaca di respons server", source: "body" };
-    }
+  async function verifyDocumentUpload(idVisit, fileName, extraNeedles, rowsBefore) {
     const snapshot = async () => verifyDocumentSaved({
-      responseBody: responseBodyForProof,
+      responseBody: "",
       fileName,
       extraNeedles,
       rowsBefore,
@@ -1732,15 +1715,6 @@ ${loaded.join("\n")}`;
       result = await snapshot();
       if (result.status === "saved") {
         return { status: "saved", detail: describeVerification(result), source: "rows" };
-      }
-    }
-    if (result.status === "missing" || result.status === "mismatch") {
-      if (await isDocumentVisibleOnCurrentPage(fileName) === true) {
-        return {
-          status: "saved",
-          detail: "nama file tampil di halaman klaim (tidak ada di daftar dokumen-pasien)",
-          source: "claim-page"
-        };
       }
     }
     return { status: result.status, detail: describeVerification(result) };
@@ -1794,9 +1768,17 @@ ${loaded.join("\n")}`;
         updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
       }
       file = await convertFileToPdf(file);
+      const norm = resolveNorm(metadata);
+      if (!norm) {
+        return {
+          success: false,
+          error: "NORM pasien tidak terbaca dari halaman \u2014 upload dibatalkan (bukan sukses)"
+        };
+      }
+      metadata.norm = norm;
       const formData = new FormData();
       formData.append("id_visit", idVisitStr);
-      formData.append("norm", metadata.norm);
+      formData.append("norm", norm);
       formData.append("tgl_file", metadata.tanggal);
       formData.append("jenis_dokumen", metadata.jenis_dokumen || "Lain-lain");
       formData.append("dok", file);
@@ -1823,24 +1805,12 @@ ${loaded.join("\n")}`;
         ok: false,
         message: `Server ${uploadResponse.status}: ${describeServerFailure(result, uploadResponse.statusText)}`
       };
-      const verification = _getBatchAbortSignal().aborted ? { status: "unknown", detail: "batch dibatalkan" } : await verifyDocumentUpload(
-        idVisitStr,
-        file.name,
-        [keterangan],
-        verdict.ok ? result : "",
-        rowsBefore
-      );
+      const verification = _getBatchAbortSignal().aborted ? { status: "unknown", detail: "batch dibatalkan" } : await verifyDocumentUpload(idVisitStr, file.name, [keterangan], rowsBefore);
       if (verification.status === "saved") {
         if (!verdict.ok) {
           console.warn(
             "[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen \u2014 dianggap sukses.",
             verdict.message
-          );
-        }
-        if (verification.source === "claim-page") {
-          console.info(
-            "[Batch Upload] Dokumen tampil di halaman klaim tapi TIDAK di daftar dokumen-pasien:",
-            file.name
           );
         }
         return { success: true, result };
