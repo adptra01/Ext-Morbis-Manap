@@ -17,11 +17,12 @@
 
 ### 🐛 fix
 
-- **batchUpload** — Ulangi hanya kirim dokumen yang gagal/belum pasti (`dc0bb5c`)
+- **batchUpload** — Ulangi hanya kirim dokumen yang gagal/belum pasti (`6d94a6f`)
 - **batchUpload** — NORM dari halaman + sukses hanya dibuktikan daftar dokumen (`3dbf78b`)
 
 ### 🧹 chore
 
+- **dist** — sync (`75d2716`)
 - **dist** — sync (v1.5.185) (`628e6cc`)
 - **dist** — sync (`dda5ae1`)
 - **dist** — sync (`751aada`)
@@ -1956,4 +1957,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: dc0bb5ce660d9b1a2e1e6476864fa7dad024c564 -->
+<!-- changelog-upto: 75d27169e4b3e14401aebfd8412415a79f4d8786 -->
