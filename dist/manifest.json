@@ -120,7 +120,8 @@
         "features/shared/cookieFilterStorage.js",
         "features/doctorFilterPersistence.js",
         "features/cpptSearchFilter.js",
-        "init.js"
+        "init.js",
+        "features/visiteKonsul.js"
       ],
       "run_at": "document_end",
       "all_frames": false
@@ -628,7 +629,10 @@
     "http://103.147.236.140/*",
     "http://103.147.236.138/*",
     "http://192.168.8.4/*",
-    "http://dev.rsudkotajambi.id/*"
+    "http://dev.rsudkotajambi.id/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "http://*.ddev.site/*"
   ],
   "web_accessible_resources": [
     {

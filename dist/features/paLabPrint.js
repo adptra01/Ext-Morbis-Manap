@@ -1,7 +1,672 @@
-"use strict";var __morbis_feature=(()=>{var ht="extensionConfig";function Nt(l,n,f){let h=n?.features?.[l];if(!h)return!0;if(h.enabled===!1)return!1;let w=f??n?.currentRole??"admin";if(w==="admin")return!0;let k=h.allowedRoles;return!Array.isArray(k)||k.length===0?!0:k.includes(w)}async function Bt(l){try{let f=(await chrome.storage.sync.get(ht))?.[ht]??null;return Nt(l,f)}catch{return!0}}function bt(l,n){Bt(l).then(f=>{if(f)try{n()}catch(h){console.error(`[featureGate:${l}] gagal jalan:`,h)}})}var yt="ext-free-text-noop",xt='input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),textarea,select{text-transform:none!important}';function kt(l){try{let n=l.toUpper;if(typeof n=="function"&&n[yt]===!0)return!0;let f=function(h){return h?.value??""};f[yt]=!0;try{Object.defineProperty(l,"toUpper",{value:f,writable:!0,configurable:!0})}catch{l.toUpper=f}return!0}catch{return!1}}var Y="ext-pa-typo",wt=[{key:"kop",label:"Kop Surat"},{key:"pasien",label:"Data Pasien"},{key:"judul",label:"Judul Bagian Isi"},{key:"isi",label:"Isi"},{key:"kesimpulan",label:"Kesimpulan"},{key:"icdo",label:"ICD-O"},{key:"catatan",label:"Catatan"},{key:"ttd",label:"TTD"}],A={kop:{fs:16,lh:1.2},pasien:{fs:4,lh:1},judul:{fs:6,lh:1.2},isi:{fs:5,lh:1.25},kesimpulan:{fs:5,lh:1.25},icdo:{fs:6,lh:1.2},catatan:{fs:5,lh:1.25},ttd:{fs:6,lh:1.2}},Tt=4,Et=24,$t=.5,Vt=2.5;function vt(l,n,f,h){let w=typeof l=="number"?l:Number(l);return Number.isFinite(w)?Math.min(h,Math.max(f,w)):n}function S(l,n){let f=l??{};return{fs:vt(f.fs,n.fs,Tt,Et),lh:vt(f.lh,n.lh,$t,Vt)}}function K(l){let n=l??{};return{kop:S(n.kop,A.kop),pasien:S(n.pasien,A.pasien),judul:S(n.judul,A.judul),isi:S(n.isi,A.isi),kesimpulan:S(n.kesimpulan,A.kesimpulan),icdo:S(n.icdo,A.icdo),catatan:S(n.catatan,A.catatan),ttd:S(n.ttd,A.ttd)}}function W(){return K(null)}function J(l){try{if(!l)return W();let n=l.getItem(Y);return n?K(JSON.parse(n)):W()}catch{return W()}}function At(l,n){try{return l?(l.setItem(Y,JSON.stringify(K(n))),!0):!1}catch{return!1}}function St(l){try{l?.removeItem(Y)}catch{}}function Q(l){let n=K(l),f=h=>Math.min(Et,Math.max(Tt,h));return{...n,alamatFs:f(n.kop.fs-8.5),judulLapFs:f(n.kop.fs-4)}}var b=l=>String(Math.round(l*100)/100);function Xt(l){let n=Q(l);return{"--pa-kop-fs":`${b(n.kop.fs)}pt`,"--pa-kop-lh":b(n.kop.lh),"--pa-alamat-fs":`${b(n.alamatFs)}pt`,"--pa-judul-lap-fs":`${b(n.judulLapFs)}pt`,"--pa-pasien-fs":`${b(n.pasien.fs)}pt`,"--pa-pasien-lh":b(n.pasien.lh),"--pa-judul-fs":`${b(n.judul.fs)}pt`,"--pa-judul-lh":b(n.judul.lh),"--pa-isi-fs":`${b(n.isi.fs)}pt`,"--pa-isi-lh":b(n.isi.lh),"--pa-kesimpulan-fs":`${b(n.kesimpulan.fs)}pt`,"--pa-kesimpulan-lh":b(n.kesimpulan.lh),"--pa-icdo-fs":`${b(n.icdo.fs)}pt`,"--pa-icdo-lh":b(n.icdo.lh),"--pa-catatan-fs":`${b(n.catatan.fs)}pt`,"--pa-catatan-lh":b(n.catatan.lh),"--pa-ttd-fs":`${b(n.ttd.fs)}pt`,"--pa-ttd-lh":b(n.ttd.lh)}}function jt(l,n){if(l)try{for(let[f,h]of Object.entries(Xt(n)))l.setProperty(f,h)}catch{}}var Wt=/^(\(?[IVXLC]+[.)]|\d+[.)]|[-•–—*])\s+/;function Z(l){let n=l??"",f=n.match(Wt);if(!f)return null;let h=n.slice(f[0].length).trim();return h===""?null:[f[1],h]}bt("paLabPrint",function(){"use strict";function l(){try{kt(window)}catch{}try{if(document.head&&!document.getElementById("ext-free-text-style")){let k=document.createElement("style");k.id="ext-free-text-style",k.textContent=xt,document.head.appendChild(k)}}catch{}}if(l(),document.readyState==="loading"&&document.addEventListener("DOMContentLoaded",l),window.setInterval(l,3e3),!window.location.pathname.includes("/laboratorium/print/"))return;async function f(){let k="ext-pa-print-proc";if(document.documentElement.getAttribute(k))return;document.documentElement.setAttribute(k,"1");let D=()=>{try{return window.localStorage??null}catch{return null}},T=J(D()),N=()=>{try{jt(document.documentElement.style,T)}catch{}};N();let v=t=>G(t?.textContent||"");function tt(t){return t.replace(/<[^>]+>/g," ")}function Lt(t){return t.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi,"H. ")}function G(t){return Lt(t).replace(/\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi," ").replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi," ").replace(/\s+/g," ").trim()}function c(t){return String(t??"").replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[e])}let et=document.querySelector("#logo img")?.getAttribute("src")||"/assets/images/logo/Kota Jambi.png",F=Array.from(document.querySelectorAll("h1.kop-atas")).map(t=>v(t)).filter(Boolean);for(;F.length<3;)F.push("");let I=[],nt=document.querySelector("#head-cetak-logo center, #head-cetak-logo");if(nt){let t=document.createElement("div");t.innerHTML=nt.innerHTML,t.querySelectorAll("h1").forEach(e=>e.remove()),I=(t.innerHTML||"").split(/<br\s*\/?>/gi).map(e=>t.textContent&&e.replace(/<[^>]+>/g,"").trim()).map(e=>String(e||"").trim()).filter(Boolean)}let H=I.join(" "),at=t=>{let e=H.match(new RegExp(t+"\\s*:([\\d\\s().+-]+)","i"));return e?e[1].trim():""},it=at("telp"),ot=at("fax"),_=(H.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/)||[""])[0],q=(H.match(/https?:\/\/[^\s;,]+/)||[""])[0],j=H.replace(/telp\s*:[\d\s().+-]+/gi,"").replace(/fax\s*:[\d\s().+-]+/gi,"").replace(/website\s*:?/gi,"").replace(/email\s*:?/gi,"");_&&(j=j.split(_).join("")),q&&(j=j.split(q).join("")),j=j.split(/[;]+/).map(t=>t.replace(/\s+/g," ").trim()).filter(Boolean).join(", ").replace(/,\s*,+/g,",").replace(/^[,;\s]+|[,;\s]+$/g,"");let Ct=["Alamat: "+j,it?"Telp: "+it:"",ot?"Fax: "+ot:""].filter(Boolean).join(", "),Pt=[_?"Email: "+_:"",q?"Website: "+q:""].filter(Boolean).join(", ");I=[Ct,Pt].filter(Boolean);let B=v(document.querySelector(".head-cetak-instansi"))||"LAPORAN HASIL PEMERIKSAAN",U=[];document.querySelectorAll(".table-outer tr").forEach(t=>{let e=t.querySelectorAll("td");if(e.length>=6){let r=v(e[0]),p=v(e[2]),s=v(e[3]),o=v(e[5]);r&&U.push([r,p]),s&&U.push([s,o])}});let C=["makroskopik","mikroskopik","kesimpulan","icdo","catatan","saran"],y=t=>t.toLowerCase().replace(/0/g,"o").replace(/[^a-z]/g,""),E=[];document.querySelectorAll(".contentlab td").forEach(t=>{let e="",r=!1,p=t.querySelector(".section-title");if(p)e=v(p),r=!0;else{let d=m=>m.split(":")[0].trim();for(let m of Array.from(t.children).slice(0,3)){let g=v(m);if(g&&g.length<=24&&C.includes(y(d(g)))){e=d(g);break}}if(!e){let m=(t.textContent||"").split(`
-`).map(g=>g.trim()).find(Boolean)||"";m&&C.includes(y(d(m)))&&(e=d(m))}if(!e)return}let s=document.createElement("div");s.innerHTML=t.innerHTML,s.querySelector(".section-title")?.remove();let o=s.innerHTML.replace(/\r\n?/g,`
-`).replace(/<br\s*\/?>[ \t]*\n?/gi,`
-`).replace(/\n(?:[ \t]*\n)+/g,"\u2028").split("\u2028").map(d=>d.split(/<br\s*\/?>|\n/).map(m=>G(m.replace(/<[^>]+>/g," "))).filter(Boolean)).filter(d=>d.length),u=[],i=[];o.forEach((d,m)=>{d.forEach((g,M)=>{m>0&&M===0&&u.length&&i.push(u.length),u.push(g)})});let a=u;if(!r&&a.length&&y(a[0])===y(e)){a.shift();for(let d=0;d<i.length;d++)i[d]-=1;for(;i.length&&i[0]<=0;)i.shift()}a.length>1&&!/^[IVXLC]+\.\s/.test(a[0])&&a.slice(1).some(d=>/^II\.\s/.test(d))&&(a[0]="I. "+a[0]),e&&E.push({title:e,items:a,para:i})});let Rt=/^catatan\s*:?/i,It=/^icd[\s-]*o\b\s*:?/i,$=[];for(let t of E){let e=[{title:t.title,items:[],para:[]}],r=e[0],p=!1,s=(o,u)=>{r={title:o,items:[],para:[],bare:u},e.push(r),p=!0};if(t.items.forEach((o,u)=>{let i=o.match(Rt),a=i?null:o.match(It);if(i){y(r.title)!=="catatan"&&s("Catatan");let d=o.slice(i[0].length).trim();d&&(t.para.includes(u)&&r.para.push(r.items.length),r.items.push(d));return}if(a){y(r.title)!=="icdo"&&s("ICD-0",!0),t.para.includes(u)&&r.para.push(r.items.length),r.items.push(o);return}t.para.includes(u)&&r.para.push(r.items.length),r.items.push(o)}),p)for(let o of e)o.items.length&&$.push(o);else $.push(e[0])}E.length=0,E.push(...$),E.forEach((t,e)=>t._i=e),E.sort((t,e)=>{let r=t._i??0,p=e._i??0,s=C.indexOf(y(t.title)),o=C.indexOf(y(e.title)),u=s===-1?C.length:s,i=o===-1?C.length:o;return u!==i?u-i:r-p});function zt(t){let e="";t instanceof HTMLSelectElement?e=((t.selectedIndex>=0?t.options[t.selectedIndex]:void 0)?.textContent||t.value||"").trim():(t instanceof HTMLInputElement||t instanceof HTMLTextAreaElement)&&(e=(t.value||"").trim());let r=(t.getAttribute("name")||"")+" "+(t.getAttribute("id")||""),p=t.getAttribute("placeholder")||"",s=t.closest("tr, .form-group, .form-row, div")?.textContent||"";return{val:e,ctx:(r+" "+p+" "+s).slice(0,300)}}function Mt(t,e,r){let p=e.toLowerCase().split(/[^a-z0-9]+/).filter(i=>i.length>=4&&!/^(dokter|pengirim|rumah|sakit|klinik|tanpa|kelas|rsud|rs|sp|dr|dalam|luar)$/.test(i));if(!p.length)return"";let s=p.sort((i,a)=>a.length-i.length)[0],o="",u=-1;return t.querySelectorAll("input, textarea, select").forEach(i=>{let{val:a,ctx:d}=zt(i);if(!a||a===e||!a.toLowerCase().includes(s))return;let m=r.test(d)?2:0;m>u&&(u=m,o=a)}),o}function Dt(t,e){return(t.querySelector(e)?.value||"").trim()}async function Gt(t){let e=new URLSearchParams(window.location.search).get("id");if(!e)return;let r=i=>/ket\w*\s*klinis/i.test(i),p=i=>/^dokter/i.test(i)||/^rs\b/i.test(i),s=t.map(([i,a],d)=>({label:i,value:a,idx:d})).filter(i=>p(i.label)?!!i.value:r(i.label));if(!s.length)return;let o=new AbortController,u=window.setTimeout(()=>o.abort(),6e3);try{let i=new URL("/laboratorium/input-hasil/input-hasil-pa?id_lab="+encodeURIComponent(e),window.location.href),a=await fetch(i.toString(),{credentials:"same-origin",signal:o.signal});if(!a.ok){window.console.info("[paPrint] override: fetch input status "+a.status);return}let d=await a.text(),m=new DOMParser().parseFromString(d,"text/html");window.console.info('[paPrint] override: input title="'+(m.title||"").slice(0,60)+'" len='+d.length+" fields="+m.querySelectorAll("input, textarea, select").length);for(let g of s){if(r(g.label)){let L=Dt(m,'#keterangan_klinis, textarea[name="keterangan_klinis"], input[name="keterangan_klinis"]'),R=G(tt(L));window.console.info("[paPrint] override: "+g.label+' cetak="'+g.value+'" input="'+R+'"'),R&&R!==g.value&&(t[g.idx][1]=R);continue}let M=/^dokter/i.test(g.label)?/dokter|pengirim|luar|dalam|rujuk/i:/rs\b|rumah\s*sakit|faskes|asal/i,X=Mt(m,g.value,M),x=G(tt(X||""));window.console.info("[paPrint] override: "+g.label+' cetak="'+g.value+'" input="'+x+'"'),x&&x!==g.value&&(t[g.idx][1]=x)}}catch{window.console.info("[paPrint] override: fetch gagal, pakai nilai server")}finally{window.clearTimeout(u)}}await Gt(U).catch(()=>{});let P=Array.from(document.querySelectorAll(".contentlab ~ div table td")).map(t=>v(t)).filter(Boolean),rt=P[0]||"",st=P[1]||"",O=document.querySelector(".contentlab ~ div table img")?.getAttribute("src")||"",lt=P.find(t=>/^\(.*\)$/.test(t))||P[2]||"",pt=P.find(t=>/^nip\.?/i.test(t))||P[3]||"",ct=document.querySelector('a.tombol[href*="export"]')?.getAttribute("href")||window.location.href+"&export=word",Ft=Array.from(document.body.querySelectorAll("script")),Ht=t=>t.toLowerCase().split(/\s+/).map(e=>e&&e.charAt(0).toUpperCase()+e.slice(1)).join(" "),z=U.map(([t,e])=>{if(!/^ruang/i.test(t))return[t,e];let r=e.replace(/^poli\s+.+?-\s*(?=klinik)/i,"").trim()||e,s=r.replace(/^(\S+)\s+-\s*(?=\1\b)/i,"").trim()||r,o=s.split(/\s+-\s*/);if(o.length>=3&&/rawat\s+inap/i.test(o[1])){let u=Ht(o[1].trim()),i=o.slice(2).join(" - ").trim(),a=i?u+" - "+i:u;if(a)return[t,a]}return[t,s]}),_t=z.map(([t,e])=>'<div class="info-item"><div class="info-label">'+c(t)+'</div><div class="info-colon">:</div><div class="info-value">'+c(e)+"</div></div>").join(""),V=t=>/^icd-?o\s*:/i.test(t)?"<strong>"+c(t)+"</strong>":c(t),dt=t=>/^catatan/i.test(t.trim()),ut=t=>t.replace(/^catatan\s*:?\s*/i,"").replace(/^[-•–—*]+\s*/,"").trim(),qt=z.find(([t])=>/^no\.?pa/i.test(t))?.[1].replace(/[^a-zA-Z0-9]+/g,"-")||"tanpa-no";function mt(t){if(/^data:/i.test(t))return Promise.resolve(t);let e=new URL(t,window.location.href).href;return fetch(e,{signal:AbortSignal.timeout(8e3),credentials:"same-origin"}).then(r=>{if(!r.ok)throw new Error("img "+r.status);return r.blob()}).then(r=>new Promise((p,s)=>{let o=new FileReader;o.onload=()=>p(String(o.result)),o.onerror=()=>s(o.error),o.readAsDataURL(r)})).catch(()=>e)}async function Ut(){let t=Q(T),[e,r]=await Promise.all([mt(et),O?mt(O):Promise.resolve("")]),p="";for(let a=0;a<z.length;a+=2){let d=z[a],m=z[a+1];p+="<tr><td>"+c(d[0])+"</td><td>:</td><td>"+c(d[1])+"</td>"+(m?"<td>"+c(m[0])+"</td><td>:</td><td>"+c(m[1])+"</td>":"<td></td><td></td><td></td>")+"</tr>"}let s="";for(let a of E){if(dt(a.title)){let x=a.items.length?a.items:["Tidak ada"];s+='<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:'+t.judul.fs+'pt"><b><u>CATATAN:</u></b></td><td valign="top" style="font-size:'+t.catatan.fs+"pt;line-height:"+t.catatan.lh+';">'+x.map(L=>"- <b>"+c(ut(L)||"Tidak ada")+"</b>").join("<br>")+"</td></tr></table>";continue}if(a.bare){a.items.forEach((x,L)=>{s+='<p style="margin:'+(L===0?"12pt":"0")+" 0 6pt 0;font-size:"+t.icdo.fs+"pt;line-height:"+t.icdo.lh+';"><b>'+c(x.toUpperCase())+"</b></p>"});continue}s+='<p style="margin:12pt 0 0 0;font-size:'+t.judul.fs+'pt;"><b><u>'+c(a.title.toUpperCase())+"</u></b></p>";let d=y(a.title)==="kesimpulan",m=y(a.title)==="icdo",g=d||m||y(a.title)==="saran",M=d?t.kesimpulan.fs:m?t.icdo.fs:t.isi.fs,X=d?t.kesimpulan.lh:m?t.icdo.lh:t.isi.lh;a.items.forEach((x,L)=>{let R=g?"<b>"+c(x)+"</b>":V(x),Kt=Z(x)?"margin-left:18pt;text-indent:-18pt;":"";s+='<p style="margin:'+(a.para.includes(L)?"14pt":"0")+" 0 6pt 0;font-size:"+M+"pt;line-height:"+X+";text-align:justify;"+Kt+'">'+R+"</p>"})}let o='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>'+c(B)+'</title></head><body style="font-family:Arial,sans-serif;font-size:'+t.isi.fs+"pt;line-height:"+t.isi.lh+';"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="'+e+'" width="90"></td><td align="center">'+F.slice(0,3).map(a=>'<b style="font-size:'+t.kop.fs+'pt;">'+c(a)+"</b>").join("<br>")+'<br><span style="font-size:'+t.alamatFs+'pt;">'+I.map(a=>c(a)).join("<br>")+'</span></td></tr></table><hr><p align="center" style="font-size:'+t.judulLapFs+'pt;"><b><u>'+c(B.toUpperCase())+'</u></b></p><table border="0" cellspacing="0" cellpadding="2" style="font-size:'+t.pasien.fs+"pt;line-height:"+t.pasien.lh+';">'+p+"</table>"+s+'<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size:'+t.ttd.fs+"pt;line-height:"+t.ttd.lh+';"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">'+c(rt)+'</p><p style="margin:0 0 6pt 0;">'+c(st)+"</p>"+(r?'<p style="margin:0 0 6pt 0;"><img src="'+r+'" width="80" height="80"></p>':"")+'<p style="margin:0 0 6pt 0;"><b>'+c(lt)+'</b></p><p style="margin:0 0 6pt 0;">'+c(pt)+"</p></td></tr></table></body></html>",u=new Blob(["\uFEFF"+o],{type:"application/msword"}),i=document.createElement("a");i.href=URL.createObjectURL(u),i.download="Hasil-PA-"+qt+".doc",document.body.appendChild(i),i.click(),window.setTimeout(()=>{URL.revokeObjectURL(i.href),i.remove()},4e3)}let Ot=E.map(t=>{if(dt(t.title))return'<div class="section-catatan"><span class="catatan-label">Catatan:</span><div class="catatan-list">'+(t.items.length?t.items:["Tidak ada"]).map(u=>'<div class="catatan-item"><span class="catatan-dash">-</span><span>'+c(ut(u)||"Tidak ada")+"</span></div>").join("")+"</div></div>";let e=y(t.title)==="kesimpulan",r=y(t.title)==="icdo",p=e||r||y(t.title)==="saran",s='<div class="'+(t.bare?"section-isi section-isi-bare":"section-isi")+(e?" section-kesimpulan":"")+(r&&!t.bare?" section-icdo":"")+'">'+t.items.map((o,u)=>{let i=t.para.includes(u)?" item-para":"",a=Z(o);if(a){let d=p?"<strong>"+c(a[1])+"</strong>":V(a[1]);return'<div class="item-list has-marker'+i+'"><span class="item-marker">'+c(a[0])+"</span><span>"+d+"</span></div>"}return'<div class="item-list'+i+'">'+(p?"<strong>"+c(o)+"</strong>":V(o))+"</div>"}).join("")+"</div>";return t.bare?s:'<div class="section-judul">'+c(t.title)+"</div>"+s}).join("");document.body.innerHTML='<a href="'+c(ct)+'" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">\u2699\uFE0F Gaya</button><div class="t-typo no-print" id="ext-pa-typo" hidden></div><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="'+c(et)+'" alt="Logo"></div><div class="kop-text">'+F.slice(0,3).map(t=>'<h1 class="kop-atas">'+c(t)+"</h1>").join("")+'<div class="kop-alamat">'+I.map(t=>c(t)).join("<br>")+'</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">'+c(B)+'</div><div class="patient-info-container">'+_t+'</div><div class="hasil-pa">'+Ot+'</div><div class="ttd-container clearfix"><div class="ttd-box"><p>'+c(rt)+"</p><p>"+c(st)+"</p>"+(O?'<img src="'+c(O)+'" alt="QR Code TTD">':"")+'<p style="font-weight: bold; margin-bottom: 0;">'+c(lt)+'</p><p style="margin-top: 2px;">'+c(pt)+"</p></div></div></div>",Ft.forEach(t=>document.body.appendChild(t)),document.querySelector("#btn-word")?.addEventListener("click",t=>{t.preventDefault(),Ut().catch(()=>{window.location.href=ct})});let ft=()=>{let t=document.getElementById("ext-pa-typo");if(!t)return;let e=(p,s,o,u,i,a,d,m)=>"<label>"+c(o)+'<input type="range" data-g="'+c(p)+'" data-f="'+s+'" min="'+u+'" max="'+i+'" step="'+a+'" value="'+d+'"><output data-o="'+c(p+"-"+s)+'">'+c(String(d)+m)+"</output></label>";t.innerHTML="<h4>Gaya Cetakan PA</h4>"+wt.map(p=>'<div class="t-typo-group"><strong>'+c(p.label)+'</strong><div class="t-typo-row">'+e(p.key,"fs","Font (pt)",4,20,.5,T[p.key].fs,"pt")+e(p.key,"lh","Spasi baris",.5,2.5,.05,T[p.key].lh,"")+"</div></div>").join("")+'<div class="t-typo-actions"><button type="button" data-act="save" class="primary">Simpan</button><button type="button" data-act="reset">Reset</button></div><div class="t-typo-note" data-note></div>',t.querySelectorAll('input[type="range"]').forEach(p=>{let s=p;s.addEventListener("input",()=>{let o=s.dataset.g,u=s.dataset.f;if(!o||!u||!T[o])return;T[o][u]=Number(s.value),N();let i=t.querySelector(`output[data-o="${o}-${u}"]`);i&&(i.textContent=s.value+(u==="fs"?"pt":""))})});let r=t.querySelector("[data-note]");t.querySelector('[data-act="save"]')?.addEventListener("click",()=>{let p=At(D(),T);r&&(r.textContent=p?"Tersimpan \u2713":"Gagal menyimpan")}),t.querySelector('[data-act="reset"]')?.addEventListener("click",()=>{if(St(D()),T=J(D()),N(),ft(),r){let p=t.querySelector("[data-note]");p&&(p.textContent="Kembali ke default \u2713")}})};document.querySelector("#btn-typo")?.addEventListener("click",()=>{let t=document.getElementById("ext-pa-typo");if(!t)return;let e=t.hidden;e&&ft(),t.hidden=!e}),document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach(t=>t.remove());let gt="ext-pa-print-style";if(!document.getElementById(gt)){let t=document.createElement("style");t.id=gt,t.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
+  // src/features/shared/freeText.ts
+  var FREE_TEXT_MARK = "ext-free-text-noop";
+  var FREE_TEXT_CSS = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),textarea,select{text-transform:none!important}';
+  function neutralizeToUpper(w) {
+    try {
+      const cur = w.toUpper;
+      if (typeof cur === "function" && cur[FREE_TEXT_MARK] === true) return true;
+      const noop = function(obj) {
+        return obj?.value ?? "";
+      };
+      noop[FREE_TEXT_MARK] = true;
+      try {
+        Object.defineProperty(w, "toUpper", {
+          value: noop,
+          writable: true,
+          configurable: true
+        });
+      } catch {
+        w.toUpper = noop;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // src/features/shared/paTypo.ts
+  var TYPO_KEY = "ext-pa-typo";
+  var TYPO_GROUPS = [
+    { key: "kop", label: "Kop Surat" },
+    { key: "pasien", label: "Data Pasien" },
+    { key: "judul", label: "Judul Bagian Isi" },
+    { key: "isi", label: "Isi" },
+    { key: "kesimpulan", label: "Kesimpulan" },
+    { key: "icdo", label: "ICD-O" },
+    { key: "catatan", label: "Catatan" },
+    { key: "ttd", label: "TTD" }
+  ];
+  var DEFAULT_TYPO = {
+    kop: { fs: 16, lh: 1.2 },
+    pasien: { fs: 4, lh: 1 },
+    judul: { fs: 6, lh: 1.2 },
+    isi: { fs: 5, lh: 1.25 },
+    kesimpulan: { fs: 5, lh: 1.25 },
+    icdo: { fs: 6, lh: 1.2 },
+    catatan: { fs: 5, lh: 1.25 },
+    ttd: { fs: 6, lh: 1.2 }
+  };
+  var FS_MIN = 4;
+  var FS_MAX = 24;
+  var LH_MIN = 0.5;
+  var LH_MAX = 2.5;
+  function num(v, fallback, min, max) {
+    const n = typeof v === "number" ? v : Number(v);
+    if (!Number.isFinite(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
+  }
+  function group(v, fb) {
+    const o = v ?? {};
+    return {
+      fs: num(o.fs, fb.fs, FS_MIN, FS_MAX),
+      lh: num(o.lh, fb.lh, LH_MIN, LH_MAX)
+    };
+  }
+  function sanitizeTypo(v) {
+    const o = v ?? {};
+    return {
+      kop: group(o.kop, DEFAULT_TYPO.kop),
+      pasien: group(o.pasien, DEFAULT_TYPO.pasien),
+      judul: group(o.judul, DEFAULT_TYPO.judul),
+      isi: group(o.isi, DEFAULT_TYPO.isi),
+      kesimpulan: group(o.kesimpulan, DEFAULT_TYPO.kesimpulan),
+      icdo: group(o.icdo, DEFAULT_TYPO.icdo),
+      catatan: group(o.catatan, DEFAULT_TYPO.catatan),
+      ttd: group(o.ttd, DEFAULT_TYPO.ttd)
+    };
+  }
+  function defaultTypo() {
+    return sanitizeTypo(null);
+  }
+  function loadTypo(store) {
+    try {
+      if (!store) return defaultTypo();
+      const raw = store.getItem(TYPO_KEY);
+      if (!raw) return defaultTypo();
+      return sanitizeTypo(JSON.parse(raw));
+    } catch {
+      return defaultTypo();
+    }
+  }
+  function saveTypo(store, t) {
+    try {
+      if (!store) return false;
+      store.setItem(TYPO_KEY, JSON.stringify(sanitizeTypo(t)));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function resetTypo(store) {
+    try {
+      store?.removeItem(TYPO_KEY);
+    } catch {
+    }
+  }
+  function resolveTypo(t) {
+    const s = sanitizeTypo(t);
+    const clamp = (n) => Math.min(FS_MAX, Math.max(FS_MIN, n));
+    return {
+      ...s,
+      alamatFs: clamp(s.kop.fs - 8.5),
+      judulLapFs: clamp(s.kop.fs - 4)
+    };
+  }
+  var r2 = (n) => String(Math.round(n * 100) / 100);
+  function typoCssVars(t) {
+    const r = resolveTypo(t);
+    return {
+      "--pa-kop-fs": `${r2(r.kop.fs)}pt`,
+      "--pa-kop-lh": r2(r.kop.lh),
+      "--pa-alamat-fs": `${r2(r.alamatFs)}pt`,
+      "--pa-judul-lap-fs": `${r2(r.judulLapFs)}pt`,
+      "--pa-pasien-fs": `${r2(r.pasien.fs)}pt`,
+      "--pa-pasien-lh": r2(r.pasien.lh),
+      "--pa-judul-fs": `${r2(r.judul.fs)}pt`,
+      "--pa-judul-lh": r2(r.judul.lh),
+      "--pa-isi-fs": `${r2(r.isi.fs)}pt`,
+      "--pa-isi-lh": r2(r.isi.lh),
+      "--pa-kesimpulan-fs": `${r2(r.kesimpulan.fs)}pt`,
+      "--pa-kesimpulan-lh": r2(r.kesimpulan.lh),
+      "--pa-icdo-fs": `${r2(r.icdo.fs)}pt`,
+      "--pa-icdo-lh": r2(r.icdo.lh),
+      "--pa-catatan-fs": `${r2(r.catatan.fs)}pt`,
+      "--pa-catatan-lh": r2(r.catatan.lh),
+      "--pa-ttd-fs": `${r2(r.ttd.fs)}pt`,
+      "--pa-ttd-lh": r2(r.ttd.lh)
+    };
+  }
+  function applyTypoVars(target, t) {
+    if (!target) return;
+    try {
+      for (const [k, v] of Object.entries(typoCssVars(t))) target.setProperty(k, v);
+    } catch {
+    }
+  }
+
+  // src/features/shared/paList.ts
+  var MARKER_RE = /^(\(?[IVXLC]+[.)]|\d+[.)]|[-•–—*])\s+/;
+  function splitListMarker(text) {
+    const t = text ?? "";
+    const m = t.match(MARKER_RE);
+    if (!m) return null;
+    const rest = t.slice(m[0].length).trim();
+    if (rest === "") return null;
+    return [m[1], rest];
+  }
+
+  // src/features/paLabPrint.ts
+  whenFeatureEnabled("paLabPrint", function() {
+    "use strict";
+    function freeTextNow() {
+      try {
+        neutralizeToUpper(window);
+      } catch {
+      }
+      try {
+        if (document.head && !document.getElementById("ext-free-text-style")) {
+          const s = document.createElement("style");
+          s.id = "ext-free-text-style";
+          s.textContent = FREE_TEXT_CSS;
+          document.head.appendChild(s);
+        }
+      } catch {
+      }
+    }
+    freeTextNow();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", freeTextNow);
+    }
+    window.setInterval(freeTextNow, 3e3);
+    const isPrintPage = window.location.pathname.includes("/laboratorium/print/");
+    if (!isPrintPage) return;
+    async function apply() {
+      const PAGE_GUARD = "ext-pa-print-proc";
+      if (document.documentElement.getAttribute(PAGE_GUARD)) return;
+      document.documentElement.setAttribute(PAGE_GUARD, "1");
+      const typoStore = () => {
+        try {
+          return window.localStorage ?? null;
+        } catch {
+          return null;
+        }
+      };
+      let typo = loadTypo(typoStore());
+      const applyTypo = () => {
+        try {
+          applyTypoVars(document.documentElement.style, typo);
+        } catch {
+        }
+      };
+      applyTypo();
+      const txt = (el) => cleanPhpNoise(el?.textContent || "");
+      function stripTags(s) {
+        return s.replace(/<[^>]+>/g, " ");
+      }
+      function fixRsName(s) {
+        return s.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, "H. ");
+      }
+      function cleanPhpNoise(s) {
+        return fixRsName(s).replace(
+          /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
+          " "
+        ).replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, " ").replace(/\s+/g, " ").trim();
+      }
+      function esc(s) {
+        return String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+        );
+      }
+      const logoSrc = document.querySelector("#logo img")?.getAttribute("src") || "/assets/images/logo/Kota Jambi.png";
+      const kopLines = Array.from(document.querySelectorAll("h1.kop-atas")).map((h) => txt(h)).filter(Boolean);
+      while (kopLines.length < 3) kopLines.push("");
+      let addrLines = [];
+      const headLogo = document.querySelector("#head-cetak-logo center, #head-cetak-logo");
+      if (headLogo) {
+        const tmp = document.createElement("div");
+        tmp.innerHTML = headLogo.innerHTML;
+        tmp.querySelectorAll("h1").forEach((h) => h.remove());
+        addrLines = (tmp.innerHTML || "").split(/<br\s*\/?>/gi).map((l) => tmp.textContent && l.replace(/<[^>]+>/g, "").trim()).map((l) => String(l || "").trim()).filter(Boolean);
+      }
+      const addrText = addrLines.join(" ");
+      const pickPhone = (label) => {
+        const m = addrText.match(new RegExp(label + "\\s*:([\\d\\s().+-]+)", "i"));
+        return m ? m[1].trim() : "";
+      };
+      const telp = pickPhone("telp");
+      const fax = pickPhone("fax");
+      const email = (addrText.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/) || [""])[0];
+      const website = (addrText.match(/https?:\/\/[^\s;,]+/) || [""])[0];
+      let street = addrText.replace(/telp\s*:[\d\s().+-]+/gi, "").replace(/fax\s*:[\d\s().+-]+/gi, "").replace(/website\s*:?/gi, "").replace(/email\s*:?/gi, "");
+      if (email) street = street.split(email).join("");
+      if (website) street = street.split(website).join("");
+      street = street.split(/[;]+/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).join(", ").replace(/,\s*,+/g, ",").replace(/^[,;\s]+|[,;\s]+$/g, "");
+      const addrLine1 = ["Alamat: " + street, telp ? "Telp: " + telp : "", fax ? "Fax: " + fax : ""].filter(Boolean).join(", ");
+      const addrLine2 = [email ? "Email: " + email : "", website ? "Website: " + website : ""].filter(Boolean).join(", ");
+      addrLines = [addrLine1, addrLine2].filter(Boolean);
+      const judul = txt(document.querySelector(".head-cetak-instansi")) || "LAPORAN HASIL PEMERIKSAAN";
+      const infoItems = [];
+      document.querySelectorAll(".table-outer tr").forEach((tr) => {
+        const tds = tr.querySelectorAll("td");
+        if (tds.length >= 6) {
+          const l1 = txt(tds[0]);
+          const v1 = txt(tds[2]);
+          const l2 = txt(tds[3]);
+          const v2 = txt(tds[5]);
+          if (l1) infoItems.push([l1, v1]);
+          if (l2) infoItems.push([l2, v2]);
+        }
+      });
+      const ORDER = ["makroskopik", "mikroskopik", "kesimpulan", "icdo", "catatan", "saran"];
+      const normTitle = (t) => t.toLowerCase().replace(/0/g, "o").replace(/[^a-z]/g, "");
+      const sections = [];
+      document.querySelectorAll(".contentlab td").forEach((td) => {
+        let title = "";
+        let hasSt = false;
+        const st = td.querySelector(".section-title");
+        if (st) {
+          title = txt(st);
+          hasSt = true;
+        } else {
+          const head = (t) => t.split(":")[0].trim();
+          for (const el of Array.from(td.children).slice(0, 3)) {
+            const t = txt(el);
+            if (t && t.length <= 24 && ORDER.includes(normTitle(head(t)))) {
+              title = head(t);
+              break;
+            }
+          }
+          if (!title) {
+            const firstLine = (td.textContent || "").split("\n").map((l) => l.trim()).find(Boolean) || "";
+            if (firstLine && ORDER.includes(normTitle(head(firstLine)))) title = head(firstLine);
+          }
+          if (!title) return;
+        }
+        const tmp = document.createElement("div");
+        tmp.innerHTML = td.innerHTML;
+        tmp.querySelector(".section-title")?.remove();
+        const paras = tmp.innerHTML.replace(/\r\n?/g, "\n").replace(/<br\s*\/?>[ \t]*\n?/gi, "\n").replace(/\n(?:[ \t]*\n)+/g, "\u2028").split("\u2028").map(
+          (block) => block.split(/<br\s*\/?>|\n/).map((l) => cleanPhpNoise(l.replace(/<[^>]+>/g, " "))).filter(Boolean)
+        ).filter((b) => b.length);
+        const items = [];
+        const paraIdx = [];
+        paras.forEach((block, bi) => {
+          block.forEach((it, ii) => {
+            if (bi > 0 && ii === 0 && items.length) paraIdx.push(items.length);
+            items.push(it);
+          });
+        });
+        const finalItems = items;
+        if (!hasSt && finalItems.length && normTitle(finalItems[0]) === normTitle(title)) {
+          finalItems.shift();
+          for (let k = 0; k < paraIdx.length; k++) paraIdx[k] -= 1;
+          while (paraIdx.length && paraIdx[0] <= 0) paraIdx.shift();
+        }
+        if (finalItems.length > 1 && !/^[IVXLC]+\.\s/.test(finalItems[0]) && finalItems.slice(1).some((it) => /^II\.\s/.test(it))) {
+          finalItems[0] = "I. " + finalItems[0];
+        }
+        if (title) sections.push({ title, items: finalItems, para: paraIdx });
+      });
+      const MARK_CATATAN = /^catatan\s*:?/i;
+      const MARK_ICDO = /^icd[\s-]*o\b\s*:?/i;
+      const splitSections = [];
+      for (const s of sections) {
+        const parts = [
+          { title: s.title, items: [], para: [] }
+        ];
+        let cur = parts[0];
+        let openedVirtual = false;
+        const open = (t, bare) => {
+          cur = { title: t, items: [], para: [], bare };
+          parts.push(cur);
+          openedVirtual = true;
+        };
+        s.items.forEach((it, i) => {
+          const mCat = it.match(MARK_CATATAN);
+          const mIc = mCat ? null : it.match(MARK_ICDO);
+          if (mCat) {
+            if (normTitle(cur.title) !== "catatan") open("Catatan");
+            const rest = it.slice(mCat[0].length).trim();
+            if (rest) {
+              if (s.para.includes(i)) cur.para.push(cur.items.length);
+              cur.items.push(rest);
+            }
+            return;
+          }
+          if (mIc) {
+            if (normTitle(cur.title) !== "icdo") open("ICD-0", true);
+            if (s.para.includes(i)) cur.para.push(cur.items.length);
+            cur.items.push(it);
+            return;
+          }
+          if (s.para.includes(i)) cur.para.push(cur.items.length);
+          cur.items.push(it);
+        });
+        if (openedVirtual) {
+          for (const p of parts) if (p.items.length) splitSections.push(p);
+        } else {
+          splitSections.push(parts[0]);
+        }
+      }
+      sections.length = 0;
+      sections.push(...splitSections);
+      sections.forEach((s, i) => s._i = i);
+      sections.sort((a, b) => {
+        const ai = a._i ?? 0;
+        const bi = b._i ?? 0;
+        const ao = ORDER.indexOf(normTitle(a.title));
+        const bo = ORDER.indexOf(normTitle(b.title));
+        const ra = ao === -1 ? ORDER.length : ao;
+        const rb = bo === -1 ? ORDER.length : bo;
+        return ra !== rb ? ra - rb : ai - bi;
+      });
+      function fieldText(el) {
+        let val = "";
+        if (el instanceof HTMLSelectElement) {
+          const opt = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : void 0;
+          val = (opt?.textContent || el.value || "").trim();
+        } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+          val = (el.value || "").trim();
+        }
+        const ids = (el.getAttribute("name") || "") + " " + (el.getAttribute("id") || "");
+        const ph = el.getAttribute("placeholder") || "";
+        const row = el.closest("tr, .form-group, .form-row, div")?.textContent || "";
+        return { val, ctx: (ids + " " + ph + " " + row).slice(0, 300) };
+      }
+      function originalValue(doc2, printVal, ctxRe) {
+        const toks = printVal.toLowerCase().split(/[^a-z0-9]+/).filter(
+          (t) => t.length >= 4 && !/^(dokter|pengirim|rumah|sakit|klinik|tanpa|kelas|rsud|rs|sp|dr|dalam|luar)$/.test(t)
+        );
+        if (!toks.length) return "";
+        const anchor = toks.sort((a, b) => b.length - a.length)[0];
+        let best = "";
+        let bestScore = -1;
+        doc2.querySelectorAll("input, textarea, select").forEach((el) => {
+          const { val, ctx } = fieldText(el);
+          if (!val || val === printVal) return;
+          if (!val.toLowerCase().includes(anchor)) return;
+          const score = ctxRe.test(ctx) ? 2 : 0;
+          if (score > bestScore) {
+            bestScore = score;
+            best = val;
+          }
+        });
+        return best;
+      }
+      function inputFieldValue(doc2, sel) {
+        const el = doc2.querySelector(sel);
+        return (el?.value || "").trim();
+      }
+      async function overrideFromInput(info) {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) return;
+        const isKlinis = (l) => /ket\w*\s*klinis/i.test(l);
+        const isDokRs = (l) => /^dokter/i.test(l) || /^rs\b/i.test(l);
+        const targets = info.map(([l, v], i) => ({ label: l, value: v, idx: i })).filter((t) => isDokRs(t.label) ? !!t.value : isKlinis(t.label));
+        if (!targets.length) return;
+        const ctrl = new AbortController();
+        const timer = window.setTimeout(() => ctrl.abort(), 6e3);
+        try {
+          const url = new URL(
+            "/laboratorium/input-hasil/input-hasil-pa?id_lab=" + encodeURIComponent(id),
+            window.location.href
+          );
+          const res = await fetch(url.toString(), {
+            credentials: "same-origin",
+            signal: ctrl.signal
+          });
+          if (!res.ok) {
+            window.console.info("[paPrint] override: fetch input status " + res.status);
+            return;
+          }
+          const html = await res.text();
+          const doc2 = new DOMParser().parseFromString(html, "text/html");
+          window.console.info(
+            '[paPrint] override: input title="' + (doc2.title || "").slice(0, 60) + '" len=' + html.length + " fields=" + doc2.querySelectorAll("input, textarea, select").length
+          );
+          for (const t of targets) {
+            if (isKlinis(t.label)) {
+              const rawK = inputFieldValue(
+                doc2,
+                '#keterangan_klinis, textarea[name="keterangan_klinis"], input[name="keterangan_klinis"]'
+              );
+              const klinis = cleanPhpNoise(stripTags(rawK));
+              window.console.info(
+                "[paPrint] override: " + t.label + ' cetak="' + t.value + '" input="' + klinis + '"'
+              );
+              if (klinis && klinis !== t.value) info[t.idx][1] = klinis;
+              continue;
+            }
+            const ctxRe = /^dokter/i.test(t.label) ? /dokter|pengirim|luar|dalam|rujuk/i : /rs\b|rumah\s*sakit|faskes|asal/i;
+            const raw = originalValue(doc2, t.value, ctxRe);
+            const orig = cleanPhpNoise(stripTags(raw || ""));
+            window.console.info(
+              "[paPrint] override: " + t.label + ' cetak="' + t.value + '" input="' + orig + '"'
+            );
+            if (orig && orig !== t.value) info[t.idx][1] = orig;
+          }
+        } catch {
+          window.console.info("[paPrint] override: fetch gagal, pakai nilai server");
+        } finally {
+          window.clearTimeout(timer);
+        }
+      }
+      await overrideFromInput(infoItems).catch(() => {
+      });
+      const sigTds = Array.from(document.querySelectorAll(".contentlab ~ div table td"));
+      const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
+      const thanks = sigTexts[0] || "";
+      const dateLine = sigTexts[1] || "";
+      const qrSrc = document.querySelector(".contentlab ~ div table img")?.getAttribute("src") || "";
+      const docName = sigTexts.find((t) => /^\(.*\)$/.test(t)) || sigTexts[2] || "";
+      const nip = sigTexts.find((t) => /^nip\.?/i.test(t)) || sigTexts[3] || "";
+      const exportHref = document.querySelector('a.tombol[href*="export"]')?.getAttribute("href") || window.location.href + "&export=word";
+      const bodyScripts = Array.from(
+        document.body.querySelectorAll("script")
+      );
+      const titleCase = (s) => s.toLowerCase().split(/\s+/).map((w) => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
+      const infoClean = infoItems.map(([l, v]) => {
+        if (!/^ruang/i.test(l)) return [l, v];
+        const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, "").trim() || v;
+        const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, "").trim();
+        const base = segDup || dedup;
+        const segs = base.split(/\s+-\s*/);
+        if (segs.length >= 3 && /rawat\s+inap/i.test(segs[1])) {
+          const mid = titleCase(segs[1].trim());
+          const rest = segs.slice(2).join(" - ").trim();
+          const out = rest ? mid + " - " + rest : mid;
+          if (out) return [l, out];
+        }
+        return [l, base];
+      });
+      const infoHtml = infoClean.map(
+        ([l, v]) => '<div class="info-item"><div class="info-label">' + esc(l) + '</div><div class="info-colon">:</div><div class="info-value">' + esc(v) + "</div></div>"
+      ).join("");
+      const fmtItem = (it) => (
+        // Baris ICD-O tampil bold seperti prototype (ICD-0: 8210/0 …).
+        /^icd-?o\s*:/i.test(it) ? "<strong>" + esc(it) + "</strong>" : esc(it)
+      );
+      const isCatatan = (t) => /^catatan/i.test(t.trim());
+      const stripBullet = (it) => it.replace(/^catatan\s*:?\s*/i, "").replace(/^[-•–—*]+\s*/, "").trim();
+      const noPA = infoClean.find(([l]) => /^no\.?pa/i.test(l))?.[1].replace(/[^a-zA-Z0-9]+/g, "-") || "tanpa-no";
+      function dataUrl(src) {
+        if (/^data:/i.test(src)) return Promise.resolve(src);
+        const abs = new URL(src, window.location.href).href;
+        return fetch(abs, { signal: AbortSignal.timeout(8e3), credentials: "same-origin" }).then((res) => {
+          if (!res.ok) throw new Error("img " + res.status);
+          return res.blob();
+        }).then(
+          (blob) => new Promise((resolve, reject) => {
+            const fr = new FileReader();
+            fr.onload = () => resolve(String(fr.result));
+            fr.onerror = () => reject(fr.error);
+            fr.readAsDataURL(blob);
+          })
+        ).catch(() => abs);
+      }
+      async function exportWord() {
+        const r = resolveTypo(typo);
+        const [logo, qr] = await Promise.all([
+          dataUrl(logoSrc),
+          qrSrc ? dataUrl(qrSrc) : Promise.resolve("")
+        ]);
+        let infoTbl = "";
+        for (let r3 = 0; r3 < infoClean.length; r3 += 2) {
+          const a2 = infoClean[r3];
+          const b = infoClean[r3 + 1];
+          infoTbl += "<tr><td>" + esc(a2[0]) + "</td><td>:</td><td>" + esc(a2[1]) + "</td>" + (b ? "<td>" + esc(b[0]) + "</td><td>:</td><td>" + esc(b[1]) + "</td>" : "<td></td><td></td><td></td>") + "</tr>";
+        }
+        let hasilDoc = "";
+        for (const s of sections) {
+          if (isCatatan(s.title)) {
+            const rows = s.items.length ? s.items : ["Tidak ada"];
+            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>CATATAN:</u></b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map((it) => "- <b>" + esc(stripBullet(it) || "Tidak ada") + "</b>").join("<br>") + "</td></tr></table>";
+            continue;
+          }
+          if (s.bare) {
+            s.items.forEach((it, i) => {
+              hasilDoc += '<p style="margin:' + (i === 0 ? "12pt" : "0") + " 0 6pt 0;font-size:" + r.icdo.fs + "pt;line-height:" + r.icdo.lh + ';"><b>' + esc(it.toUpperCase()) + "</b></p>";
+            });
+            continue;
+          }
+          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
+          const isKesimpulan = normTitle(s.title) === "kesimpulan";
+          const isIcdo = normTitle(s.title) === "icdo";
+          const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
+          const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
+          const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
+          s.items.forEach((it, i) => {
+            const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
+            const mk = splitListMarker(it);
+            const hang = mk ? "margin-left:18pt;text-indent:-18pt;" : "";
+            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
+          });
+        }
+        const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + esc(judul) + '</title></head><body style="font-family:Arial,sans-serif;font-size:' + r.isi.fs + "pt;line-height:" + r.isi.lh + ';"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="' + logo + '" width="90"></td><td align="center">' + kopLines.slice(0, 3).map((l) => '<b style="font-size:' + r.kop.fs + 'pt;">' + esc(l) + "</b>").join("<br>") + '<br><span style="font-size:' + r.alamatFs + 'pt;">' + addrLines.map((l) => esc(l)).join("<br>") + '</span></td></tr></table><hr><p align="center" style="font-size:' + r.judulLapFs + 'pt;"><b><u>' + esc(judul.toUpperCase()) + '</u></b></p><table border="0" cellspacing="0" cellpadding="2" style="font-size:' + r.pasien.fs + "pt;line-height:" + r.pasien.lh + ';">' + infoTbl + "</table>" + hasilDoc + '<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size:' + r.ttd.fs + "pt;line-height:" + r.ttd.lh + ';"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">' + esc(thanks) + '</p><p style="margin:0 0 6pt 0;">' + esc(dateLine) + "</p>" + (qr ? '<p style="margin:0 0 6pt 0;"><img src="' + qr + '" width="80" height="80"></p>' : "") + '<p style="margin:0 0 6pt 0;"><b>' + esc(docName) + '</b></p><p style="margin:0 0 6pt 0;">' + esc(nip) + "</p></td></tr></table></body></html>";
+        const blob = new Blob(["\uFEFF" + doc], { type: "application/msword" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "Hasil-PA-" + noPA + ".doc";
+        document.body.appendChild(a);
+        a.click();
+        window.setTimeout(() => {
+          URL.revokeObjectURL(a.href);
+          a.remove();
+        }, 4e3);
+      }
+      const hasilHtml = sections.map((s) => {
+        if (isCatatan(s.title)) {
+          const rows = s.items.length ? s.items : ["Tidak ada"];
+          return '<div class="section-catatan"><span class="catatan-label">Catatan:</span><div class="catatan-list">' + rows.map(
+            (it) => '<div class="catatan-item"><span class="catatan-dash">-</span><span>' + esc(stripBullet(it) || "Tidak ada") + "</span></div>"
+          ).join("") + "</div></div>";
+        }
+        const isKesimpulan = normTitle(s.title) === "kesimpulan";
+        const isIcdo = normTitle(s.title) === "icdo";
+        const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
+        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
+          const paraCls = s.para.includes(i) ? " item-para" : "";
+          const mk = splitListMarker(it);
+          if (mk) {
+            const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
+            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
+          }
+          return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
+        }).join("") + "</div>";
+        if (s.bare) return isi;
+        return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
+      }).join("");
+      document.body.innerHTML = '<a href="' + esc(exportHref) + '" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">\u2699\uFE0F Gaya</button><div class="t-typo no-print" id="ext-pa-typo" hidden></div><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' + esc(logoSrc) + '" alt="Logo"></div><div class="kop-text">' + kopLines.slice(0, 3).map((l) => '<h1 class="kop-atas">' + esc(l) + "</h1>").join("") + '<div class="kop-alamat">' + addrLines.map((l) => esc(l)).join("<br>") + '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' + esc(judul) + '</div><div class="patient-info-container">' + infoHtml + '</div><div class="hasil-pa">' + hasilHtml + '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' + esc(thanks) + "</p><p>" + esc(dateLine) + "</p>" + (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : "") + '<p style="font-weight: bold; margin-bottom: 0;">' + esc(docName) + '</p><p style="margin-top: 2px;">' + esc(nip) + "</p></div></div></div>";
+      bodyScripts.forEach((s) => document.body.appendChild(s));
+      document.querySelector("#btn-word")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        exportWord().catch(() => {
+          window.location.href = exportHref;
+        });
+      });
+      const renderTypoPanel = () => {
+        const panel = document.getElementById("ext-pa-typo");
+        if (!panel) return;
+        const row = (gkey, field, label, min, max, step, val, unit) => "<label>" + esc(label) + '<input type="range" data-g="' + esc(gkey) + '" data-f="' + field + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output data-o="' + esc(gkey + "-" + field) + '">' + esc(String(val) + unit) + "</output></label>";
+        panel.innerHTML = "<h4>Gaya Cetakan PA</h4>" + TYPO_GROUPS.map(
+          (g) => '<div class="t-typo-group"><strong>' + esc(g.label) + '</strong><div class="t-typo-row">' + row(g.key, "fs", "Font (pt)", 4, 20, 0.5, typo[g.key].fs, "pt") + row(g.key, "lh", "Spasi baris", 0.5, 2.5, 0.05, typo[g.key].lh, "") + "</div></div>"
+        ).join("") + '<div class="t-typo-actions"><button type="button" data-act="save" class="primary">Simpan</button><button type="button" data-act="reset">Reset</button></div><div class="t-typo-note" data-note></div>';
+        panel.querySelectorAll('input[type="range"]').forEach((el) => {
+          const input = el;
+          input.addEventListener("input", () => {
+            const gk = input.dataset.g;
+            const fd = input.dataset.f;
+            if (!gk || !fd || !typo[gk]) return;
+            typo[gk][fd] = Number(input.value);
+            applyTypo();
+            const out = panel.querySelector(`output[data-o="${gk}-${fd}"]`);
+            if (out) out.textContent = input.value + (fd === "fs" ? "pt" : "");
+          });
+        });
+        const note = panel.querySelector("[data-note]");
+        panel.querySelector('[data-act="save"]')?.addEventListener("click", () => {
+          const ok = saveTypo(typoStore(), typo);
+          if (note) note.textContent = ok ? "Tersimpan \u2713" : "Gagal menyimpan";
+        });
+        panel.querySelector('[data-act="reset"]')?.addEventListener("click", () => {
+          resetTypo(typoStore());
+          typo = loadTypo(typoStore());
+          applyTypo();
+          renderTypoPanel();
+          if (note) {
+            const n2 = panel.querySelector("[data-note]");
+            if (n2) n2.textContent = "Kembali ke default \u2713";
+          }
+        });
+      };
+      document.querySelector("#btn-typo")?.addEventListener("click", () => {
+        const panel = document.getElementById("ext-pa-typo");
+        if (!panel) return;
+        const willOpen = panel.hidden;
+        if (willOpen) renderTypoPanel();
+        panel.hidden = !willOpen;
+      });
+      document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
+      const STYLE_ID = "ext-pa-print-style";
+      if (!document.getElementById(STYLE_ID)) {
+        const s = document.createElement("style");
+        s.id = STYLE_ID;
+        s.textContent = `
         @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
         /* Pengaturan Font dan Kertas untuk Cetak */
@@ -435,4 +1100,20 @@
         .t-typo-actions button.primary { background: #1e293b; color: white; border-color: #1e293b; }
         .t-typo-note { font-size: 11px; color: #15803d; min-height: 16px; margin-top: 6px; }
         @media print { .no-print { display: none !important; } }
-      `,document.head.appendChild(t)}}let h=Date.now(),w=window.setInterval(()=>{document.documentElement.getAttribute("data-ext-pa-print")==="1"?(window.clearInterval(w),f().catch(()=>{})):Date.now()-h>5e3&&window.clearInterval(w)},200)});})();
+      `;
+        document.head.appendChild(s);
+      }
+    }
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (document.documentElement.getAttribute("data-ext-pa-print") === "1") {
+        window.clearInterval(iv);
+        apply().catch(() => {
+        });
+      } else if (Date.now() - t0 > 5e3) {
+        window.clearInterval(iv);
+      }
+    }, 200);
+  });
+})();
+//# sourceMappingURL=paLabPrint.js.map

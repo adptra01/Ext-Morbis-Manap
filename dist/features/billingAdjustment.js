@@ -1,4 +1,77 @@
-"use strict";var __morbis_feature=(()=>{var G="extensionConfig";function Q(d,b,g){let s=b?.features?.[d];if(!s)return!0;if(s.enabled===!1)return!1;let m=g??b?.currentRole??"admin";if(m==="admin")return!0;let p=s.allowedRoles;return!Array.isArray(p)||p.length===0?!0:p.includes(m)}async function Z(d){try{let g=(await chrome.storage.sync.get(G))?.[G]??null;return Q(d,g)}catch{return!0}}function z(d,b){Z(d).then(g=>{if(g)try{b()}catch(s){console.error(`[featureGate:${d}] gagal jalan:`,s)}})}z("billingAdjustment",function(){"use strict";let d="data-ext-billing-adj",s=0,m=null,p=!1;function S(){m!==null&&(clearInterval(m),m=null)}function W(){return document.documentElement.getAttribute(d)==="1"}function i(e){return document.querySelector(e)?.value??""}function l(e){if(!e)return 0;let a=String(e).replace(/[.,](?=\d{3}(?:[.,]|$))/g,"").replace(/[.,](?=\d{1,2}$)/,".");return parseFloat(a)||0}function u(e){return e.toLocaleString("id-ID").replace(/,/g,".")}function y(e,t){let a=e.match(new RegExp("^"+t+"_(\\d+)$"));return a?a[1]:null}function N(){if(document.getElementById("ext-billing-adj-css"))return;let e=document.createElement("style");e.id="ext-billing-adj-css",e.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
+  // src/features/billingAdjustment.ts
+  whenFeatureEnabled("billingAdjustment", function() {
+    "use strict";
+    const ATTR = "data-ext-billing-adj";
+    const MAX_WAIT = 150;
+    const FIELD_WAIT_MS = 100;
+    let waited = 0;
+    let pollId = null;
+    let initialized = false;
+    function stopPolling() {
+      if (pollId !== null) {
+        clearInterval(pollId);
+        pollId = null;
+      }
+    }
+    function isEnabled() {
+      return document.documentElement.getAttribute(ATTR) === "1";
+    }
+    function valOf(selector) {
+      const el = document.querySelector(selector);
+      return el?.value ?? "";
+    }
+    function parseCurrency(str) {
+      if (!str) return 0;
+      const noThousands = String(str).replace(/[.,](?=\d{3}(?:[.,]|$))/g, "");
+      const normalized = noThousands.replace(/[.,](?=\d{1,2}$)/, ".");
+      return parseFloat(normalized) || 0;
+    }
+    function formatCurrency(num) {
+      return num.toLocaleString("id-ID").replace(/,/g, ".");
+    }
+    function idSuffix(id, prefix) {
+      const m = id.match(new RegExp("^" + prefix + "_(\\d+)$"));
+      return m ? m[1] : null;
+    }
+    function injectStyles() {
+      if (document.getElementById("ext-billing-adj-css")) return;
+      const s = document.createElement("style");
+      s.id = "ext-billing-adj-css";
+      s.textContent = `
       #totalharga.ext-billing-editable,
       #pembulatanShow.ext-billing-editable,
       #ext-total-jasa.ext-billing-editable {
@@ -67,4 +140,312 @@
         background: #e0e7ff;
         color: #3730a3;
       }
-    `,document.head.appendChild(e)}function T(e,t){document.querySelector(".ext-billing-status")?.remove();let a=document.createElement("span");a.className="ext-billing-status "+t,a.textContent=e;let n=document.querySelector(".ext-billing-regen-btn");n?.parentElement&&n.parentElement.insertBefore(a,n.nextSibling),setTimeout(()=>a.remove(),3e3)}function M(e){let t=l(i("#harga_"+e)),a=l(i("#frekuensi_"+e)),n=l(i("#diskon_"+e)),o=t*a-n,r=document.querySelector("#total_"+e);return r&&(r.value=u(o)),o}function w(){let e=0;return document.querySelectorAll('input[id^="total_"]').forEach(t=>{y(t.id,"total")&&(e+=l(t.value))}),e}function I(){let e=document.querySelectorAll("table");for(let t of Array.from(e))for(let a of Array.from(t.querySelectorAll("tr"))){let n=a.querySelectorAll("td");if(!n.length||n[0].textContent.trim()!=="Total")continue;let o=(n[1]?.textContent??"").match(/Tunai\s*:?\s*([\d.]+)/);if(o)return l(o[1])}return 0}function k(e){let a=document.querySelectorAll("table")[1]?.querySelector("b"),n=document.querySelector("#ext-total-jasa");n?n.value=u(e):a&&(a.textContent=u(e));let o=document.querySelector("#total_billing");o&&(o.value=String(Math.round(e)))}function c(){let e=l(i("#totalharga")),t=l(i("#biaya_adm")),a=l(i("#biaya_materai")),n=l(i("#diskon")),o=l(i("#klaim_bpjs")),r=l(i("#tarik_uang_muka")),h=l(i("#pembulatanShow")),L=l(i("#bayar")),E=e+t+a-n-o+r+h,H=document.querySelector("#total_belum_dibayar");H&&(H.value=String(Math.round(E)));let _=document.querySelector("#pembulatan"),C=document.querySelector("#pembulatanShow");_&&C&&(_.value=C.value);let v=Array.from(document.querySelectorAll("td")).find(f=>f.textContent.trim().toLowerCase()==="total belum dibayar")?.parentElement?.querySelector("td:last-child");if(v&&!v.querySelector("input")){let f=v.querySelector(".ext-billing-total-display");f||(v.textContent="",f=document.createElement("span"),f.className="ext-billing-total-display",v.appendChild(f)),f.textContent=u(E)}let j=Math.max(0,L-E),B=document.querySelector("#kembali2"),R=document.querySelector("#kembali1");B&&(B.value=String(j)),R&&(R.textContent=u(j));let q=Math.max(0,E-L),K=document.querySelector("#sisaTagihan2"),F=document.querySelector("#sisaTagihan1");K&&(K.value=String(q)),F&&(F.textContent=u(q));let D=document.querySelector("#total1");D&&(D.textContent=L>=E?"0":u(q))}function x(e,t){e.dataset.extRtBound!=="1"&&(e.dataset.extRtBound="1",e.addEventListener("input",t),e.addEventListener("keyup",t),e.addEventListener("change",t))}function A(){document.querySelectorAll('input[id^="frekuensi_"]').forEach(o=>{let r=y(o.id,"frekuensi");r&&M(r)});let e=w(),t=document.querySelector("#ext-total-jasa");if(t){t.value=u(e),t.dataset.autoMode="true";let o=document.querySelector("#totaljasa-auto-indicator");o&&(o.style.display="")}k(e);let a=e+I(),n=document.querySelector("#totalharga");n&&(n.value=u(a),n.dataset.original=n.value),c(),T("Regenerated: "+u(a),"ok")}function O(){let e=document.querySelectorAll("table"),t=e[1]?.querySelector("td:last-child"),a=e[1]?.querySelector("b");if(!t||document.querySelector("#ext-total-jasa"))return;let n=document.createElement("input");n.type="text",n.id="ext-total-jasa",n.className="ext-billing-editable",n.value=a?.textContent.trim()??i("#total_billing"),n.dataset.autoMode="true",a?a.replaceWith(n):t.prepend(n);let o=document.createElement("span");o.className="ext-billing-auto-mode",o.textContent="AUTO",o.id="totaljasa-auto-indicator",n.after(o),x(n,()=>{n.dataset.autoMode="false",o.style.display="none",k(l(n.value)),c()}),n.addEventListener("blur",()=>T("Total jasa diupdate","ok")),n.addEventListener("keydown",r=>{r.key==="Enter"&&(r.preventDefault(),n.blur())})}function P(){let e=document.querySelector("#totalharga");!e||e.dataset.extBillingBound==="1"||(e.dataset.extBillingBound="1",e.classList.add("ext-billing-editable"),e.dataset.original=e.value,x(e,()=>{c()}),e.addEventListener("blur",()=>{e.dataset.original=e.value,T("Total diupdate","ok")}),e.addEventListener("keydown",t=>{t.key==="Enter"&&(t.preventDefault(),e.blur())}))}function $(){let e=document.querySelector("#pembulatanShow");!e||e.dataset.extBillingBound==="1"||(e.dataset.extBillingBound="1",e.removeAttribute("readonly"),e.readOnly=!1,e.removeAttribute("disabled"),e.disabled=!1,e.classList.add("ext-billing-editable"),e.dataset.original=e.value,x(e,()=>{c()}),e.addEventListener("blur",()=>{e.dataset.original=e.value}),e.addEventListener("keydown",t=>{t.key==="Enter"&&(t.preventDefault(),e.blur())}))}function J(){if(document.documentElement.dataset.extBillingRows==="1")return;document.documentElement.dataset.extBillingRows="1";let e=t=>{let a=t.target;if(!(a instanceof HTMLInputElement))return;let n=y(a.id,"frekuensi")??y(a.id,"harga")??y(a.id,"diskon");if(!n)return;M(n);let o=w(),r=document.querySelector("#ext-total-jasa");r&&r.dataset.autoMode!=="false"&&(r.value=u(o)),k(o);let h=document.querySelector("#totalharga");h&&(h.value=u(o+I())),c()};document.addEventListener("input",e),document.addEventListener("keyup",e),document.addEventListener("change",e)}function X(){["biaya_adm","biaya_materai","diskon","klaim_bpjs","tarik_uang_muka","bayar"].forEach(t=>{let a=document.querySelector("#"+t);a&&x(a,c)});let e=document.querySelector("#diskon_dalam_persen");e&&x(e,()=>{let t=l(e.value),a=l(i("#totalharga")),n=document.querySelector("#diskon");n&&(n.value=u(a*t/100)),c()})}function U(){if(document.querySelector(".ext-billing-regen-btn"))return;let e=document.querySelector("button");if(!e?.parentElement)return;let t=document.createElement("button");t.type="button",t.className="ext-billing-regen-btn",t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Regenerate Total',t.addEventListener("click",A),e.parentElement.insertBefore(t,e.nextSibling)}function V(){document.documentElement.dataset.extBillingKeys!=="1"&&(document.documentElement.dataset.extBillingKeys="1",document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&e.key==="R"&&(e.preventDefault(),A()),e.ctrlKey&&e.shiftKey&&e.key==="T"){e.preventDefault();let t=document.querySelector("#totalharga");t?.focus(),t?.select()}if(e.ctrlKey&&e.shiftKey&&e.key==="P"){e.preventDefault();let t=document.querySelector("#pembulatanShow");t?.focus(),t?.select()}}))}function Y(){p||(p=!0,N(),O(),P(),$(),J(),X(),U(),V(),c(),console.log("[BillingAdj] initialized"))}m=window.setInterval(()=>{if(s++,!W()){s>=150&&S();return}document.querySelector("#totalharga")&&document.querySelector("#pembulatanShow")?(S(),Y()):s>=150&&S()},100)});})();
+    `;
+      document.head.appendChild(s);
+    }
+    function showStatus(text, type) {
+      document.querySelector(".ext-billing-status")?.remove();
+      const status = document.createElement("span");
+      status.className = "ext-billing-status " + type;
+      status.textContent = text;
+      const btn = document.querySelector(".ext-billing-regen-btn");
+      if (btn?.parentElement) {
+        btn.parentElement.insertBefore(status, btn.nextSibling);
+      }
+      setTimeout(() => status.remove(), 3e3);
+    }
+    function recalcRow(suffix) {
+      const harga = parseCurrency(valOf("#harga_" + suffix));
+      const frek = parseCurrency(valOf("#frekuensi_" + suffix));
+      const diskon = parseCurrency(valOf("#diskon_" + suffix));
+      const total = harga * frek - diskon;
+      const totalEl = document.querySelector("#total_" + suffix);
+      if (totalEl) totalEl.value = formatCurrency(total);
+      return total;
+    }
+    function sumJasaRows() {
+      let sum = 0;
+      document.querySelectorAll('input[id^="total_"]').forEach((el) => {
+        if (!idSuffix(el.id, "total")) return;
+        sum += parseCurrency(el.value);
+      });
+      return sum;
+    }
+    function readObatTotal() {
+      const tables = document.querySelectorAll("table");
+      for (const t of Array.from(tables)) {
+        for (const r of Array.from(t.querySelectorAll("tr"))) {
+          const cells = r.querySelectorAll("td");
+          if (!cells.length || cells[0].textContent.trim() !== "Total") continue;
+          const m = (cells[1]?.textContent ?? "").match(/Tunai\s*:?\s*([\d.]+)/);
+          if (m) return parseCurrency(m[1]);
+        }
+      }
+      return 0;
+    }
+    function writeJasaTotal(v) {
+      const tables = document.querySelectorAll("table");
+      const b = tables[1]?.querySelector("b");
+      const input = document.querySelector("#ext-total-jasa");
+      if (input) {
+        input.value = formatCurrency(v);
+      } else if (b) {
+        b.textContent = formatCurrency(v);
+      }
+      const hidden = document.querySelector("#total_billing");
+      if (hidden) hidden.value = String(Math.round(v));
+    }
+    function calculateTotal() {
+      const totalTagihan = parseCurrency(valOf("#totalharga"));
+      const biayaAdm = parseCurrency(valOf("#biaya_adm"));
+      const biayaMaterai = parseCurrency(valOf("#biaya_materai"));
+      const diskon = parseCurrency(valOf("#diskon"));
+      const klaimAsuransi = parseCurrency(valOf("#klaim_bpjs"));
+      const uangPendaftaran = parseCurrency(valOf("#tarik_uang_muka"));
+      const pembulatan = parseCurrency(valOf("#pembulatanShow"));
+      const bayar = parseCurrency(valOf("#bayar"));
+      const totalBelumDibayar = totalTagihan + biayaAdm + biayaMaterai - diskon - klaimAsuransi + uangPendaftaran + pembulatan;
+      const hidden = document.querySelector("#total_belum_dibayar");
+      if (hidden) hidden.value = String(Math.round(totalBelumDibayar));
+      const pembHidden = document.querySelector("#pembulatan");
+      const pembVisible = document.querySelector("#pembulatanShow");
+      if (pembHidden && pembVisible) pembHidden.value = pembVisible.value;
+      const labelCell = Array.from(document.querySelectorAll("td")).find(
+        (c) => c.textContent.trim().toLowerCase() === "total belum dibayar"
+      );
+      const lastCell = labelCell?.parentElement?.querySelector("td:last-child");
+      if (lastCell && !lastCell.querySelector("input")) {
+        let display = lastCell.querySelector(".ext-billing-total-display");
+        if (!display) {
+          lastCell.textContent = "";
+          display = document.createElement("span");
+          display.className = "ext-billing-total-display";
+          lastCell.appendChild(display);
+        }
+        display.textContent = formatCurrency(totalBelumDibayar);
+      }
+      const kembali = Math.max(0, bayar - totalBelumDibayar);
+      const kembaliEl = document.querySelector("#kembali2");
+      const kembaliDisplay = document.querySelector("#kembali1");
+      if (kembaliEl) kembaliEl.value = String(kembali);
+      if (kembaliDisplay) kembaliDisplay.textContent = formatCurrency(kembali);
+      const sisa = Math.max(0, totalBelumDibayar - bayar);
+      const sisaEl = document.querySelector("#sisaTagihan2");
+      const sisaDisplay = document.querySelector("#sisaTagihan1");
+      if (sisaEl) sisaEl.value = String(sisa);
+      if (sisaDisplay) sisaDisplay.textContent = formatCurrency(sisa);
+      const total1 = document.querySelector("#total1");
+      if (total1) total1.textContent = bayar >= totalBelumDibayar ? "0" : formatCurrency(sisa);
+    }
+    function bindRealtime(el, fn) {
+      if (el.dataset.extRtBound === "1") return;
+      el.dataset.extRtBound = "1";
+      el.addEventListener("input", fn);
+      el.addEventListener("keyup", fn);
+      el.addEventListener("change", fn);
+    }
+    function regenerate() {
+      document.querySelectorAll('input[id^="frekuensi_"]').forEach((el) => {
+        const sfx = idSuffix(el.id, "frekuensi");
+        if (sfx) recalcRow(sfx);
+      });
+      const jasa = sumJasaRows();
+      const jasaInput = document.querySelector("#ext-total-jasa");
+      if (jasaInput) {
+        jasaInput.value = formatCurrency(jasa);
+        jasaInput.dataset.autoMode = "true";
+        const ind = document.querySelector("#totaljasa-auto-indicator");
+        if (ind) ind.style.display = "";
+      }
+      writeJasaTotal(jasa);
+      const totalTagihan = jasa + readObatTotal();
+      const totalEl = document.querySelector("#totalharga");
+      if (totalEl) {
+        totalEl.value = formatCurrency(totalTagihan);
+        totalEl.dataset.original = totalEl.value;
+      }
+      calculateTotal();
+      showStatus("Regenerated: " + formatCurrency(totalTagihan), "ok");
+    }
+    function setupTotalJasa() {
+      const tables = document.querySelectorAll("table");
+      const cell = tables[1]?.querySelector("td:last-child");
+      const b = tables[1]?.querySelector("b");
+      if (!cell || document.querySelector("#ext-total-jasa")) return;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = "ext-total-jasa";
+      input.className = "ext-billing-editable";
+      input.value = b?.textContent.trim() ?? valOf("#total_billing");
+      input.dataset.autoMode = "true";
+      if (b) b.replaceWith(input);
+      else cell.prepend(input);
+      const ind = document.createElement("span");
+      ind.className = "ext-billing-auto-mode";
+      ind.textContent = "AUTO";
+      ind.id = "totaljasa-auto-indicator";
+      input.after(ind);
+      bindRealtime(input, () => {
+        input.dataset.autoMode = "false";
+        ind.style.display = "none";
+        writeJasaTotal(parseCurrency(input.value));
+        calculateTotal();
+      });
+      input.addEventListener("blur", () => showStatus("Total jasa diupdate", "ok"));
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+      });
+    }
+    function setupTotalTagihan() {
+      const el = document.querySelector("#totalharga");
+      if (!el || el.dataset.extBillingBound === "1") return;
+      el.dataset.extBillingBound = "1";
+      el.classList.add("ext-billing-editable");
+      el.dataset.original = el.value;
+      bindRealtime(el, () => {
+        calculateTotal();
+      });
+      el.addEventListener("blur", () => {
+        el.dataset.original = el.value;
+        showStatus("Total diupdate", "ok");
+      });
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          el.blur();
+        }
+      });
+    }
+    function setupPembulatan() {
+      const el = document.querySelector("#pembulatanShow");
+      if (!el || el.dataset.extBillingBound === "1") return;
+      el.dataset.extBillingBound = "1";
+      el.removeAttribute("readonly");
+      el.readOnly = false;
+      el.removeAttribute("disabled");
+      el.disabled = false;
+      el.classList.add("ext-billing-editable");
+      el.dataset.original = el.value;
+      bindRealtime(el, () => {
+        calculateTotal();
+      });
+      el.addEventListener("blur", () => {
+        el.dataset.original = el.value;
+      });
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          el.blur();
+        }
+      });
+    }
+    function setupRowListener() {
+      if (document.documentElement.dataset.extBillingRows === "1") return;
+      document.documentElement.dataset.extBillingRows = "1";
+      const onRowField = (e) => {
+        const t = e.target;
+        if (!(t instanceof HTMLInputElement)) return;
+        const sfx = idSuffix(t.id, "frekuensi") ?? idSuffix(t.id, "harga") ?? idSuffix(t.id, "diskon");
+        if (!sfx) return;
+        recalcRow(sfx);
+        const jasa = sumJasaRows();
+        const jasaInput = document.querySelector("#ext-total-jasa");
+        if (jasaInput && jasaInput.dataset.autoMode !== "false") {
+          jasaInput.value = formatCurrency(jasa);
+        }
+        writeJasaTotal(jasa);
+        const totalEl = document.querySelector("#totalharga");
+        if (totalEl) {
+          totalEl.value = formatCurrency(jasa + readObatTotal());
+        }
+        calculateTotal();
+      };
+      document.addEventListener("input", onRowField);
+      document.addEventListener("keyup", onRowField);
+      document.addEventListener("change", onRowField);
+    }
+    function setupSummaryListeners() {
+      ["biaya_adm", "biaya_materai", "diskon", "klaim_bpjs", "tarik_uang_muka", "bayar"].forEach(
+        (id) => {
+          const el = document.querySelector("#" + id);
+          if (!el) return;
+          bindRealtime(el, calculateTotal);
+        }
+      );
+      const pct = document.querySelector("#diskon_dalam_persen");
+      if (pct) {
+        bindRealtime(pct, () => {
+          const p = parseCurrency(pct.value);
+          const total = parseCurrency(valOf("#totalharga"));
+          const diskonEl = document.querySelector("#diskon");
+          if (diskonEl) diskonEl.value = formatCurrency(total * p / 100);
+          calculateTotal();
+        });
+      }
+    }
+    function addRegenerateButton() {
+      if (document.querySelector(".ext-billing-regen-btn")) return;
+      const simpanBtn = document.querySelector("button");
+      if (!simpanBtn?.parentElement) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ext-billing-regen-btn";
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Regenerate Total';
+      btn.addEventListener("click", regenerate);
+      simpanBtn.parentElement.insertBefore(btn, simpanBtn.nextSibling);
+    }
+    function addKeyboardShortcuts() {
+      if (document.documentElement.dataset.extBillingKeys === "1") return;
+      document.documentElement.dataset.extBillingKeys = "1";
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === "R") {
+          e.preventDefault();
+          regenerate();
+        }
+        if (e.ctrlKey && e.shiftKey && e.key === "T") {
+          e.preventDefault();
+          const el = document.querySelector("#totalharga");
+          el?.focus();
+          el?.select();
+        }
+        if (e.ctrlKey && e.shiftKey && e.key === "P") {
+          e.preventDefault();
+          const el = document.querySelector("#pembulatanShow");
+          el?.focus();
+          el?.select();
+        }
+      });
+    }
+    function init() {
+      if (initialized) return;
+      initialized = true;
+      injectStyles();
+      setupTotalJasa();
+      setupTotalTagihan();
+      setupPembulatan();
+      setupRowListener();
+      setupSummaryListeners();
+      addRegenerateButton();
+      addKeyboardShortcuts();
+      calculateTotal();
+      console.log("[BillingAdj] initialized");
+    }
+    pollId = window.setInterval(() => {
+      waited++;
+      if (!isEnabled()) {
+        if (waited >= MAX_WAIT) stopPolling();
+        return;
+      }
+      if (document.querySelector("#totalharga") && document.querySelector("#pembulatanShow")) {
+        stopPolling();
+        init();
+      } else if (waited >= MAX_WAIT) {
+        stopPolling();
+      }
+    }, FIELD_WAIT_MS);
+  });
+})();
+//# sourceMappingURL=billingAdjustment.js.map

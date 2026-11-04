@@ -93,6 +93,7 @@ async function compileFeatureFiles() {
     'mKlaimVerifLog.ts',
     'mKlaimLaporanLinks.ts',
     'mKlaimBulkVerif.ts',
+    'visiteKonsul.ts',
     'fetchWatchdog.ts',
   ];
 

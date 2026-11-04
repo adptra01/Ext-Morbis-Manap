@@ -1,4 +1,17 @@
-"use strict";var __morbis_feature=(()=>{function le(){return window}var ce="ext-batch-shared-style";function Y(){if(document.getElementById(ce))return;let e=document.createElement("style");e.id=ce,e.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/batchUtils.ts
+  var BATCH_UTILS_STYLE_ID = "ext-batch-shared-style";
+  function injectSharedCSS() {
+    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = BATCH_UTILS_STYLE_ID;
+    style.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -154,14 +167,100 @@
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `,document.head.appendChild(e)}var T={search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',xClose:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',warning:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',eye:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',arrowRight:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>'};async function Q(e,t){try{let n=await fetch(e,{method:"GET",mode:"cors",credentials:"omit"});if(!n.ok)throw new Error(`HTTP ${n.status}`);let r=await n.blob(),a=URL.createObjectURL(r);de(a,t,e,()=>URL.revokeObjectURL(a))}catch{de(e,t,e)}}var D=null;function de(e,t,n,r){D&&D();let a=t.toLowerCase().split(".").pop()||"",o=a==="pdf",i=["jpg","jpeg","png","gif","webp"].includes(a),s=document.createElement("div");s.id="ext-inline-preview-modal",s.style.cssText="position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";let c;o?c=`<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`:i?c=`<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`:c=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${T.file}<div>Preview not available for this format</div></div>`;let l=t.replace(/"/g,"&quot;").replace(/</g,"&lt;");s.innerHTML=`
+  `;
+    document.head.appendChild(style);
+  }
+  var Icons = {
+    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
+    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
+    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+  };
+  async function showInlinePreviewSafe(url, filename) {
+    try {
+      const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
+    } catch {
+      showInlinePreview(url, filename, url);
+    }
+  }
+  var activePreviewClose = null;
+  function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
+    if (activePreviewClose) activePreviewClose();
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    const isPdf = ext === "pdf";
+    const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+    const modal = document.createElement("div");
+    modal.id = "ext-inline-preview-modal";
+    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";
+    let contentHtml;
+    if (isPdf)
+      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
+    else if (isImage)
+      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
+    else
+      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
+    const safeFilename = filename.replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    modal.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${l}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${T.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${T.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${c}</div>
-  `,document.body.appendChild(s);let d=!1,u,f=p=>{p.key==="Escape"&&m()},m=()=>{d||(d=!0,D===m&&(D=null),r&&r(),document.removeEventListener("keydown",f),u!==void 0&&clearInterval(u),s.remove())};D=m,document.getElementById("ext-preview-close")?.addEventListener("click",m),document.getElementById("ext-preview-newtab")?.addEventListener("click",()=>{window.open(n||e,"_blank"),m()}),s.addEventListener("click",p=>{p.target===s&&m()}),document.addEventListener("keydown",f),(o||i)&&(u=window.setInterval(()=>{if(o?document.getElementById("ext-inline-preview-iframe")?.getAttribute("src"):document.getElementById("ext-inline-preview-img")?.complete){let b=s.querySelector(".ext-inline-preview-loading");b&&b.remove(),clearInterval(u)}},500))}function $(e){return new Promise(t=>{Y();let n=e.variant==="danger"?"ext-btn-danger":"ext-btn-primary",r=document.createElement("div");r.style.cssText="position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);",r.innerHTML=`
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
+  `;
+    document.body.appendChild(modal);
+    let closed = false;
+    let loadCheck;
+    const keyHandler = (ev) => {
+      if (ev.key === "Escape") close();
+    };
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      if (activePreviewClose === close) activePreviewClose = null;
+      if (onCleanup) onCleanup();
+      document.removeEventListener("keydown", keyHandler);
+      if (loadCheck !== void 0) clearInterval(loadCheck);
+      modal.remove();
+    };
+    activePreviewClose = close;
+    document.getElementById("ext-preview-close")?.addEventListener("click", close);
+    document.getElementById("ext-preview-newtab")?.addEventListener("click", () => {
+      window.open(originalUrl || previewUrl, "_blank");
+      close();
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) close();
+    });
+    document.addEventListener("keydown", keyHandler);
+    if (isPdf || isImage) {
+      loadCheck = window.setInterval(() => {
+        const loaded = isPdf ? document.getElementById("ext-inline-preview-iframe")?.getAttribute("src") : document.getElementById("ext-inline-preview-img")?.complete;
+        if (loaded) {
+          const container = modal.querySelector(".ext-inline-preview-loading");
+          if (container) container.remove();
+          clearInterval(loadCheck);
+        }
+      }, 500);
+    }
+  }
+  function confirmLegacy(opts) {
+    return new Promise((resolve) => {
+      injectSharedCSS();
+      const variantClass = opts.variant === "danger" ? "ext-btn-danger" : "ext-btn-primary";
+      const overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);";
+      overlay.innerHTML = `
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -169,50 +268,785 @@
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${e.hideCancel?"":`<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel??"Batal"}</button>`}
-          <button class="ext-btn ${n}" data-ext-ok>${e.okLabel??"Lanjut"}</button>
+          ${opts.hideCancel ? "" : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${opts.cancelLabel ?? "Batal"}</button>`}
+          <button class="ext-btn ${variantClass}" data-ext-ok>${opts.okLabel ?? "Lanjut"}</button>
         </div>
-      </div>`,r.querySelector("h3").textContent=e.title;let a=r.querySelector(".ext-confirm-body");e.message&&e.message.split(`
-`).forEach((c,l)=>{l>0&&a.appendChild(document.createElement("br")),a.appendChild(document.createTextNode(c))});let o=c=>{r.remove(),document.removeEventListener("keydown",i),t(c)},i=c=>{c.key==="Escape"&&o(!1)};r.querySelector(".ext-modal-close").addEventListener("click",()=>o(!1)),r.addEventListener("click",c=>{c.target===r&&o(!1)}),r.querySelector("[data-ext-ok]").addEventListener("click",()=>o(!0));let s=r.querySelector("[data-ext-cancel]");s&&s.addEventListener("click",()=>o(!1)),document.addEventListener("keydown",i),document.body.appendChild(r)})}function Fe(e){let t=new Date,n=t.toISOString().slice(0,10).replace(/-/g,""),r=t.toTimeString().slice(0,8).replace(/:/g,""),a=Math.floor(Math.random()*1e4).toString().padStart(4,"0");return`upload-ulang-${n}-${r}-${a}${e}`}function ue(e,t){return Fe(".pdf")}function Z(e,t,n){let r=Math.max(1,Math.round(t)),a=Math.max(1,Math.round(n)),o=new TextEncoder,i=ze(e),s=i?.components??3,c=s===1?"/DeviceGray":s===4?"/DeviceCMYK":"/DeviceRGB",l=i&&i.width>0?i.width:r,d=i&&i.height>0?i.height:a,u=Ne(e),f=je(u,r,a),m=`1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+      </div>`;
+      overlay.querySelector("h3").textContent = opts.title;
+      const body = overlay.querySelector(".ext-confirm-body");
+      if (opts.message) {
+        opts.message.split("\n").forEach((line, i) => {
+          if (i > 0) body.appendChild(document.createElement("br"));
+          body.appendChild(document.createTextNode(line));
+        });
+      }
+      const done = (result) => {
+        overlay.remove();
+        document.removeEventListener("keydown", onKey);
+        resolve(result);
+      };
+      const onKey = (e) => {
+        if (e.key === "Escape") done(false);
+      };
+      overlay.querySelector(".ext-modal-close").addEventListener("click", () => done(false));
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) done(false);
+      });
+      overlay.querySelector("[data-ext-ok]").addEventListener("click", () => done(true));
+      const cancelBtn = overlay.querySelector("[data-ext-cancel]");
+      if (cancelBtn) cancelBtn.addEventListener("click", () => done(false));
+      document.addEventListener("keydown", onKey);
+      document.body.appendChild(overlay);
+    });
+  }
+
+  // src/features/shared/uploadName.ts
+  function generateTimestampName(ext) {
+    const now = /* @__PURE__ */ new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+    const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, "");
+    const random = Math.floor(Math.random() * 1e4).toString().padStart(4, "0");
+    return `upload-ulang-${dateStr}-${timeStr}-${random}${ext}`;
+  }
+  function rewriteUploadFilename(_item, _customBase) {
+    return generateTimestampName(".pdf");
+  }
+
+  // src/features/shared/pdfWriter.ts
+  function buildSingleJpegPdf(jpeg, width, height) {
+    const w = Math.max(1, Math.round(width));
+    const h = Math.max(1, Math.round(height));
+    const enc = new TextEncoder();
+    const sof = readJpegSof(jpeg);
+    const components = sof?.components ?? 3;
+    const colorspace = components === 1 ? "/DeviceGray" : components === 4 ? "/DeviceCMYK" : "/DeviceRGB";
+    const rawW = sof && sof.width > 0 ? sof.width : w;
+    const rawH = sof && sof.height > 0 ? sof.height : h;
+    const os = getJpegExifOrientation(jpeg);
+    const cm = orientationCm(os, w, h);
+    const s1 = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+    const s2 = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+    const s3 = `3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${w} ${h}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>
 endobj
-`,p=`2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-`,b=`3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${r} ${a}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>
-endobj
-`,x=`4 0 obj
-<< /Type /XObject /Subtype /Image /Width ${l} /Height ${d} /ColorSpace ${c} /BitsPerComponent 8 /Filter /DCTDecode /Length ${e.length} >>
+`;
+    const s4Pre = `4 0 obj
+<< /Type /XObject /Subtype /Image /Width ${rawW} /Height ${rawH} /ColorSpace ${colorspace} /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>
 stream
-`,w=`
-endstream
-endobj
-`,y=`q
-${f} cm
+`;
+    const s4Post = "\nendstream\nendobj\n";
+    const content = `q
+${cm} cm
 /Im0 Do
 Q
-`,_=`5 0 obj
-<< /Length ${o.encode(y).length} >>
+`;
+    const s5 = `5 0 obj
+<< /Length ${enc.encode(content).length} >>
 stream
-${y}endstream
+${content}endstream
 endobj
-`,R=`%PDF-1.4
-`,P=[],E=0,C=[],L=j=>{P.push(j),E+=j.length};L(o.encode(R)),C[0]=E,L(o.encode(m)),C[1]=E,L(o.encode(p)),C[2]=E,L(o.encode(b)),C[3]=E,L(o.encode(x)),L(e),L(o.encode(w)),C[4]=E,L(o.encode(_));let He=E,X=`xref
-0 6
-0000000000 65535 f 
-`;for(let j of C)X+=`${String(j).padStart(10,"0")} 00000 n 
-`;return X+=`trailer
+`;
+    const header = "%PDF-1.4\n";
+    const parts = [];
+    let offset = 0;
+    const offsets = [];
+    const push = (u) => {
+      parts.push(u);
+      offset += u.length;
+    };
+    push(enc.encode(header));
+    offsets[0] = offset;
+    push(enc.encode(s1));
+    offsets[1] = offset;
+    push(enc.encode(s2));
+    offsets[2] = offset;
+    push(enc.encode(s3));
+    offsets[3] = offset;
+    push(enc.encode(s4Pre));
+    push(jpeg);
+    push(enc.encode(s4Post));
+    offsets[4] = offset;
+    push(enc.encode(s5));
+    const xrefOffset = offset;
+    let xref = "xref\n0 6\n0000000000 65535 f \n";
+    for (const o of offsets) {
+      xref += `${String(o).padStart(10, "0")} 00000 n 
+`;
+    }
+    xref += `trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-${He}
+${xrefOffset}
 %%EOF
-`,L(o.encode(X)),new Blob(P,{type:"application/pdf"})}function ze(e){let t=e.length,n=2;for(;n+4<t;){if(e[n]!==255){n++;continue}let r=n+1;for(;r<t&&e[r]===255;)r++;if(r>=t)break;let a=e[r],o=r+1;if(a===216||a===217||a===1)break;if(a>=208&&a<=215){n=o;continue}if(o+2>t)break;let i=e[o]<<8|e[o+1];if(i<2)break;if(a>=192&&a<=195||a>=197&&a<=199||a>=201&&a<=203||a>=205&&a<=207){let c=o+2;if(c+6>t)break;let l=e[c+1]<<8|e[c+2],d=e[c+3]<<8|e[c+4],u=e[c+5];return u>=1&&u<=4&&l>0&&d>0?{width:d,height:l,components:u}:null}n=o+i}return null}function Ne(e){let t=e.length,n=2;for(;n+4<t;){if(e[n]!==255){n++;continue}let r=n+1;for(;r<t&&e[r]===255;)r++;if(r>=t)break;let a=e[r],o=r+1;if(a===216||a===217||a===1)break;if(a>=208&&a<=215){n=o;continue}if(o+2>t)break;let i=e[o]<<8|e[o+1];if(i<2)break;if(a===225){let s=o+2,c=i-2;if(c>=12&&e[s]===69&&e[s+1]===120&&e[s+2]===105&&e[s+3]===102&&e[s+4]===0&&e[s+5]===0){let l=s+6,d=c-6;if(d>=8){let u=e[l]===73&&e[l+1]===73,f=e[l]===77&&e[l+1]===77;if(u||f){let m=b=>u?e[l+b]|e[l+b+1]<<8:e[l+b]<<8|e[l+b+1],p=b=>u?e[l+b]|e[l+b+1]<<8|e[l+b+2]<<16|e[l+b+3]<<24:e[l+b]<<24|e[l+b+1]<<16|e[l+b+2]<<8|e[l+b+3];if(m(2)===42){let b=p(4);if(b+2<=d){let x=m(b);for(let w=0;w<x;w++){let y=b+2+w*12;if(y+12>d)break;if(m(y)!==274)continue;let _=m(y+2),R=u?e[l+y+8]|e[l+y+9]<<8:e[l+y+8]<<8|e[l+y+9];return _===3&&R>=1&&R<=8?R:1}return 1}}}}}}n=o+i}return 1}function je(e,t,n){switch(e){case 2:return`${-t} 0 0 ${n} ${t} 0`;case 3:return`${-t} 0 0 ${-n} ${t} ${n}`;case 4:return`${t} 0 0 ${-n} 0 ${n}`;case 5:return`0 ${-n} ${-t} 0 ${t} ${n}`;case 6:return`0 ${-n} ${t} 0 0 ${n}`;case 7:return`0 ${n} ${t} 0 0 0`;case 8:return`0 ${n} ${-t} 0 ${t} 0`;default:return`${t} 0 0 ${n} 0 0`}}function fe(e){return e.length>=5&&e[0]===37&&e[1]===80&&e[2]===68&&e[3]===70&&e[4]===45?"pdf":e.length>=3&&e[0]===255&&e[1]===216&&e[2]===255?"jpeg":e.length>=8&&e[0]===137&&e[1]===80&&e[2]===78&&e[3]===71?"png":e.length>=6&&e[0]===71&&e[1]===73&&e[2]===70&&e[3]===56?"gif":e.length>=12&&e[0]===82&&e[1]===73&&e[2]===70&&e[3]===70&&e[8]===87&&e[9]===69&&e[10]===66&&e[11]===80?"webp":"unknown"}var qe=["script","style","noscript","template","svg","iframe","object","embed","canvas"],pe=qe.join("|"),me=/(?:^|[\s"'_-])(?:alert-danger|alert-error|toast-error|notif-error|invalid-feedback|invalid-tooltip|form-error|error-message|error_message|error-msg|error_msg)(?=$|[\s"'_-])/i,be=/\berror\s*-\s*aplikasi\b/i,Ve=1200;function ge(e){if(!Number.isFinite(e)||e<32||e>1114111)return" ";try{return String.fromCodePoint(e)}catch{return" "}}function xe(e){return e.replace(/&#x([0-9a-f]+);/gi,(t,n)=>ge(parseInt(n,16))).replace(/&#(\d+);/g,(t,n)=>ge(parseInt(n,10))).replace(/&nbsp;/gi," ").replace(/&quot;/gi,'"').replace(/&apos;|&#0*39;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&amp;/gi,"&")}function he(e){if(!e)return"";let t=new RegExp(`<(${pe})\\b[^>]*>[\\s\\S]*?<\\/\\1\\s*>`,"gi"),n=new RegExp(`<(${pe})\\b[^>]*>`,"gi");return e.replace(/<!--[\s\S]*?-->/g," ").replace(t," ").replace(/<(script|style)\b[^>]*>[\s\S]*$/gi," ").replace(n," ")}function O(e){return e?xe(he(e).replace(/<[^>]*>/g," ")).replace(/\s+/g," ").trim():""}function Ge(e){let t="";for(let n of e){let r=n.codePointAt(0)??0;t+=r<32||r===127?" ":n}return t}function B(e,t=200){let n=Ge(xe(String(e??""))).replace(/\s+/g," ").trim();return n.length<=t?n:`${n.slice(0,Math.max(0,t-1)).trimEnd()}\u2026`}function V(e){let t=B(e,400);if(t.length<3||t.length>300)return!1;let n=(t.match(/[A-Za-z]/g)||[]).length;return!(n<3||n/t.length<.45||/<\/?[a-z]/i.test(t)||/[{}]|=>/.test(t)||/\b(?:function|return|typeof|var|let|const|window|document|nreum|newrelic)\b/i.test(t)||/--[a-z0-9-]+\s*:/i.test(t)||/\b[a-z-]{2,}\s*:\s*(?:#[0-9a-f]{3,8}|\d+(?:\.\d+)?(?:px|rem|em|%|vh|vw|s|ms))\b/i.test(t)||/[A-Za-z0-9+/]{40,}={0,2}/.test(t))}function ke(e,t){let n=e[t];if(n!=='"'&&n!=="'")return null;let r="";for(let a=t+1;a<e.length&&a<t+600;a+=1){let o=e[a];if(o==="\\"){let i=e[a+1]??"";r+=i==="n"||i==="r"||i==="t"?" ":i,a+=1;continue}if(o===n)return r;r+=o}return null}function We(e){let t=/toastr\s*(?:\.\s*error|\[\s*(['"])error\1\s*\])\s*\(\s*/g;for(let n=t.exec(e);n!==null;n=t.exec(e)){let r=ke(e,t.lastIndex);if(r&&V(r))return B(r,300)}return null}function Ke(e){let t=/swal\s*\(\s*\{/g;for(let n=t.exec(e);n!==null;n=t.exec(e)){let r=e.slice(t.lastIndex,t.lastIndex+800);if(/icon\s*:\s*(['"])error\1/i.test(r))for(let a of[/(?:text|html)\s*:\s*(['"])/i,/title\s*:\s*(['"])/i]){let o=a.exec(r);if(!o)continue;let i=ke(r,o.index+o[0].length-1);if(i&&V(i))return B(i,300)}}return null}function we(e){let t=/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi,n;for(;(n=t.exec(e))!==null;){let r=n[1]??"";if(!r||r.length>Ve)continue;let a=We(r)??Ke(r);if(a)return a}return null}function Je(e,t,n){let r=new RegExp(`<(/?)${n}\\b[^>]*>`,"gi");r.lastIndex=t;let a=1,o;for(;(o=r.exec(e))!==null&&!(o.index-t>1500);)if(o[0].startsWith("</")?a-=1:o[0].endsWith("/>")||(a+=1),a===0)return e.slice(t,o.index);return e.slice(t,Math.min(e.length,t+500))}function Xe(e){let t=[],n=/<([a-z][a-z0-9]*)\b[^>]*\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>/gi,r;for(;t.length<50&&(r=n.exec(e))!==null;){let a=r[2]??r[3]??"";me.test(a)&&t.push({classAttr:a,inner:Je(e,n.lastIndex,r[1].toLowerCase())})}return t}function ye(e){for(let t of Xe(he(e))){let n=O(t.inner);if(V(n))return B(n,300)}return null}var Ye=new Set(["error","failed","fail","gagal","false","0"]);function ee(e){if(Array.isArray(e))return e.some(ee);if(!e||typeof e!="object")return!1;let t=e;return!!(t.success===!1||t.ok===!1||t.status===!1||t.status===0||typeof t.status=="string"&&Ye.has(t.status.trim().toLowerCase())||typeof t.error=="string"&&t.error.trim()!==""||Array.isArray(t.errors)&&t.errors.length>0||t.errors&&typeof t.errors=="object"&&!Array.isArray(t.errors)||t.data&&typeof t.data=="object"&&ee(t.data))}function q(e,t=0){if(Array.isArray(e)){for(let r of e){let a=q(r,t+1);if(a)return a}return}if(!e||typeof e!="object"||t>3)return;let n=e;for(let r of["message","msg","error","pesan","keterangan","description"]){let a=n[r];if(typeof a=="string"&&V(a))return B(a,300)}for(let r of["data","error"])if(n[r]&&typeof n[r]=="object"){let a=q(n[r],t+1);if(a)return a}}function G(e){let t=e.trim();if(!t.startsWith("{")&&!t.startsWith("["))return{isJson:!1,ok:!0};let n;try{n=JSON.parse(t)}catch{return{isJson:!1,ok:!0}}return ee(n)?{isJson:!0,ok:!1,message:q(n)||"Server menolak permintaan"}:{isJson:!0,ok:!0}}function Qe(e){return/<input\b[^>]*\btype\s*=\s*['"]?password/i.test(e)?/<form\b[^>]*\baction\s*=\s*['"][^'"]*(?:login|signin|auth)[^'"]*['"]/i.test(e)||/<title[^>]*>[^<]*\b(?:login|masuk)\b/i.test(e):!1}function ve(e){let t=e.trim();return t.length>0&&t.length<=300&&be.test(t)}function Ee(e){if(!e||!e.trim())return{ok:!0};if(Qe(e))return{ok:!1,loginExpired:!0,message:"Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi"};let t=G(e);if(t.isJson)return t.ok?{ok:!0}:{ok:!1,message:t.message};let n=O(e);if(be.test(n)||/<title[^>]*>[^<]*error\s*-\s*aplikasi/i.test(e))return{ok:!0,rejectedMarker:!0};let r=ye(e);if(r)return{ok:!1,message:r};let a=we(e);return a?{ok:!1,message:a}:{ok:!0,rejectedMarker:me.test(e)}}function Te(e){let t=G(e);return t.isJson&&!t.ok&&t.message?t.message:ye(e)??we(e)}function Se(e){let t=String(e??"").trim();if(!t.startsWith("{")&&!t.startsWith("["))return null;let n;try{n=JSON.parse(t)}catch{return null}return q(n)??null}function te(e,t=220){let n=String(e??"");if(!n.trim())return"(body kosong)";let r=B(O(n),t);return r||`(teks tidak terbaca, ${n.length} byte)`}function H(e){return String(e??"").toLowerCase().replace(/[^a-z0-9]+/g,"")}function Ce(e){return H(String(e??"").replace(/\.[a-z0-9]{1,6}$/i,""))}function Be(e){return e.map(t=>H(t)).filter(t=>t.length>=6)}function Le(e,t){if(!e||e.length===0)return 0;let n=Be(t);if(n.length===0)return 0;let r=0;for(let a of e){let o=H(a);n.some(i=>o.includes(i))&&(r+=1)}return r}function F(e,t){let n=Ce(t);return n.length>=6&&H(e).includes(n)}function Ze(e,t=160){let n=String(e??"").replace(/\s+/g," ").trim();return n.length<=t?n:`${n.slice(0,Math.max(0,t-1)).trimEnd()}\u2026`}function $e(e){return H(String(e??"").replace(/^\s*\d+\s+/,""))}function et(e,t){let n=new Set(e.map($e)),r=new Set,a=[];for(let o of t){let i=$e(o);!i||n.has(i)||r.has(i)||(r.add(i),a.push(Ze(o)))}return a}function Re(e){let t=e.rowsBefore,n=e.rowsAfter,r=Ce(e.fileName),a=Be([r,...e.extraNeedles??[]]),o={status:"unknown",addedRows:[],rowsBeforeCount:t?t.length:null,rowsAfterCount:n?n.length:null};if(F(e.responseBody,e.fileName))return{...o,status:"saved",matchedNeedle:r};if(t===null||n===null)return o;for(let c of a)if(Le(n,[c])>Le(t,[c]))return{...o,status:"saved",matchedNeedle:c};let i=et(t,n);if(i.length===0)return{...o,status:"missing"};let s=i.slice(0,3);return i.length<=3?{...o,status:"mismatch",addedRows:s}:{...o,status:"unknown",addedRows:s}}var z=le(),k={targetUrl:"/v2/m-klaim/detail-v2-refaktor",uploadEndpoint:"/v2/m-klaim/uploda-dokumen/control?sub=simpan",maxConcurrent:3,maxBatchSize:50,supportedExtensions:[".pdf",".jpg",".jpeg",".png",".gif"],modalId:"ext-batch-url-modal",textareaId:"ext-url-input",previewId:"ext-preview-list",progressId:"ext-progress-bar",statusId:"ext-status-text"};function tt(e){let t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),r=String(e.getDate()).padStart(2,"0");return`${t}-${n}-${r}`}function nt(){return tt(new Date)}function K(){let e=r=>{if(!r)return null;let a=String(r).trim(),o=a.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(o)return`${o[1]}-${o[2].padStart(2,"0")}-${o[3].padStart(2,"0")}`;let i=a.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(i)return`${i[3]}-${i[2].padStart(2,"0")}-${i[1].padStart(2,"0")}`;let s=a.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);return s?`${s[3]}-${s[2].padStart(2,"0")}-${s[1].padStart(2,"0")}`:null},t=["#tgl","#tanggal","#tanggal_masuk",'input[name="tanggal"]'];for(let r of t){let a=document.querySelector(r),o=e(a?.value);if(o)return o}let n=new URLSearchParams(window.location.search);for(let r of["tanggalAwal","tanggalAkhir","tanggal","tgl"]){let a=e(n.get(r));if(a)return a}return console.warn("[Batch Upload] Tanggal klaim tidak ditemukan (input #tgl & URL), pakai tanggal hari ini"),nt()}function S(e){return e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function rt(e,t={},n=3e4){let r=new AbortController,a=setTimeout(()=>r.abort(),n),o=t.signal,i=()=>r.abort();return o&&(o.aborted?(clearTimeout(a),r.abort()):o.addEventListener("abort",i,{once:!0})),fetch(e,{...t,signal:r.signal}).finally(()=>{clearTimeout(a),o&&o.removeEventListener("abort",i)})}async function re(e,t={},n=2){let r=t.signal,a=null;for(let o=0;o<=n;o++){try{let i=r?{...t,signal:r}:t,s=await rt(e,i);if(s.ok||s.status>=400&&s.status<500&&s.status!==429)return s;a=new Error(`HTTP ${s.status}: ${s.statusText}`)}catch(i){if(!(i instanceof DOMException?i.name==="AbortError":/abort/i.test(i?.message??"")))a=i;else{if(r?.aborted)throw new Error("Batch cancelled",{cause:i});a=new Error("Request timeout")}}o<n&&!(a instanceof Error&&a.message==="Batch cancelled")&&(await new Promise(i=>setTimeout(i,1e3*(o+1))),console.log(`[Batch Upload] Retry ${o+1}/${n} for ${e}`))}throw a||new Error("Fetch failed after retries")}var g=[],v=!1,I=null;function M(){return I||(I=new AbortController),I.signal}function ae(){I&&I.abort(),v=!1}function U(){I=new AbortController}function at(e){return!e||typeof e!="string"?[]:e.split(`
-`).map(n=>n.trim()).filter(n=>n.length>0).map(n=>n.replace(/ /g,"%20")).filter(n=>{try{new URL(n);let r=n.split(/[?#]/)[0].toLowerCase();return k.supportedExtensions.some(a=>r.endsWith(a))}catch{return!1}})}function se(e){try{let t=new URL(e),r=decodeURIComponent(t.pathname).split("/").pop()||"unknown",a=r.replace(/\.[^/.]+$/,""),o=a.split(/[-_\s]+/),i="",s=K(),c=o.filter(u=>{let f=/^\d+$/.test(u),m=u.length;return f&&m>=6&&m<=12&&m!==10&&m!==13});if(c.length>0)i=c[0];else{let u=t.searchParams.get("norm")||t.searchParams.get("no_rm");u&&/^\d{6,12}$/.test(u)&&(i=u)}let d=o.filter(u=>!/^\d{10}$/.test(u)&&u!==i).join(" ").trim()||a.replace(/[-_]+/g," ");return{filename:r,norm:i,tanggal:s,jenis_dokumen:"Lain-lain",keterangan:d,url:e,status:"pending"}}catch{return{filename:"error",norm:"",tanggal:K(),jenis_dokumen:"Lain-lain",keterangan:"URL tidak valid",url:e,status:"error",error:"Invalid URL format"}}}function ot(){U();let e=document.getElementById(k.modalId);e||(e=document.createElement("div"),e.id=k.modalId,e.className="ext-batch-delete-modal",e.innerHTML=`
+`;
+    push(enc.encode(xref));
+    return new Blob(parts, { type: "application/pdf" });
+  }
+  function readJpegSof(jpeg) {
+    const len = jpeg.length;
+    let i = 2;
+    while (i + 4 < len) {
+      if (jpeg[i] !== 255) {
+        i++;
+        continue;
+      }
+      let m = i + 1;
+      while (m < len && jpeg[m] === 255) m++;
+      if (m >= len) break;
+      const marker = jpeg[m];
+      const segStart = m + 1;
+      if (marker === 216 || marker === 217 || marker === 1) break;
+      if (marker >= 208 && marker <= 215) {
+        i = segStart;
+        continue;
+      }
+      if (segStart + 2 > len) break;
+      const segLen = jpeg[segStart] << 8 | jpeg[segStart + 1];
+      if (segLen < 2) break;
+      const isSof = marker >= 192 && marker <= 195 || marker >= 197 && marker <= 199 || marker >= 201 && marker <= 203 || marker >= 205 && marker <= 207;
+      if (isSof) {
+        const p = segStart + 2;
+        if (p + 6 > len) break;
+        const height = jpeg[p + 1] << 8 | jpeg[p + 2];
+        const width = jpeg[p + 3] << 8 | jpeg[p + 4];
+        const components = jpeg[p + 5];
+        if (components >= 1 && components <= 4 && height > 0 && width > 0) {
+          return { width, height, components };
+        }
+        return null;
+      }
+      i = segStart + segLen;
+    }
+    return null;
+  }
+  function getJpegExifOrientation(jpeg) {
+    const len = jpeg.length;
+    let i = 2;
+    while (i + 4 < len) {
+      if (jpeg[i] !== 255) {
+        i++;
+        continue;
+      }
+      let m = i + 1;
+      while (m < len && jpeg[m] === 255) m++;
+      if (m >= len) break;
+      const marker = jpeg[m];
+      const segStart = m + 1;
+      if (marker === 216 || marker === 217 || marker === 1) break;
+      if (marker >= 208 && marker <= 215) {
+        i = segStart;
+        continue;
+      }
+      if (segStart + 2 > len) break;
+      const segLen = jpeg[segStart] << 8 | jpeg[segStart + 1];
+      if (segLen < 2) break;
+      if (marker === 225) {
+        const payload = segStart + 2;
+        const dataLen = segLen - 2;
+        if (dataLen >= 12 && jpeg[payload] === 69 && jpeg[payload + 1] === 120 && jpeg[payload + 2] === 105 && jpeg[payload + 3] === 102 && // "Exif"
+        jpeg[payload + 4] === 0 && jpeg[payload + 5] === 0) {
+          const t = payload + 6;
+          const tiffLen = dataLen - 6;
+          if (tiffLen >= 8) {
+            const le = jpeg[t] === 73 && jpeg[t + 1] === 73;
+            const be = jpeg[t] === 77 && jpeg[t + 1] === 77;
+            if (le || be) {
+              const u16 = (o) => le ? jpeg[t + o] | jpeg[t + o + 1] << 8 : jpeg[t + o] << 8 | jpeg[t + o + 1];
+              const u32 = (o) => le ? jpeg[t + o] | jpeg[t + o + 1] << 8 | jpeg[t + o + 2] << 16 | jpeg[t + o + 3] << 24 : jpeg[t + o] << 24 | jpeg[t + o + 1] << 16 | jpeg[t + o + 2] << 8 | jpeg[t + o + 3];
+              if (u16(2) === 42) {
+                const ifd0 = u32(4);
+                if (ifd0 + 2 <= tiffLen) {
+                  const n = u16(ifd0);
+                  for (let e = 0; e < n; e++) {
+                    const off = ifd0 + 2 + e * 12;
+                    if (off + 12 > tiffLen) break;
+                    if (u16(off) !== 274) continue;
+                    const type = u16(off + 2);
+                    const val = le ? jpeg[t + off + 8] | jpeg[t + off + 9] << 8 : jpeg[t + off + 8] << 8 | jpeg[t + off + 9];
+                    if (type === 3 && val >= 1 && val <= 8) return val;
+                    return 1;
+                  }
+                  return 1;
+                }
+              }
+            }
+          }
+        }
+      }
+      i = segStart + segLen;
+    }
+    return 1;
+  }
+  function orientationCm(os, w, h) {
+    switch (os) {
+      case 2:
+        return `${-w} 0 0 ${h} ${w} 0`;
+      case 3:
+        return `${-w} 0 0 ${-h} ${w} ${h}`;
+      case 4:
+        return `${w} 0 0 ${-h} 0 ${h}`;
+      case 5:
+        return `0 ${-h} ${-w} 0 ${w} ${h}`;
+      case 6:
+        return `0 ${-h} ${w} 0 0 ${h}`;
+      case 7:
+        return `0 ${h} ${w} 0 0 0`;
+      case 8:
+        return `0 ${h} ${-w} 0 ${w} 0`;
+      case 1:
+      default:
+        return `${w} 0 0 ${h} 0 0`;
+    }
+  }
+  function sniffFileKind(bytes) {
+    if (bytes.length >= 5 && bytes[0] === 37 && bytes[1] === 80 && bytes[2] === 68 && bytes[3] === 70 && bytes[4] === 45) {
+      return "pdf";
+    }
+    if (bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) {
+      return "jpeg";
+    }
+    if (bytes.length >= 8 && bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71) {
+      return "png";
+    }
+    if (bytes.length >= 6 && bytes[0] === 71 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 56) {
+      return "gif";
+    }
+    if (bytes.length >= 12 && bytes[0] === 82 && bytes[1] === 73 && bytes[2] === 70 && bytes[3] === 70 && bytes[8] === 87 && bytes[9] === 69 && bytes[10] === 66 && bytes[11] === 80) {
+      return "webp";
+    }
+    return "unknown";
+  }
+
+  // src/features/shared/morbisResponse.ts
+  var NON_TEXT_TAGS = [
+    "script",
+    "style",
+    "noscript",
+    "template",
+    "svg",
+    "iframe",
+    "object",
+    "embed",
+    "canvas"
+  ];
+  var NON_TEXT_TAGS_SOURCE = NON_TEXT_TAGS.join("|");
+  var ERROR_CLASS_RE = /(?:^|[\s"'_-])(?:alert-danger|alert-error|toast-error|notif-error|invalid-feedback|invalid-tooltip|form-error|error-message|error_message|error-msg|error_msg)(?=$|[\s"'_-])/i;
+  var MORBIS_APP_ERROR_PAGE_RE = /\berror\s*-\s*aplikasi\b/i;
+  var MAX_FLASH_SCRIPT_LENGTH = 1200;
+  function safeCodePoint(code) {
+    if (!Number.isFinite(code) || code < 32 || code > 1114111) return " ";
+    try {
+      return String.fromCodePoint(code);
+    } catch {
+      return " ";
+    }
+  }
+  function decodeEntities(text) {
+    return text.replace(/&#x([0-9a-f]+);/gi, (_m, hex) => safeCodePoint(parseInt(hex, 16))).replace(/&#(\d+);/g, (_m, dec) => safeCodePoint(parseInt(dec, 10))).replace(/&nbsp;/gi, " ").replace(/&quot;/gi, '"').replace(/&apos;|&#0*39;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&");
+  }
+  function stripNonTextMarkup(html) {
+    if (!html) return "";
+    const paired = new RegExp(`<(${NON_TEXT_TAGS_SOURCE})\\b[^>]*>[\\s\\S]*?<\\/\\1\\s*>`, "gi");
+    const opening = new RegExp(`<(${NON_TEXT_TAGS_SOURCE})\\b[^>]*>`, "gi");
+    return html.replace(/<!--[\s\S]*?-->/g, " ").replace(paired, " ").replace(/<(script|style)\b[^>]*>[\s\S]*$/gi, " ").replace(opening, " ");
+  }
+  function htmlToVisibleText(html) {
+    if (!html) return "";
+    return decodeEntities(stripNonTextMarkup(html).replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+  }
+  function stripControlChars(text) {
+    let out = "";
+    for (const char of text) {
+      const code = char.codePointAt(0) ?? 0;
+      out += code < 32 || code === 127 ? " " : char;
+    }
+    return out;
+  }
+  function cleanServerMessage(raw, maxLength = 200) {
+    const text = stripControlChars(decodeEntities(String(raw ?? ""))).replace(/\s+/g, " ").trim();
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, Math.max(0, maxLength - 1)).trimEnd()}\u2026`;
+  }
+  function looksLikeHumanMessage(text) {
+    const value = cleanServerMessage(text, 400);
+    if (value.length < 3 || value.length > 300) return false;
+    const letters = (value.match(/[A-Za-z]/g) || []).length;
+    if (letters < 3) return false;
+    if (letters / value.length < 0.45) return false;
+    if (/<\/?[a-z]/i.test(value) || /[{}]|=>/.test(value)) return false;
+    if (/\b(?:function|return|typeof|var|let|const|window|document|nreum|newrelic)\b/i.test(value)) {
+      return false;
+    }
+    if (/--[a-z0-9-]+\s*:/i.test(value)) return false;
+    if (/\b[a-z-]{2,}\s*:\s*(?:#[0-9a-f]{3,8}|\d+(?:\.\d+)?(?:px|rem|em|%|vh|vw|s|ms))\b/i.test(value)) {
+      return false;
+    }
+    if (/[A-Za-z0-9+/]{40,}={0,2}/.test(value)) return false;
+    return true;
+  }
+  function readJsStringLiteral(source, start) {
+    const quote = source[start];
+    if (quote !== '"' && quote !== "'") return null;
+    let out = "";
+    for (let i = start + 1; i < source.length && i < start + 600; i += 1) {
+      const char = source[i];
+      if (char === "\\") {
+        const next = source[i + 1] ?? "";
+        out += next === "n" || next === "r" || next === "t" ? " " : next;
+        i += 1;
+        continue;
+      }
+      if (char === quote) return out;
+      out += char;
+    }
+    return null;
+  }
+  function extractToastrError(js) {
+    const re = /toastr\s*(?:\.\s*error|\[\s*(['"])error\1\s*\])\s*\(\s*/g;
+    for (let found = re.exec(js); found !== null; found = re.exec(js)) {
+      const literal = readJsStringLiteral(js, re.lastIndex);
+      if (literal && looksLikeHumanMessage(literal)) return cleanServerMessage(literal, 300);
+    }
+    return null;
+  }
+  function extractSwalError(js) {
+    const re = /swal\s*\(\s*\{/g;
+    for (let found = re.exec(js); found !== null; found = re.exec(js)) {
+      const chunk = js.slice(re.lastIndex, re.lastIndex + 800);
+      if (!/icon\s*:\s*(['"])error\1/i.test(chunk)) continue;
+      for (const keyRe of [/(?:text|html)\s*:\s*(['"])/i, /title\s*:\s*(['"])/i]) {
+        const keyMatch = keyRe.exec(chunk);
+        if (!keyMatch) continue;
+        const literal = readJsStringLiteral(chunk, keyMatch.index + keyMatch[0].length - 1);
+        if (literal && looksLikeHumanMessage(literal)) return cleanServerMessage(literal, 300);
+      }
+    }
+    return null;
+  }
+  function extractInlineJsMessage(html) {
+    const re = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
+    let match;
+    while ((match = re.exec(html)) !== null) {
+      const js = match[1] ?? "";
+      if (!js || js.length > MAX_FLASH_SCRIPT_LENGTH) continue;
+      const message = extractToastrError(js) ?? extractSwalError(js);
+      if (message) return message;
+    }
+    return null;
+  }
+  function readElementInner(html, from, tag) {
+    const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, "gi");
+    re.lastIndex = from;
+    let depth = 1;
+    let match;
+    while ((match = re.exec(html)) !== null) {
+      if (match.index - from > 1500) break;
+      if (match[0].startsWith("</")) depth -= 1;
+      else if (!match[0].endsWith("/>")) depth += 1;
+      if (depth === 0) return html.slice(from, match.index);
+    }
+    return html.slice(from, Math.min(html.length, from + 500));
+  }
+  function findErrorBlocks(html) {
+    const blocks = [];
+    const tagRe = /<([a-z][a-z0-9]*)\b[^>]*\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>/gi;
+    let match;
+    while (blocks.length < 50 && (match = tagRe.exec(html)) !== null) {
+      const classAttr = match[2] ?? match[3] ?? "";
+      if (!ERROR_CLASS_RE.test(classAttr)) continue;
+      blocks.push({
+        classAttr,
+        inner: readElementInner(html, tagRe.lastIndex, match[1].toLowerCase())
+      });
+    }
+    return blocks;
+  }
+  function extractContainerMessage(html) {
+    for (const block of findErrorBlocks(stripNonTextMarkup(html))) {
+      const text = htmlToVisibleText(block.inner);
+      if (looksLikeHumanMessage(text)) return cleanServerMessage(text, 300);
+    }
+    return null;
+  }
+  var FAILURE_STATUSES = /* @__PURE__ */ new Set(["error", "failed", "fail", "gagal", "false", "0"]);
+  function jsonIndicatesFailure(value) {
+    if (Array.isArray(value)) return value.some(jsonIndicatesFailure);
+    if (!value || typeof value !== "object") return false;
+    const record = value;
+    if (record.success === false || record.ok === false) return true;
+    if (record.status === false || record.status === 0) return true;
+    if (typeof record.status === "string" && FAILURE_STATUSES.has(record.status.trim().toLowerCase())) {
+      return true;
+    }
+    if (typeof record.error === "string" && record.error.trim() !== "") return true;
+    if (Array.isArray(record.errors) && record.errors.length > 0) return true;
+    if (record.errors && typeof record.errors === "object" && !Array.isArray(record.errors))
+      return true;
+    if (record.data && typeof record.data === "object" && jsonIndicatesFailure(record.data))
+      return true;
+    return false;
+  }
+  function findJsonMessage(value, depth = 0) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const message = findJsonMessage(item, depth + 1);
+        if (message) return message;
+      }
+      return void 0;
+    }
+    if (!value || typeof value !== "object" || depth > 3) return void 0;
+    const record = value;
+    for (const key of ["message", "msg", "error", "pesan", "keterangan", "description"]) {
+      const candidate = record[key];
+      if (typeof candidate === "string" && looksLikeHumanMessage(candidate)) {
+        return cleanServerMessage(candidate, 300);
+      }
+    }
+    for (const key of ["data", "error"]) {
+      if (record[key] && typeof record[key] === "object") {
+        const message = findJsonMessage(record[key], depth + 1);
+        if (message) return message;
+      }
+    }
+    return void 0;
+  }
+  function evaluateJsonPayload(body) {
+    const trimmed = body.trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return { isJson: false, ok: true };
+    let parsed;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      return { isJson: false, ok: true };
+    }
+    if (!jsonIndicatesFailure(parsed)) return { isJson: true, ok: true };
+    return {
+      isJson: true,
+      ok: false,
+      message: findJsonMessage(parsed) || "Server menolak permintaan"
+    };
+  }
+  function isMorbisLoginPage(html) {
+    if (!/<input\b[^>]*\btype\s*=\s*['"]?password/i.test(html)) return false;
+    return /<form\b[^>]*\baction\s*=\s*['"][^'"]*(?:login|signin|auth)[^'"]*['"]/i.test(html) || /<title[^>]*>[^<]*\b(?:login|masuk)\b/i.test(html);
+  }
+  function isMorbisApplicationErrorMessage(text) {
+    const value = text.trim();
+    return value.length > 0 && value.length <= 300 && MORBIS_APP_ERROR_PAGE_RE.test(value);
+  }
+  function parseMorbisHtmlResponse(html) {
+    if (!html || !html.trim()) return { ok: true };
+    if (isMorbisLoginPage(html)) {
+      return {
+        ok: false,
+        loginExpired: true,
+        message: "Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi"
+      };
+    }
+    const json = evaluateJsonPayload(html);
+    if (json.isJson) {
+      return json.ok ? { ok: true } : { ok: false, message: json.message };
+    }
+    const visible = htmlToVisibleText(html);
+    if (MORBIS_APP_ERROR_PAGE_RE.test(visible) || /<title[^>]*>[^<]*error\s*-\s*aplikasi/i.test(html)) {
+      return { ok: true, rejectedMarker: true };
+    }
+    const containerMessage = extractContainerMessage(html);
+    if (containerMessage) return { ok: false, message: containerMessage };
+    const flashMessage = extractInlineJsMessage(html);
+    if (flashMessage) return { ok: false, message: flashMessage };
+    return { ok: true, rejectedMarker: ERROR_CLASS_RE.test(html) };
+  }
+  function extractServerErrorMessage(body) {
+    const json = evaluateJsonPayload(body);
+    if (json.isJson && !json.ok && json.message) return json.message;
+    return extractContainerMessage(body) ?? extractInlineJsMessage(body);
+  }
+  function extractJsonServerMessage(body) {
+    const trimmed = String(body ?? "").trim();
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
+    let parsed;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+    return findJsonMessage(parsed) ?? null;
+  }
+  function summarizeMorbisResponse(body, maxLength = 220) {
+    const raw = String(body ?? "");
+    if (!raw.trim()) return "(body kosong)";
+    const text = cleanServerMessage(htmlToVisibleText(raw), maxLength);
+    if (text) return text;
+    return `(teks tidak terbaca, ${raw.length} byte)`;
+  }
+
+  // src/features/shared/uploadVerification.ts
+  var MIN_NEEDLE_LENGTH = 6;
+  var MAX_ADDED_ROWS_REPORTED = 3;
+  function normalizeForMatch(value) {
+    return String(value ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+  function documentMatchNeedle(fileName) {
+    return normalizeForMatch(String(fileName ?? "").replace(/\.[a-z0-9]{1,6}$/i, ""));
+  }
+  function usableNeedles(needles) {
+    return needles.map((n) => normalizeForMatch(n)).filter((n) => n.length >= MIN_NEEDLE_LENGTH);
+  }
+  function countDocumentMatches(rows, needles) {
+    if (!rows || rows.length === 0) return 0;
+    const usable = usableNeedles(needles);
+    if (usable.length === 0) return 0;
+    let count = 0;
+    for (const row of rows) {
+      const hay = normalizeForMatch(row);
+      if (usable.some((needle) => hay.includes(needle))) count += 1;
+    }
+    return count;
+  }
+  function isSavedByResponseBody(responseBody, fileName) {
+    const needle = documentMatchNeedle(fileName);
+    return needle.length >= MIN_NEEDLE_LENGTH && normalizeForMatch(responseBody).includes(needle);
+  }
+  function rowForDisplay(row, maxLength = 160) {
+    const clean = String(row ?? "").replace(/\s+/g, " ").trim();
+    if (clean.length <= maxLength) return clean;
+    return `${clean.slice(0, Math.max(0, maxLength - 1)).trimEnd()}\u2026`;
+  }
+  function rowKey(row) {
+    return normalizeForMatch(String(row ?? "").replace(/^\s*\d+\s+/, ""));
+  }
+  function diffDocumentRows(before, after) {
+    const beforeKeys = new Set(before.map(rowKey));
+    const seen = /* @__PURE__ */ new Set();
+    const added = [];
+    for (const row of after) {
+      const key = rowKey(row);
+      if (!key || beforeKeys.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      added.push(rowForDisplay(row));
+    }
+    return added;
+  }
+  function verifyDocumentSaved(input) {
+    const before = input.rowsBefore;
+    const after = input.rowsAfter;
+    const fileNeedle = documentMatchNeedle(input.fileName);
+    const needles = usableNeedles([fileNeedle, ...input.extraNeedles ?? []]);
+    const result = {
+      status: "unknown",
+      addedRows: [],
+      rowsBeforeCount: before ? before.length : null,
+      rowsAfterCount: after ? after.length : null
+    };
+    if (isSavedByResponseBody(input.responseBody, input.fileName)) {
+      return { ...result, status: "saved", matchedNeedle: fileNeedle };
+    }
+    if (before === null || after === null) return result;
+    for (const needle of needles) {
+      if (countDocumentMatches(after, [needle]) > countDocumentMatches(before, [needle])) {
+        return { ...result, status: "saved", matchedNeedle: needle };
+      }
+    }
+    const added = diffDocumentRows(before, after);
+    if (added.length === 0) return { ...result, status: "missing" };
+    const capped = added.slice(0, MAX_ADDED_ROWS_REPORTED);
+    if (added.length <= MAX_ADDED_ROWS_REPORTED) {
+      return { ...result, status: "mismatch", addedRows: capped };
+    }
+    return { ...result, status: "unknown", addedRows: capped };
+  }
+
+  // src/features/batchUploadUrl.ts
+  var g = getMorbisGlobals();
+  var BATCH_UPLOAD_URL_CONFIG = {
+    targetUrl: "/v2/m-klaim/detail-v2-refaktor",
+    uploadEndpoint: "/v2/m-klaim/uploda-dokumen/control?sub=simpan",
+    maxConcurrent: 3,
+    maxBatchSize: 50,
+    supportedExtensions: [".pdf", ".jpg", ".jpeg", ".png", ".gif"],
+    modalId: "ext-batch-url-modal",
+    textareaId: "ext-url-input",
+    previewId: "ext-preview-list",
+    progressId: "ext-progress-bar",
+    statusId: "ext-status-text"
+  };
+  function formatDateYMD(date) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  function getTodayFormatted() {
+    return formatDateYMD(/* @__PURE__ */ new Date());
+  }
+  function getTanggalMasukFromPage() {
+    const toYmd = (raw) => {
+      if (!raw) return null;
+      const s = String(raw).trim();
+      const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (iso) return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
+      const idSlash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (idSlash) {
+        return `${idSlash[3]}-${idSlash[2].padStart(2, "0")}-${idSlash[1].padStart(2, "0")}`;
+      }
+      const idDash = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+      if (idDash) {
+        return `${idDash[3]}-${idDash[2].padStart(2, "0")}-${idDash[1].padStart(2, "0")}`;
+      }
+      return null;
+    };
+    const inputSelectors = ["#tgl", "#tanggal", "#tanggal_masuk", 'input[name="tanggal"]'];
+    for (const sel of inputSelectors) {
+      const el = document.querySelector(sel);
+      const ymd = toYmd(el?.value);
+      if (ymd) return ymd;
+    }
+    const params = new URLSearchParams(window.location.search);
+    for (const key of ["tanggalAwal", "tanggalAkhir", "tanggal", "tgl"]) {
+      const ymd = toYmd(params.get(key));
+      if (ymd) return ymd;
+    }
+    console.warn(
+      "[Batch Upload] Tanggal klaim tidak ditemukan (input #tgl & URL), pakai tanggal hari ini"
+    );
+    return getTodayFormatted();
+  }
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function fetchWithTimeout(url, init = {}, timeoutMs = 3e4) {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), timeoutMs);
+    const externalSignal = init.signal;
+    const onExternalAbort = () => ac.abort();
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        clearTimeout(timer);
+        ac.abort();
+      } else {
+        externalSignal.addEventListener("abort", onExternalAbort, { once: true });
+      }
+    }
+    return fetch(url, { ...init, signal: ac.signal }).finally(() => {
+      clearTimeout(timer);
+      if (externalSignal) externalSignal.removeEventListener("abort", onExternalAbort);
+    });
+  }
+  async function fetchWithRetry(url, init = {}, retries = 2) {
+    const signal = init.signal;
+    let lastErr = null;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const attemptInit = signal ? { ...init, signal } : init;
+        const resp = await fetchWithTimeout(url, attemptInit);
+        if (resp.ok) return resp;
+        if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) return resp;
+        lastErr = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      } catch (err) {
+        const isAbort = err instanceof DOMException ? err.name === "AbortError" : /abort/i.test(err?.message ?? "");
+        if (!isAbort) {
+          lastErr = err;
+        } else if (signal?.aborted) {
+          throw new Error("Batch cancelled", { cause: err });
+        } else {
+          lastErr = new Error("Request timeout");
+        }
+      }
+      if (attempt < retries && !(lastErr instanceof Error && lastErr.message === "Batch cancelled")) {
+        await new Promise((r) => setTimeout(r, 1e3 * (attempt + 1)));
+        console.log(`[Batch Upload] Retry ${attempt + 1}/${retries} for ${url}`);
+      }
+    }
+    throw lastErr || new Error("Fetch failed after retries");
+  }
+  var batchQueue = [];
+  var isProcessing = false;
+  var _batchAbortController = null;
+  function _getBatchAbortSignal() {
+    if (!_batchAbortController) _batchAbortController = new AbortController();
+    return _batchAbortController.signal;
+  }
+  function cancelBatchUpload() {
+    if (_batchAbortController) {
+      _batchAbortController.abort();
+    }
+    isProcessing = false;
+  }
+  function resetBatchAbort() {
+    _batchAbortController = new AbortController();
+  }
+  function extractUrls(inputText) {
+    if (!inputText || typeof inputText !== "string") return [];
+    const lines = inputText.split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+    return lines.map((url) => url.replace(/ /g, "%20")).filter((url) => {
+      try {
+        new URL(url);
+        const pathname = url.split(/[?#]/)[0].toLowerCase();
+        return BATCH_UPLOAD_URL_CONFIG.supportedExtensions.some((ext) => pathname.endsWith(ext));
+      } catch {
+        return false;
+      }
+    });
+  }
+  function parseMetadataFromUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const pathname = decodeURIComponent(urlObj.pathname);
+      const filename = pathname.split("/").pop() || "unknown";
+      const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+      const parts = nameWithoutExt.split(/[-_\s]+/);
+      let norm = "";
+      const tanggal = getTanggalMasukFromPage();
+      const normCandidates = parts.filter((p) => {
+        const isNumeric = /^\d+$/.test(p);
+        const len = p.length;
+        return isNumeric && len >= 6 && len <= 12 && len !== 10 && len !== 13;
+      });
+      if (normCandidates.length > 0) {
+        norm = normCandidates[0];
+      } else {
+        const normFromQuery = urlObj.searchParams.get("norm") || urlObj.searchParams.get("no_rm");
+        if (normFromQuery && /^\d{6,12}$/.test(normFromQuery)) {
+          norm = normFromQuery;
+        }
+      }
+      const keteranganParts = parts.filter((p) => !/^\d{10}$/.test(p) && p !== norm);
+      const keterangan = keteranganParts.join(" ").trim() || nameWithoutExt.replace(/[-_]+/g, " ");
+      return {
+        filename,
+        norm,
+        tanggal,
+        jenis_dokumen: "Lain-lain",
+        keterangan,
+        url,
+        status: "pending"
+      };
+    } catch {
+      return {
+        filename: "error",
+        norm: "",
+        tanggal: getTanggalMasukFromPage(),
+        jenis_dokumen: "Lain-lain",
+        keterangan: "URL tidak valid",
+        url,
+        status: "error",
+        error: "Invalid URL format"
+      };
+    }
+  }
+  function showBatchUploadModal() {
+    resetBatchAbort();
+    let modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = BATCH_UPLOAD_URL_CONFIG.modalId;
+      modal.className = "ext-batch-delete-modal";
+      modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
           <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Upload Dokumen Ulang</h3>
-          <button class="ext-modal-close" id="ext-modal-close-btn">${T.xClose}</button>
+          <button class="ext-modal-close" id="ext-modal-close-btn">${Icons.xClose}</button>
         </div>
         <div class="ext-mode-radio">
           <label><input type="radio" name="ext-upload-mode" value="file" checked> Upload File (dari komputer)</label>
@@ -221,72 +1055,1262 @@ ${He}
         <div id="ext-file-section">
           <div id="ext-dropzone" style="border:2px dashed #cbd5e1;border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;background:#f8fafc;transition:background .15s,border-color .15s;">
             <div style="font-size:14px;color:#475569;font-weight:600;margin-bottom:6px;">Seret banyak file ke sini, atau klik untuk memilih</div>
-            <div style="font-size:12px;color:#94a3b8;">PDF, JPG, PNG, GIF \u2014 otomatis terdeteksi & siap di-upload (maks. ${k.maxBatchSize} file)</div>
+            <div style="font-size:12px;color:#94a3b8;">PDF, JPG, PNG, GIF \u2014 otomatis terdeteksi & siap di-upload (maks. ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} file)</div>
             <input type="file" id="ext-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.gif" style="display:none;">
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
           <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.</p>
           <div style="margin-bottom: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${T.search} Cari Dokumen Pasien Otomatis</button>
+            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${Icons.search} Cari Dokumen Pasien Otomatis</button>
           </div>
           <div id="ext-upload-search-wrap" class="ext-upload-search-wrap" style="display: none;">
             <input type="text" id="ext-upload-search-input" class="ext-search-input" placeholder="Cari dokumen...">
           </div>
         </div>
-        <div id="${k.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
-        <div id="${k.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
+        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${k.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button>
-          <button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">${T.xClose} Batalkan Upload</button>
+          <button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">${Icons.xClose} Batalkan Upload</button>
           <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 Dokumen</button>
-          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${T.upload} Mulai Upload</button>
+          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
         </div>
       </div>
-    `,setTimeout(()=>{document.getElementById("ext-modal-close-btn")?.addEventListener("click",()=>e?.classList.remove("show")),document.getElementById("ext-file-input")?.addEventListener("change",()=>{Me()});let n=document.getElementById("ext-dropzone"),r=document.getElementById("ext-file-input");n&&r&&(n.addEventListener("click",()=>r.click()),n.addEventListener("dragover",a=>{a.preventDefault(),n.style.background="#e0e7ff",n.style.borderColor="#6366f1"}),n.addEventListener("dragleave",()=>{n.style.background="#f8fafc",n.style.borderColor="#cbd5e1"}),n.addEventListener("drop",a=>{if(a.preventDefault(),n.style.background="#f8fafc",n.style.borderColor="#cbd5e1",a.dataTransfer?.files&&a.dataTransfer.files.length>0){let o=new DataTransfer;for(let i=0;i<a.dataTransfer.files.length;i++)o.items.add(a.dataTransfer.files[i]);r.files=o.files,Me()}})),document.getElementById("ext-cancel-btn")?.addEventListener("click",oe),document.getElementById("ext-cancel-batch-btn")?.addEventListener("click",ae),document.getElementById("ext-test-single-btn")?.addEventListener("click",De),document.getElementById("ext-start-upload-btn")?.addEventListener("click",Oe),document.querySelectorAll('input[name="ext-upload-mode"]').forEach(a=>{a.addEventListener("change",o=>{let i=o.target,s=document.getElementById("ext-auto-section"),c=document.getElementById("ext-file-section");i.value==="file"?(s&&(s.style.display="none"),c&&(c.style.display="block")):(s&&(s.style.display="block"),c&&(c.style.display="none")),g=[],A([]),h("")})}),document.getElementById("ext-crawl-btn")?.addEventListener("click",lt),document.getElementById("ext-upload-search-input")?.addEventListener("input",()=>A(g)),e?.addEventListener("click",function(a){a.target===e&&oe()})},0),document.body.appendChild(e)),document.querySelectorAll(".ext-batch-delete-modal.show").forEach(n=>{n!==e&&n.classList.remove("show")}),e.classList.add("show"),document.getElementById("ext-dropzone")?.focus()}function oe(){ae();let e=document.getElementById(k.modalId);if(e){e.classList.remove("show"),g=[],v=!1,A([]),Ue(0),h("");let t=document.getElementById("ext-upload-search-input");t&&(t.value="");let n=document.getElementById("ext-upload-search-wrap");n&&(n.style.display="none");let r=document.querySelector("#"+k.modalId+" .ext-modal-buttons");r&&(r.innerHTML='<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button><button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">'+T.xClose+' Batalkan Upload</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 Dokumen</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>'+T.upload+" Mulai Upload</button>",document.getElementById("ext-cancel-btn")?.addEventListener("click",oe),document.getElementById("ext-cancel-batch-btn")?.addEventListener("click",ae),document.getElementById("ext-test-single-btn")?.addEventListener("click",De),document.getElementById("ext-start-upload-btn")?.addEventListener("click",Oe))}}function it(e){let n={success:{status:"success",label:"Sukses"},warning:{status:"warning",label:"Belum pasti"},error:{status:"error",label:"Gagal"}}[e.status]??{status:"deleting",label:"Memproses"};return`<span class="ext-status-badge" data-status="${n.status}">${n.label}</span>`}function A(e){let t=document.getElementById(k.previewId),n=document.getElementById("ext-start-upload-btn"),r=document.getElementById("ext-upload-search-wrap"),a=document.getElementById("ext-upload-search-input"),o=document.getElementById("ext-auto-section")?.style.display!=="none",i=(a?.value||"").toLowerCase();if(!e||e.length===0){t&&(t.style.display="none"),n&&(n.disabled=!0),r&&(r.style.display="none"),a&&(a.value="");return}r&&o&&(r.style.display="block");let s=e.map((l,d)=>({item:l,i:d})).filter(({item:l})=>!i||l.filename.toLowerCase().includes(i)||l.keterangan.toLowerCase().includes(i)||l.norm.toLowerCase().includes(i));t&&(t.style.display="block");let c=document.createElement("div");if(c.style.marginBottom="10px",c.innerHTML=`<strong class="preview-header-text">Preview (${s.length} dari ${e.length} dokumen, ${e.filter(l=>l.selected!==!1).length} dipilih):</strong>`,t&&(t.innerHTML="",t.appendChild(c)),s.length===0){let l=document.createElement("div");l.style.cssText="padding:24px;text-align:center;font-size:13px;color:#9ca3af;",l.textContent="Tidak ada dokumen yang cocok dengan pencarian.",t?.appendChild(l)}s.forEach(({item:l,i:d})=>{let u;l.tglFileTabel?u=`<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>Dibuat: <strong style="color:#111827;">${S(l.tglFileTabel||"")}</strong></span>
+    `;
+      setTimeout(() => {
+        document.getElementById("ext-modal-close-btn")?.addEventListener("click", () => modal?.classList.remove("show"));
+        document.getElementById("ext-file-input")?.addEventListener("change", () => {
+          analyzeFiles();
+        });
+        const dropzone2 = document.getElementById("ext-dropzone");
+        const fileInput = document.getElementById("ext-file-input");
+        if (dropzone2 && fileInput) {
+          dropzone2.addEventListener("click", () => fileInput.click());
+          dropzone2.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropzone2.style.background = "#e0e7ff";
+            dropzone2.style.borderColor = "#6366f1";
+          });
+          dropzone2.addEventListener("dragleave", () => {
+            dropzone2.style.background = "#f8fafc";
+            dropzone2.style.borderColor = "#cbd5e1";
+          });
+          dropzone2.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropzone2.style.background = "#f8fafc";
+            dropzone2.style.borderColor = "#cbd5e1";
+            if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+              const dt = new DataTransfer();
+              for (let i = 0; i < e.dataTransfer.files.length; i++)
+                dt.items.add(e.dataTransfer.files[i]);
+              fileInput.files = dt.files;
+              analyzeFiles();
+            }
+          });
+        }
+        document.getElementById("ext-cancel-btn")?.addEventListener("click", closeBatchModal);
+        document.getElementById("ext-cancel-batch-btn")?.addEventListener("click", cancelBatchUpload);
+        document.getElementById("ext-test-single-btn")?.addEventListener("click", testSingleUpload);
+        document.getElementById("ext-start-upload-btn")?.addEventListener("click", startBatchUpload);
+        document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            const target = e.target;
+            const auto = document.getElementById("ext-auto-section");
+            const fileSec = document.getElementById("ext-file-section");
+            if (target.value === "file") {
+              if (auto) auto.style.display = "none";
+              if (fileSec) fileSec.style.display = "block";
+            } else {
+              if (auto) auto.style.display = "block";
+              if (fileSec) fileSec.style.display = "none";
+            }
+            batchQueue = [];
+            updatePreview([]);
+            updateStatus("");
+          });
+        });
+        document.getElementById("ext-crawl-btn")?.addEventListener("click", crawlDokumenPasien);
+        document.getElementById("ext-upload-search-input")?.addEventListener("input", () => updatePreview(batchQueue));
+        modal?.addEventListener("click", function(e) {
+          if (e.target === modal) closeBatchModal();
+        });
+      }, 0);
+      document.body.appendChild(modal);
+    }
+    document.querySelectorAll(".ext-batch-delete-modal.show").forEach((m) => {
+      if (m !== modal) m.classList.remove("show");
+    });
+    modal.classList.add("show");
+    const dropzone = document.getElementById("ext-dropzone");
+    dropzone?.focus();
+  }
+  function closeBatchModal() {
+    cancelBatchUpload();
+    const modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
+    if (modal) {
+      modal.classList.remove("show");
+      batchQueue = [];
+      isProcessing = false;
+      updatePreview([]);
+      updateProgress(0);
+      updateStatus("");
+      const searchInput = document.getElementById(
+        "ext-upload-search-input"
+      );
+      if (searchInput) searchInput.value = "";
+      const searchWrap = document.getElementById("ext-upload-search-wrap");
+      if (searchWrap) searchWrap.style.display = "none";
+      const buttonsContainer = document.querySelector(
+        "#" + BATCH_UPLOAD_URL_CONFIG.modalId + " .ext-modal-buttons"
+      );
+      if (buttonsContainer) {
+        buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button><button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">' + Icons.xClose + ' Batalkan Upload</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 Dokumen</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' + Icons.upload + " Mulai Upload</button>";
+        document.getElementById("ext-cancel-btn")?.addEventListener("click", closeBatchModal);
+        document.getElementById("ext-cancel-batch-btn")?.addEventListener("click", cancelBatchUpload);
+        document.getElementById("ext-test-single-btn")?.addEventListener("click", testSingleUpload);
+        document.getElementById("ext-start-upload-btn")?.addEventListener("click", startBatchUpload);
+      }
+    }
+  }
+  function renderItemBadge(item) {
+    const known = {
+      success: { status: "success", label: "Sukses" },
+      warning: { status: "warning", label: "Belum pasti" },
+      error: { status: "error", label: "Gagal" }
+    };
+    const info = known[item.status] ?? { status: "deleting", label: "Memproses" };
+    return `<span class="ext-status-badge" data-status="${info.status}">${info.label}</span>`;
+  }
+  function updatePreview(items) {
+    const previewEl = document.getElementById(
+      BATCH_UPLOAD_URL_CONFIG.previewId
+    );
+    const startBtn = document.getElementById("ext-start-upload-btn");
+    const searchWrap = document.getElementById("ext-upload-search-wrap");
+    const searchInput = document.getElementById("ext-upload-search-input");
+    const isAutoMode = document.getElementById("ext-auto-section")?.style.display !== "none";
+    const query = (searchInput?.value || "").toLowerCase();
+    if (!items || items.length === 0) {
+      if (previewEl) previewEl.style.display = "none";
+      if (startBtn) startBtn.disabled = true;
+      if (searchWrap) searchWrap.style.display = "none";
+      if (searchInput) searchInput.value = "";
+      return;
+    }
+    if (searchWrap && isAutoMode) searchWrap.style.display = "block";
+    const filtered = items.map((item, i) => ({ item, i })).filter(
+      ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.norm.toLowerCase().includes(query)
+    );
+    if (previewEl) previewEl.style.display = "block";
+    const headerDiv = document.createElement("div");
+    headerDiv.style.marginBottom = "10px";
+    headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${filtered.length} dari ${items.length} dokumen, ${items.filter((i) => i.selected !== false).length} dipilih):</strong>`;
+    if (previewEl) {
+      previewEl.innerHTML = "";
+      previewEl.appendChild(headerDiv);
+    }
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:24px;text-align:center;font-size:13px;color:#9ca3af;";
+      empty.textContent = "Tidak ada dokumen yang cocok dengan pencarian.";
+      previewEl?.appendChild(empty);
+    }
+    filtered.forEach(({ item, i }) => {
+      let modeText;
+      if (item.tglFileTabel) {
+        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>Dibuat: <strong style="color:#111827;">${escHtml(item.tglFileTabel || "")}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Diunggah: <strong style="color:#111827;">${S(l.tglUploadTabel||"")}</strong></span>
-      </div>`:u=`<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>NORM: <strong style="color:#111827;">${S(l.norm||"-")}</strong></span>
+        <span>Diunggah: <strong style="color:#111827;">${escHtml(item.tglUploadTabel || "")}</strong></span>
+      </div>`;
+      } else {
+        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>NORM: <strong style="color:#111827;">${escHtml(item.norm || "-")}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Tgl Klaim: <strong style="color:#111827;">${S(l.tanggal)}</strong></span>
-      </div>`;let f=(l.filename.split(".").pop()||"").toLowerCase(),p={pdf:"bg-red-100 text-red-700",jpg:"bg-blue-100 text-blue-700",jpeg:"bg-blue-100 text-blue-700",png:"bg-green-100 text-green-700"}[f]||"bg-gray-100 text-gray-700",b=f?`<span class="${p}" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;text-transform:uppercase;margin-left:6px;">${f}</span>`:"",x=document.createElement("div");x.className="ext-delete-preview-item",l.selected&&x.classList.add("selected"),x.innerHTML=`
+        <span>Tgl Klaim: <strong style="color:#111827;">${escHtml(item.tanggal)}</strong></span>
+      </div>`;
+      }
+      const ext = (item.filename.split(".").pop() || "").toLowerCase();
+      const extColors = {
+        pdf: "bg-red-100 text-red-700",
+        jpg: "bg-blue-100 text-blue-700",
+        jpeg: "bg-blue-100 text-blue-700",
+        png: "bg-green-100 text-green-700"
+      };
+      const extClass = extColors[ext] || "bg-gray-100 text-gray-700";
+      const extBadge = ext ? `<span class="${extClass}" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;text-transform:uppercase;margin-left:6px;">${ext}</span>` : "";
+      const itemEl = document.createElement("div");
+      itemEl.className = "ext-delete-preview-item";
+      if (item.selected) itemEl.classList.add("selected");
+      itemEl.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" class="ext-checkbox" data-index="${d}" ${l.selected!==!1?"checked":""} ${v?"disabled":""}>
+        <input type="checkbox" class="ext-checkbox" data-index="${i}" ${item.selected !== false ? "checked" : ""} ${isProcessing ? "disabled" : ""}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${d+1}. ${S(l.filename)}${b}</strong>
-            ${l.status!=="pending"?it(l):""}
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${escHtml(item.filename)}${extBadge}</strong>
+            ${item.status !== "pending" ? renderItemBadge(item) : ""}
           </div>
-          ${u}
-          <input type="text" class="ext-keterangan-input" data-index="${d}" value="${S(l.keterangan||"")}" placeholder="Keterangan dokumen..." ${v?"disabled":""}>
-          ${l.error?`<div style="font-size: 11px; color: ${l.status==="warning"?"#92400e":"#dc2626"}; margin-top: 4px;"><strong>${l.status==="warning"?"Perhatian":"Error"}:</strong> ${S(l.error)}</div>`:""}
+          ${modeText}
+          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${escHtml(item.keterangan || "")}" placeholder="Keterangan dokumen..." ${isProcessing ? "disabled" : ""}>
+          ${item.error ? `<div style="font-size: 11px; color: ${item.status === "warning" ? "#92400e" : "#dc2626"}; margin-top: 4px;"><strong>${item.status === "warning" ? "Perhatian" : "Error"}:</strong> ${escHtml(item.error)}</div>` : ""}
         </div>
       </label>
-      <button data-index="${d}" class="ext-delete-preview-btn" ${v?"disabled":""}>${T.eye} Preview</button>
-      <button data-index="${d}" class="ext-delete-single-btn" title="Buang dari Antrian" ${v?"disabled":""}>${T.xClose}</button>
-    `;let w=x.querySelector(".ext-checkbox"),y=x.querySelector(".ext-delete-preview-btn"),_=x.querySelector(".ext-delete-single-btn"),R=E=>{if(v)return;l.selected=E,w&&(w.checked=E),E?x.classList.add("selected"):x.classList.remove("selected");let C=e.filter(L=>L.selected!==!1).length;c.innerHTML=`<strong class="preview-header-text">Preview (${C} Dokumen Dipilih):</strong>`,n&&(n.disabled=C===0)};w?.addEventListener("change",E=>R(E.target.checked)),_?.addEventListener("click",()=>R(!1));let P=x.querySelector(".ext-keterangan-input");P?.addEventListener("input",function(){g[d].keterangan=P.value}),y&&(y.addEventListener("click",async()=>{try{await Q(g[d].url,g[d].filename)}catch{window.open(g[d].url,"_blank")}}),v&&(y.disabled=!0)),t?.appendChild(x)}),n&&(n.disabled=e.filter(l=>l.selected!==!1).length===0)}function Ue(e){let t=document.getElementById(k.progressId);if(!t)return;let n=t.querySelector(".progress-fill");e>0?(t.style.display="block",n&&(n.style.width=`${e}%`)):t.style.display="none"}function h(e){let t=document.getElementById(k.statusId);t&&(t.textContent=e)}function N(e){let t=["ext-cancel-btn","ext-test-single-btn","ext-start-upload-btn","ext-modal-close-btn","ext-crawl-btn","ext-file-input"];document.querySelectorAll('input[name="ext-upload-mode"]').forEach(r=>{r.disabled=e});let n=document.getElementById("ext-cancel-batch-btn");n&&(n.style.display=e?"inline-flex":"none"),t.forEach(r=>{let a=document.getElementById(r);a&&(a.disabled=e,r==="ext-modal-close-btn"&&(a.style.opacity=e?"0.5":"1",a.style.cursor=e?"not-allowed":"pointer"))})}function st(e){let r=e.replace(/\.[^/.]+$/,"").split(/[-_\s]+/).filter(a=>{let o=/^\d+$/.test(a),i=a.length;return o&&i>=6&&i<=12&&i!==10&&i!==13});return r.length>0?r[0]:""}function Me(){let t=document.getElementById("ext-file-input")?.files;if(!t||t.length===0){$({title:"Tidak ada file",message:"Pilih file terlebih dahulu.",variant:"warning",okLabel:"OK",hideCancel:!0});return}let n=k.supportedExtensions,r=[];for(let o=0;o<t.length;o++){let i=t[o],s=i.name.toLowerCase();n.some(c=>s.endsWith(c))&&i.size!==0&&r.push(i)}if(r.length===0){$({title:"Tidak ada file valid",message:"Pastikan file berupa PDF/JPG/PNG/GIF dan tidak kosong.",variant:"warning",okLabel:"OK",hideCancel:!0});return}if(r.length>k.maxBatchSize){$({title:"Terlalu banyak file",message:`Maksimal ${k.maxBatchSize} file per batch.`,variant:"warning",okLabel:"OK",hideCancel:!0});return}let a=K();g=r.map(o=>{let i=o.name,s=i.replace(/\.[^/.]+$/,""),c=st(i),d=s.split(/[-_\s]+/).filter(u=>!/^\d{10}$/.test(u)&&u!==c).join(" ").trim()||s.replace(/[-_]+/g," ");return{filename:i,norm:c,tanggal:a,jenis_dokumen:"Lain-lain",keterangan:d,url:"",file:o,status:"pending"}}),A(g),h(`${r.length} file siap diproses`)}async function lt(){let t=new URLSearchParams(window.location.search).get("id_visit");if(!t){$({title:"Parameter id_visit tidak ditemukan",message:"Pastikan buka dari halaman detail pasien.",variant:"warning",okLabel:"OK",hideCancel:!0});return}h("Sedang mencari dokumen di rekam medis..."),U();let n=document.getElementById("ext-crawl-btn");n&&(n.disabled=!0,n.textContent="Mencari...");try{let r=`${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${t}&id_kunjungan=`,a=await fetch(r,{signal:M()});if(!a.ok)throw new Error("Gagal memuat halaman dokumen pasien");let o=await a.text(),i=new DOMParser().parseFromString(o,"text/html"),s=i.querySelectorAll("table.data-list.tabel tr");s.length<=1&&(s=i.querySelectorAll("table.tabel tr")),s.length<=1&&(s=i.querySelectorAll('table[id*="dokumen"] tr, table[class*="dokumen"] tr')),s.length<=1&&(s=i.querySelectorAll("tbody tr"));let c=[];for(let l=1;l<s.length;l++){let d=s[l],u=d.querySelector('td a[href*="/assets/dokumen-pasien/"]');if(u||(u=d.querySelector('td a[href*="dokumen-pasien"]')),u||(u=d.querySelector("a[href]")),!u)continue;let f=u.getAttribute("href");if(!f?.includes("/assets/dokumen-pasien/"))continue;let m=f.startsWith("http")?f:`${window.location.origin}${f}`,p=Array.from(d.querySelectorAll("td")),b=p[1]?.textContent?.trim()||p[0]?.textContent?.trim()||"",x=p[2]?.textContent?.trim()||p[1]?.textContent?.trim()||"",w=p[3]?.textContent?.trim()||p[2]?.textContent?.trim()||"",y=p[4]?.textContent?.trim()||p[3]?.textContent?.trim()||"";c.push({url:m,filenameTabel:b,tglFile:w,tglUpload:y,keteranganTabel:x})}if(c.length===0){h("Tidak ada dokumen ditemukan di rekam medis."),n&&(n.disabled=!1,n.textContent="Cari Dokumen Pasien Otomatis");return}g=c.map(l=>{let d=se(l.url);return d.tglFileTabel=l.tglFile,d.tglUploadTabel=l.tglUpload,d.filename=l.filenameTabel||d.filename,d.keterangan=l.keteranganTabel||d.filename||"-",d.selected=!1,d}),A(g),h(`${g.length} dokumen berhasil ditemukan!`)}catch(r){r?.name==="AbortError"?h("Dibatalkan."):h("Error: "+r.message)}finally{n&&(n.disabled=!1,n.textContent="Cari Dokumen Pasien Otomatis")}}async function ct(e,t){h(`Mengunduh: ${S(t)}...`),console.log("[Batch Upload] Fetching URL:",e);let n,r=M();try{n=await re(e,{method:"GET",credentials:"same-origin",signal:r},2)}catch{n=await re(e,{method:"GET",mode:"cors",credentials:"omit",signal:r},1)}if(!n.ok){let c=await n.text().catch(()=>"");throw new Error(`HTTP ${n.status} \u2014 ${n.statusText||c.slice(0,120)}`)}let a=await n.blob();if(a.size===0)throw new Error("File kosong (0 bytes) dari server");let o=await a.slice(0,512).text().catch(()=>"");if(/^\s*<!doctype html|<html[\s>]/i.test(o))throw new Error("Server mengembalikan halaman HTML (sesi login kadaluarsa?) \u2014 bukan file dokumen");let i=t.includes(".")?"."+t.split(".").pop():"",s=t.replace(/[<>:"/\\|?*]/g,"_");return new File([a],s,{type:a.type||`application/${i.slice(1)||"octet-stream"}`})}async function dt(e){if(typeof createImageBitmap=="function"){let t=await createImageBitmap(e);try{return{width:t.width,height:t.height}}finally{t.close?.()}}return new Promise((t,n)=>{let r=new Image,a=URL.createObjectURL(e);r.onload=()=>{URL.revokeObjectURL(a),t({width:r.naturalWidth,height:r.naturalHeight})},r.onerror=()=>{URL.revokeObjectURL(a),n(new Error("Tidak bisa membaca dimensi gambar"))},r.src=a})}async function ut(e){let t=document.createElement("canvas"),n=URL.createObjectURL(e);try{let r=await new Promise((c,l)=>{let d=new Image;d.onload=()=>c(d),d.onerror=()=>l(new Error("Gagal memuat gambar untuk konversi ke PDF")),d.src=n}),a=Math.max(1,r.naturalWidth),o=Math.max(1,r.naturalHeight);t.width=a,t.height=o;let i=t.getContext("2d");if(!i)throw new Error("Canvas 2D tidak tersedia");i.fillStyle="#ffffff",i.fillRect(0,0,a,o),i.drawImage(r,0,0);let s=await new Promise(c=>t.toBlob(c,"image/jpeg",.92));if(!s)throw new Error("Gagal rasterisasi gambar ke JPEG");return{bytes:new Uint8Array(await s.arrayBuffer()),width:a,height:o}}finally{URL.revokeObjectURL(n)}}async function ft(e){let t=new Uint8Array(await e.slice(0,16).arrayBuffer()),n=fe(t),r=e.name.replace(/\.[a-z0-9]+$/i,".pdf");if(n==="pdf")return new File([e],r,{type:"application/pdf"});if(n==="jpeg"){let a=new Uint8Array(await e.arrayBuffer()),{width:o,height:i}=await dt(e);return new File([Z(a,o,i)],r,{type:"application/pdf"})}if(n==="png"||n==="gif"||n==="webp"){let{bytes:a,width:o,height:i}=await ut(e);return new File([Z(a,o,i)],r,{type:"application/pdf"})}throw new Error(`File bukan PDF/gambar yang bisa dikonversi (${e.type||"tipe tidak diketahui"}) \u2014 upload dibatalkan`)}function pt(){let e=new Date,t=e.getFullYear(),n=String(e.getMonth()+1).padStart(2,"0"),r=String(e.getDate()).padStart(2,"0"),a=String(e.getHours()).padStart(2,"0"),o=String(e.getMinutes()).padStart(2,"0"),i=String(e.getSeconds()).padStart(2,"0");return`${t}-${n}-${r} ${a}:${o}:${i}`}function gt(e){return new Promise(t=>setTimeout(t,e))}var ie=null,W=0,mt=6e4,bt=2;function Ie(){ie=null,W=0}function xt(e){let t=["table.data-list.tabel","table.tabel",'table[id*="dokumen"]','table[class*="dokumen"]'];for(let r of t){let a=e.querySelector(r);if(a&&a.querySelectorAll("tr").length>1)return a}let n=e.querySelector("table");return n&&n.querySelectorAll("tr").length>1?n:null}async function ht(e){try{let t=`${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(e)}&id_kunjungan=`,n=await fetch(t,{credentials:"same-origin",cache:"no-store",signal:M()});if(!n.ok)return null;let r=new DOMParser().parseFromString(await n.text(),"text/html"),a=xt(r);return a?Array.from(a.querySelectorAll("tr")).map(o=>(o.textContent||"").replace(/\s+/g," ").trim().toLowerCase()).filter(o=>o.length>0):null}catch{return null}}async function _e(e,t={}){if(M().aborted)return null;let n=ie;if(!t.fresh&&n&&n.idVisit===e&&Date.now()-n.at<mt)return n.rows;if(W>=bt)return null;let r=await ht(e);return ie={idVisit:e,rows:r,at:Date.now()},r?W=0:W+=1,r}function kt(){let e=performance.getEntriesByType("resource").map(t=>t.name).filter(t=>t.includes("/assets/dokumen-pasien/"));return`${document.documentElement.outerHTML}
-${e.join(`
-`)}`}async function wt(e){if(!/\/v2\/m-klaim\//i.test(window.location.pathname))return null;let t=new URLSearchParams(window.location.search).get("id_visit");if(!t)return null;try{let n=await fetch(`${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(t)}`,{credentials:"same-origin",cache:"no-store",signal:M()});if(n.ok&&F(await n.text(),e))return!0}catch{}return F(kt(),e)?!0:null}function ne(e){let t=[];return t.push(e.rowsBeforeCount===null||e.rowsAfterCount===null?"daftar dokumen tidak terbaca":`daftar dokumen ${e.rowsBeforeCount} \u2192 ${e.rowsAfterCount} baris`),e.status==="mismatch"&&e.addedRows.length>0?t.push(`baris baru: ${e.addedRows.map(n=>`"${n}"`).join(" | ")}`):e.status==="missing"&&t.push("tidak ada baris baru"),t.join(", ")}async function yt(e,t,n,r,a){if(F(r,t))return{status:"saved",detail:"nama file terbaca di respons server",source:"body"};let o=async()=>Re({responseBody:r,fileName:t,extraNeedles:n,rowsBefore:a,rowsAfter:await _e(e,{fresh:!0})}),i=await o();return i.status==="saved"?{status:"saved",detail:ne(i),source:"rows"}:i.status==="missing"&&(await gt(1500),i=await o(),i.status==="saved")?{status:"saved",detail:ne(i),source:"rows"}:(i.status==="missing"||i.status==="mismatch")&&await wt(t)===!0?{status:"saved",detail:"nama file tampil di halaman klaim (tidak ada di daftar dokumen-pasien)",source:"claim-page"}:{status:i.status,detail:ne(i)}}function vt(e,t){let n=Se(e)??void 0,r=s=>n&&!s.serverMessage?{...s,serverMessage:n}:s;if(/application\/json/i.test(t)){let s=G(e);return r(s.ok?{ok:!0}:{ok:!1,message:s.message||"Server rejected"})}if(/text\/html/i.test(t)||/^\s*(?:<!doctype\s+html|<html[\s>])/i.test(e)){let s=Ee(e);return s.loginExpired?r({ok:!1,message:s.message||"Sesi login kadaluarsa \u2014 login ulang lalu coba lagi"}):s.ok?r({ok:!0,rejectedMarker:s.rejectedMarker}):r({ok:!1,message:s.message||"Server menolak upload"})}let o=e.trim(),i=B(o,200)||void 0;return ve(o)?r({ok:!0,rejectedMarker:!0,serverMessage:i}):/^(error|gagal|failed)/i.test(o)?r({ok:!1,message:`Server: ${i}`}):r({ok:!0,serverMessage:i})}function Et(e,t){return Te(e)||B(O(e),200)||t||"tanpa keterangan"}async function J(e,t){try{let n=ue(e,e.keterangan);h(`Download: ${S(e.filename)}...`);let r;e.file?(r=new File([e.file],e.file.name,{type:e.file.type}),h(`Konversi ke PDF: ${S(e.filename)}...`)):(r=await ct(e.url,n),h(`Konversi ke PDF: ${S(e.filename)}...`)),r=await ft(r);let a=new FormData;a.append("id_visit",t),a.append("norm",e.norm),a.append("tgl_file",e.tanggal),a.append("jenis_dokumen",e.jenis_dokumen||"Lain-lain"),a.append("dok",r);let o=pt();a.append("keterangan",o);let i=await _e(t);h(`Upload: ${S(r.name)} (${(r.size/1024).toFixed(0)} KB)...`);let s=await re(k.uploadEndpoint,{method:"POST",body:a,credentials:"same-origin",signal:M()},2);if(!s.ok&&s.redirected)throw new Error("Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi");let c=await s.text().catch(()=>""),l=s.headers.get("content-type")||"",d=s.ok?vt(c,l):{ok:!1,message:`Server ${s.status}: ${Et(c,s.statusText)}`},u=M().aborted?{status:"unknown",detail:"batch dibatalkan"}:await yt(t,r.name,[o],d.ok?c:"",i);if(u.status==="saved")return d.ok||console.warn("[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen \u2014 dianggap sukses.",d.message),u.source==="claim-page"&&console.info("[Batch Upload] Dokumen tampil di halaman klaim tapi TIDAK di daftar dokumen-pasien:",r.name),{success:!0,result:c};let f=d.serverMessage||d.message||te(c),m=`${s.status} ${l||"tanpa content-type"}`;return u.status==="mismatch"?(console.warn("[Batch Upload] Ada baris baru di daftar tapi nama tidak cocok:",r.name,"|",f,"|",u.detail),{success:!1,unverified:!0,error:`Server: ${f} \u2014 tapi baris baru di daftar tidak memuat nama upload kita (${u.detail}). Cek manual.`}):u.status==="missing"?(console.warn("[Batch Upload] Dokumen TIDAK tersimpan:",r.name,"|",f,"|",u.detail,`| ${m}`),{success:!1,error:`Dokumen tidak tersimpan \u2014 ${u.detail}. Server: ${f}. Respons ${m}.`}):d.ok?(d.rejectedMarker&&console.debug("[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca \u2014 terkirim, tapi belum terverifikasi.",te(c)),{success:!1,unverified:!0,error:`Terkirim (server: ${f||"tanpa pesan"}), tapi belum bisa dipastikan tersimpan \u2014 ${u.detail}.`}):{success:!1,error:d.message||"Server menolak upload"}}catch(n){let r=n.message;if(r==="Batch cancelled")throw n;let a=r;return r.includes("Failed to fetch")||r.includes("NetworkError")?a="Network error \u2014 cek koneksi atau CORS":r.includes("timeout")||r.includes("AbortError")?a="Timeout \u2014 server tidak merespon dalam 30 detik":/abort/i.test(r)?a="Permintaan dihentikan sebelum server menjawab (timeout halaman/cancel) \u2014 coba lagi":r.includes("0 bytes")&&(a="File kosong dari server"),{success:!1,error:a}}}async function Pe(){if(v)return;U(),Ie(),v=!0,N(!0);let e=document.getElementById("ext-start-upload-btn");e&&(e.textContent="Memproses...");let n=new URLSearchParams(window.location.search).get("id_visit")||"";if(!n){$({title:"ID Visit tidak ditemukan",message:"Pastikan buka dari halaman detail pasien.",variant:"warning",okLabel:"OK",hideCancel:!0}),N(!1),v=!1,e&&(e.textContent="Mulai Upload");return}let r=0,a=0,o=0,i=!1,s=g.filter(f=>f.selected!==!1),c=s.length;if(c===0){$({title:"Tidak ada dokumen dipilih",message:"Tidak ada dokumen yang dipilih untuk diupload.",variant:"warning",okLabel:"OK",hideCancel:!0}),N(!1),v=!1,h(""),e&&(e.textContent="Mulai Upload");return}for(let f=0;f<c;f++){if(M().aborted){i=!0,h("Batch dibatalkan oleh user");break}let m=new URLSearchParams(window.location.search).get("id_visit")||"";if(!m){h("ID Visit hilang dari URL \u2014 batch dihentikan");break}m!==n&&console.warn("[Batch Upload] ID Visit berubah mid-batch:",n,"->",m);let p=s[f];h(`[${f+1}/${c}] ${S(p.filename)}...`);try{let x=new URLSearchParams(window.location.search).get("id_visit")||n,w=await J(p,x);w.success?(p.status="success",r++):w.unverified?(p.status="warning",p.error=w.error,o++):(p.status="error",p.error=w.error,a++)}catch(x){if(x instanceof Error&&x.message==="Batch cancelled"){i=!0,h("Batch dibatalkan");break}p.status="error",p.error=x.message,a++}let b=(f+1)/c*100;Ue(b),A(g)}let l=i?["Batch dibatalkan:",`${r} sukses`]:[`Selesai ${c} dokumen:`,`${r} sukses`];o>0&&l.push(`${o} belum terverifikasi`),a>0&&l.push(`${a} gagal`),h(l.join(" ")),a>0&&console.warn("[Batch Upload] Failed:",g.filter(f=>f.status==="error").map(f=>`${f.filename}: ${f.error}`)),o>0&&console.warn("[Batch Upload] Belum terverifikasi (dokumen tidak terlihat di daftar):",g.filter(f=>f.status==="warning").map(f=>`${f.filename}: ${f.error}`));let d=document.querySelector("#"+k.modalId+" .ext-modal-buttons"),u=a+o;if(d){let f=`<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${T.refresh} Reload Halaman</span></button>`,m=u>0?`<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">${o>0?"Ulangi Gagal/Belum Pasti":"Ulangi yang Gagal"}</button>`:"";d.innerHTML=`<div style="display:flex;gap:8px;justify-content:flex-end;">${m}${f}</div>`,document.getElementById("ext-reload-btn")?.addEventListener("click",()=>window.location.reload()),u>0&&document.getElementById("ext-retry-failed-btn")?.addEventListener("click",()=>{g.forEach(p=>{(p.status==="error"||p.status==="warning")&&(p.status="pending",p.error=void 0)}),A(g),Pe()})}v=!1}async function De(){if(g.length===0){$({title:"Tidak ada dokumen",message:"Tidak ada dokumen untuk ditest.",variant:"warning",okLabel:"OK",hideCancel:!0});return}if(v)return;v=!0,U(),N(!0);let e=g[0];h("Testing single upload...");let n=new URLSearchParams(window.location.search).get("id_visit")||"";try{let r=await J(e,n);r.success?(e.status="success",h("Test sukses! Detail di console.")):r.unverified?(e.status="warning",e.error=r.error,h("Terkirim, tapi belum terverifikasi (lihat console).")):(e.status="error",e.error=r.error,h("Test gagal! Detail di console."))}catch(r){e.status="error",e.error=r.message,h("Test error! Detail di console.")}A(g),N(!1),v=!1}function Oe(){if(g.length===0){$({title:"Tidak ada dokumen",message:"Tidak ada dokumen untuk diproses.",variant:"warning",okLabel:"OK",hideCancel:!0});return}let e=g.filter(t=>t.selected!==!1).length;if(e===0){$({title:"Tidak ada dokumen dipilih",message:"Centang dokumen yang ingin diupload.",variant:"warning",okLabel:"OK",hideCancel:!0});return}(async()=>await $({title:`Upload ${e} dokumen?`,message:"Proses ini tidak dapat dibatalkan.",variant:"warning",okLabel:"Ya, Upload"})&&Pe())()}function Tt(){return!!new URLSearchParams(window.location.search).get("id_visit")}async function St(){let t=new URLSearchParams(window.location.search).get("id_visit");if(!t){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:"Parameter id_visit tidak ditemukan di URL."}}).catch(console.error);return}try{U();let n=`${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${t}&page=85&id_kunjungan=`,r=await fetch(n);if(!r.ok)throw new Error("Gagal memuat halaman dokumen pasien");let a=await r.text(),i=new DOMParser().parseFromString(a,"text/html").querySelectorAll("table.data-list.tabel tr"),s=[];for(let c=1;c<i.length;c++){let l=i[c],d=l.querySelector("td:nth-child(2) a");if(!d)continue;let u=d.getAttribute("href");if(!u?.includes("/assets/dokumen-pasien/"))continue;let f=u.startsWith("http")?u:`${window.location.origin}${u}`,m=l.cells[1]?.textContent?.trim()||"",p=l.cells[2]?.textContent?.trim()||"",b=l.cells[3]?.textContent?.trim()||"",x=l.cells[4]?.textContent?.trim()||"";s.push({url:f,filenameTabel:m,tglFile:b,tglUpload:x,keteranganTabel:p})}if(s.length===0){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_CRAWL_RESULT",data:{items:[]}}).catch(console.error);return}g=s.map(c=>{let l=se(c.url);return l.tglFileTabel=c.tglFile,l.tglUploadTabel=c.tglUpload,l.filename=c.filenameTabel||l.filename,l.keterangan=c.keteranganTabel||l.filename||"-",l.selected=!1,l}),chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_CRAWL_RESULT",data:{items:g}}).catch(console.error)}catch(n){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:n.message}}).catch(console.error)}}async function Lt(){U(),Ie();try{let t=new URLSearchParams(window.location.search).get("id_visit")||"";if(!t){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:"ID Visit tidak ditemukan di URL"}}).catch(console.error);return}let n=0,r=0,a=0,o=g.filter(s=>s.selected!==!1),i=o.length;if(i===0){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:"Tidak ada dokumen yang dipilih."}}).catch(console.error);return}for(let s=0;s<i;s++){let c=o[s];c.status="uploading",Ae(s,i,n,r,a,g);try{let l=await J(c,t);l.success?(c.status="success",n++):l.unverified?(c.status="warning",c.error=l.error,a++):(c.status="error",c.error=l.error,r++)}catch(l){c.status="error",c.error=l.message,r++}Ae(s+1,i,n,r,a,g)}}catch(e){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:e.message}}).catch(console.error)}}function Ae(e,t,n,r,a,o){let i=[`Sukses: ${n}`];a>0&&i.push(`Belum pasti: ${a}`),i.push(`Gagal: ${r}`),chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:e/t*100,status:`Diproses: ${e}/${t} - ${i.join(", ")}`,items:o,finished:e>=t}}).catch(console.error)}async function $t(){if(g.length===0)return;U();let e=g[0],n=new URLSearchParams(window.location.search).get("id_visit")||"";e.status="uploading",chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:50,status:`Testing single upload: ${e.filename}...`,items:g,finished:!1}}).catch(console.error);try{let r=await J(e,n);r.success?e.status="success":r.unverified?(e.status="warning",e.error=r.error):(e.status="error",e.error=r.error)}catch(r){e.status="error",e.error=r.message}chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:100,status:e.status==="success"?"Test upload sukses!":e.status==="warning"?"Terkirim, belum terverifikasi \u2014 cek daftar dokumen!":"Test upload gagal!",items:g,finished:!0}}).catch(console.error)}function Ct(){if(document.getElementById("ext-batch-url-style"))return;let e=document.createElement("style");e.id="ext-batch-url-style",e.textContent=`
-    #${k.textareaId} {
+      <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? "disabled" : ""}>${Icons.eye} Preview</button>
+      <button data-index="${i}" class="ext-delete-single-btn" title="Buang dari Antrian" ${isProcessing ? "disabled" : ""}>${Icons.xClose}</button>
+    `;
+      const checkbox = itemEl.querySelector(".ext-checkbox");
+      const previewBtn = itemEl.querySelector(".ext-delete-preview-btn");
+      const buangBtn = itemEl.querySelector(".ext-delete-single-btn");
+      const updateSelection = (isSelected) => {
+        if (isProcessing) return;
+        item.selected = isSelected;
+        if (checkbox) checkbox.checked = isSelected;
+        if (isSelected) {
+          itemEl.classList.add("selected");
+        } else {
+          itemEl.classList.remove("selected");
+        }
+        const currentSelected = items.filter((i2) => i2.selected !== false).length;
+        headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
+        if (startBtn) startBtn.disabled = currentSelected === 0;
+      };
+      checkbox?.addEventListener(
+        "change",
+        (e) => updateSelection(e.target.checked)
+      );
+      buangBtn?.addEventListener("click", () => updateSelection(false));
+      const ketInput = itemEl.querySelector(".ext-keterangan-input");
+      ketInput?.addEventListener("input", function() {
+        batchQueue[i].keterangan = ketInput.value;
+      });
+      if (previewBtn) {
+        previewBtn.addEventListener("click", async () => {
+          try {
+            await showInlinePreviewSafe(batchQueue[i].url, batchQueue[i].filename);
+          } catch {
+            window.open(batchQueue[i].url, "_blank");
+          }
+        });
+        if (isProcessing) previewBtn.disabled = true;
+      }
+      previewEl?.appendChild(itemEl);
+    });
+    if (startBtn) {
+      startBtn.disabled = items.filter((i) => i.selected !== false).length === 0;
+    }
+  }
+  function updateProgress(percent) {
+    const progressEl = document.getElementById(
+      BATCH_UPLOAD_URL_CONFIG.progressId
+    );
+    if (!progressEl) return;
+    const fillEl = progressEl.querySelector(".progress-fill");
+    if (percent > 0) {
+      progressEl.style.display = "block";
+      if (fillEl) fillEl.style.width = `${percent}%`;
+    } else {
+      progressEl.style.display = "none";
+    }
+  }
+  function updateStatus(text) {
+    const statusEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.statusId);
+    if (statusEl) statusEl.textContent = text;
+  }
+  function toggleUIProcessingState(isUploading) {
+    const elementsToToggle = [
+      "ext-cancel-btn",
+      "ext-test-single-btn",
+      "ext-start-upload-btn",
+      "ext-modal-close-btn",
+      "ext-crawl-btn",
+      "ext-file-input"
+    ];
+    document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
+      radio.disabled = isUploading;
+    });
+    const cancelBatchBtn = document.getElementById(
+      "ext-cancel-batch-btn"
+    );
+    if (cancelBatchBtn) {
+      cancelBatchBtn.style.display = isUploading ? "inline-flex" : "none";
+    }
+    elementsToToggle.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = isUploading;
+        if (id === "ext-modal-close-btn") {
+          el.style.opacity = isUploading ? "0.5" : "1";
+          el.style.cursor = isUploading ? "not-allowed" : "pointer";
+        }
+      }
+    });
+  }
+  function extractNormFromName(name) {
+    const nameWithoutExt = name.replace(/\.[^/.]+$/, "");
+    const parts = nameWithoutExt.split(/[-_\s]+/);
+    const candidates = parts.filter((p) => {
+      const isNumeric = /^\d+$/.test(p);
+      const len = p.length;
+      return isNumeric && len >= 6 && len <= 12 && len !== 10 && len !== 13;
+    });
+    if (candidates.length > 0) return candidates[0];
+    return "";
+  }
+  function analyzeFiles() {
+    const input = document.getElementById("ext-file-input");
+    const files = input?.files;
+    if (!files || files.length === 0) {
+      void confirmLegacy({
+        title: "Tidak ada file",
+        message: "Pilih file terlebih dahulu.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    const supported = BATCH_UPLOAD_URL_CONFIG.supportedExtensions;
+    const validFiles = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const lower = f.name.toLowerCase();
+      if (!supported.some((ext) => lower.endsWith(ext))) continue;
+      if (f.size === 0) continue;
+      validFiles.push(f);
+    }
+    if (validFiles.length === 0) {
+      void confirmLegacy({
+        title: "Tidak ada file valid",
+        message: "Pastikan file berupa PDF/JPG/PNG/GIF dan tidak kosong.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    if (validFiles.length > BATCH_UPLOAD_URL_CONFIG.maxBatchSize) {
+      void confirmLegacy({
+        title: "Terlalu banyak file",
+        message: `Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} file per batch.`,
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    const tanggal = getTanggalMasukFromPage();
+    batchQueue = validFiles.map((file) => {
+      const filename = file.name;
+      const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+      const norm = extractNormFromName(filename);
+      const keteranganParts = nameWithoutExt.split(/[-_\s]+/).filter((p) => !/^\d{10}$/.test(p) && p !== norm);
+      const keterangan = keteranganParts.join(" ").trim() || nameWithoutExt.replace(/[-_]+/g, " ");
+      return {
+        filename,
+        norm,
+        tanggal,
+        jenis_dokumen: "Lain-lain",
+        keterangan,
+        url: "",
+        file,
+        status: "pending"
+      };
+    });
+    updatePreview(batchQueue);
+    updateStatus(`${validFiles.length} file siap diproses`);
+  }
+  async function crawlDokumenPasien() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    if (!idVisit) {
+      void confirmLegacy({
+        title: "Parameter id_visit tidak ditemukan",
+        message: "Pastikan buka dari halaman detail pasien.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    updateStatus("Sedang mencari dokumen di rekam medis...");
+    resetBatchAbort();
+    const crawlBtn = document.getElementById("ext-crawl-btn");
+    if (crawlBtn) {
+      crawlBtn.disabled = true;
+      crawlBtn.textContent = "Mencari...";
+    }
+    try {
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&id_kunjungan=`;
+      const response = await fetch(targetUrl, { signal: _getBatchAbortSignal() });
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      let rows = doc.querySelectorAll("table.data-list.tabel tr");
+      if (rows.length <= 1) {
+        rows = doc.querySelectorAll("table.tabel tr");
+      }
+      if (rows.length <= 1) {
+        rows = doc.querySelectorAll('table[id*="dokumen"] tr, table[class*="dokumen"] tr');
+      }
+      if (rows.length <= 1) {
+        rows = doc.querySelectorAll("tbody tr");
+      }
+      const urls = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        let linkEl = tr.querySelector('td a[href*="/assets/dokumen-pasien/"]');
+        if (!linkEl) linkEl = tr.querySelector('td a[href*="dokumen-pasien"]');
+        if (!linkEl) linkEl = tr.querySelector("a[href]");
+        if (!linkEl) continue;
+        const urlPath = linkEl.getAttribute("href");
+        if (!urlPath?.includes("/assets/dokumen-pasien/")) continue;
+        const fullUrl = urlPath.startsWith("http") ? urlPath : `${window.location.origin}${urlPath}`;
+        const cells = Array.from(tr.querySelectorAll("td"));
+        const filenameTabel = cells[1]?.textContent?.trim() || cells[0]?.textContent?.trim() || "";
+        const keteranganTd = cells[2]?.textContent?.trim() || cells[1]?.textContent?.trim() || "";
+        const tglFile = cells[3]?.textContent?.trim() || cells[2]?.textContent?.trim() || "";
+        const tglUpload = cells[4]?.textContent?.trim() || cells[3]?.textContent?.trim() || "";
+        urls.push({ url: fullUrl, filenameTabel, tglFile, tglUpload, keteranganTabel: keteranganTd });
+      }
+      if (urls.length === 0) {
+        updateStatus("Tidak ada dokumen ditemukan di rekam medis.");
+        if (crawlBtn) {
+          crawlBtn.disabled = false;
+          crawlBtn.textContent = "Cari Dokumen Pasien Otomatis";
+        }
+        return;
+      }
+      batchQueue = urls.map((item) => {
+        const metadata = parseMetadataFromUrl(item.url);
+        metadata.tglFileTabel = item.tglFile;
+        metadata.tglUploadTabel = item.tglUpload;
+        metadata.filename = item.filenameTabel || metadata.filename;
+        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+        metadata.selected = false;
+        return metadata;
+      });
+      updatePreview(batchQueue);
+      updateStatus(`${batchQueue.length} dokumen berhasil ditemukan!`);
+    } catch (err) {
+      if (err?.name === "AbortError") updateStatus("Dibatalkan.");
+      else updateStatus("Error: " + err.message);
+    } finally {
+      if (crawlBtn) {
+        crawlBtn.disabled = false;
+        crawlBtn.textContent = "Cari Dokumen Pasien Otomatis";
+      }
+    }
+  }
+  async function fetchFileFromUrl(url, filename) {
+    updateStatus(`Mengunduh: ${escHtml(filename)}...`);
+    console.log("[Batch Upload] Fetching URL:", url);
+    let response;
+    const signal = _getBatchAbortSignal();
+    try {
+      response = await fetchWithRetry(url, { method: "GET", credentials: "same-origin", signal }, 2);
+    } catch {
+      response = await fetchWithRetry(
+        url,
+        { method: "GET", mode: "cors", credentials: "omit", signal },
+        1
+      );
+    }
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status} \u2014 ${response.statusText || errText.slice(0, 120)}`);
+    }
+    const blob = await response.blob();
+    if (blob.size === 0) throw new Error("File kosong (0 bytes) dari server");
+    const sniff = await blob.slice(0, 512).text().catch(() => "");
+    if (/^\s*<!doctype html|<html[\s>]/i.test(sniff)) {
+      throw new Error(
+        "Server mengembalikan halaman HTML (sesi login kadaluarsa?) \u2014 bukan file dokumen"
+      );
+    }
+    const ext = filename.includes(".") ? "." + filename.split(".").pop() : "";
+    const safeName = filename.replace(/[<>:"/\\|?*]/g, "_");
+    return new File([blob], safeName, {
+      type: blob.type || `application/${ext.slice(1) || "octet-stream"}`
+    });
+  }
+  async function getImageDimensions(blob) {
+    if (typeof createImageBitmap === "function") {
+      const bmp = await createImageBitmap(blob);
+      try {
+        return { width: bmp.width, height: bmp.height };
+      } finally {
+        bmp.close?.();
+      }
+    }
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(blob);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Tidak bisa membaca dimensi gambar"));
+      };
+      img.src = url;
+    });
+  }
+  async function rasterizeToJpeg(file) {
+    const canvas = document.createElement("canvas");
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = () => reject(new Error("Gagal memuat gambar untuk konversi ke PDF"));
+        el.src = url;
+      });
+      const width = Math.max(1, img.naturalWidth);
+      const height = Math.max(1, img.naturalHeight);
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas 2D tidak tersedia");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0);
+      const jpegBlob = await new Promise(
+        (resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92)
+      );
+      if (!jpegBlob) throw new Error("Gagal rasterisasi gambar ke JPEG");
+      return {
+        bytes: new Uint8Array(await jpegBlob.arrayBuffer()),
+        width,
+        height
+      };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  async function convertFileToPdf(file) {
+    const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+    const kind = sniffFileKind(head);
+    const name = file.name.replace(/\.[a-z0-9]+$/i, ".pdf");
+    if (kind === "pdf") {
+      return new File([file], name, { type: "application/pdf" });
+    }
+    if (kind === "jpeg") {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const { width, height } = await getImageDimensions(file);
+      return new File([buildSingleJpegPdf(bytes, width, height)], name, {
+        type: "application/pdf"
+      });
+    }
+    if (kind === "png" || kind === "gif" || kind === "webp") {
+      const { bytes, width, height } = await rasterizeToJpeg(file);
+      return new File([buildSingleJpegPdf(bytes, width, height)], name, {
+        type: "application/pdf"
+      });
+    }
+    throw new Error(
+      `File bukan PDF/gambar yang bisa dikonversi (${file.type || "tipe tidak diketahui"}) \u2014 upload dibatalkan`
+    );
+  }
+  function generateTimestampKeterangan() {
+    const now = /* @__PURE__ */ new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mi = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  var _docRowsCache = null;
+  var _docRowsLookupFailures = 0;
+  var DOC_ROWS_CACHE_TTL_MS = 6e4;
+  var MAX_DOC_ROWS_LOOKUP_FAILURES = 2;
+  function resetDocRowsCache() {
+    _docRowsCache = null;
+    _docRowsLookupFailures = 0;
+  }
+  function findDocumentTable(doc) {
+    const selectors = [
+      "table.data-list.tabel",
+      "table.tabel",
+      'table[id*="dokumen"]',
+      'table[class*="dokumen"]'
+    ];
+    for (const selector of selectors) {
+      const table = doc.querySelector(selector);
+      if (table && table.querySelectorAll("tr").length > 1) return table;
+    }
+    const fallback = doc.querySelector("table");
+    return fallback && fallback.querySelectorAll("tr").length > 1 ? fallback : null;
+  }
+  async function fetchVisitDocumentRows(idVisit) {
+    try {
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${encodeURIComponent(idVisit)}&id_kunjungan=`;
+      const response = await fetch(targetUrl, {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: _getBatchAbortSignal()
+      });
+      if (!response.ok) return null;
+      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+      const table = findDocumentTable(doc);
+      if (!table) return null;
+      return Array.from(table.querySelectorAll("tr")).map((tr) => (tr.textContent || "").replace(/\s+/g, " ").trim().toLowerCase()).filter((row) => row.length > 0);
+    } catch {
+      return null;
+    }
+  }
+  async function getDocRowsSnapshot(idVisit, options = {}) {
+    if (_getBatchAbortSignal().aborted) return null;
+    const cached = _docRowsCache;
+    if (!options.fresh && cached && cached.idVisit === idVisit && Date.now() - cached.at < DOC_ROWS_CACHE_TTL_MS) {
+      return cached.rows;
+    }
+    if (_docRowsLookupFailures >= MAX_DOC_ROWS_LOOKUP_FAILURES) return null;
+    const rows = await fetchVisitDocumentRows(idVisit);
+    _docRowsCache = { idVisit, rows, at: Date.now() };
+    if (rows) _docRowsLookupFailures = 0;
+    else _docRowsLookupFailures += 1;
+    return rows;
+  }
+  function getRenderedPageText() {
+    const loaded = performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("/assets/dokumen-pasien/"));
+    return `${document.documentElement.outerHTML}
+${loaded.join("\n")}`;
+  }
+  async function isDocumentVisibleOnCurrentPage(fileName) {
+    if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
+    const idVisit = new URLSearchParams(window.location.search).get("id_visit");
+    if (!idVisit) return null;
+    try {
+      const response = await fetch(
+        `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
+        { credentials: "same-origin", cache: "no-store", signal: _getBatchAbortSignal() }
+      );
+      if (response.ok && isSavedByResponseBody(await response.text(), fileName)) return true;
+    } catch {
+    }
+    return isSavedByResponseBody(getRenderedPageText(), fileName) ? true : null;
+  }
+  function describeVerification(result) {
+    const parts = [];
+    parts.push(
+      result.rowsBeforeCount === null || result.rowsAfterCount === null ? "daftar dokumen tidak terbaca" : `daftar dokumen ${result.rowsBeforeCount} \u2192 ${result.rowsAfterCount} baris`
+    );
+    if (result.status === "mismatch" && result.addedRows.length > 0) {
+      parts.push(`baris baru: ${result.addedRows.map((row) => `"${row}"`).join(" | ")}`);
+    } else if (result.status === "missing") {
+      parts.push("tidak ada baris baru");
+    }
+    return parts.join(", ");
+  }
+  async function verifyDocumentUpload(idVisit, fileName, extraNeedles, responseBodyForProof, rowsBefore) {
+    if (isSavedByResponseBody(responseBodyForProof, fileName)) {
+      return { status: "saved", detail: "nama file terbaca di respons server", source: "body" };
+    }
+    const snapshot = async () => verifyDocumentSaved({
+      responseBody: responseBodyForProof,
+      fileName,
+      extraNeedles,
+      rowsBefore,
+      rowsAfter: await getDocRowsSnapshot(idVisit, { fresh: true })
+    });
+    let result = await snapshot();
+    if (result.status === "saved") {
+      return { status: "saved", detail: describeVerification(result), source: "rows" };
+    }
+    if (result.status === "missing") {
+      await sleep(1500);
+      result = await snapshot();
+      if (result.status === "saved") {
+        return { status: "saved", detail: describeVerification(result), source: "rows" };
+      }
+    }
+    if (result.status === "missing" || result.status === "mismatch") {
+      if (await isDocumentVisibleOnCurrentPage(fileName) === true) {
+        return {
+          status: "saved",
+          detail: "nama file tampil di halaman klaim (tidak ada di daftar dokumen-pasien)",
+          source: "claim-page"
+        };
+      }
+    }
+    return { status: result.status, detail: describeVerification(result) };
+  }
+  function evaluateUploadResponse(body, contentType) {
+    const serverMessage = extractJsonServerMessage(body) ?? void 0;
+    const withMessage = (verdict) => serverMessage && !verdict.serverMessage ? { ...verdict, serverMessage } : verdict;
+    if (/application\/json/i.test(contentType)) {
+      const json = evaluateJsonPayload(body);
+      return withMessage(
+        json.ok ? { ok: true } : { ok: false, message: json.message || "Server rejected" }
+      );
+    }
+    const looksHtml = /text\/html/i.test(contentType) || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(body);
+    if (looksHtml) {
+      const verdict = parseMorbisHtmlResponse(body);
+      if (verdict.loginExpired) {
+        return withMessage({
+          ok: false,
+          message: verdict.message || "Sesi login kadaluarsa \u2014 login ulang lalu coba lagi"
+        });
+      }
+      if (!verdict.ok) {
+        return withMessage({ ok: false, message: verdict.message || "Server menolak upload" });
+      }
+      return withMessage({ ok: true, rejectedMarker: verdict.rejectedMarker });
+    }
+    const trimmed = body.trim();
+    const plainMessage = cleanServerMessage(trimmed, 200) || void 0;
+    if (isMorbisApplicationErrorMessage(trimmed)) {
+      return withMessage({ ok: true, rejectedMarker: true, serverMessage: plainMessage });
+    }
+    if (/^(error|gagal|failed)/i.test(trimmed)) {
+      return withMessage({ ok: false, message: `Server: ${plainMessage}` });
+    }
+    return withMessage({ ok: true, serverMessage: plainMessage });
+  }
+  function describeServerFailure(body, statusText) {
+    return extractServerErrorMessage(body) || cleanServerMessage(htmlToVisibleText(body), 200) || statusText || "tanpa keterangan";
+  }
+  async function processAndUploadSingleUrl(metadata, idVisitStr) {
+    try {
+      const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
+      updateStatus(`Download: ${escHtml(metadata.filename)}...`);
+      let file;
+      if (metadata.file) {
+        file = new File([metadata.file], metadata.file.name, { type: metadata.file.type });
+        updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
+      } else {
+        file = await fetchFileFromUrl(metadata.url, uploadName);
+        updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
+      }
+      file = await convertFileToPdf(file);
+      const formData = new FormData();
+      formData.append("id_visit", idVisitStr);
+      formData.append("norm", metadata.norm);
+      formData.append("tgl_file", metadata.tanggal);
+      formData.append("jenis_dokumen", metadata.jenis_dokumen || "Lain-lain");
+      formData.append("dok", file);
+      const keterangan = generateTimestampKeterangan();
+      formData.append("keterangan", keterangan);
+      const rowsBefore = await getDocRowsSnapshot(idVisitStr);
+      updateStatus(`Upload: ${escHtml(file.name)} (${(file.size / 1024).toFixed(0)} KB)...`);
+      const uploadResponse = await fetchWithRetry(
+        BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "same-origin",
+          signal: _getBatchAbortSignal()
+        },
+        2
+      );
+      if (!uploadResponse.ok && uploadResponse.redirected) {
+        throw new Error("Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi");
+      }
+      const result = await uploadResponse.text().catch(() => "");
+      const responseType = uploadResponse.headers.get("content-type") || "";
+      const verdict = uploadResponse.ok ? evaluateUploadResponse(result, responseType) : {
+        ok: false,
+        message: `Server ${uploadResponse.status}: ${describeServerFailure(result, uploadResponse.statusText)}`
+      };
+      const verification = _getBatchAbortSignal().aborted ? { status: "unknown", detail: "batch dibatalkan" } : await verifyDocumentUpload(
+        idVisitStr,
+        file.name,
+        [keterangan],
+        verdict.ok ? result : "",
+        rowsBefore
+      );
+      if (verification.status === "saved") {
+        if (!verdict.ok) {
+          console.warn(
+            "[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen \u2014 dianggap sukses.",
+            verdict.message
+          );
+        }
+        if (verification.source === "claim-page") {
+          console.info(
+            "[Batch Upload] Dokumen tampil di halaman klaim tapi TIDAK di daftar dokumen-pasien:",
+            file.name
+          );
+        }
+        return { success: true, result };
+      }
+      const serverSaid = verdict.serverMessage || verdict.message || summarizeMorbisResponse(result);
+      const httpInfo = `${uploadResponse.status} ${responseType || "tanpa content-type"}`;
+      if (verification.status === "mismatch") {
+        console.warn(
+          "[Batch Upload] Ada baris baru di daftar tapi nama tidak cocok:",
+          file.name,
+          "|",
+          serverSaid,
+          "|",
+          verification.detail
+        );
+        return {
+          success: false,
+          unverified: true,
+          error: `Server: ${serverSaid} \u2014 tapi baris baru di daftar tidak memuat nama upload kita (${verification.detail}). Cek manual.`
+        };
+      }
+      if (verification.status === "missing") {
+        console.warn(
+          "[Batch Upload] Dokumen TIDAK tersimpan:",
+          file.name,
+          "|",
+          serverSaid,
+          "|",
+          verification.detail,
+          `| ${httpInfo}`
+        );
+        return {
+          success: false,
+          error: `Dokumen tidak tersimpan \u2014 ${verification.detail}. Server: ${serverSaid}. Respons ${httpInfo}.`
+        };
+      }
+      if (!verdict.ok) return { success: false, error: verdict.message || "Server menolak upload" };
+      if (verdict.rejectedMarker) {
+        console.debug(
+          "[Batch Upload] Respons HTML berisi marker error tanpa pesan terbaca \u2014 terkirim, tapi belum terverifikasi.",
+          summarizeMorbisResponse(result)
+        );
+      }
+      return {
+        success: false,
+        unverified: true,
+        error: `Terkirim (server: ${serverSaid || "tanpa pesan"}), tapi belum bisa dipastikan tersimpan \u2014 ${verification.detail}.`
+      };
+    } catch (error) {
+      const msg = error.message;
+      if (msg === "Batch cancelled") throw error;
+      let friendly = msg;
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        friendly = "Network error \u2014 cek koneksi atau CORS";
+      } else if (msg.includes("timeout") || msg.includes("AbortError")) {
+        friendly = "Timeout \u2014 server tidak merespon dalam 30 detik";
+      } else if (/abort/i.test(msg)) {
+        friendly = "Permintaan dihentikan sebelum server menjawab (timeout halaman/cancel) \u2014 coba lagi";
+      } else if (msg.includes("0 bytes")) {
+        friendly = "File kosong dari server";
+      }
+      return { success: false, error: friendly };
+    }
+  }
+  async function runBatchQueue() {
+    if (isProcessing) return;
+    resetBatchAbort();
+    resetDocRowsCache();
+    isProcessing = true;
+    toggleUIProcessingState(true);
+    const startBtn = document.getElementById("ext-start-upload-btn");
+    if (startBtn) startBtn.textContent = "Memproses...";
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    if (!idVisitStr) {
+      void confirmLegacy({
+        title: "ID Visit tidak ditemukan",
+        message: "Pastikan buka dari halaman detail pasien.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      toggleUIProcessingState(false);
+      isProcessing = false;
+      if (startBtn) startBtn.textContent = "Mulai Upload";
+      return;
+    }
+    let successCount = 0;
+    let errorCount = 0;
+    let unverifiedCount = 0;
+    let cancelled = false;
+    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const total = itemsToUpload.length;
+    if (total === 0) {
+      void confirmLegacy({
+        title: "Tidak ada dokumen dipilih",
+        message: "Tidak ada dokumen yang dipilih untuk diupload.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      toggleUIProcessingState(false);
+      isProcessing = false;
+      updateStatus("");
+      if (startBtn) startBtn.textContent = "Mulai Upload";
+      return;
+    }
+    for (let i = 0; i < total; i++) {
+      if (_getBatchAbortSignal().aborted) {
+        cancelled = true;
+        updateStatus("Batch dibatalkan oleh user");
+        break;
+      }
+      const currentIdVisit = new URLSearchParams(window.location.search).get("id_visit") || "";
+      if (!currentIdVisit) {
+        updateStatus("ID Visit hilang dari URL \u2014 batch dihentikan");
+        break;
+      }
+      if (currentIdVisit !== idVisitStr) {
+        console.warn("[Batch Upload] ID Visit berubah mid-batch:", idVisitStr, "->", currentIdVisit);
+      }
+      const metadata = itemsToUpload[i];
+      updateStatus(`[${i + 1}/${total}] ${escHtml(metadata.filename)}...`);
+      try {
+        const currentIdVisit2 = new URLSearchParams(window.location.search).get("id_visit") || idVisitStr;
+        const result = await processAndUploadSingleUrl(metadata, currentIdVisit2);
+        if (result.success) {
+          metadata.status = "success";
+          successCount++;
+        } else if (result.unverified) {
+          metadata.status = "warning";
+          metadata.error = result.error;
+          unverifiedCount++;
+        } else {
+          metadata.status = "error";
+          metadata.error = result.error;
+          errorCount++;
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message === "Batch cancelled") {
+          cancelled = true;
+          updateStatus("Batch dibatalkan");
+          break;
+        }
+        metadata.status = "error";
+        metadata.error = error.message;
+        errorCount++;
+      }
+      const progress = (i + 1) / total * 100;
+      updateProgress(progress);
+      updatePreview(batchQueue);
+    }
+    const summaryParts = cancelled ? ["Batch dibatalkan:", `${successCount} sukses`] : [`Selesai ${total} dokumen:`, `${successCount} sukses`];
+    if (unverifiedCount > 0) summaryParts.push(`${unverifiedCount} belum terverifikasi`);
+    if (errorCount > 0) summaryParts.push(`${errorCount} gagal`);
+    updateStatus(summaryParts.join(" "));
+    if (errorCount > 0) {
+      console.warn(
+        "[Batch Upload] Failed:",
+        batchQueue.filter((item) => item.status === "error").map((item) => `${item.filename}: ${item.error}`)
+      );
+    }
+    if (unverifiedCount > 0) {
+      console.warn(
+        "[Batch Upload] Belum terverifikasi (dokumen tidak terlihat di daftar):",
+        batchQueue.filter((item) => item.status === "warning").map((item) => `${item.filename}: ${item.error}`)
+      );
+    }
+    const buttonsContainer = document.querySelector(
+      "#" + BATCH_UPLOAD_URL_CONFIG.modalId + " .ext-modal-buttons"
+    );
+    const retryableCount = errorCount + unverifiedCount;
+    if (buttonsContainer) {
+      const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
+      const retryBtn = retryableCount > 0 ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">${unverifiedCount > 0 ? "Ulangi Gagal/Belum Pasti" : "Ulangi yang Gagal"}</button>` : "";
+      buttonsContainer.innerHTML = `<div style="display:flex;gap:8px;justify-content:flex-end;">${retryBtn}${reloadBtn}</div>`;
+      document.getElementById("ext-reload-btn")?.addEventListener("click", () => window.location.reload());
+      if (retryableCount > 0) {
+        document.getElementById("ext-retry-failed-btn")?.addEventListener("click", () => {
+          batchQueue.forEach((item) => {
+            if (item.status === "error" || item.status === "warning") {
+              item.status = "pending";
+              item.error = void 0;
+            }
+          });
+          updatePreview(batchQueue);
+          void runBatchQueue();
+        });
+      }
+    }
+    isProcessing = false;
+  }
+  async function testSingleUpload() {
+    if (batchQueue.length === 0) {
+      void confirmLegacy({
+        title: "Tidak ada dokumen",
+        message: "Tidak ada dokumen untuk ditest.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    if (isProcessing) return;
+    isProcessing = true;
+    resetBatchAbort();
+    toggleUIProcessingState(true);
+    const firstItem = batchQueue[0];
+    updateStatus("Testing single upload...");
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    try {
+      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
+      if (result.success) {
+        firstItem.status = "success";
+        updateStatus("Test sukses! Detail di console.");
+      } else if (result.unverified) {
+        firstItem.status = "warning";
+        firstItem.error = result.error;
+        updateStatus("Terkirim, tapi belum terverifikasi (lihat console).");
+      } else {
+        firstItem.status = "error";
+        firstItem.error = result.error;
+        updateStatus("Test gagal! Detail di console.");
+      }
+    } catch (error) {
+      firstItem.status = "error";
+      firstItem.error = error.message;
+      updateStatus("Test error! Detail di console.");
+    }
+    updatePreview(batchQueue);
+    toggleUIProcessingState(false);
+    isProcessing = false;
+  }
+  function startBatchUpload() {
+    if (batchQueue.length === 0) {
+      void confirmLegacy({
+        title: "Tidak ada dokumen",
+        message: "Tidak ada dokumen untuk diproses.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    const selectedCount = batchQueue.filter((i) => i.selected !== false).length;
+    if (selectedCount === 0) {
+      void confirmLegacy({
+        title: "Tidak ada dokumen dipilih",
+        message: "Centang dokumen yang ingin diupload.",
+        variant: "warning",
+        okLabel: "OK",
+        hideCancel: true
+      });
+      return;
+    }
+    void (async () => {
+      const yes = await confirmLegacy({
+        title: `Upload ${selectedCount} dokumen?`,
+        message: "Proses ini tidak dapat dibatalkan.",
+        variant: "warning",
+        okLabel: "Ya, Upload"
+      });
+      if (yes) runBatchQueue();
+    })();
+  }
+  function hasIdVisitParam() {
+    return !!new URLSearchParams(window.location.search).get("id_visit");
+  }
+  async function crawlDokumenPasienToSidepanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    if (!idVisit) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "Parameter id_visit tidak ditemukan di URL." }
+      }).catch(console.error);
+      return;
+    }
+    try {
+      resetBatchAbort();
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      const urls = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        if (!linkEl) continue;
+        const urlPath = linkEl.getAttribute("href");
+        if (!urlPath?.includes("/assets/dokumen-pasien/")) continue;
+        const fullUrl = urlPath.startsWith("http") ? urlPath : `${window.location.origin}${urlPath}`;
+        const filenameTabel = tr.cells[1]?.textContent?.trim() || "";
+        const keteranganTd = tr.cells[2]?.textContent?.trim() || "";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "";
+        urls.push({ url: fullUrl, filenameTabel, tglFile, tglUpload, keteranganTabel: keteranganTd });
+      }
+      if (urls.length === 0) {
+        chrome.runtime.sendMessage({
+          type: "TAB_ACTION_RESULT",
+          action: "BATCH_UPLOAD_CRAWL_RESULT",
+          data: { items: [] }
+        }).catch(console.error);
+        return;
+      }
+      batchQueue = urls.map((item) => {
+        const metadata = parseMetadataFromUrl(item.url);
+        metadata.tglFileTabel = item.tglFile;
+        metadata.tglUploadTabel = item.tglUpload;
+        metadata.filename = item.filenameTabel || metadata.filename;
+        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+        metadata.selected = false;
+        return metadata;
+      });
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_CRAWL_RESULT",
+        data: { items: batchQueue }
+      }).catch(console.error);
+    } catch (err) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: err.message }
+      }).catch(console.error);
+    }
+  }
+  async function runBatchQueueToSidepanel() {
+    resetBatchAbort();
+    resetDocRowsCache();
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const idVisitStr = urlParams.get("id_visit") || "";
+      if (!idVisitStr) {
+        chrome.runtime.sendMessage({
+          type: "TAB_ACTION_RESULT",
+          action: "BATCH_UPLOAD_ERROR",
+          data: { error: "ID Visit tidak ditemukan di URL" }
+        }).catch(console.error);
+        return;
+      }
+      let successCount = 0;
+      let errorCount = 0;
+      let unverifiedCount = 0;
+      const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+      const total = itemsToUpload.length;
+      if (total === 0) {
+        chrome.runtime.sendMessage({
+          type: "TAB_ACTION_RESULT",
+          action: "BATCH_UPLOAD_ERROR",
+          data: { error: "Tidak ada dokumen yang dipilih." }
+        }).catch(console.error);
+        return;
+      }
+      for (let i = 0; i < total; i++) {
+        const metadata = itemsToUpload[i];
+        metadata.status = "uploading";
+        sendProgress(i, total, successCount, errorCount, unverifiedCount, batchQueue);
+        try {
+          const result = await processAndUploadSingleUrl(metadata, idVisitStr);
+          if (result.success) {
+            metadata.status = "success";
+            successCount++;
+          } else if (result.unverified) {
+            metadata.status = "warning";
+            metadata.error = result.error;
+            unverifiedCount++;
+          } else {
+            metadata.status = "error";
+            metadata.error = result.error;
+            errorCount++;
+          }
+        } catch (error) {
+          metadata.status = "error";
+          metadata.error = error.message;
+          errorCount++;
+        }
+        sendProgress(i + 1, total, successCount, errorCount, unverifiedCount, batchQueue);
+      }
+    } catch (err) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: err.message }
+      }).catch(console.error);
+    }
+  }
+  function sendProgress(current, total, success, fail, unverified, items) {
+    const parts = [`Sukses: ${success}`];
+    if (unverified > 0) parts.push(`Belum pasti: ${unverified}`);
+    parts.push(`Gagal: ${fail}`);
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: current / total * 100,
+        status: `Diproses: ${current}/${total} - ${parts.join(", ")}`,
+        items,
+        finished: current >= total
+      }
+    }).catch(console.error);
+  }
+  async function testSingleUploadToSidepanel() {
+    if (batchQueue.length === 0) return;
+    resetBatchAbort();
+    const firstItem = batchQueue[0];
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    firstItem.status = "uploading";
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: 50,
+        status: `Testing single upload: ${firstItem.filename}...`,
+        items: batchQueue,
+        finished: false
+      }
+    }).catch(console.error);
+    try {
+      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
+      if (result.success) {
+        firstItem.status = "success";
+      } else if (result.unverified) {
+        firstItem.status = "warning";
+        firstItem.error = result.error;
+      } else {
+        firstItem.status = "error";
+        firstItem.error = result.error;
+      }
+    } catch (error) {
+      firstItem.status = "error";
+      firstItem.error = error.message;
+    }
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: 100,
+        status: firstItem.status === "success" ? "Test upload sukses!" : firstItem.status === "warning" ? "Terkirim, belum terverifikasi \u2014 cek daftar dokumen!" : "Test upload gagal!",
+        items: batchQueue,
+        finished: true
+      }
+    }).catch(console.error);
+  }
+  function injectBatchUploadCSS() {
+    if (document.getElementById("ext-batch-url-style")) return;
+    const style = document.createElement("style");
+    style.id = "ext-batch-url-style";
+    style.textContent = `
+    #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
       width:100%;height:150px;padding:12px;border:1px solid #e2e8f0;
       border-radius:10px;font-size:12px;resize:vertical;
       background:#f8fafc;color:#1e293b;
       transition:border-color .15s ease;box-sizing:border-box;
     }
-    #${k.textareaId}:focus {
+    #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
       border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.1);
       background:#fff;outline:none;
     }
-    #${k.previewId} {
+    #${BATCH_UPLOAD_URL_CONFIG.previewId} {
       margin-top:15px;max-height:none;overflow-y:visible;
       border:1px solid #f1f5f9;border-radius:10px;padding:12px;
     }
-    #${k.progressId} .progress-fill {
+    #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
       height:100%;background:#2563eb;border-radius:3px;
       width:0%;transition:width .3s cubic-bezier(.16,1,.3,1);
     }
@@ -306,4 +2330,68 @@ ${e.join(`
       border-top:4px solid #fff;border-radius:50%;animation:ext-spin .8s linear infinite
     }
     @keyframes ext-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-  `,document.head.appendChild(e),Y()}function Bt(){!z.currentConfig?.features?.batchUpload?.enabled||!z.ExtensionCore.isFeatureAllowed("batchUpload")||Tt()&&(Ct(),chrome.runtime.sendMessage({type:"PAGE_CONTEXT",feature:"mKlaimDetail",data:{idVisit:new URLSearchParams(window.location.search).get("id_visit"),tanggalMasuk:K()}}).catch(console.error),!window.__extBatchUploadRegistered&&(window.__extBatchUploadRegistered=!0,chrome.runtime.onMessage.addListener((e,t,n)=>{if(e.type==="TAB_ACTION"){let{action:r,payload:a}=e;r==="BATCH_UPLOAD_ANALYZE"?(g=at(a.inputText).map(i=>se(i)),chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ANALYZE_RESULT",data:{items:g}}).catch(console.error)):r==="BATCH_UPLOAD_CRAWL"?St():r==="BATCH_UPLOAD_UPDATE_ITEMS"?g=a.items:r==="BATCH_UPLOAD_PREVIEW"?Q(a.url,a.filename).catch(()=>{window.open(a.url,"_blank")}):r==="BATCH_UPLOAD_START"?Lt():r==="BATCH_UPLOAD_TEST_SINGLE"&&$t(),n({success:!0})}else e.type==="BATCH_UPLOAD_ACTION"&&n({success:!0});return!0})))}window.batchUploadShowModal=ot;typeof z.featureModules<"u"&&z.featureModules!==null?z.featureModules.batchUpload={id:"batchUpload",name:"Upload Dokumen Ulang",description:"Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis",match:{regex:/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/},run:Bt}:console.warn("[Batch Upload] featureModules not defined, module registration skipped");})();
+  `;
+    document.head.appendChild(style);
+    injectSharedCSS();
+  }
+  function initBatchUploadUrlFeature() {
+    if (!g.currentConfig?.features?.batchUpload?.enabled || !g.ExtensionCore.isFeatureAllowed("batchUpload"))
+      return;
+    if (!hasIdVisitParam()) return;
+    injectBatchUploadCSS();
+    chrome.runtime.sendMessage({
+      type: "PAGE_CONTEXT",
+      feature: "mKlaimDetail",
+      data: {
+        idVisit: new URLSearchParams(window.location.search).get("id_visit"),
+        tanggalMasuk: getTanggalMasukFromPage()
+      }
+    }).catch(console.error);
+    if (window.__extBatchUploadRegistered)
+      return;
+    window.__extBatchUploadRegistered = true;
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      if (message.type === "TAB_ACTION") {
+        const { action, payload } = message;
+        if (action === "BATCH_UPLOAD_ANALYZE") {
+          const urls = extractUrls(payload.inputText);
+          batchQueue = urls.map((url) => parseMetadataFromUrl(url));
+          chrome.runtime.sendMessage({
+            type: "TAB_ACTION_RESULT",
+            action: "BATCH_UPLOAD_ANALYZE_RESULT",
+            data: { items: batchQueue }
+          }).catch(console.error);
+        } else if (action === "BATCH_UPLOAD_CRAWL") {
+          crawlDokumenPasienToSidepanel();
+        } else if (action === "BATCH_UPLOAD_UPDATE_ITEMS") {
+          batchQueue = payload.items;
+        } else if (action === "BATCH_UPLOAD_PREVIEW") {
+          showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
+            window.open(payload.url, "_blank");
+          });
+        } else if (action === "BATCH_UPLOAD_START") {
+          runBatchQueueToSidepanel();
+        } else if (action === "BATCH_UPLOAD_TEST_SINGLE") {
+          testSingleUploadToSidepanel();
+        }
+        sendResponse({ success: true });
+      } else if (message.type === "BATCH_UPLOAD_ACTION") {
+        sendResponse({ success: true });
+      }
+      return true;
+    });
+  }
+  window.batchUploadShowModal = showBatchUploadModal;
+  if (typeof g.featureModules !== "undefined" && g.featureModules !== null) {
+    g.featureModules.batchUpload = {
+      id: "batchUpload",
+      name: "Upload Dokumen Ulang",
+      description: "Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis",
+      match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
+      run: initBatchUploadUrlFeature
+    };
+  } else {
+    console.warn("[Batch Upload] featureModules not defined, module registration skipped");
+  }
+})();
+//# sourceMappingURL=batchUploadUrl.js.map

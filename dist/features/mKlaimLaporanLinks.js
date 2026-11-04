@@ -1,1 +1,281 @@
-"use strict";var __morbis_feature=(()=>{var u=Object.defineProperty;var S=Object.getOwnPropertyDescriptor;var T=Object.getOwnPropertyNames;var E=Object.prototype.hasOwnProperty;var P=(e,t)=>{for(var n in t)u(e,n,{get:t[n],enumerable:!0})},M=(e,t,n,r)=>{if(t&&typeof t=="object"||typeof t=="function")for(let o of T(t))!E.call(e,o)&&o!==n&&u(e,o,{get:()=>t[o],enumerable:!(r=S(t,o))||r.enumerable});return e};var _=e=>M(u({},"__esModule",{value:!0}),e);var G={};P(G,{LAPORAN_KLAIM_PATH:()=>R,buildLaporanUrl:()=>A,initLaporanLinks:()=>s,injectLaporanButtons:()=>c});function g(){return window}var f="extensionConfig";function L(e,t,n){let r=t?.features?.[e];if(!r)return!0;if(r.enabled===!1)return!1;let o=n??t?.currentRole??"admin";if(o==="admin")return!0;let i=r.allowedRoles;return!Array.isArray(i)||i.length===0?!0:i.includes(o)}async function I(e){try{let n=(await chrome.storage.sync.get(f))?.[f]??null;return L(e,n)}catch{return!0}}function m(e,t){I(e).then(n=>{if(n)try{t()}catch(r){console.error(`[featureGate:${e}] gagal jalan:`,r)}})}var a="http://dev.rsudkotajambi.id/rs",x="ext-farmasi-app-base";var F=["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"],B=".rsudkotajambi.id";var O=["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"],b="Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";function j(e){try{let t=new URL(e??U());if(t.protocol==="https:")return null;let n=t.hostname.toLowerCase();return O.includes(n)?null:b}catch{return b}}function y(e){try{let t=new URL(e);if(t.protocol!=="http:"&&t.protocol!=="https:")return!1;let n=t.hostname.toLowerCase();return F.includes(n)?!0:n.endsWith(B)}catch{return!1}}function U(){try{let e=localStorage.getItem(x);if(e&&y(e))return e.replace(/\/+$/,"")}catch{}return a}function D(){try{let e=localStorage.getItem(x);if(e&&y(e)){let t=e.replace(/\/+$/,"");return t===a?null:t}}catch{}return null}var h=!1;async function k(e,t=fetch,n=8e3){if(j(e))return!1;try{let r=new AbortController,o=globalThis.setTimeout(()=>r.abort(),n);try{let i=await t(e+"/api/casemix/pre-op/list?ids=",{cache:"no-store",credentials:"omit",headers:{Accept:"application/json"},signal:r.signal});return i.ok?(await i.json())?.ok===!0:!1}finally{globalThis.clearTimeout(o)}}catch{return!1}}async function w(e=fetch){if(h)return a;let t=D();return t?await k(t,e)?t:await k(a,e)?(h=!0,console.warn("[casemixApi] base override tak terjangkau, pakai fallback sesi ini:",t),a):t:a}function C(e,t=8e3){try{let n=window.requestIdleCallback;if(typeof n=="function"){n.call(window,e,{timeout:t});return}}catch{}window.setTimeout(e,Math.min(t,1500))}var v=g(),R="/laporan-klaim-bpjs";function A(e){return e.replace(/\/+$/,"")+R}function H(){let e=window.open("about:blank","_blank");if(!e){window.alert("Popup diblokir \u2014 izinkan popup untuk halaman ini lalu ulangi.");return}Promise.resolve().then(()=>w()).then(t=>{let n=A(t);window.console.info("[mKlaimLaporanLinks] buka laporan klaim \u2192",n),e.location.href=n}).catch(()=>{try{e.close()}catch{}window.alert("Gagal menyiapkan koneksi Reports \u2014 coba lagi.")})}function N(e,t,n,r,o){let i=document.createElement("button");i.id=e,i.type="button",i.className=r?.className||"btn btn-info";let l=r?.getAttribute("style");l&&i.setAttribute("style",l),i.style.display="inline-block",i.style.marginLeft="8px";let d=r?.querySelector("i");return d&&(i.appendChild(d.cloneNode(!0)),i.appendChild(document.createTextNode(" "))),i.appendChild(document.createTextNode(t)),i.title=n,i.addEventListener("click",p=>{p.preventDefault(),p.stopPropagation(),o()}),i}function c(){if(document.getElementById("ext-laporan-klaim-btn"))return;let e=Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"]')).find(r=>{let o=(r.value||r.textContent||"").trim().toLowerCase();return/^(cari|tampil|tampilkan|filter)$/.test(o)}),t=e??document.querySelector('button[onclick*="loadTableExcel"]'),n=N("ext-laporan-klaim-btn","Laporan Klaim BPJS","Buka laporan Pre-op & Revisi Klaim BPJS di Reports (halaman polos, filter diisi sendiri di sana)",t,()=>H());if(e?.parentNode)e.parentNode.insertBefore(n,e.nextSibling);else{let r=document.querySelector("table");r?.parentNode&&r.parentNode.insertBefore(n,r)}}function s(){window.location.pathname.includes("/detail")||(C(c),window.setInterval(()=>{try{if(document.hidden)return}catch{}c()},3e3))}typeof v.featureModules<"u"&&(v.featureModules.laporanLinks={id:"laporanLinks",name:"Tautan Laporan Klaim BPJS (M-KLAIM)",description:"Tombol buka laporan gabungan Pre-op & Revisi BPJS di Reports (halaman polos)",match:{oneOf:[{pathname:"/v2/m-klaim"},{pathname:"/v2/m-klaim/"},{pathname:"/v2/m-klaim/index"}],exclude:[{prefix:"/v2/m-klaim/detail"}]},run:s});m("laporanLinks",()=>{(window.location?.pathname??"").startsWith("/v2/m-klaim")&&!(window.location?.pathname??"").includes("/detail")&&(document.readyState==="loading"?document.addEventListener("DOMContentLoaded",s):s())});return _(G);})();
+"use strict";
+var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/mKlaimLaporanLinks.ts
+  var mKlaimLaporanLinks_exports = {};
+  __export(mKlaimLaporanLinks_exports, {
+    LAPORAN_KLAIM_PATH: () => LAPORAN_KLAIM_PATH,
+    buildLaporanUrl: () => buildLaporanUrl,
+    initLaporanLinks: () => initLaporanLinks,
+    injectLaporanButtons: () => injectLaporanButtons
+  });
+
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = "http://dev.rsudkotajambi.id/rs";
+  var BASE_OVERRIDE_KEY = "ext-farmasi-app-base";
+  var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
+  var CASEMIX_HTTPS_REQUIRED = true;
+  var CASEMIX_HTTP_ALLOWED_HOSTS = [
+    "dev.rsudkotajambi.id",
+    "103.147.236.138",
+    "localhost",
+    "127.0.0.1"
+  ];
+  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
+  function casemixTransportBlockReason(baseUrl) {
+    if (!CASEMIX_HTTPS_REQUIRED) return null;
+    try {
+      const u = new URL(baseUrl ?? resolveCasemixBase());
+      if (u.protocol === "https:") return null;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_HTTP_ALLOWED_HOSTS.includes(h)) return null;
+      return CASEMIX_HTTPS_LOCK_REASON;
+    } catch {
+      return CASEMIX_HTTPS_LOCK_REASON;
+    }
+  }
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, "");
+    } catch {
+    }
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function readOverrideBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) {
+        const b = ov.replace(/\/+$/, "");
+        return b === CASEMIX_BASE_FALLBACK ? null : b;
+      }
+    } catch {
+    }
+    return null;
+  }
+  var pinnedFallbackBase = false;
+  async function isCasemixBaseAlive(base, fetcher = fetch, timeoutMs = 8e3) {
+    if (casemixTransportBlockReason(base)) return false;
+    try {
+      const ctrl = new AbortController();
+      const t = globalThis.setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const res = await fetcher(base + "/api/casemix/pre-op/list?ids=", {
+          cache: "no-store",
+          credentials: "omit",
+          headers: { Accept: "application/json" },
+          signal: ctrl.signal
+        });
+        if (!res.ok) return false;
+        const j = await res.json();
+        return j?.ok === true;
+      } finally {
+        globalThis.clearTimeout(t);
+      }
+    } catch {
+      return false;
+    }
+  }
+  async function ensureCasemixBase(fetcher = fetch) {
+    if (pinnedFallbackBase) return CASEMIX_BASE_FALLBACK;
+    const ov = readOverrideBase();
+    if (!ov) return CASEMIX_BASE_FALLBACK;
+    if (await isCasemixBaseAlive(ov, fetcher)) return ov;
+    if (await isCasemixBaseAlive(CASEMIX_BASE_FALLBACK, fetcher)) {
+      pinnedFallbackBase = true;
+      console.warn("[casemixApi] base override tak terjangkau, pakai fallback sesi ini:", ov);
+      return CASEMIX_BASE_FALLBACK;
+    }
+    return ov;
+  }
+
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === "function") {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {
+    }
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
+  // src/features/mKlaimLaporanLinks.ts
+  var g = getMorbisGlobals();
+  var LAPORAN_KLAIM_PATH = "/laporan-klaim-bpjs";
+  function buildLaporanUrl(base) {
+    return base.replace(/\/+$/, "") + LAPORAN_KLAIM_PATH;
+  }
+  function openLaporan() {
+    const w = window.open("about:blank", "_blank");
+    if (!w) {
+      window.alert("Popup diblokir \u2014 izinkan popup untuk halaman ini lalu ulangi.");
+      return;
+    }
+    void Promise.resolve().then(() => ensureCasemixBase()).then((base) => {
+      const url = buildLaporanUrl(base);
+      window.console.info("[mKlaimLaporanLinks] buka laporan klaim \u2192", url);
+      w.location.href = url;
+    }).catch(() => {
+      try {
+        w.close();
+      } catch {
+      }
+      window.alert("Gagal menyiapkan koneksi Reports \u2014 coba lagi.");
+    });
+  }
+  function makeLinkButton(id, label, title, refBtn, onClick) {
+    const btn = document.createElement("button");
+    btn.id = id;
+    btn.type = "button";
+    btn.className = refBtn?.className || "btn btn-info";
+    const refStyle = refBtn?.getAttribute("style");
+    if (refStyle) btn.setAttribute("style", refStyle);
+    btn.style.display = "inline-block";
+    btn.style.marginLeft = "8px";
+    const icon = refBtn?.querySelector("i");
+    if (icon) {
+      btn.appendChild(icon.cloneNode(true));
+      btn.appendChild(document.createTextNode(" "));
+    }
+    btn.appendChild(document.createTextNode(label));
+    btn.title = title;
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    });
+    return btn;
+  }
+  function injectLaporanButtons() {
+    if (document.getElementById("ext-laporan-klaim-btn")) return;
+    const anchor = Array.from(
+      document.querySelectorAll('button, input[type="button"], input[type="submit"]')
+    ).find((b) => {
+      const t = (b.value || b.textContent || "").trim().toLowerCase();
+      return /^(cari|tampil|tampilkan|filter)$/.test(t);
+    });
+    const refBtn = anchor ?? document.querySelector('button[onclick*="loadTableExcel"]');
+    const btnKlaim = makeLinkButton(
+      "ext-laporan-klaim-btn",
+      "Laporan Klaim BPJS",
+      "Buka laporan Pre-op & Revisi Klaim BPJS di Reports (halaman polos, filter diisi sendiri di sana)",
+      refBtn,
+      () => openLaporan()
+    );
+    if (anchor?.parentNode) {
+      anchor.parentNode.insertBefore(btnKlaim, anchor.nextSibling);
+    } else {
+      const table = document.querySelector("table");
+      if (table?.parentNode) {
+        table.parentNode.insertBefore(btnKlaim, table);
+      }
+    }
+  }
+  function initLaporanLinks() {
+    if (window.location.pathname.includes("/detail")) return;
+    runWhenIdle(injectLaporanButtons);
+    window.setInterval(() => {
+      try {
+        if (document.hidden) return;
+      } catch {
+      }
+      injectLaporanButtons();
+    }, 3e3);
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.laporanLinks = {
+      id: "laporanLinks",
+      name: "Tautan Laporan Klaim BPJS (M-KLAIM)",
+      description: "Tombol buka laporan gabungan Pre-op & Revisi BPJS di Reports (halaman polos)",
+      match: {
+        oneOf: [
+          { pathname: "/v2/m-klaim" },
+          { pathname: "/v2/m-klaim/" },
+          { pathname: "/v2/m-klaim/index" }
+        ],
+        exclude: [{ prefix: "/v2/m-klaim/detail" }]
+      },
+      run: initLaporanLinks
+    };
+  }
+  whenFeatureEnabled("laporanLinks", () => {
+    if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initLaporanLinks);
+      } else {
+        initLaporanLinks();
+      }
+    }
+  });
+  return __toCommonJS(mKlaimLaporanLinks_exports);
+})();
+//# sourceMappingURL=mKlaimLaporanLinks.js.map

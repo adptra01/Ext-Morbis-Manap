@@ -1,11 +1,422 @@
-"use strict";var __morbis_feature=(()=>{var at="extensionConfig";function Nt(u,x,A){let f=x?.features?.[u];if(!f)return!0;if(f.enabled===!1)return!1;let S=A??x?.currentRole??"admin";if(S==="admin")return!0;let k=f.allowedRoles;return!Array.isArray(k)||k.length===0?!0:k.includes(S)}async function Lt(u){try{let A=(await chrome.storage.sync.get(at))?.[at]??null;return Nt(u,A)}catch{return!0}}function nt(u,x){Lt(u).then(A=>{if(A)try{x()}catch(f){console.error(`[featureGate:${u}] gagal jalan:`,f)}})}nt("telaahResep",function(){"use strict";async function u(){let S="ext-telaah-proc",k=document.querySelector(".halaman");if(!k||k.getAttribute(S))return;let m=k;m.setAttribute(S,"1");let h=t=>(t?.textContent||"").replace(/\s+/g," ").trim();function o(t){return String(t??"").replace(/[&<>"']/g,a=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[a])}let it=t=>t?o(t.replace(/^(.*?)(\d+)$/,`$1
-$2`)):"-",rt=m.querySelector("#logo img")?.getAttribute("src")||"/assets/images/logo/Kota Jambi.png",_="RSUD H. ABDUL MANAP",N=[],L=m.querySelector("#head-cetak-logo");if(L){let t=L.querySelector("b");_=t?h(t):_;let a=document.createElement("div");a.innerHTML=L.innerHTML.replace(/<br\s*\/?>/gi,`
-`),N=(a.textContent||"").split(`
-`).map(e=>e.trim()).filter(Boolean).filter(e=>e!==_)}let j=new Map,H=[];m.querySelectorAll(".halaman > table:first-of-type table").forEach(t=>{t.querySelectorAll("tr").forEach(a=>{let e=a.querySelectorAll("td");if(e.length<2)return;let n=h(e[0]),i=h(e[1]).replace(/^:\s*/,"");if(n&&!j.has(n)&&j.set(n,i),/^diagnosa$/i.test(n)){let r=(e[1].innerHTML||"").replace(/<br\s*\/?>/gi,`
-`),l=document.createElement("div");l.innerHTML=r,H=(l.textContent||"").split(`
-`).map(c=>c.trim()).filter(c=>c&&!/^:/.test(c)&&!/tidak ada/i.test(c))}})});let ot=t=>j.get(t)??"",v=[],C=Array.from(m.querySelectorAll("table.resep-item"))[1],U="",D="",y=[],P=[],st="",q="",E="";async function lt(){let t=new URLSearchParams(window.location.search),a=t.get("id_resep")||t.get("id")||t.get("penjualan")||"";if(!a)return;let e="/inventory/resep/penerimaan/detail?id="+a;try{let n=await fetch(e,{credentials:"include"});if(!n.ok)return;let i=await n.text(),r=new DOMParser().parseFromString(i,"text/html"),l=s=>(r.querySelector("#"+s)||r.querySelector('input[name="'+s+'"]')||r.querySelector('input[id*="'+s+'"]')||r.querySelector("textarea#"+s)||r.querySelector('textarea[name="'+s+'"]'))?.value?.trim()||"";U=l("id_visit")||t.get("visit")||U,D=l("id_kunjungan")||D,q=l("no_sep")||q,E=l("catatan")||E;let d=Array.from(r.querySelectorAll("fieldset#perhatian")).find(s=>{let g=s.querySelector("legend");return g&&/riwayat\s*diagnosa\s*pasien/i.test(h(g))});if(d){let s=Array.from(d.querySelectorAll("li")).map(b=>h(b)).filter(Boolean),g=-1,Mt=Array.from(d.querySelectorAll("strong, b"));for(let b of Mt)if(/diagnosa\s*sekunder/i.test(h(b))){let Z=b.closest("li");if(Z){let R=Array.from(d.querySelectorAll("li")).indexOf(Z);R>=0&&(g=R)}else{let R=b.nextElementSibling;if(R&&R.tagName==="OL"){let tt=R.querySelector("li");if(tt){let et=Array.from(d.querySelectorAll("li")).indexOf(tt);et>=0&&(g=et)}}}break}g>=0&&g<s.length?(y=s.slice(0,g),P=s.slice(g).filter(b=>b&&!/tidak ada/i.test(b))):s.length&&(y=s)}}catch{}}function ct(t){let a=l=>typeof l=="string"?l.trim():"",e=a(t.nama_barang),n=a(t.kekuatan),i=a(t.sediaan),r=a(t.satuan);return n&&(e+=(e?" ":"")+n),i&&(e+=(e?", ":"")+i),r&&(e+=(e?" @":"")+r),e}function mt(t){return{NO_R:t.no_r,JENIS_R:t.jenis_r,JENIS_RSP:t.jenis_r,NAMA_RACIKAN:t.nama_racikan,ATURAN_PAKAI_MANUAL:t.aturan_pakai_manual,JUMLAH_RACIKAN:t.jumlah_racikan,NAMA:ct(t),KEKUATAN_R_RACIK:t.kekuatan_r_racik,KEKUATAN:t.kekuatan,JUMLAH_R_PAKAI:t.jumlah_r_pakai,SEDIAAN:t.sediaan,JUMLAH_R_RESEP:t.jumlah_r_resep}}async function dt(t){try{let a=await fetch("/inventory/search?opsi=tabel_penjualan_lama&id_penjualan="+encodeURIComponent(t),{credentials:"include",cache:"no-store"});if(!a.ok)return[];let e=await a.json();return(Array.isArray(e)?e:Object.values(e??{})).filter(i=>typeof i=="object"&&i!==null).map(mt).filter(i=>String(i.NO_R??"").trim()!=="")}catch{return[]}}async function pt(){let t=w.get("id_resep")||w.get("id")||w.get("penjualan")||"";if(!t)return[];try{let a=await fetch("/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id="+encodeURIComponent(t),{credentials:"include",cache:"no-store"});if(!a.ok)return[];let e=await a.json(),n=String(e?.CATATAN??"").trim();n!==""&&(E=n);let i=String(e?.ID_PENJUALAN??"").trim();if(i&&i!=="0"){let r=await dt(i);if(r.length)return r}return Array.isArray(e?.resep)?e.resep:[]}catch{return[]}}function gt(t){try{let a=new URL(t);if(a.protocol!=="http:"&&a.protocol!=="https:")return!1;let e=a.hostname.toLowerCase();return["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"].includes(e)?!0:e.endsWith(".rsudkotajambi.id")||e.endsWith(".ddev.site")}catch{return!1}}async function ht(t){try{let a="http://dev.rsudkotajambi.id/rs";try{let i=localStorage.getItem("ext-farmasi-app-base");i&&gt(i)&&(a=i.replace(/\/+$/,""))}catch{}let e=await fetch(a+"/api/queue/lookup?resep_id="+encodeURIComponent(t),{cache:"no-store",credentials:"omit",signal:AbortSignal.timeout(8e3)});if(!e.ok)return"";let n=await e.json();if(n.ok&&n.found&&n.queue?.queue_number)return n.queue.queue_number}catch{}return""}let w=new URLSearchParams(window.location.search),K=w.get("id_resep")||w.get("id")||w.get("penjualan")||"";await lt();let J=await pt();if(J.length){v.length=0;let t=new Map;for(let a of J){let e=String(a.NO_R??"").trim();e&&(t.has(e)||t.set(e,[]),t.get(e).push(a))}for(let[a,e]of t){let n=e[0],i=String(n.JENIS_R??"").toLowerCase()==="racikan"||String(n.JENIS_RSP??"").toLowerCase()==="racikan",r=String(n.NAMA_RACIKAN??"").trim(),c=String(n.ATURAN_PAKAI_MANUAL??"").trim().replace(/^-\s*/,"").trim();if(i||e.length>1){let d={no:"R/"+a,name:r||"",jml:"",jumlahJadi:String(n.JUMLAH_RACIKAN??"").trim()||"",sediaan:r,aturan:c?[c]:[],subMeds:e.map(s=>({name:String(s.NAMA??"").trim(),strength:String(s.KEKUATAN_R_RACIK??s.KEKUATAN??"").trim(),dose:"",jmlPerR:String(s.JUMLAH_R_PAKAI??"").trim(),sediaan:String(s.SEDIAAN??"").trim()}))};v.push(d)}else{let d={no:"R/"+a,name:String(n.NAMA??"").trim(),jml:String(n.JUMLAH_R_RESEP??n.JUMLAH_R_PAKAI??"").trim(),jumlahJadi:"",sediaan:String(n.SEDIAAN??"").trim(),aturan:c?[c]:[],subMeds:[]};v.push(d)}}}!y.length&&H.length&&(y=H);let O=m.querySelector("#form_checklist_telaah_resep"),B=t=>{let a=[];if(!O)return a;let e=Array.from(O.querySelectorAll("table")).find(n=>h(n.querySelector("tr td"))===t);return e&&e.querySelectorAll("tr").forEach((n,i)=>{if(i===0)return;let r=n.querySelectorAll("td");if(r.length<2)return;let l=h(r[0]),c=h(r[1]);l&&c&&c!==t&&a.push([l,c])}),a},ut=B("Telaah Resep"),ft=B("Telaah Obat"),F=Array.from(m.querySelectorAll("center, strong")).find(t=>/Obat tidak boleh diganti/i.test(h(t))),bt=F?h(F):"Obat tidak boleh diganti tanpa sepengetahuan Dokter",z=(t,a,e="",n="")=>'<div class="tm-row'+(n?" "+n:"")+'"><span class="tm-label">'+o(t)+':</span><span class="tm-val'+(e?" "+e:"")+'">'+(a&&a.trim()?o(a):"-")+"</span></div>",G=[...y.length?[y.join(", ")]:[],...P.length?[P.join(", ")]:[]],p=t=>ot(t),I=p("Jenis Kelamin"),xt=/^perempuan$/i.test(I)?"P":/^laki-laki$/i.test(I)?"L":I,At=(p("Nama Pasien")||"-")+(I?" ("+xt+")":""),kt=(p("Dokter")||"-")+(p("Ruangan/Poli")?" / "+p("Ruangan/Poli"):""),$=t=>{for(let a of j.keys())if(t.test(a))return j.get(a)||"";return""},V=$(/alergi/i),T=$(/berat|\bbb\b/i),Y=T?/\bkg\b/i.test(T)?T:T+" kg":"- kg",yt=(V||"-")+" / "+(T?"BB "+Y:Y),wt=[["Pasien",At,""],["No. RM",p("No. RM"),""],["Tgl. Lahir",p("Tgl. Lahir/Umur"),""],["Alergi & BB",yt,""],["Alamat",p("Alamat"),"long"],["No HP",p("No HP"),""]],Rt=[["Dokter",kt,""],["SIP Dokter",p("SIP Dokter"),""],["No Resep",p("No Resep"),""],["No SEP",q||"-",""],["Tanggal",p("Tanggal & Jam"),""],["Penjamin",p("Penjamin"),""]],St=z("Diagnosa",G.length?G.join(", "):"-","","long"),jt='<section class="tm-card tm-card--small tm-card--left"><div class="tm-col">'+wt.map(([t,a,e])=>z(t,a,"",e)).join("")+St+"</div></section>",Et='<section class="tm-card tm-card--right"><div class="tm-col">'+Rt.map(([t,a,e])=>z(t,a,"",e)).join("")+"</div></section>",Tt=v.map(t=>{if(t.subMeds.length){let e=t.subMeds.map((d,s)=>{let g=d.jmlPerR||"";return'<div class="med-line'+(s>0?" indent":"")+'">'+(s===0?'<span class="med-no">'+o(t.no)+"</span> ":"")+'<span class="med-name">'+o(d.name)+"</span>"+(g?', <span class="med-jml">Jml: '+o(g)+"</span>":"")+"</div>"}).join(""),n=t.jumlahJadi?o(t.jumlahJadi):"",i=t.sediaan?o(t.sediaan):"Racikan",r=t.aturan.length?t.aturan.map(d=>o(d.replace(/^\(|\)$/g,""))).join(" "):"",l=n?"Jml "+n+" "+i+(r?" - ("+r+")":""):"",c=l?'<div class="med-jadiracik">'+l+"</div>":"";return'<div class="med">'+e+c+"</div>"}let a=t.jml||"";return'<div class="med"><div class="med-line"><span class="med-no">'+o(t.no)+'</span> <span class="med-name">'+o(t.name)+"</span>"+(a?', <span class="med-jml">Jml: '+o(a)+"</span>":"")+"</div>"+(t.aturan.length?'<div class="med-aturan">'+t.aturan.map(e=>o(e)).join("<br/>")+"</div>":"")+"</div>"}).join(""),M=C?Array.from(C.querySelectorAll("tr:first-child td")).map(t=>h(t)).filter(Boolean):["Hitung","Timbang","Kemas"];M.some(t=>/paraf/i.test(t))||M.push("Paraf");let _t=M.length,vt='<table class="t-admin"><thead><tr>'+M.map(t=>'<th class="c">'+o(t)+"</th>").join("")+"</tr></thead><tbody><tr>"+Array.from({length:_t}).map(()=>'<td class="blk"></td>').join("")+"</tr></tbody></table>",W=(t,a)=>'<table class="t-check"><thead><tr><th class="l" colspan="2">'+o(t)+'</th><th class="yt">Y/T</th></tr></thead><tbody>'+a.map(([e,n])=>'<tr><td class="num">'+o(e)+"</td><td>"+o(n)+'</td><td class="yt"></td></tr>').join("")+"</tbody></table>",It='<header class="t-head"><img class="t-logo" alt="Logo" src="'+o(rt)+'"/><div class="t-bhead"><h1 class="t-hname">'+o(_)+"</h1>"+(N[0]?'<div class="t-hsub">'+o(N[0])+"</div>":"")+'</div><div class="t-antrian">'+it(st)+'</div></header><main class="t-main"><section class="t-left">'+jt+'<div class="t-meds">'+Tt+"</div>"+(E.trim()!==""?'<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">'+o(E).split(`
-`).map(t=>t.trim()).filter(Boolean).join("<br/>")+"</div></div>":"")+vt+'<table class="t-admin t-lampiran"><thead><tr><th class="c third">Srt. Rujuk Balik</th><th class="c third">Surat Iter</th><th class="c third">Hasil Lab</th></tr></thead><tbody><tr><td class="blk"></td><td class="blk"></td><td class="blk"></td></tr></tbody></table>'+'</section><section class="t-right">'+Et+W("Telaah Resep",ut)+W("Telaah Obat",ft)+'<table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c" colspan="2">Waktu Tunggu</td></tr><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr><tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>'+'</section></main><footer class="t-footer">'+o(bt)+'</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';if(m.innerHTML=It,K){let t=m.querySelector(".t-antrian");ht(K).then(a=>{a&&t&&t.isConnected&&(t.textContent=a.replace(/^(.*?)(\d+)$/,`$1
-$2`))})}let Q=866;m.scrollHeight>Q&&(m.classList.add("compact"),m.offsetHeight,m.scrollHeight>Q&&(m.classList.remove("compact"),m.classList.add("ultra")));let X="ext-telaah-style";if(!document.getElementById(X)){let t=document.createElement("style");t.id=X,t.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
+  // src/features/telaahResepPrint.ts
+  whenFeatureEnabled("telaahResep", function() {
+    "use strict";
+    async function apply() {
+      const PAGE_GUARD = "ext-telaah-proc";
+      const root = document.querySelector(".halaman");
+      if (!root || root.getAttribute(PAGE_GUARD)) return;
+      const page = root;
+      page.setAttribute(PAGE_GUARD, "1");
+      const txt = (el) => (el?.textContent || "").replace(/\s+/g, " ").trim();
+      function esc(s) {
+        return String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+        );
+      }
+      const formatAntrian = (v) => v ? esc(v.replace(/^(.*?)(\d+)$/, "$1\n$2")) : "-";
+      const logoImg = page.querySelector("#logo img");
+      const logoSrc = logoImg?.getAttribute("src") || "/assets/images/logo/Kota Jambi.png";
+      let hospitalName = "RSUD H. ABDUL MANAP";
+      let headBody = [];
+      const headEl = page.querySelector("#head-cetak-logo");
+      if (headEl) {
+        const b = headEl.querySelector("b");
+        hospitalName = b ? txt(b) : hospitalName;
+        const tmp = document.createElement("div");
+        tmp.innerHTML = headEl.innerHTML.replace(/<br\s*\/?>/gi, "\n");
+        headBody = (tmp.textContent || "").split("\n").map((l) => l.trim()).filter(Boolean).filter((l) => l !== hospitalName);
+      }
+      const metaMap = /* @__PURE__ */ new Map();
+      let serverDiag = [];
+      page.querySelectorAll(".halaman > table:first-of-type table").forEach((t) => {
+        t.querySelectorAll("tr").forEach((tr) => {
+          const tds = tr.querySelectorAll("td");
+          if (tds.length < 2) return;
+          const label = txt(tds[0]);
+          const value = txt(tds[1]).replace(/^:\s*/, "");
+          if (label && !metaMap.has(label)) metaMap.set(label, value);
+          if (/^diagnosa$/i.test(label)) {
+            const raw = (tds[1].innerHTML || "").replace(/<br\s*\/?>/gi, "\n");
+            const cd = document.createElement("div");
+            cd.innerHTML = raw;
+            serverDiag = (cd.textContent || "").split("\n").map((l) => l.trim()).filter((l) => l && !/^:/.test(l) && !/tidak ada/i.test(l));
+          }
+        });
+      });
+      const getMeta = (label) => metaMap.get(label) ?? "";
+      const meds = [];
+      const medsTables = Array.from(page.querySelectorAll("table.resep-item"));
+      const adminTable = medsTables[1];
+      let diagVisit = "";
+      let diagKunjungan = "";
+      let diagnosisUtama = [];
+      let diagnosisSekunder = [];
+      const antrianNumber = "";
+      let noSep = "";
+      let catatan = "";
+      async function fetchRacikanDetails() {
+        const params2 = new URLSearchParams(window.location.search);
+        const resepId = params2.get("id_resep") || params2.get("id") || params2.get("penjualan") || "";
+        if (!resepId) return;
+        const detailUrl = "/inventory/resep/penerimaan/detail?id=" + resepId;
+        try {
+          const resp = await fetch(detailUrl, { credentials: "include" });
+          if (!resp.ok) return;
+          const html2 = await resp.text();
+          const doc = new DOMParser().parseFromString(html2, "text/html");
+          const inVal = (name) => {
+            const el = doc.querySelector("#" + name) || doc.querySelector('input[name="' + name + '"]') || doc.querySelector('input[id*="' + name + '"]') || doc.querySelector("textarea#" + name) || doc.querySelector('textarea[name="' + name + '"]');
+            return el?.value?.trim() || "";
+          };
+          diagVisit = inVal("id_visit") || params2.get("visit") || diagVisit;
+          diagKunjungan = inVal("id_kunjungan") || diagKunjungan;
+          noSep = inVal("no_sep") || noSep;
+          catatan = inVal("catatan") || catatan;
+          const fieldsets = Array.from(doc.querySelectorAll("fieldset#perhatian"));
+          const fs = fieldsets.find((f) => {
+            const leg = f.querySelector("legend");
+            return leg && /riwayat\s*diagnosa\s*pasien/i.test(txt(leg));
+          });
+          if (fs) {
+            const allLis = Array.from(fs.querySelectorAll("li")).map((li) => txt(li)).filter(Boolean);
+            let sekunderStartIdx = -1;
+            const strongs = Array.from(fs.querySelectorAll("strong, b"));
+            for (const s of strongs) {
+              if (/diagnosa\s*sekunder/i.test(txt(s))) {
+                const parentLi = s.closest("li");
+                if (parentLi) {
+                  const idx = Array.from(fs.querySelectorAll("li")).indexOf(parentLi);
+                  if (idx >= 0) sekunderStartIdx = idx;
+                } else {
+                  const nextOl = s.nextElementSibling;
+                  if (nextOl && nextOl.tagName === "OL") {
+                    const firstSekunderLi = nextOl.querySelector("li");
+                    if (firstSekunderLi) {
+                      const idx = Array.from(fs.querySelectorAll("li")).indexOf(firstSekunderLi);
+                      if (idx >= 0) sekunderStartIdx = idx;
+                    }
+                  }
+                }
+                break;
+              }
+            }
+            if (sekunderStartIdx >= 0 && sekunderStartIdx < allLis.length) {
+              diagnosisUtama = allLis.slice(0, sekunderStartIdx);
+              diagnosisSekunder = allLis.slice(sekunderStartIdx).filter((v) => v && !/tidak ada/i.test(v));
+            } else if (allLis.length) {
+              diagnosisUtama = allLis;
+            }
+          }
+        } catch {
+        }
+      }
+      function editDisplayName(row) {
+        const str = (v) => typeof v === "string" ? v.trim() : "";
+        let display = str(row.nama_barang);
+        const kekuatan = str(row.kekuatan);
+        const sediaan = str(row.sediaan);
+        const satuan = str(row.satuan);
+        if (kekuatan) display += (display ? " " : "") + kekuatan;
+        if (sediaan) display += (display ? ", " : "") + sediaan;
+        if (satuan) display += (display ? " @" : "") + satuan;
+        return display;
+      }
+      function normalizeEditRow(row) {
+        return {
+          NO_R: row.no_r,
+          JENIS_R: row.jenis_r,
+          JENIS_RSP: row.jenis_r,
+          NAMA_RACIKAN: row.nama_racikan,
+          ATURAN_PAKAI_MANUAL: row.aturan_pakai_manual,
+          JUMLAH_RACIKAN: row.jumlah_racikan,
+          NAMA: editDisplayName(row),
+          KEKUATAN_R_RACIK: row.kekuatan_r_racik,
+          KEKUATAN: row.kekuatan,
+          JUMLAH_R_PAKAI: row.jumlah_r_pakai,
+          SEDIAAN: row.sediaan,
+          JUMLAH_R_RESEP: row.jumlah_r_resep
+        };
+      }
+      async function fetchEditItems(penjualanId) {
+        try {
+          const resp = await fetch(
+            "/inventory/search?opsi=tabel_penjualan_lama&id_penjualan=" + encodeURIComponent(penjualanId),
+            { credentials: "include", cache: "no-store" }
+          );
+          if (!resp.ok) return [];
+          const payload = await resp.json();
+          const rows = Array.isArray(payload) ? payload : Object.values(payload ?? {});
+          return rows.filter((row) => typeof row === "object" && row !== null).map(normalizeEditRow).filter((item) => String(item.NO_R ?? "").trim() !== "");
+        } catch {
+          return [];
+        }
+      }
+      async function fetchResepItems() {
+        const resepId = params.get("id_resep") || params.get("id") || params.get("penjualan") || "";
+        if (!resepId) return [];
+        try {
+          const resp = await fetch(
+            "/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=" + encodeURIComponent(resepId),
+            { credentials: "include", cache: "no-store" }
+          );
+          if (!resp.ok) return [];
+          const envelope = await resp.json();
+          const envCatatan = String(envelope?.CATATAN ?? "").trim();
+          if (envCatatan !== "") catatan = envCatatan;
+          const penjualanId = String(envelope?.ID_PENJUALAN ?? "").trim();
+          if (penjualanId && penjualanId !== "0") {
+            const editItems = await fetchEditItems(penjualanId);
+            if (editItems.length) return editItems;
+          }
+          return Array.isArray(envelope?.resep) ? envelope.resep : [];
+        } catch {
+          return [];
+        }
+      }
+      function isAllowedBase(url) {
+        try {
+          const u = new URL(url);
+          if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+          const h = u.hostname.toLowerCase();
+          if (["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"].includes(h))
+            return true;
+          return h.endsWith(".rsudkotajambi.id") || h.endsWith(".ddev.site");
+        } catch {
+          return false;
+        }
+      }
+      async function fetchAntrianNumber(resepId) {
+        try {
+          let base = "http://dev.rsudkotajambi.id/rs";
+          try {
+            const ov = localStorage.getItem("ext-farmasi-app-base");
+            if (ov && isAllowedBase(ov)) base = ov.replace(/\/+$/, "");
+          } catch {
+          }
+          const resp = await fetch(
+            base + "/api/queue/lookup?resep_id=" + encodeURIComponent(resepId),
+            {
+              cache: "no-store",
+              credentials: "omit",
+              signal: AbortSignal.timeout(8e3)
+              // app antrian lambat → jangan bikin halaman hang
+            }
+          );
+          if (!resp.ok) return "";
+          const j = await resp.json();
+          if (j.ok && j.found && j.queue?.queue_number) return j.queue.queue_number;
+        } catch {
+        }
+        return "";
+      }
+      const params = new URLSearchParams(window.location.search);
+      const resepIdForQueue = params.get("id_resep") || params.get("id") || params.get("penjualan") || "";
+      await fetchRacikanDetails();
+      const resepItems = await fetchResepItems();
+      if (resepItems.length) {
+        meds.length = 0;
+        const groups = /* @__PURE__ */ new Map();
+        for (const it of resepItems) {
+          const noR = String(it.NO_R ?? "").trim();
+          if (!noR) continue;
+          if (!groups.has(noR)) groups.set(noR, []);
+          groups.get(noR).push(it);
+        }
+        for (const [noR, items] of groups) {
+          const first = items[0];
+          const isRacikan = String(first.JENIS_R ?? "").toLowerCase() === "racikan" || String(first.JENIS_RSP ?? "").toLowerCase() === "racikan";
+          const sediaanRacikan = String(first.NAMA_RACIKAN ?? "").trim();
+          const rawAturan = String(first.ATURAN_PAKAI_MANUAL ?? "").trim();
+          const aturanTxt = rawAturan.replace(/^-\s*/, "").trim();
+          if (isRacikan || items.length > 1) {
+            const med = {
+              no: "R/" + noR,
+              name: sediaanRacikan || "",
+              jml: "",
+              jumlahJadi: String(first.JUMLAH_RACIKAN ?? "").trim() || "",
+              sediaan: sediaanRacikan,
+              aturan: aturanTxt ? [aturanTxt] : [],
+              subMeds: items.map((it) => ({
+                name: String(it.NAMA ?? "").trim(),
+                strength: String(it.KEKUATAN_R_RACIK ?? it.KEKUATAN ?? "").trim(),
+                dose: "",
+                jmlPerR: String(it.JUMLAH_R_PAKAI ?? "").trim(),
+                sediaan: String(it.SEDIAAN ?? "").trim()
+              }))
+            };
+            meds.push(med);
+          } else {
+            const med = {
+              no: "R/" + noR,
+              name: String(first.NAMA ?? "").trim(),
+              jml: String(first.JUMLAH_R_RESEP ?? first.JUMLAH_R_PAKAI ?? "").trim(),
+              jumlahJadi: "",
+              sediaan: String(first.SEDIAAN ?? "").trim(),
+              aturan: aturanTxt ? [aturanTxt] : [],
+              subMeds: []
+            };
+            meds.push(med);
+          }
+        }
+      }
+      if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
+      const chkForm = page.querySelector("#form_checklist_telaah_resep");
+      const readCheck = (title) => {
+        const rows = [];
+        if (!chkForm) return rows;
+        const tbl = Array.from(chkForm.querySelectorAll("table")).find((t) => {
+          const th = txt(t.querySelector("tr td"));
+          return th === title;
+        });
+        if (!tbl) return rows;
+        tbl.querySelectorAll("tr").forEach((tr, i) => {
+          if (i === 0) return;
+          const tds = tr.querySelectorAll("td");
+          if (tds.length < 2) return;
+          const num = txt(tds[0]);
+          const item = txt(tds[1]);
+          if (num && item && item !== title) rows.push([num, item]);
+        });
+        return rows;
+      };
+      const telaahResep = readCheck("Telaah Resep");
+      const telaahObat = readCheck("Telaah Obat");
+      const footerEl = Array.from(page.querySelectorAll("center, strong")).find(
+        (el) => /Obat tidak boleh diganti/i.test(txt(el))
+      );
+      const footerText = footerEl ? txt(footerEl) : "Obat tidak boleh diganti tanpa sepengetahuan Dokter";
+      const metaLine = (label, value, vClass = "", rowClass = "") => '<div class="tm-row' + (rowClass ? " " + rowClass : "") + '"><span class="tm-label">' + esc(label) + ':</span><span class="tm-val' + (vClass ? " " + vClass : "") + '">' + (value && value.trim() ? esc(value) : "-") + "</span></div>";
+      const diagValues = [
+        ...diagnosisUtama.length ? [diagnosisUtama.join(", ")] : [],
+        ...diagnosisSekunder.length ? [diagnosisSekunder.join(", ")] : []
+      ];
+      const g = (l) => getMeta(l);
+      const jk = g("Jenis Kelamin");
+      const jkShort = /^perempuan$/i.test(jk) ? "P" : /^laki-laki$/i.test(jk) ? "L" : jk;
+      const pasienJK = (g("Nama Pasien") || "-") + (jk ? " (" + jkShort + ")" : "");
+      const dokterRuang = (g("Dokter") || "-") + (g("Ruangan/Poli") ? " / " + g("Ruangan/Poli") : "");
+      const look = (re) => {
+        for (const k of metaMap.keys()) if (re.test(k)) return metaMap.get(k) || "";
+        return "";
+      };
+      const alergi = look(/alergi/i);
+      const bb = look(/berat|\bbb\b/i);
+      const bbTxt = bb ? /\bkg\b/i.test(bb) ? bb : bb + " kg" : "- kg";
+      const alergiBB = (alergi ? alergi : "-") + " / " + (bb ? "BB " + bbTxt : bbTxt);
+      const patientRows = [
+        ["Pasien", pasienJK, ""],
+        ["No. RM", g("No. RM"), ""],
+        ["Tgl. Lahir", g("Tgl. Lahir/Umur"), ""],
+        ["Alergi & BB", alergiBB, ""],
+        ["Alamat", g("Alamat"), "long"],
+        ["No HP", g("No HP"), ""]
+      ];
+      const doctorRows = [
+        ["Dokter", dokterRuang, ""],
+        ["SIP Dokter", g("SIP Dokter"), ""],
+        ["No Resep", g("No Resep"), ""],
+        ["No SEP", noSep || "-", ""],
+        ["Tanggal", g("Tanggal & Jam"), ""],
+        ["Penjamin", g("Penjamin"), ""]
+      ];
+      const diagThen = metaLine(
+        "Diagnosa",
+        diagValues.length ? diagValues.join(", ") : "-",
+        "",
+        "long"
+      );
+      const patientMetaHtml = '<section class="tm-card tm-card--small tm-card--left"><div class="tm-col">' + patientRows.map(([l, v, rc]) => metaLine(l, v, "", rc)).join("") + diagThen + "</div></section>";
+      const doctorMetaHtml = '<section class="tm-card tm-card--right"><div class="tm-col">' + doctorRows.map(([l, v, rc]) => metaLine(l, v, "", rc)).join("") + "</div></section>";
+      const medListHtml = meds.map((m) => {
+        if (m.subMeds.length) {
+          const lines = m.subMeds.map((s, i) => {
+            const jml2 = s.jmlPerR || "";
+            return '<div class="med-line' + (i > 0 ? " indent" : "") + '">' + (i === 0 ? '<span class="med-no">' + esc(m.no) + "</span> " : "") + '<span class="med-name">' + esc(s.name) + "</span>" + (jml2 ? ', <span class="med-jml">Jml: ' + esc(jml2) + "</span>" : "") + "</div>";
+          }).join("");
+          const total = m.jumlahJadi ? esc(m.jumlahJadi) : "";
+          const satuan = m.sediaan ? esc(m.sediaan) : "Racikan";
+          const aturan = m.aturan.length ? m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ""))).join(" ") : "";
+          const jadiTxt = total ? "Jml " + total + " " + satuan + (aturan ? " - (" + aturan + ")" : "") : "";
+          const jadi = jadiTxt ? '<div class="med-jadiracik">' + jadiTxt + "</div>" : "";
+          return '<div class="med">' + lines + jadi + "</div>";
+        }
+        const jml = m.jml || "";
+        return '<div class="med"><div class="med-line"><span class="med-no">' + esc(m.no) + '</span> <span class="med-name">' + esc(m.name) + "</span>" + (jml ? ', <span class="med-jml">Jml: ' + esc(jml) + "</span>" : "") + "</div>" + (m.aturan.length ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join("<br/>") + "</div>" : "") + "</div>";
+      }).join("");
+      const adminHeads = adminTable ? Array.from(adminTable.querySelectorAll("tr:first-child td")).map((td) => txt(td)).filter(Boolean) : ["Hitung", "Timbang", "Kemas"];
+      if (!adminHeads.some((h) => /paraf/i.test(h))) adminHeads.push("Paraf");
+      const adminCols = adminHeads.length;
+      const adminHtml = '<table class="t-admin"><thead><tr>' + adminHeads.map((h) => '<th class="c">' + esc(h) + "</th>").join("") + "</tr></thead><tbody><tr>" + Array.from({ length: adminCols }).map(() => '<td class="blk"></td>').join("") + "</tr></tbody></table>";
+      const checkTable = (title, rows) => '<table class="t-check"><thead><tr><th class="l" colspan="2">' + esc(title) + '</th><th class="yt">Y/T</th></tr></thead><tbody>' + rows.map(
+        ([num, item]) => '<tr><td class="num">' + esc(num) + "</td><td>" + esc(item) + '</td><td class="yt"></td></tr>'
+      ).join("") + "</tbody></table>";
+      const bawahHtml = '<table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk4"></td><td class="blk4"></td></tr><tr><td class="c" colspan="2">Waktu Tunggu</td></tr><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr><tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>';
+      const lampiranHtml = '<table class="t-admin t-lampiran"><thead><tr><th class="c third">Srt. Rujuk Balik</th><th class="c third">Surat Iter</th><th class="c third">Hasil Lab</th></tr></thead><tbody><tr><td class="blk"></td><td class="blk"></td><td class="blk"></td></tr></tbody></table>';
+      const html = (
+        // HEADER 3 kolom: logo | brand & alamat | no antrian
+        '<header class="t-head"><img class="t-logo" alt="Logo" src="' + esc(logoSrc) + '"/><div class="t-bhead"><h1 class="t-hname">' + esc(hospitalName) + "</h1>" + (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + "</div>" : "") + '</div><div class="t-antrian">' + formatAntrian(antrianNumber) + '</div></header><main class="t-main"><section class="t-left">' + patientMetaHtml + '<div class="t-meds">' + medListHtml + "</div>" + // Catatan resep dari halaman detail (textarea merah #catatan).
+        // Hanya tampil bila ada isi — blok merah agar terbaca apoteker.
+        (catatan.trim() !== "" ? '<div class="t-catatan"><div class="t-catatan-title">Catatan</div><div class="t-catatan-body">' + esc(catatan).split("\n").map((l) => l.trim()).filter(Boolean).join("<br/>") + "</div></div>" : "") + adminHtml + lampiranHtml + '</section><section class="t-right">' + doctorMetaHtml + checkTable("Telaah Resep", telaahResep) + checkTable("Telaah Obat", telaahObat) + bawahHtml + '</section></main><footer class="t-footer">' + esc(footerText) + '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>'
+      );
+      page.innerHTML = html;
+      if (resepIdForQueue) {
+        const antrianEl = page.querySelector(".t-antrian");
+        void fetchAntrianNumber(resepIdForQueue).then((n) => {
+          if (n && antrianEl && antrianEl.isConnected) {
+            antrianEl.textContent = n.replace(/^(.*?)(\d+)$/, "$1\n$2");
+          }
+        });
+      }
+      const TARGET_HEIGHT_PX = 866;
+      const pageH = page.scrollHeight;
+      if (pageH > TARGET_HEIGHT_PX) {
+        page.classList.add("compact");
+        void page.offsetHeight;
+        if (page.scrollHeight > TARGET_HEIGHT_PX) {
+          page.classList.remove("compact");
+          page.classList.add("ultra");
+        }
+      }
+      const STYLE_ID = "ext-telaah-style";
+      if (!document.getElementById(STYLE_ID)) {
+        const s = document.createElement("style");
+        s.id = STYLE_ID;
+        s.textContent = `
         /* === PRINT CONTRACT: 105mm \xD7 241mm === */
         .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;max-height:241mm;margin:0!important;padding:0 3mm}
         @page{size:105mm 241mm;margin:0}
@@ -117,4 +528,20 @@ $2`))})}let Q=866;m.scrollHeight>Q&&(m.classList.add("compact"),m.offsetHeight,m
         .halaman.ultra .blk4{height:30px}
         .halaman.ultra .t-lampiran{margin-top:0}
         .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
-      `,document.head.appendChild(t)}}let x=u,A=Date.now(),f=window.setInterval(()=>{document.documentElement.getAttribute("data-ext-telaah")==="1"?(window.clearInterval(f),x()):Date.now()-A>5e3&&window.clearInterval(f)},200)});})();
+      `;
+        document.head.appendChild(s);
+      }
+    }
+    const run = apply;
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (document.documentElement.getAttribute("data-ext-telaah") === "1") {
+        window.clearInterval(iv);
+        run();
+      } else if (Date.now() - t0 > 5e3) {
+        window.clearInterval(iv);
+      }
+    }, 200);
+  });
+})();
+//# sourceMappingURL=telaahResepPrint.js.map

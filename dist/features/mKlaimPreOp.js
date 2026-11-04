@@ -1,9 +1,1312 @@
-"use strict";var __morbis_feature=(()=>{var X=Object.defineProperty;var Mt=Object.getOwnPropertyDescriptor;var At=Object.getOwnPropertyNames;var Pt=Object.prototype.hasOwnProperty;var It=(e,t)=>{for(var n in t)X(e,n,{get:t[n],enumerable:!0})},Ot=(e,t,n,r)=>{if(t&&typeof t=="object"||typeof t=="function")for(let i of At(t))!Pt.call(e,i)&&i!==n&&X(e,i,{get:()=>t[i],enumerable:!(r=Mt(t,i))||r.enumerable});return e};var Lt=e=>Ot(X({},"__esModule",{value:!0}),e);var Sn={};It(Sn,{badgeCellFor:()=>ye,extractPatientInfo:()=>G,guessPatientInfo:()=>Tt,initPreOpMarker:()=>z,patientFieldIndexFromHeaders:()=>xe,pickPatientInfo:()=>ke,statusRevisiIndexFromHeaders:()=>Rt,syncPreOpNow:()=>_t});function Te(){return window}var Re="extensionConfig";function Dt(e,t,n){let r=t?.features?.[e];if(!r)return!0;if(r.enabled===!1)return!1;let i=n??t?.currentRole??"admin";if(i==="admin")return!0;let o=r.allowedRoles;return!Array.isArray(o)||o.length===0?!0:o.includes(i)}async function $t(e){try{let n=(await chrome.storage.sync.get(Re))?.[Re]??null;return Dt(e,n)}catch{return!0}}function ve(e,t){$t(e).then(n=>{if(n)try{t()}catch(r){console.error(`[featureGate:${e}] gagal jalan:`,r)}})}var Ce=new Set;function W(e,t){if(Ce.has(e)){let r=document.getElementById(e);if(r)return r}let n=document.createElement("style");return n.id=e,n.textContent=t,document.head.appendChild(n),Ce.add(e),n}W("ext-shared-animations",`
+"use strict";
+var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/mKlaimPreOp.ts
+  var mKlaimPreOp_exports = {};
+  __export(mKlaimPreOp_exports, {
+    badgeCellFor: () => badgeCellFor,
+    extractPatientInfo: () => extractPatientInfo,
+    guessPatientInfo: () => guessPatientInfo,
+    initPreOpMarker: () => initPreOpMarker,
+    patientFieldIndexFromHeaders: () => patientFieldIndexFromHeaders,
+    pickPatientInfo: () => pickPatientInfo,
+    statusRevisiIndexFromHeaders: () => statusRevisiIndexFromHeaders,
+    syncPreOpNow: () => syncPreOpNow
+  });
+
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    });
+  }
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
+    }
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
+  }
+  injectCSS(
+    "ext-shared-animations",
+    `
   @keyframes fadeSlideIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-`);var Ee="morbis_preop_markers",_e="ext_preop_unmark_queue";function A(e,t,n,r=Date.now(),i=3e4){return e?!0:n!==void 0&&r-n<i||t===null?!1:t}function S(){try{if(typeof window<"u"&&window.localStorage)return window.localStorage}catch{}return null}function jt(e,t=Date.now()){let n={},r=0;for(let[i,o]of Object.entries(e))o&&o.markedAt&&t-o.markedAt<=2592e6?n[i]=o:r++;return{purged:n,count:r}}function x(e=S(),t=Date.now()){if(!e)return{};try{let n=e.getItem(Ee);if(!n)return{};let r=JSON.parse(n);if(typeof r!="object"||r===null)return{};let{purged:i,count:o}=jt(r,t);return o>0&&D(i,e),i}catch{return{}}}function Ht(e){if(!e||typeof e!="object")return{idVisit:"",markedAt:0};let t={idVisit:e.idVisit,markedAt:e.markedAt};return e.fromCentral===!0&&(t.fromCentral=!0),t}function D(e,t=S()){if(t)try{let n={};for(let[r,i]of Object.entries(e))!i||typeof i!="object"||!i.idVisit||(n[r]=Ht(i));t.setItem(Ee,JSON.stringify(n))}catch{}}function $(e,t={},n=S(),r=Date.now(),i=!1){if(!e)return;let o=x(n,r);o[e]=i?{idVisit:e,markedAt:r,fromCentral:!0}:{idVisit:e,markedAt:r},D(o,n)}function Y(e=S()){if(!e)return[];try{let t=e.getItem(_e);if(!t)return[];let n=JSON.parse(t);return Array.isArray(n)?n.filter(r=>typeof r=="string"):[]}catch{return[]}}function Q(e,t=S()){if(t)try{t.setItem(_e,JSON.stringify([...new Set(e)]))}catch{}}function Me(e,t=S()){if(!e)return;let n=x(t);n[e]&&(delete n[e],D(n,t));let r=Y(t);r.includes(e)||Q([...r,e],t)}var j=6e4;function Ae(e,t,n=Date.now(),r=j){let i=[];for(let[o,a]of Object.entries(e))!a||a.fromCentral!==!0||t(o)||n-a.markedAt<r||i.push(o);return i}function Z(e,t=S()){if(!e||!t)return!1;try{let n=x(t),r=n[e];return!r||r.fromCentral!==!0?!1:(delete n[e],D(n,t),!0)}catch{return!1}}var v="http://dev.rsudkotajambi.id/rs",Oe="ext-farmasi-app-base";var Kt=["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"],Bt=".rsudkotajambi.id";var Ut=["dev.rsudkotajambi.id","103.147.236.138","localhost","127.0.0.1"],Pe="Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";function H(e){try{let t=new URL(e??te());if(t.protocol==="https:")return null;let n=t.hostname.toLowerCase();return Ut.includes(n)?null:Pe}catch{return Pe}}function Le(e){try{let t=new URL(e);if(t.protocol!=="http:"&&t.protocol!=="https:")return!1;let n=t.hostname.toLowerCase();return Kt.includes(n)?!0:n.endsWith(Bt)}catch{return!1}}function te(){try{let e=localStorage.getItem(Oe);if(e&&Le(e))return e.replace(/\/+$/,"")}catch{}return v}function Ft(){try{let e=localStorage.getItem(Oe);if(e&&Le(e)){let t=e.replace(/\/+$/,"");return t===v?null:t}}catch{}return null}function Vt(){return ee?v:te()}var ee=!1;async function Nt(e,t=fetch,n=8e3){if(H(e))return!1;try{let r=new AbortController,i=globalThis.setTimeout(()=>r.abort(),n);try{let o=await t(e+"/api/casemix/pre-op/list?ids=",{cache:"no-store",credentials:"omit",headers:{Accept:"application/json"},signal:r.signal});return o.ok?(await o.json())?.ok===!0:!1}finally{globalThis.clearTimeout(i)}}catch{return!1}}async function k(e,t,n=fetch){let r=Vt(),i=H(r);if(i)return console.warn("[casemixApi]",i,"\u2014 request dilewati:",e),null;let o;try{o=await Ie(r+e,t,n)}catch{o=null}if(o&&o.ok||!(!o||o.status===404))return o;let s=Ft();if(!s||ee||H(v)||!await Nt(v,n))return o??null;ee=!0,console.warn("[casemixApi] base override tak terjangkau, pakai fallback sesi ini:",s);try{let{signal:l,...c}=t;return await Ie(v+e,c,n)}catch{return null}}function ne(e){return[...new Set(e.map(t=>String(t).trim()).filter(Boolean))].slice(0,500)}async function Ie(e,t,n=fetch){let r=new AbortController,i=globalThis.setTimeout(()=>r.abort(),25e3);try{return await n(e,{...t,signal:r.signal})}finally{globalThis.clearTimeout(i)}}async function K(e,t=fetch){try{let n=await k(e,{cache:"no-store",credentials:"omit",headers:{Accept:"application/json"}},t);return!n||!n.ok?null:await n.json()}catch{return null}}function De(e,t,n=fetch){let r=new AbortController,i=globalThis.setTimeout(()=>r.abort(),25e3);return k(e,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(t),keepalive:!0,credentials:"omit",signal:r.signal},n).then(()=>{}).catch(()=>{}).finally(()=>globalThis.clearTimeout(i))}function $e(e,t,n={},r=fetch){return e?De("/api/casemix/pre-op/toggle",{id_visit:e,marked:t,norm:n.norm??null,nama:n.nama??null,no_reg:n.noReg??null,user:n.user??null,visit_datetime:n.visitDatetime??null,poli:n.poli??null},r):Promise.resolve()}async function re(e,t=fetch){let n=ne(e);if(!n.length)return{};let r=await K("/api/casemix/pre-op/list?ids="+encodeURIComponent(n.join(",")),t);return r===null?null:!r.ok||!r.marks?{}:r.marks}async function je(e=30,t=fetch){let n=new Date,r=new Date(n.getTime()-Math.max(1,e)*24*60*60*1e3),i=s=>`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,"0")}-${String(s.getDate()).padStart(2,"0")}`,o=await K("/api/casemix/pre-op/export?tanggalAwal="+encodeURIComponent(i(r))+"&tanggalAkhir="+encodeURIComponent(i(n)),t);if(o===null)return null;if(!o.ok||!Array.isArray(o.data))return{};let a={};for(let s of o.data){let l=String(s?.id_visit??"").trim();l&&(a[l]=s)}return a}function Ke(){try{if(typeof window<"u"&&window.localStorage)return window.localStorage}catch{}return null}var Be="ext_rv_history_",qt=Be;var Ue="ext_migrated_rv_",zt=50;function Fe(e,t){return`${Be}${t==="ranap"?"ri":"rj"}_${e||"unknown"}`}function He(e,t){if(!e)return null;try{let n=e.getItem(t);return n?JSON.parse(n):null}catch{return null}}function Jt(e,t,n){if(e)try{e.setItem(t,JSON.stringify(n))}catch{}}function Ve(e,t,n=Ke()){let r=He(n,Fe(e,t)),i=Array.isArray(r)?r:[];if(t==="ranap"){let o=He(n,qt+e);if(Array.isArray(o)&&o.length>0&&i.length===0){let a=o.map(s=>({...s,tipe:"ranap"}));return Gt(a,e,"ranap",n),a}}return i}function Gt(e,t,n,r=Ke()){Jt(r,Fe(t,n),e.slice(-zt))}function P(){try{let e=document.getElementById("userpanel");if(e){let o="",a="";if(e.querySelectorAll(".subgroup").forEach(c=>{let f=(c.querySelector(".subtitle")?.textContent||"").trim().toLowerCase(),d=(c.querySelector(".subcontent")?.textContent||"").trim();f==="username"&&d&&(o=d),f==="role"&&d&&(a=d)}),o)return`${o}${a?` (${a})`:""}`;let l=(e.querySelector("a")?.textContent||"").trim();if(l&&l!=="Petugas Rumah Sakit")return l}let n=(document.querySelector("#petugas, .petugas, .username, #username, .user-name")?.textContent||"").trim();if(n)return n.slice(0,80);let r=document.querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')?.value?.trim();if(r)return r.slice(0,80);let i=document.querySelector('input[name="id_user"], #id_user')?.value?.trim();if(i)return`User #${i}`}catch{}return"petugas"}var Je="ext_migrated_preop_ids",Ne=Ue,oe=20;function Ge(e,t){if(!e)return null;try{let n=e.getItem(t);return n?JSON.parse(n):null}catch{return null}}function Xe(e,t,n){if(e)try{e.setItem(t,JSON.stringify(n))}catch{}}function ae(){try{if(typeof window<"u"&&window.localStorage)return window.localStorage}catch{}return null}async function ie(e,t,n=fetch){try{let r=await k(e,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(t),credentials:"omit"},n);return!!r&&r.ok}catch{return!1}}function Xt(e,t){let n=new Set(t);return Object.keys(e).filter(r=>!n.has(r)&&e[r]&&e[r].fromCentral!==!0).slice(0,oe)}function We(e,t){let n=new Set(t),r=0;for(let i of Object.keys(e))!n.has(i)&&e[i]&&e[i].fromCentral!==!0&&r++;return r}function B(e=ae()){let t=Ge(e,Je);return Array.isArray(t)?t.filter(n=>typeof n=="string"):[]}function se(e=ae(),t){Xe(e,Je,[...new Set(t)])}function Wt(e,t){return e.filter(n=>n.at>t).slice(0,oe)}function Yt(e){let t=[];if(!e)return t;try{let n=[],r=e;if(typeof r.length=="number"&&r.key)for(let i=0;i<r.length;i++){let o=r.key(i);o&&n.push(o)}for(let i of n){let o=i.match(/^ext_rv_history_(ri|rj)_(.+)$/);if(o){t.push({key:i,idVisit:o[2],tipe:o[1]==="ri"?"ranap":"rajal"});continue}o=i.match(/^ext_rv_history_(.+)$/),o&&!o[1].startsWith("ri_")&&!o[1].startsWith("rj_")&&t.push({key:i,idVisit:o[1],tipe:"ranap"})}}catch{}return t}async function Qt(e=ae(),t=fetch,n){let r={preopUploaded:0,resumeUploaded:0,offline:!1};if(!e)return r;try{let i=x(e),o=B(e),a=Xt(i,o),s=new Map;if(a.length>0&&n)try{let l=await n(a)??[];s=new Map(l.filter(c=>c?.idVisit).map(c=>[c.idVisit,c.info??{}]))}catch{}for(let l of a){if(!i[l])continue;let f=s.get(l);if(!await ie("/api/casemix/pre-op/toggle",{id_visit:l,marked:!0,norm:f?.norm??null,nama:f?.nama??null,no_reg:f?.noReg??null,visit_datetime:f?.visitDatetime??null,poli:f?.poli??null,user:f?.user??null},t)){r.offline=!0;break}o.push(l),r.preopUploaded++}try{let l=new Set(Object.keys(i)),c=Y(e),f=[],d=new Set;for(let p of c){if(l.has(p))continue;if(r.offline){f.push(p);continue}await ie("/api/casemix/pre-op/toggle",{id_visit:p,marked:!1},t)?(d.add(p),r.preopUploaded++):(r.offline=!0,f.push(p))}c.length>0&&Q(f,e);let h=new Set(f),b=o.filter(p=>l.has(p)||h.has(p));(b.length!==o.length||r.preopUploaded>0||d.size>0)&&se(e,b)}catch{}}catch{r.offline=!0}try{for(let{key:i,idVisit:o,tipe:a}of Yt(e)){if(!o||o==="unknown")continue;if(r.resumeUploaded>=oe)break;let s=Ge(e,Ne+i)??0,l=Ve(o,a,e),c=Wt(l,s),f=s;for(let d of c){if(!await ie("/api/reports/resume-history",{client_id:d.client_id??null,id_visit:o,id_resume:d.id_resume,aksi:d.aksi,tipe:d.tipe??a,waktu:new Date(d.at).toISOString(),user:d.user,before:d.before,after:d.after,changed:d.changed},t)){r.offline=!0;break}f=Math.max(f,d.at),r.resumeUploaded++}if(f>s&&Xe(e,Ne+i,f),r.offline)break}}catch{r.offline=!0}try{(r.preopUploaded||r.resumeUploaded)&&window.console.debug(`[casemixBackfill] diunggah: ${r.preopUploaded} pre-op, ${r.resumeUploaded} resume`)}catch{}return r}var qe=null,ze;function Ye(e){if(e&&(ze=e),qe!==null)return;let t=()=>{try{if(document.hidden)return}catch{}Qt(void 0,void 0,ze).catch(()=>{})};window.setTimeout(t,5e3),qe=window.setInterval(t,3e4)}function C(e){return!!e&&(e.norm!==void 0||e.nama!==void 0||e.noReg!==void 0)}function Zt(e){if(!e)return;let t=o=>{let a=String(o??"").trim();return a===""?void 0:a},n=t(e.norm),r=t(e.nama),i=t(e.noReg);if(n===void 0&&i!==void 0&&/^\d{6,10}$/.test(i)&&(n=i,i=void 0),!(n===void 0&&r===void 0&&i===void 0))return{norm:n,nama:r,noReg:i}}function en(e,t){let n=Zt(t),r={norm:e?.norm??n?.norm,nama:e?.nama??n?.nama,noReg:e?.noReg??n?.noReg,visitDatetime:e?.visitDatetime,poli:e?.poli};return C(r)?r:void 0}async function U(e,t){let n=t.now??Date.now(),r=new Map;for(let u of e)u.idVisit&&!r.has(u.idVisit)&&r.set(u.idVisit,u.info??{});let i=t.loadLocal(),o=t.readUnmarks(),a=0,s=0,l=0,c=!1,f=0;try{let u=new Set(t.readMigrated?.()??[]);for(let y of Object.keys(i))u.has(y)||f++}catch{f=Object.keys(i).length}let d={},h=[...new Set([...Object.keys(i),...r.keys()])];if(h.length>0)try{let u=await t.fetchMarks(h);u.ok?d=u.marks??{}:c=!0}catch{c=!0}try{let u=await t.fetchRecent();u.ok?d={...u.marks??{},...d}:c=!0}catch{c=!0}let b=u=>c&&!(u in d)?null:u in d,p=u=>A(u in i,b(u),o[u],n);if(t.resolveIdentity){let u=new Set,y=m=>{let g=d[m];return!!(g&&g.norm&&g.nama&&g.no_reg&&g.visit_datetime&&g.poli)};for(let m of new Set([...Object.keys(i),...Object.keys(d)]))C(r.get(m))||y(m)||p(m)&&u.add(m);if(u.size>0)try{let m=await t.resolveIdentity([...u].slice(0,500));for(let g of m??[])g?.idVisit&&C(g.info)&&!C(r.get(g.idVisit))&&r.set(g.idVisit,g.info)}catch{}}let R=[];for(let u of Object.keys(i))if(i[u]?.fromCentral!==!0)try{await t.postToggle(u,!0,en(r.get(u),i[u]))?(a++,R.push(u)):c=!0}catch{c=!0}if(R.length>0)try{t.markMigrated?.(R)}catch{}for(let[u,y]of r)if(!(u in i&&i[u]?.fromCentral!==!0&&C(y))&&p(u)&&C(y))try{await t.postToggle(u,!0,y)?s++:c=!0}catch{c=!0}for(let u of Object.keys(d))if(!(u in i)&&A(!1,!0,o[u],n))try{t.saveMark(u),l++}catch{}if(!c&&h.length<=400&&t.forgetMark){for(let[u,y]of Object.entries(i))if(!(!y||y.fromCentral!==!0)&&!(h.includes(u)&&d[u])&&h.includes(u)&&!(n-y.markedAt<j))try{t.forgetMark(u)}catch{}}return{pushed:a,enriched:s,pulled:l,pending:f,offline:c}}var Qe="morbis_telaah_markers";var Ze="ext_migrated_telaah_ids",tn=720*60*60*1e3;var nn={};function et(){return{...nn}}function E(){try{if(typeof window<"u"&&window.localStorage)return window.localStorage}catch{}return null}function tt(e,t){if(!e)return null;try{let n=e.getItem(t);return n?JSON.parse(n):null}catch{return null}}function rn(e,t,n){if(e)try{e.setItem(t,JSON.stringify(n))}catch{}}function on(e,t=Date.now()){let n={},r=0;for(let[i,o]of Object.entries(e))o&&o.markedAt&&t-o.markedAt<=tn?n[i]=o:r++;return{purged:n,count:r}}function _(e=E(),t=Date.now()){if(!e)return{};try{let n=tt(e,Qe);if(typeof n!="object"||n===null)return{};let{purged:r,count:i}=on(n,t);return i>0&&le(r,e),r}catch{return{}}}function an(e){if(!e||typeof e!="object")return{idVisit:"",markedAt:0};let t={idVisit:e.idVisit,markedAt:e.markedAt};return e.fromCentral===!0&&(t.fromCentral=!0),t}function le(e,t=E()){if(t)try{let n={};for(let[r,i]of Object.entries(e))!i||typeof i!="object"||!i.idVisit||(n[r]=an(i));t.setItem(Qe,JSON.stringify(n))}catch{}}function nt(e,t=E(),n=Date.now(),r=!1){if(!e)return;let i=_(t,n);i[e]=r?{idVisit:e,markedAt:n,fromCentral:!0}:{idVisit:e,markedAt:n},le(i,t)}function rt(e,t){let n=new Set(t),r=0;for(let i of Object.keys(e))!n.has(i)&&e[i]&&e[i].fromCentral!==!0&&r++;return r}function I(e=E()){let t=tt(e,Ze);return Array.isArray(t)?t.filter(n=>typeof n=="string"):[]}function it(e=E(),t){rn(e,Ze,[...new Set(t)])}function ot(e,t=E()){if(!e||!t)return!1;try{let n=_(t),r=n[e];return!r||r.fromCentral!==!0?!1:(delete n[e],le(n,t),!0)}catch{return!1}}function at(e){return{norm:e?.norm,nama:e?.nama,noReg:e?.noReg,user:e?.user,visitDatetime:e?.visitDatetime,poli:e?.poli}}async function st(e,t){return K(e,t)}async function lt(e,t=fetch){let n=ne(e);if(!n.length)return{};let r=await st("/api/casemix/telaah-berkas/list?ids="+encodeURIComponent(n.join(",")),t);return r===null?null:!r.ok||!r.marks?{}:r.marks}async function ct(e=30,t=fetch){let n=new Date,r=new Date(n.getTime()-Math.max(1,e)*24*60*60*1e3),i=s=>`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,"0")}-${String(s.getDate()).padStart(2,"0")}`,o=await st("/api/casemix/telaah-berkas/export?tanggalAwal="+encodeURIComponent(i(r))+"&tanggalAkhir="+encodeURIComponent(i(n)),t);if(o===null)return null;if(!o.ok||!Array.isArray(o.data))return{};let a={};for(let s of o.data){let l=String(s?.id_visit??"").trim();l&&(a[l]=s)}return a}function sn(){try{if(typeof window<"u"&&window.localStorage)return window.localStorage}catch{}return null}async function ut(e){let t=e.store??sn(),n=e.fetcher??fetch,r=(()=>{try{return e.getUser()}catch{return}})();return U(e.rows,{loadLocal:()=>_(t,e.now),readUnmarks:e.readUnmarks,readMigrated:()=>{try{return I(t)}catch{return[]}},markMigrated:i=>{try{it(t,[...I(t),...i])}catch{}},postToggle:async(i,o,a)=>{try{let s={...at(a),user:r??a?.user},l=await k("/api/casemix/telaah-berkas/toggle",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({id_visit:i,marked:o,norm:s.norm??null,nama:s.nama??null,no_reg:s.noReg??null,visit_datetime:s.visitDatetime??null,poli:s.poli??null,user:s.user??null}),credentials:"omit"},n);return!!l&&l.ok}catch{return!1}},fetchMarks:async i=>{let o=await lt(i,n);return o===null?{ok:!1,marks:{}}:{ok:!0,marks:o}},fetchRecent:async()=>{let i=await ct(30,n);return i===null?{ok:!1,marks:{}}:{ok:!0,marks:i}},saveMark:i=>{try{nt(i,t,e.now??Date.now(),!0)}catch{}},forgetMark:i=>{try{ot(i,t)}catch{}},resolveIdentity:e.resolveIdentity,now:e.now})}var ln="/v2/m-klaim/data-tabel/data";function dt(e){let t=String(e.getDate()).padStart(2,"0"),n=String(e.getMonth()+1).padStart(2,"0");return`${t}-${n}-${e.getFullYear()}`}function cn(e,t,n,r="kunjungan"){return new URLSearchParams({tanggalAwal:dt(e),tanggalAkhir:dt(t),filter_tanggal:r,norm:"",nama:"",reg:"",billing:"all",status:"all",id_poli_cari:"",jenis_pasien:"all",jenis:n})}function ce(e){if(!e||e===""||e==="-")return;let t=/^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(e);if(t){let n=`${t[3]}-${t[2]}-${t[1]}`;return t[4]?`${n} ${t[4]}:${t[5]}:${t[6]}`:`${n} 00:00:00`}return t=/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(e),t?e.replace("T"," "):e}function pt(e){return String(e??"").replace(/<[^>]*>/g," ").replace(/&nbsp;/gi," ").replace(/&/gi,"&").replace(/</gi,"<").replace(/>/gi,">").replace(/"/gi,'"').replace(/&#0?39;/g,"'").replace(/\s+/g," ").trim()}function un(e){for(let t=e.length-1;t>=0;t--){let n=e[t]??"",r=n.match(/detail\(\s*['"]?(\d+)/)||n.match(/id_visit=(\d+)/);if(r)return r[1]}return null}function ft(e){return!!e&&(e.norm!==void 0||e.nama!==void 0||e.noReg!==void 0||e.visitDatetime!==void 0||e.poli!==void 0)}function dn(e){let t=(...r)=>{for(let i of Object.keys(e))if(r.includes(i.toLowerCase())){let o=pt(e[i]);if(o!==""&&o!=="-")return o}};return{id:t("id_visit","idvisit")??null,info:{norm:t("norm","no_rm","norm_pasien","id_pasien"),nama:t("nama","nama_pasien","pasien"),noReg:t("no_reg","noreg","no_registrasi","reg","registrasi"),visitDatetime:ce(t("tanggal_kunjungan","tgl_kunjungan","visit_datetime","visit_date")),poli:t("poli","unit","unit_kerja","ruangan","ruang","bangsal")}}}function fn(e,t,n){let r=Array.isArray(e)?e:Array.isArray(e?.data)?e.data:Array.isArray(e?.aaData)?e.aaData:[],i=[];for(let o of r)if(Array.isArray(o)){let a=o.map(c=>String(c??"")),s=un(a);if(!s)continue;let l=n(t,a.map(pt));ft(l)&&i.push({idVisit:s,info:l})}else if(o&&typeof o=="object"){let{id:a,info:s}=dn(o);a&&ft(s)&&i.push({idVisit:a,info:s})}return i}async function mt(e,t){let n=new Set(e.map(b=>String(b).trim()).filter(Boolean)),r=new Map;if(n.size===0)return[];let i=t.fetcher??fetch,o=t.now??new Date,a=Math.max(1,t.windowDays??31),s=Math.max(1,t.maxWindows??9),l=t.delayMs??300,c=t.sleep??(b=>new Promise(p=>setTimeout(p,b))),f=s*2,d=0,h=0;e:for(let b=0;b<s;b++){let p=new Date(o.getTime()-b*a*864e5),R=new Date(p.getTime()-(a-1)*864e5);for(let u of["n","y"]){if(r.size>=n.size)break e;d++;try{let y=cn(R,p,u).toString(),m=await i(`${ln}?${y}`,{method:"GET",cache:"no-store",credentials:"same-origin",headers:{Accept:"application/json","X-Requested-With":"XMLHttpRequest"}});if(!m||!m.ok)throw new Error("HTTP "+(m?.status??"?"));let g=await m.json();for(let L of fn(g,t.headers,t.pick))n.has(L.idVisit)&&!r.has(L.idVisit)&&r.set(L.idVisit,L);h=0}catch{if(h++,h>=3)break e}t.onProgress?.({request:d,total:f,found:r.size,need:n.size}),r.size<n.size&&await c(l)}}return[...r.values()]}function gt(e,t=8e3){try{let n=window.requestIdleCallback;if(typeof n=="function"){n.call(window,e,{timeout:t});return}}catch{}window.setTimeout(e,Math.min(t,1500))}var ue="extUsageLog";async function de(e,t,n,r){try{let{[ue]:i}=await chrome.storage.local.get(ue),o=Date.now(),a={ts:o,feature:e,event:t,ok:n,detail:r instanceof Error?`${r.name}: ${r.message}`:r!==void 0?String(r):void 0,url:typeof location<"u"?location.href:void 0},l=(i??[]).filter(c=>o-c.ts<6048e5).concat(a).slice(-2e3);await chrome.storage.local.set({[ue]:l})}catch{}}var yt=Te();W("ext-preop-styles",`@media print { .ext-preop-btn, .ext-preop-badge { display: none !important; } }
+`
+  );
+
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
+  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
+  function resolvePreOpMarked(localHas, centralHas, unmarkedAt, now = Date.now(), tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS) {
+    if (localHas) return true;
+    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
+    if (centralHas === null) return false;
+    return centralHas;
+  }
+  function defaultStore() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const raw = store.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== "object" || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store);
+      }
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function minimalPreOpItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
+  }
+  function savePreOpMap(map, store = defaultStore()) {
+    if (!store) return;
+    try {
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalPreOpItem(item);
+      }
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setPreOp(idVisit, _info = {}, store = defaultStore(), now = Date.now(), fromCentral = false) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store, now);
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
+    savePreOpMap(map, store);
+  }
+  function loadUnmarkQueue(store = defaultStore()) {
+    if (!store) return [];
+    try {
+      const raw = store.getItem(PRE_OP_UNMARK_QUEUE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveUnmarkQueue(ids, store = defaultStore()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
+    } catch {
+    }
+  }
+  function removePreOp(idVisit, store = defaultStore()) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store);
+    if (map[idVisit]) {
+      delete map[idVisit];
+      savePreOpMap(map, store);
+    }
+    const q = loadUnmarkQueue(store);
+    if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store);
+  }
+  var RECONCILE_GRACE_MS = 6e4;
+  function collectStaleCentralMarks(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
+    const out = [];
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || item.fromCentral !== true) continue;
+      if (centralHas(id)) continue;
+      if (now - item.markedAt < graceMs) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function forgetCentralMark(idVisit, store = defaultStore()) {
+    if (!idVisit || !store) return false;
+    try {
+      const map = loadPreOpMap(store);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      savePreOpMap(map, store);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = "http://dev.rsudkotajambi.id/rs";
+  var BASE_OVERRIDE_KEY = "ext-farmasi-app-base";
+  var BATCH_MAX = 500;
+  var CENTRAL_TIMEOUT_MS = 25e3;
+  var CASEMIX_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var CASEMIX_ALLOWED_SUFFIX = ".rsudkotajambi.id";
+  var CASEMIX_HTTPS_REQUIRED = true;
+  var CASEMIX_HTTP_ALLOWED_HOSTS = [
+    "dev.rsudkotajambi.id",
+    "103.147.236.138",
+    "localhost",
+    "127.0.0.1"
+  ];
+  var CASEMIX_HTTPS_LOCK_REASON = "Fitur nonaktif: server Reports menggunakan HTTP (belum mendukung HTTPS)";
+  function casemixTransportBlockReason(baseUrl) {
+    if (!CASEMIX_HTTPS_REQUIRED) return null;
+    try {
+      const u = new URL(baseUrl ?? resolveCasemixBase());
+      if (u.protocol === "https:") return null;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_HTTP_ALLOWED_HOSTS.includes(h)) return null;
+      return CASEMIX_HTTPS_LOCK_REASON;
+    } catch {
+      return CASEMIX_HTTPS_LOCK_REASON;
+    }
+  }
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, "");
+    } catch {
+    }
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function readOverrideBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) {
+        const b = ov.replace(/\/+$/, "");
+        return b === CASEMIX_BASE_FALLBACK ? null : b;
+      }
+    } catch {
+    }
+    return null;
+  }
+  function effectiveCasemixBase() {
+    if (pinnedFallbackBase) return CASEMIX_BASE_FALLBACK;
+    return resolveCasemixBase();
+  }
+  var pinnedFallbackBase = false;
+  async function isCasemixBaseAlive(base, fetcher = fetch, timeoutMs = 8e3) {
+    if (casemixTransportBlockReason(base)) return false;
+    try {
+      const ctrl = new AbortController();
+      const t = globalThis.setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const res = await fetcher(base + "/api/casemix/pre-op/list?ids=", {
+          cache: "no-store",
+          credentials: "omit",
+          headers: { Accept: "application/json" },
+          signal: ctrl.signal
+        });
+        if (!res.ok) return false;
+        const j = await res.json();
+        return j?.ok === true;
+      } finally {
+        globalThis.clearTimeout(t);
+      }
+    } catch {
+      return false;
+    }
+  }
+  async function requestCentral(path, init, fetcher = fetch) {
+    const first = effectiveCasemixBase();
+    const locked = casemixTransportBlockReason(first);
+    if (locked) {
+      console.warn("[casemixApi]", locked, "\u2014 request dilewati:", path);
+      return null;
+    }
+    let res;
+    try {
+      res = await fetchTimeout(first + path, init, fetcher);
+    } catch {
+      res = null;
+    }
+    if (res && res.ok) return res;
+    const looksBroken = !res || res.status === 404;
+    if (!looksBroken) return res;
+    const ov = readOverrideBase();
+    if (!ov || pinnedFallbackBase) return res ?? null;
+    if (casemixTransportBlockReason(CASEMIX_BASE_FALLBACK)) return res ?? null;
+    if (!await isCasemixBaseAlive(CASEMIX_BASE_FALLBACK, fetcher)) return res ?? null;
+    pinnedFallbackBase = true;
+    console.warn("[casemixApi] base override tak terjangkau, pakai fallback sesi ini:", ov);
+    try {
+      const { signal: _dropped, ...retryInit } = init;
+      void _dropped;
+      return await fetchTimeout(CASEMIX_BASE_FALLBACK + path, retryInit, fetcher);
+    } catch {
+      return null;
+    }
+  }
+  function normalizeIds(ids) {
+    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  }
+  async function fetchTimeout(url, init, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await requestCentral(
+        path,
+        { cache: "no-store", credentials: "omit", headers: { Accept: "application/json" } },
+        fetcher
+      );
+      if (!res || !res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  function postFireForget(path, payload, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    return requestCentral(
+      path,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: "omit",
+        signal: ctrl.signal
+      },
+      fetcher
+    ).then(() => {
+    }).catch(() => {
+    }).finally(() => globalThis.clearTimeout(t));
+  }
+  function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
+    if (!idVisit) return Promise.resolve();
+    return postFireForget(
+      "/api/casemix/pre-op/toggle",
+      {
+        id_visit: idVisit,
+        marked,
+        // Identitas pasien SELALU dikirim bila diketahui (norm/nama/no_reg/
+        // visit_datetime/poli): halaman laporan Reports menampilkannya
+        // sebagai kolom, dan server hanya menimpa field yang non-null —
+        // kiriman sebagian/gagal TIDAK menghapus data baik yang sudah ada.
+        norm: info.norm ?? null,
+        nama: info.nama ?? null,
+        no_reg: info.noReg ?? null,
+        user: info.user ?? null,
+        visit_datetime: info.visitDatetime ?? null,
+        poli: info.poli ?? null
+      },
+      fetcher
+    );
+  }
+  async function fetchPreOpBatch(ids, fetcher = fetch) {
+    const list = normalizeIds(ids);
+    if (!list.length) return {};
+    const j = await getJson(
+      "/api/casemix/pre-op/list?ids=" + encodeURIComponent(list.join(",")),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !j.marks) return {};
+    return j.marks;
+  }
+  async function fetchPreOpRecent(daysBack = 30, fetcher = fetch) {
+    const end = /* @__PURE__ */ new Date();
+    const start = new Date(end.getTime() - Math.max(1, daysBack) * 24 * 60 * 60 * 1e3);
+    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const j = await getJson(
+      "/api/casemix/pre-op/export?tanggalAwal=" + encodeURIComponent(fmt(start)) + "&tanggalAkhir=" + encodeURIComponent(fmt(end)),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !Array.isArray(j.data)) return {};
+    const out = {};
+    for (const r of j.data) {
+      const id = String(r?.id_visit ?? "").trim();
+      if (id) out[id] = r;
+    }
+    return out;
+  }
+
+  // src/features/shared/resumeHistory.ts
+  function defaultStore2() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  var HIST_PREFIX = "ext_rv_history_";
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var RV_MIGRATED_PREFIX = "ext_migrated_rv_";
+  var MAX_ENTRIES = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === "ranap" ? "ri" : "rj"}_${idVisit || "unknown"}`;
+  }
+  function readJson(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {
+    }
+  }
+  function loadHistory(idVisit, tipe, store = defaultStore2()) {
+    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr) ? arr : [];
+    if (tipe === "ranap") {
+      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
+        const migrated = legacy.map((e) => ({ ...e, tipe: "ranap" }));
+        saveHistory(migrated, idVisit, "ranap", store);
+        return migrated;
+      }
+    }
+    return list;
+  }
+  function saveHistory(list, idVisit, tipe, store = defaultStore2()) {
+    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  }
+  function readPetugas() {
+    try {
+      const panel = document.getElementById("userpanel");
+      if (panel) {
+        let username = "";
+        let role = "";
+        panel.querySelectorAll(".subgroup").forEach((sg) => {
+          const title = (sg.querySelector(".subtitle")?.textContent || "").trim().toLowerCase();
+          const content = (sg.querySelector(".subcontent")?.textContent || "").trim();
+          if (title === "username" && content) username = content;
+          if (title === "role" && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ""}`;
+        const a = panel.querySelector("a");
+        const t2 = (a?.textContent || "").trim();
+        if (t2 && t2 !== "Petugas Rumah Sakit") return t2;
+      }
+      const el = document.querySelector("#petugas, .petugas, .username, #username, .user-name");
+      const t = (el?.textContent || "").trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document.querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')?.value?.trim();
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
+    } catch {
+    }
+    return "petugas";
+  }
+
+  // src/features/shared/casemixBackfill.ts
+  var MIGRATED_PREOP_KEY = "ext_migrated_preop_ids";
+  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
+  var BACKFILL_BATCH = 20;
+  function readJson2(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson2(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {
+    }
+  }
+  function defaultStore3() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  async function postCentral(path, payload, fetcher = fetch) {
+    try {
+      const res = await requestCentral(
+        path,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(payload),
+          credentials: "omit"
+        },
+        fetcher
+      );
+      return !!res && res.ok;
+    } catch {
+      return false;
+    }
+  }
+  function collectPreOpPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    return Object.keys(map).filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true).slice(0, BACKFILL_BATCH);
+  }
+  function countPreOpPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    let n = 0;
+    for (const id of Object.keys(map)) {
+      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
+    }
+    return n;
+  }
+  function loadMigratedIds(store = defaultStore3()) {
+    const raw = readJson2(store, MIGRATED_PREOP_KEY);
+    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
+  }
+  function saveMigratedIds(store = defaultStore3(), ids) {
+    writeJson2(store, MIGRATED_PREOP_KEY, [...new Set(ids)]);
+  }
+  function collectResumePending(list, sinceAt) {
+    return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
+  }
+  function discoverResumeKeys(store) {
+    const out = [];
+    if (!store) return out;
+    try {
+      const keys = [];
+      const ls = store;
+      if (typeof ls.length === "number" && ls.key) {
+        for (let i = 0; i < ls.length; i++) {
+          const k = ls.key(i);
+          if (k) keys.push(k);
+        }
+      }
+      for (const k of keys) {
+        let m = k.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+        if (m) {
+          out.push({ key: k, idVisit: m[2], tipe: m[1] === "ri" ? "ranap" : "rajal" });
+          continue;
+        }
+        m = k.match(/^ext_rv_history_(.+)$/);
+        if (m && !m[1].startsWith("ri_") && !m[1].startsWith("rj_")) {
+          out.push({ key: k, idVisit: m[1], tipe: "ranap" });
+        }
+      }
+    } catch {
+    }
+    return out;
+  }
+  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch, resolveIdentity) {
+    const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
+    if (!store) return res;
+    try {
+      const map = loadPreOpMap(store);
+      const migrated = loadMigratedIds(store);
+      const pending = collectPreOpPending(map, migrated);
+      let ident = /* @__PURE__ */ new Map();
+      if (pending.length > 0 && resolveIdentity) {
+        try {
+          const rows = await resolveIdentity(pending) ?? [];
+          ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
+        } catch {
+        }
+      }
+      for (const id of pending) {
+        const item = map[id];
+        if (!item) continue;
+        const info = ident.get(id);
+        const ok = await postCentral(
+          "/api/casemix/pre-op/toggle",
+          {
+            id_visit: id,
+            marked: true,
+            norm: info?.norm ?? null,
+            nama: info?.nama ?? null,
+            no_reg: info?.noReg ?? null,
+            visit_datetime: info?.visitDatetime ?? null,
+            poli: info?.poli ?? null,
+            user: info?.user ?? null
+          },
+          fetcher
+        );
+        if (!ok) {
+          res.offline = true;
+          break;
+        }
+        migrated.push(id);
+        res.preopUploaded++;
+      }
+      try {
+        const alive = new Set(Object.keys(map));
+        const queue = loadUnmarkQueue(store);
+        const stillQueued = [];
+        const sent = /* @__PURE__ */ new Set();
+        for (const id of queue) {
+          if (alive.has(id)) continue;
+          if (res.offline) {
+            stillQueued.push(id);
+            continue;
+          }
+          const ok = await postCentral(
+            "/api/casemix/pre-op/toggle",
+            { id_visit: id, marked: false },
+            fetcher
+          );
+          if (!ok) {
+            res.offline = true;
+            stillQueued.push(id);
+          } else {
+            sent.add(id);
+            res.preopUploaded++;
+          }
+        }
+        if (queue.length > 0) saveUnmarkQueue(stillQueued, store);
+        const keep = new Set(stillQueued);
+        const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
+        if (kept.length !== migrated.length || res.preopUploaded > 0 || sent.size > 0) {
+          saveMigratedIds(store, kept);
+        }
+      } catch {
+      }
+    } catch {
+      res.offline = true;
+    }
+    try {
+      for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
+        if (!idVisit || idVisit === "unknown") continue;
+        if (res.resumeUploaded >= BACKFILL_BATCH) break;
+        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
+        const list = loadHistory(idVisit, tipe, store);
+        const pending = collectResumePending(list, sinceAt);
+        let maxAt = sinceAt;
+        for (const e of pending) {
+          const ok = await postCentral(
+            "/api/reports/resume-history",
+            {
+              client_id: e.client_id ?? null,
+              id_visit: idVisit,
+              id_resume: e.id_resume,
+              aksi: e.aksi,
+              tipe: e.tipe ?? tipe,
+              waktu: new Date(e.at).toISOString(),
+              user: e.user,
+              before: e.before,
+              after: e.after,
+              changed: e.changed
+            },
+            fetcher
+          );
+          if (!ok) {
+            res.offline = true;
+            break;
+          }
+          maxAt = Math.max(maxAt, e.at);
+          res.resumeUploaded++;
+        }
+        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
+        if (res.offline) break;
+      }
+    } catch {
+      res.offline = true;
+    }
+    try {
+      if (res.preopUploaded || res.resumeUploaded) {
+        window.console.debug(
+          `[casemixBackfill] diunggah: ${res.preopUploaded} pre-op, ${res.resumeUploaded} resume`
+        );
+      }
+    } catch {
+    }
+    return res;
+  }
+  var _backfillTimer = null;
+  var _backfillResolver;
+  function initCasemixBackfill(resolver) {
+    if (resolver) _backfillResolver = resolver;
+    if (_backfillTimer !== null) return;
+    const tick = () => {
+      try {
+        if (document.hidden) return;
+      } catch {
+      }
+      void runCasemixBackfill(void 0, void 0, _backfillResolver).catch(() => {
+      });
+    };
+    window.setTimeout(tick, 5e3);
+    _backfillTimer = window.setInterval(tick, 3e4);
+  }
+
+  // src/features/shared/casemixSync.ts
+  function infoPresent(info) {
+    return !!info && (info.norm !== void 0 || info.nama !== void 0 || info.noReg !== void 0);
+  }
+  function repairLegacyInfo(stored) {
+    if (!stored) return void 0;
+    const clean = (v) => {
+      const t = String(v ?? "").trim();
+      return t === "" ? void 0 : t;
+    };
+    let norm = clean(stored.norm);
+    const nama = clean(stored.nama);
+    let noReg = clean(stored.noReg);
+    if (norm === void 0 && noReg !== void 0 && /^\d{6,10}$/.test(noReg)) {
+      norm = noReg;
+      noReg = void 0;
+    }
+    if (norm === void 0 && nama === void 0 && noReg === void 0) return void 0;
+    return { norm, nama, noReg };
+  }
+  function mergePushInfo(visibleInfo, storedItem) {
+    const legacy = repairLegacyInfo(storedItem);
+    const merged = {
+      norm: visibleInfo?.norm ?? legacy?.norm,
+      nama: visibleInfo?.nama ?? legacy?.nama,
+      noReg: visibleInfo?.noReg ?? legacy?.noReg,
+      visitDatetime: visibleInfo?.visitDatetime,
+      poli: visibleInfo?.poli
+    };
+    return infoPresent(merged) ? merged : void 0;
+  }
+  async function syncCasemixNow(rows, deps) {
+    const now = deps.now ?? Date.now();
+    const visible = /* @__PURE__ */ new Map();
+    for (const r of rows) {
+      if (r.idVisit && !visible.has(r.idVisit)) visible.set(r.idVisit, r.info ?? {});
+    }
+    const local = deps.loadLocal();
+    const unmarks = deps.readUnmarks();
+    let pushed = 0;
+    let enriched = 0;
+    let pulled = 0;
+    let offline = false;
+    let pending = 0;
+    try {
+      const done = new Set(deps.readMigrated?.() ?? []);
+      for (const id of Object.keys(local)) {
+        if (!done.has(id)) pending++;
+      }
+    } catch {
+      pending = Object.keys(local).length;
+    }
+    let central = {};
+    const ids = [.../* @__PURE__ */ new Set([...Object.keys(local), ...visible.keys()])];
+    if (ids.length > 0) {
+      try {
+        const res = await deps.fetchMarks(ids);
+        if (res.ok) {
+          central = res.marks ?? {};
+        } else {
+          offline = true;
+        }
+      } catch {
+        offline = true;
+      }
+    }
+    try {
+      const recent = await deps.fetchRecent();
+      if (recent.ok) {
+        central = { ...recent.marks ?? {}, ...central };
+      } else {
+        offline = true;
+      }
+    } catch {
+      offline = true;
+    }
+    const centralHas = (id) => offline && !(id in central) ? null : id in central;
+    const isMarked = (id) => resolvePreOpMarked(id in local, centralHas(id), unmarks[id], now);
+    if (deps.resolveIdentity) {
+      const need = /* @__PURE__ */ new Set();
+      const centralComplete = (id) => {
+        const m = central[id];
+        return !!(m && m.norm && m.nama && m.no_reg && m.visit_datetime && m.poli);
+      };
+      for (const id of /* @__PURE__ */ new Set([...Object.keys(local), ...Object.keys(central)])) {
+        if (infoPresent(visible.get(id))) continue;
+        if (centralComplete(id)) continue;
+        if (!isMarked(id)) continue;
+        need.add(id);
+      }
+      if (need.size > 0) {
+        try {
+          const extra = await deps.resolveIdentity([...need].slice(0, 500));
+          for (const r of extra ?? []) {
+            if (r?.idVisit && infoPresent(r.info) && !infoPresent(visible.get(r.idVisit))) {
+              visible.set(r.idVisit, r.info);
+            }
+          }
+        } catch {
+        }
+      }
+    }
+    const pushOk = [];
+    for (const id of Object.keys(local)) {
+      if (local[id]?.fromCentral === true) continue;
+      try {
+        if (await deps.postToggle(id, true, mergePushInfo(visible.get(id), local[id]))) {
+          pushed++;
+          pushOk.push(id);
+        } else {
+          offline = true;
+        }
+      } catch {
+        offline = true;
+      }
+    }
+    if (pushOk.length > 0) {
+      try {
+        deps.markMigrated?.(pushOk);
+      } catch {
+      }
+    }
+    for (const [id, info] of visible) {
+      const owned = id in local && local[id]?.fromCentral !== true;
+      if (owned && infoPresent(info)) continue;
+      if (!isMarked(id)) continue;
+      if (!infoPresent(info)) continue;
+      try {
+        if (await deps.postToggle(id, true, info)) {
+          enriched++;
+        } else {
+          offline = true;
+        }
+      } catch {
+        offline = true;
+      }
+    }
+    for (const id of Object.keys(central)) {
+      if (id in local) continue;
+      if (!resolvePreOpMarked(false, true, unmarks[id], now)) continue;
+      try {
+        deps.saveMark(id);
+        pulled++;
+      } catch {
+      }
+    }
+    if (!offline && ids.length <= 400 && deps.forgetMark) {
+      for (const [id, item] of Object.entries(local)) {
+        if (!item || item.fromCentral !== true) continue;
+        if (ids.includes(id) && central[id]) continue;
+        if (!ids.includes(id)) continue;
+        if (now - item.markedAt < RECONCILE_GRACE_MS) continue;
+        try {
+          deps.forgetMark(id);
+        } catch {
+        }
+      }
+    }
+    return { pushed, enriched, pulled, pending, offline };
+  }
+
+  // src/features/shared/telaahStorage.ts
+  var TELAAH_STORAGE_KEY = "morbis_telaah_markers";
+  var TELAAH_MIGRATED_KEY = "ext_migrated_telaah_ids";
+  var TELAAH_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var _telaahUnmarkAt = {};
+  function readTelaahUnmarks() {
+    return { ..._telaahUnmarkAt };
+  }
+  function defaultStore4() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  function readJson3(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson3(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {
+    }
+  }
+  function purgeExpiredTelaah(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= TELAAH_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadTelaahMap(store = defaultStore4(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const parsed = readJson3(store, TELAAH_STORAGE_KEY);
+      if (typeof parsed !== "object" || parsed === null) return {};
+      const { purged, count } = purgeExpiredTelaah(parsed, now);
+      if (count > 0) saveTelaahMap(purged, store);
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function minimalTelaahItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
+  }
+  function saveTelaahMap(map, store = defaultStore4()) {
+    if (!store) return;
+    try {
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalTelaahItem(item);
+      }
+      store.setItem(TELAAH_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setTelaah(idVisit, store = defaultStore4(), now = Date.now(), fromCentral = false) {
+    if (!idVisit) return;
+    const map = loadTelaahMap(store, now);
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
+    saveTelaahMap(map, store);
+  }
+  function countTelaahPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    let n = 0;
+    for (const id of Object.keys(map)) {
+      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
+    }
+    return n;
+  }
+  function loadTelaahMigratedIds(store = defaultStore4()) {
+    const raw = readJson3(store, TELAAH_MIGRATED_KEY);
+    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
+  }
+  function saveTelaahMigratedIds(store = defaultStore4(), ids) {
+    writeJson3(store, TELAAH_MIGRATED_KEY, [...new Set(ids)]);
+  }
+  function forgetTelaahCentral(idVisit, store = defaultStore4()) {
+    if (!idVisit || !store) return false;
+    try {
+      const map = loadTelaahMap(store);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      saveTelaahMap(map, store);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // src/features/shared/telaahApi.ts
+  function telaahInfoFromRow(info) {
+    return {
+      norm: info?.norm,
+      nama: info?.nama,
+      noReg: info?.noReg,
+      user: info?.user,
+      visitDatetime: info?.visitDatetime,
+      poli: info?.poli
+    };
+  }
+  async function getJsonTelaah(path, fetcher) {
+    return getJson(path, fetcher);
+  }
+  async function fetchTelaahBatch(ids, fetcher = fetch) {
+    const list = normalizeIds(ids);
+    if (!list.length) return {};
+    const j = await getJsonTelaah(
+      "/api/casemix/telaah-berkas/list?ids=" + encodeURIComponent(list.join(",")),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !j.marks) return {};
+    return j.marks;
+  }
+  async function fetchTelaahRecent(daysBack = 30, fetcher = fetch) {
+    const end = /* @__PURE__ */ new Date();
+    const start = new Date(end.getTime() - Math.max(1, daysBack) * 24 * 60 * 60 * 1e3);
+    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const j = await getJsonTelaah(
+      "/api/casemix/telaah-berkas/export?tanggalAwal=" + encodeURIComponent(fmt(start)) + "&tanggalAkhir=" + encodeURIComponent(fmt(end)),
+      fetcher
+    );
+    if (j === null) return null;
+    if (!j.ok || !Array.isArray(j.data)) return {};
+    const out = {};
+    for (const r of j.data) {
+      const id = String(r?.id_visit ?? "").trim();
+      if (id) out[id] = r;
+    }
+    return out;
+  }
+
+  // src/features/shared/telaahSyncDeps.ts
+  function defaultStore5() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage)
+        return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  async function runTelaahSync(input) {
+    const store = input.store ?? defaultStore5();
+    const fetcher = input.fetcher ?? fetch;
+    const user = (() => {
+      try {
+        return input.getUser();
+      } catch {
+        return void 0;
+      }
+    })();
+    return syncCasemixNow(input.rows, {
+      loadLocal: () => loadTelaahMap(store, input.now),
+      readUnmarks: input.readUnmarks,
+      readMigrated: () => {
+        try {
+          return loadTelaahMigratedIds(store);
+        } catch {
+          return [];
+        }
+      },
+      markMigrated: (ids) => {
+        try {
+          saveTelaahMigratedIds(store, [...loadTelaahMigratedIds(store), ...ids]);
+        } catch {
+        }
+      },
+      postToggle: async (id, marked, info) => {
+        try {
+          const full = { ...telaahInfoFromRow(info), user: user ?? info?.user };
+          const res = await requestCentral(
+            "/api/casemix/telaah-berkas/toggle",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                id_visit: id,
+                marked,
+                norm: full.norm ?? null,
+                nama: full.nama ?? null,
+                no_reg: full.noReg ?? null,
+                visit_datetime: full.visitDatetime ?? null,
+                poli: full.poli ?? null,
+                user: full.user ?? null
+              }),
+              credentials: "omit"
+            },
+            fetcher
+          );
+          return !!res && res.ok;
+        } catch {
+          return false;
+        }
+      },
+      fetchMarks: async (ids) => {
+        const marks = await fetchTelaahBatch(ids, fetcher);
+        return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+      },
+      fetchRecent: async () => {
+        const marks = await fetchTelaahRecent(30, fetcher);
+        return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+      },
+      saveMark: (id) => {
+        try {
+          setTelaah(id, store, input.now ?? Date.now(), true);
+        } catch {
+        }
+      },
+      forgetMark: (id) => {
+        try {
+          forgetTelaahCentral(id, store);
+        } catch {
+        }
+      },
+      resolveIdentity: input.resolveIdentity,
+      now: input.now
+    });
+  }
+
+  // src/features/shared/klaimIdentity.ts
+  var KLAIM_DATA_PATH = "/v2/m-klaim/data-tabel/data";
+  var DAY_MS = 24 * 60 * 60 * 1e3;
+  function formatDmy(d) {
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}-${mm}-${d.getFullYear()}`;
+  }
+  function buildKlaimDataQuery(start, end, jenis, filterTanggal = "kunjungan") {
+    return new URLSearchParams({
+      tanggalAwal: formatDmy(start),
+      tanggalAkhir: formatDmy(end),
+      filter_tanggal: filterTanggal,
+      norm: "",
+      nama: "",
+      reg: "",
+      billing: "all",
+      status: "all",
+      id_poli_cari: "",
+      jenis_pasien: "all",
+      jenis
+    });
+  }
+  function normalizeVisitDatetime(v) {
+    if (!v || v === "" || v === "-") return void 0;
+    let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
+    if (m) {
+      const iso = `${m[3]}-${m[2]}-${m[1]}`;
+      return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
+    }
+    m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
+    if (m) return v.replace("T", " ");
+    return v;
+  }
+  function stripHtml(s) {
+    return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
+  }
+  function extractIdVisitFromCells(cellsRaw) {
+    for (let i = cellsRaw.length - 1; i >= 0; i--) {
+      const c = cellsRaw[i] ?? "";
+      const m = c.match(/detail\(\s*['"]?(\d+)/) || c.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  function infoPresent2(i) {
+    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0 || i.visitDatetime !== void 0 || i.poli !== void 0);
+  }
+  function pickFromObject(o) {
+    const get = (...keys) => {
+      for (const k of Object.keys(o)) {
+        if (keys.includes(k.toLowerCase())) {
+          const t = stripHtml(o[k]);
+          if (t !== "" && t !== "-") return t;
+        }
+      }
+      return void 0;
+    };
+    const id = get("id_visit", "idvisit");
+    return {
+      id: id ?? null,
+      info: {
+        norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
+        nama: get("nama", "nama_pasien", "pasien"),
+        noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
+        visitDatetime: normalizeVisitDatetime(
+          get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
+        ),
+        poli: get("poli", "unit", "unit_kerja", "ruangan", "ruang", "bangsal")
+      }
+    };
+  }
+  function parseKlaimRows(json, headers, pick) {
+    const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : Array.isArray(json?.aaData) ? json.aaData : [];
+    const out = [];
+    for (const r of rows) {
+      if (Array.isArray(r)) {
+        const raw = r.map((c) => String(c ?? ""));
+        const id = extractIdVisitFromCells(raw);
+        if (!id) continue;
+        const info = pick(headers, raw.map(stripHtml));
+        if (infoPresent2(info)) out.push({ idVisit: id, info });
+      } else if (r && typeof r === "object") {
+        const { id, info } = pickFromObject(r);
+        if (id && infoPresent2(info)) out.push({ idVisit: id, info });
+      }
+    }
+    return out;
+  }
+  async function fetchKlaimIdentity(needIds, deps) {
+    const need = new Set(needIds.map((s) => String(s).trim()).filter(Boolean));
+    const found = /* @__PURE__ */ new Map();
+    if (need.size === 0) return [];
+    const fetcher = deps.fetcher ?? fetch;
+    const today = deps.now ?? /* @__PURE__ */ new Date();
+    const windowDays = Math.max(1, deps.windowDays ?? 31);
+    const maxWindows = Math.max(1, deps.maxWindows ?? 9);
+    const delayMs = deps.delayMs ?? 300;
+    const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+    const total = maxWindows * 2;
+    let request = 0;
+    let failStreak = 0;
+    outer: for (let w = 0; w < maxWindows; w++) {
+      const end = new Date(today.getTime() - w * windowDays * DAY_MS);
+      const start = new Date(end.getTime() - (windowDays - 1) * DAY_MS);
+      for (const jenis of ["n", "y"]) {
+        if (found.size >= need.size) break outer;
+        request++;
+        try {
+          const qs = buildKlaimDataQuery(start, end, jenis).toString();
+          const res = await fetcher(`${KLAIM_DATA_PATH}?${qs}`, {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
+          });
+          if (!res || !res.ok) throw new Error("HTTP " + (res?.status ?? "?"));
+          const json = await res.json();
+          for (const row of parseKlaimRows(json, deps.headers, deps.pick)) {
+            if (need.has(row.idVisit) && !found.has(row.idVisit)) found.set(row.idVisit, row);
+          }
+          failStreak = 0;
+        } catch {
+          failStreak++;
+          if (failStreak >= 3) break outer;
+        }
+        deps.onProgress?.({ request, total, found: found.size, need: need.size });
+        if (found.size < need.size) await sleep(delayMs);
+      }
+    }
+    return [...found.values()];
+  }
+
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === "function") {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {
+    }
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
+  // src/features/shared/usageLog.ts
+  var KEY = "extUsageLog";
+  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
+  var MAX_ENTRIES2 = 2e3;
+  async function logUsage(feature, event, ok, detail) {
+    try {
+      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
+      const now = Date.now();
+      const entry = {
+        ts: now,
+        feature,
+        event,
+        ok,
+        detail: detail instanceof Error ? `${detail.name}: ${detail.message}` : detail !== void 0 ? String(detail) : void 0,
+        url: typeof location !== "undefined" ? location.href : void 0
+      };
+      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
+      const trimmed = kept.slice(-MAX_ENTRIES2);
+      await chrome.storage.local.set({ [KEY]: trimmed });
+    } catch {
+    }
+  }
+
+  // src/features/mKlaimPreOp.ts
+  var g = getMorbisGlobals();
+  injectCSS(
+    "ext-preop-styles",
+    `@media print { .ext-preop-btn, .ext-preop-badge { display: none !important; } }
   .ext-preop-btn {
     display: inline-flex;
     align-items: center;
@@ -69,4 +1372,651 @@
     margin-left: 6px;
     vertical-align: middle;
   }
-`);var O=null,M=null,fe=null,ge=null,ht=0,pn=15e3,w=new Set,T={},mn=1e4;function F(e,t,n=Date.now()){let r=ge?!!ge[e]:null;return A(e in t,r,T[e],n)}function wt(e){e.disabled=!0,e.classList.contains("pending")||e.classList.add("pending"),e.textContent!=="\u23F3 Menyimpan\u2026"&&(e.textContent="\u23F3 Menyimpan\u2026");let t="Menyimpan ke server pusat\u2026";e.title!==t&&(e.title=t)}function gn(){let e=[];for(let t of document.querySelectorAll("table"))for(let n of t.querySelectorAll("tbody tr")){if(n.classList.contains("dataTables_empty"))continue;let r=J(n);r&&e.push(r)}return e}function bt(){let e=Date.now();if(e-ht<pn)return;ht=e;try{if(document.hidden)return}catch{}let t=gn();t.length&&re(t).then(n=>{if(n===null)return;ge=n;try{let a=Date.now();for(let s of Object.keys(T))a-T[s]>=6e4&&delete T[s]}catch{}let r=x(),i=Date.now(),o=a=>!!n[a];for(let a of Ae(r,o,i))w.has(a)||Z(a)&&delete r[a];for(let a of document.querySelectorAll("table"))for(let s of a.querySelectorAll("tbody tr")){let l=J(s);if(!l||w.has(l))continue;let c=F(l,r,i);s.getAttribute("data-ext-preop-marked")!==String(c)&&(c&&!r[l]&&$(l,G(s),void 0,Date.now(),!0),V(s,l,c,we(s,a)))}})}function J(e){let t=e.querySelectorAll("button, a, [onclick], [data-id-visit], [data-id]");for(let i of t){let o=i.dataset.idVisit||i.dataset.idvisit||i.dataset.id;if(o&&/^\d+$/.test(o))return o;let a=i.getAttribute("onclick")||"",s=a.match(/detail\(['"]?(\d+)['"]?\)/)||a.match(/id_visit=(\d+)/);if(s)return s[1];let l=i.getAttribute("href")||"",c=l.match(/id_visit=(\d+)/)||l.match(/detail\(['"]?(\d+)['"]?\)/);if(c)return c[1]}let n=e.querySelector('a[href*="id_visit="]');if(n){let i=n.href.match(/id_visit=(\d+)/);if(i)return i[1]}let r=xe(St(e));if(r.idVisit!==void 0&&r.idVisit<e.cells.length){let o=(e.cells[r.idVisit].textContent?.trim()||"").match(/(\d{4,})/);if(o)return o[1]}return null}var yn=[{field:"idVisit",re:/id[_ ]?visit|no\.?\s*kunjungan/i},{field:"noReg",re:/(?:no\.?\s*)?registrasi\b|no\.?\s*reg\b|no\.?\s*daftar|no\.?\s*transaksi/i},{field:"norm",re:/no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i},{field:"nama",re:/nama(\s*pasien)?/i},{field:"visitDatetime",re:/tanggal\s*kunjungan|waktu\s*kunjungan/i},{field:"poli",re:/\bunit\b|\bpoli\b/i}];function xe(e){let t={},n=new Set;for(let{field:r,re:i}of yn)for(let o=0;o<e.length;o++)if(!n.has(o)&&i.test((e[o]||"").trim())){t[r]=o,n.add(o);break}return t}function St(e){let t=e.closest("table");return t?Array.from(t.querySelectorAll("thead th")).map(n=>n.textContent?.trim()??""):[]}function hn(e){return e===""||e==="-"||e==="\u2014"}function ke(e,t){let n=xe(e),r=o=>{if(o===void 0||o<0||o>=t.length)return;let a=(t[o]??"").trim();return hn(a)?void 0:a},i=r(n.visitDatetime);return{norm:r(n.norm),nama:r(n.nama),noReg:r(n.noReg),visitDatetime:i?ce(i):void 0,poli:r(n.poli)}}function Tt(e){let t,n,r;return e.forEach(i=>{let o=(i??"").trim();!t&&/^\d{6,10}$/.test(o)&&(t=o),!r&&/^(REG|RJ|RI|IGD)/i.test(o)&&(r=o),!n&&/^[A-Z\s.,']{3,}$/i.test(o)&&!/^(RAWAT|JALAN|INAP|BPJS|UMUM|SELESAI|BELUM|VERIF)/i.test(o)&&(n=o)}),{norm:t,nama:n,noReg:r}}function G(e){let t=Array.from(e.querySelectorAll("td")).map(r=>r.textContent?.trim()??""),n=ke(St(e),t);return n.norm!==void 0||n.nama!==void 0||n.noReg!==void 0||n.visitDatetime!==void 0||n.poli!==void 0?n:Tt(t)}function Rt(e){for(let t=0;t<e.length;t++)if(/status\s*revisi/i.test((e[t]||"").trim()))return t;return-1}function we(e,t){let n=Array.from(t.querySelectorAll("thead th")).map(i=>i.textContent?.trim()??""),r=Rt(n);if(r>=0&&r<e.cells.length)return e.cells[r];for(let i of Array.from(e.cells))if(/revisi/i.test(i.textContent||""))return i;return null}function ye(e){let t=e.closest("table");return t?we(e,t):null}function V(e,t,n,r){e.setAttribute("data-ext-preop-marked",n?"true":"false");let i=e.querySelector(`button[data-ext-preop-btn="${t}"]`);if(i)if(i.disabled=!1,i.classList.remove("pending"),n){i.classList.contains("active")||i.classList.add("active"),i.textContent!=="\u2713 Pre-op"&&(i.textContent="\u2713 Pre-op");let a="Ditandai sebagai Pre-op (klik untuk batalkan)";i.title!==a&&(i.title=a)}else{i.classList.contains("active")&&i.classList.remove("active"),i.textContent!=="Pre-op"&&(i.textContent="Pre-op");let a="Tandai pasien sebagai Pre-op (tersimpan 1 bulan)";i.title!==a&&(i.title=a)}let o=e.querySelector(".ext-preop-badge");n&&r?(o||(o=document.createElement("span"),o.className="ext-preop-badge",o.textContent="PRE-OP"),o.parentElement!==r&&r.appendChild(o)):o&&o.remove()}var pe=!1,vt=!1;function N(){try{if(document.hidden||pe)return}catch{}pe=!0;try{bn()}finally{pe=!1}}function bn(){let e=document.querySelectorAll("table");if(e.length===0)return;let t=x(),n=Date.now();e.forEach(r=>{r.querySelectorAll("tbody tr").forEach(o=>{if(o.classList.contains("dataTables_empty"))return;let a=J(o);if(!a)return;let s=xn(o,a);if(!s)return;if(w.has(a)){wt(s);return}let l=F(a,t,n);o.getAttribute("data-ext-preop-marked")!==String(l)&&V(o,a,l,we(o,r))})})}function xn(e,t){let n=Array.from(e.querySelectorAll("td")).find(i=>i.querySelector('button, a, [onclick*="detail"]')!==null);if(n||(n=e.cells[e.cells.length-1]),!n)return null;let r=e.querySelector(`button[data-ext-preop-btn="${t}"]`);return r||(r=document.createElement("button"),r.type="button",r.className="ext-preop-btn",r.setAttribute("data-ext-preop-btn",t),r.addEventListener("click",i=>{if(i.preventDefault(),i.stopPropagation(),w.has(t)||r.disabled)return;let o=G(e),a=!F(t,x());a?$(t,o):Me(t),a?delete T[t]:T[t]=Date.now(),V(e,t,a,ye(e)),w.add(t),wt(r);let s=()=>{w.delete(t);try{V(e,t,F(t,x()),ye(e))}catch{}};try{Promise.resolve($e(t,a,{norm:o.norm,nama:o.nama,noReg:o.noReg,user:P(),visitDatetime:o.visitDatetime,poli:o.poli})).then(s,s)}catch{s()}window.setTimeout(()=>{w.has(t)&&s()},mn),de("mKlaimPreOp",a?"mark_preop":"unmark_preop",!0,{idVisit:t,norm:o.norm,nama:o.nama})}),n.appendChild(r),r)}function kn(){fe!==null&&clearTimeout(fe),fe=window.setTimeout(()=>{vt&&N()},100)}function q(e,t=5e3){try{let n=document.getElementById("ext-preop-sync-toast");n||(n=document.createElement("div"),n.id="ext-preop-sync-toast",n.style.cssText="position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#e8f0fd;color:#175cd3;border-left:5px solid #175cd3;font-weight:600;font-size:15px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.15);font-family:'Roboto','Segoe UI',system-ui,sans-serif;max-width:420px;",document.body.appendChild(n)),n.textContent=e,window.clearTimeout(n._t),n._t=window.setTimeout(()=>n?.remove(),t)}catch{}}function xt(){let e=[],t=new Set;for(let n of document.querySelectorAll("table"))for(let r of n.querySelectorAll("tbody tr")){if(r.classList.contains("dataTables_empty"))continue;let i=J(r);!i||t.has(i)||w.has(i)||(t.add(i),e.push({idVisit:i,info:G(r)}))}return e}var me=!1;function Ct(){try{if(typeof window<"u"&&window.localStorage)return window.localStorage}catch{}return null}function Et(){try{return B(Ct())}catch{return[]}}function wn(e){try{let t=Ct();se(t,[...B(t),...e])}catch{}}function he(){try{let e=We(x(),Et()),t=0;try{t=rt(_(),I())}catch{}return e+t}catch{return 0}}function Se(){try{let e=document.getElementById("ext-preop-sync-btn"),t=e?.querySelector("[data-sync-label]");if(!e||!t)return;let n=he(),r=n>0?`Sinkron (${n})`:"Sinkron";t.textContent!==r&&(t.textContent=r),e.title=n>0?`Sinkron Casemix sekarang: ${n} tanda belum terkirim ke pusat (+ ambil tanda PC lain)`:"Sinkron Casemix sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain"}catch{}}async function be(e,t=!1){t||q(`Mencari identitas ${e.length} pasien dari data M-KLAIM\u2026`,12e4);let n=Array.from(document.querySelectorAll("#data-table thead th")).filter(o=>o.getAttribute("data-ext-bv-header")!=="1").map(o=>o.textContent?.trim()??""),r=await mt(e,{headers:n,pick:ke,onProgress:t?void 0:o=>q(`Mencari identitas pasien\u2026 ${o.found}/${o.need} ditemukan (permintaan ${o.request}/${o.total})`,12e4)}),i;try{i=P()}catch{}return i?r.map(o=>({...o,info:{...o.info,user:i}})):r}async function _t(){if(me)return;me=!0;let e=he();q(e>0?`Menyinkronkan Casemix dengan pusat\u2026 (${e} menunggu kirim)`:"Menyinkronkan Casemix dengan pusat\u2026");try{let t=(()=>{try{return P()}catch{return}})(),n=await U(xt(),{loadLocal:()=>x(),readUnmarks:()=>({...T}),readMigrated:Et,markMigrated:wn,postToggle:async(s,l,c)=>{try{let f=await k("/api/casemix/pre-op/toggle",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({id_visit:s,marked:l,norm:c?.norm??null,nama:c?.nama??null,no_reg:c?.noReg??null,visit_datetime:c?.visitDatetime??null,poli:c?.poli??null,user:t??null}),credentials:"omit"});return!!f&&f.ok}catch{return!1}},fetchMarks:async s=>{let l=await re(s);return l===null?{ok:!1,marks:{}}:{ok:!0,marks:l}},fetchRecent:async()=>{let s=await je(30);return s===null?{ok:!1,marks:{}}:{ok:!0,marks:s}},saveMark:s=>{try{$(s,{},void 0,Date.now(),!0)}catch{}},forgetMark:s=>{try{Z(s)}catch{}},resolveIdentity:async s=>be(s)});try{N()}catch{}let r="";try{let s=await ut({rows:xt(),resolveIdentity:c=>be(c),readUnmarks:et,getUser:()=>{try{return P()}catch{return}}});n.offline=n.offline||s.offline;let l=[];s.pushed>0&&l.push(`${s.pushed} terkirim`),s.enriched>0&&l.push(`${s.enriched} dilengkapi`),s.pulled>0&&l.push(`${s.pulled} baru dari pusat`),l.length>0&&(r=` Telaah: ${l.join(", ")}.`);try{document.dispatchEvent(new CustomEvent("ext:telaah-synced"))}catch{}}catch{}let i=[];n.pushed>0&&i.push(`${n.pushed} terkirim`),n.enriched>0&&i.push(`${n.enriched} dilengkapi`),n.pulled>0&&i.push(`${n.pulled} baru dari pusat`);let o=he(),a=i.length>0?`Sinkron selesai: ${i.join(", ")}.${r}`:`Sinkron selesai: tidak ada perubahan.${r}`;n.offline&&o>0?a+=` (${o} masih menunggu \u2014 server tak terjangkau, coba lagi nanti)`:n.offline&&(a+=" (sebagian gagal \u2014 server tak terjangkau, coba lagi nanti)"),q(a,7e3),Se(),de("mKlaimPreOp","sync_manual",!n.offline,{...n})}finally{me=!1}}function kt(){if(document.getElementById("ext-preop-sync-btn"))return;let e=document.getElementById("ext-laporan-klaim-btn")??Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"]')).find(a=>{let s=(a.value||a.textContent||"").trim().toLowerCase();return/^(cari|tampil|tampilkan|filter)$/.test(s)}),t=e??document.querySelector('button[onclick*="loadTableExcel"]'),n=document.createElement("button");n.id="ext-preop-sync-btn",n.type="button",n.className=t?.className||"btn btn-info";let r=t?.getAttribute("style");r&&n.setAttribute("style",r),n.style.display="inline-block",n.style.marginLeft="8px";let i=t?.querySelector("i");i&&(n.appendChild(i.cloneNode(!0)),n.appendChild(document.createTextNode(" ")));let o=document.createElement("span");if(o.setAttribute("data-sync-label","1"),o.textContent="Sinkron",n.appendChild(o),n.title="Sinkron Casemix sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain",n.addEventListener("click",a=>{a.preventDefault(),a.stopPropagation(),_t().catch(s=>{window.console.warn("[mKlaimPreOp] sinkron manual gagal:",s)})}),e?.parentNode)e.parentNode.insertBefore(n,e.nextSibling);else{let a=document.querySelector("table");a?.parentNode?.insertBefore(n,a)}Se()}function z(){window.location.pathname.includes("/detail")||(O&&O.disconnect(),O=new MutationObserver(()=>{kn()}),O.observe(document.body,{childList:!0,subtree:!0}),gt(()=>{vt=!0,N(),bt(),Ye(e=>be(e,!0)),kt(),M!==null&&clearInterval(M),M=window.setInterval(()=>{N(),bt(),kt(),Se()},1500)}),window.addEventListener("pagehide",()=>{try{O?.disconnect(),M!==null&&(window.clearInterval(M),M=null)}catch{}}))}typeof yt.featureModules<"u"&&(yt.featureModules.preOpMarker={id:"preOpMarker",name:"Pre-op Marker (M-KLAIM)",description:"Tandai pasien Pre-op pada kolom aksi tabel M-KLAIM (tersimpan 1 bulan)",match:{oneOf:[{pathname:"/v2/m-klaim"},{pathname:"/v2/m-klaim/"},{pathname:"/v2/m-klaim/index"}],exclude:[{prefix:"/v2/m-klaim/detail"}]},run:z});ve("preOpMarker",()=>{(window.location?.pathname??"").startsWith("/v2/m-klaim")&&!(window.location?.pathname??"").includes("/detail")&&(document.readyState==="loading"?document.addEventListener("DOMContentLoaded",z):z())});return Lt(Sn);})();
+`
+  );
+  var _observer = null;
+  var _scanIntervalId = null;
+  var _debounceTimer = null;
+  var _centralMap = null;
+  var _centralAt = 0;
+  var CENTRAL_TTL_MS = 15e3;
+  var _pendingToggle = /* @__PURE__ */ new Set();
+  var _localUnmarkAt = {};
+  var PENDING_FALLBACK_MS = 1e4;
+  function effectiveMarked(idVisit, localMap, now = Date.now()) {
+    const centralHas = _centralMap ? !!_centralMap[idVisit] : null;
+    return resolvePreOpMarked(idVisit in localMap, centralHas, _localUnmarkAt[idVisit], now);
+  }
+  function paintPending(btn) {
+    btn.disabled = true;
+    if (!btn.classList.contains("pending")) btn.classList.add("pending");
+    if (btn.textContent !== "\u23F3 Menyimpan\u2026") btn.textContent = "\u23F3 Menyimpan\u2026";
+    const t = "Menyimpan ke server pusat\u2026";
+    if (btn.title !== t) btn.title = t;
+  }
+  function collectVisibleIds() {
+    const ids = [];
+    for (const table of document.querySelectorAll("table")) {
+      for (const row of table.querySelectorAll("tbody tr")) {
+        if (row.classList.contains("dataTables_empty")) continue;
+        const id = extractIdVisitFromRow(row);
+        if (id) ids.push(id);
+      }
+    }
+    return ids;
+  }
+  function refreshCentral() {
+    const now = Date.now();
+    if (now - _centralAt < CENTRAL_TTL_MS) return;
+    _centralAt = now;
+    try {
+      if (document.hidden) return;
+    } catch {
+    }
+    const ids = collectVisibleIds();
+    if (!ids.length) return;
+    void fetchPreOpBatch(ids).then((marks) => {
+      if (marks === null) return;
+      _centralMap = marks;
+      try {
+        const now22 = Date.now();
+        for (const k of Object.keys(_localUnmarkAt)) {
+          if (now22 - _localUnmarkAt[k] >= 6e4) delete _localUnmarkAt[k];
+        }
+      } catch {
+      }
+      const localMap = loadPreOpMap();
+      const now2 = Date.now();
+      const hasCentral = (id) => !!marks[id];
+      for (const id of collectStaleCentralMarks(localMap, hasCentral, now2)) {
+        if (_pendingToggle.has(id)) continue;
+        if (forgetCentralMark(id)) delete localMap[id];
+      }
+      for (const table of document.querySelectorAll("table")) {
+        for (const row of table.querySelectorAll("tbody tr")) {
+          const id = extractIdVisitFromRow(row);
+          if (!id || _pendingToggle.has(id)) continue;
+          const marked = effectiveMarked(id, localMap, now2);
+          if (row.getAttribute("data-ext-preop-marked") !== String(marked)) {
+            if (marked && !localMap[id]) {
+              setPreOp(id, extractPatientInfo(row), void 0, Date.now(), true);
+            }
+            updateRowVisual(row, id, marked, resolveBadgeCell(row, table));
+          }
+        }
+      }
+    });
+  }
+  function extractIdVisitFromRow(row) {
+    const buttons = row.querySelectorAll(
+      "button, a, [onclick], [data-id-visit], [data-id]"
+    );
+    for (const el of buttons) {
+      const idAttr = el.dataset.idVisit || el.dataset.idvisit || el.dataset.id;
+      if (idAttr && /^\d+$/.test(idAttr)) return idAttr;
+      const oc = el.getAttribute("onclick") || "";
+      const m = oc.match(/detail\(['"]?(\d+)['"]?\)/) || oc.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+      const href = el.getAttribute("href") || "";
+      const mHref = href.match(/id_visit=(\d+)/) || href.match(/detail\(['"]?(\d+)['"]?\)/);
+      if (mHref) return mHref[1];
+    }
+    const anyLink = row.querySelector('a[href*="id_visit="]');
+    if (anyLink) {
+      const m = anyLink.href.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+    }
+    const idx = patientFieldIndexFromHeaders(headersOfRow(row));
+    if (idx.idVisit !== void 0 && idx.idVisit < row.cells.length) {
+      const t = row.cells[idx.idVisit].textContent?.trim() || "";
+      const m = t.match(/(\d{4,})/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  var HEADER_FIELD_PATTERNS = [
+    { field: "idVisit", re: /id[_ ]?visit|no\.?\s*kunjungan/i },
+    {
+      field: "noReg",
+      re: /(?:no\.?\s*)?registrasi\b|no\.?\s*reg\b|no\.?\s*daftar|no\.?\s*transaksi/i
+    },
+    { field: "norm", re: /no\.?\s*rm\b|\bnorm\b|no\.?\s*rekam\s*medis|\bmedrec\b|\bmr\b/i },
+    { field: "nama", re: /nama(\s*pasien)?/i },
+    { field: "visitDatetime", re: /tanggal\s*kunjungan|waktu\s*kunjungan/i },
+    { field: "poli", re: /\bunit\b|\bpoli\b/i }
+  ];
+  function patientFieldIndexFromHeaders(headers) {
+    const out = {};
+    const used = /* @__PURE__ */ new Set();
+    for (const { field, re } of HEADER_FIELD_PATTERNS) {
+      for (let i = 0; i < headers.length; i++) {
+        if (!used.has(i) && re.test((headers[i] || "").trim())) {
+          out[field] = i;
+          used.add(i);
+          break;
+        }
+      }
+    }
+    return out;
+  }
+  function headersOfRow(row) {
+    const table = row.closest("table");
+    if (!table) return [];
+    return Array.from(table.querySelectorAll("thead th")).map(
+      (th) => th.textContent?.trim() ?? ""
+    );
+  }
+  function cellTextEmpty(t) {
+    return t === "" || t === "-" || t === "\u2014";
+  }
+  function pickPatientInfo(headers, cells) {
+    const idx = patientFieldIndexFromHeaders(headers);
+    const pick = (i) => {
+      if (i === void 0 || i < 0 || i >= cells.length) return void 0;
+      const t = (cells[i] ?? "").trim();
+      return cellTextEmpty(t) ? void 0 : t;
+    };
+    const rawVisit = pick(idx.visitDatetime);
+    return {
+      norm: pick(idx.norm),
+      nama: pick(idx.nama),
+      noReg: pick(idx.noReg),
+      visitDatetime: rawVisit ? normalizeVisitDatetime(rawVisit) : void 0,
+      poli: pick(idx.poli)
+    };
+  }
+  function guessPatientInfo(cells) {
+    let norm;
+    let nama;
+    let noReg;
+    cells.forEach((raw) => {
+      const t = (raw ?? "").trim();
+      if (!norm && /^\d{6,10}$/.test(t)) {
+        norm = t;
+      }
+      if (!noReg && /^(REG|RJ|RI|IGD)/i.test(t)) {
+        noReg = t;
+      }
+      if (!nama && /^[A-Z\s.,']{3,}$/i.test(t) && !/^(RAWAT|JALAN|INAP|BPJS|UMUM|SELESAI|BELUM|VERIF)/i.test(t)) {
+        nama = t;
+      }
+    });
+    return { norm, nama, noReg };
+  }
+  function extractPatientInfo(row) {
+    const cells = Array.from(row.querySelectorAll("td")).map((td) => td.textContent?.trim() ?? "");
+    const byHeader = pickPatientInfo(headersOfRow(row), cells);
+    if (byHeader.norm !== void 0 || byHeader.nama !== void 0 || byHeader.noReg !== void 0 || byHeader.visitDatetime !== void 0 || byHeader.poli !== void 0) {
+      return byHeader;
+    }
+    return guessPatientInfo(cells);
+  }
+  function statusRevisiIndexFromHeaders(headers) {
+    for (let i = 0; i < headers.length; i++) {
+      if (/status\s*revisi/i.test((headers[i] || "").trim())) return i;
+    }
+    return -1;
+  }
+  function resolveBadgeCell(row, table) {
+    const headers = Array.from(table.querySelectorAll("thead th")).map(
+      (th) => th.textContent?.trim() ?? ""
+    );
+    const idx = statusRevisiIndexFromHeaders(headers);
+    if (idx >= 0 && idx < row.cells.length) return row.cells[idx];
+    for (const td of Array.from(row.cells)) {
+      if (/revisi/i.test(td.textContent || "")) return td;
+    }
+    return null;
+  }
+  function badgeCellFor(row) {
+    const table = row.closest("table");
+    return table ? resolveBadgeCell(row, table) : null;
+  }
+  function updateRowVisual(row, idVisit, marked, badgeCell) {
+    row.setAttribute("data-ext-preop-marked", marked ? "true" : "false");
+    const btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove("pending");
+      if (marked) {
+        if (!btn.classList.contains("active")) btn.classList.add("active");
+        if (btn.textContent !== "\u2713 Pre-op") btn.textContent = "\u2713 Pre-op";
+        const t = "Ditandai sebagai Pre-op (klik untuk batalkan)";
+        if (btn.title !== t) btn.title = t;
+      } else {
+        if (btn.classList.contains("active")) btn.classList.remove("active");
+        if (btn.textContent !== "Pre-op") btn.textContent = "Pre-op";
+        const t = "Tandai pasien sebagai Pre-op (tersimpan 1 bulan)";
+        if (btn.title !== t) btn.title = t;
+      }
+    }
+    let badge = row.querySelector(".ext-preop-badge");
+    if (marked && badgeCell) {
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "ext-preop-badge";
+        badge.textContent = "PRE-OP";
+      }
+      if (badge.parentElement !== badgeCell) badgeCell.appendChild(badge);
+    } else if (badge) {
+      badge.remove();
+    }
+  }
+  var _scanning = false;
+  var _booted = false;
+  function scanAndInjectPreOpButtons() {
+    try {
+      if (document.hidden || _scanning) return;
+    } catch {
+    }
+    _scanning = true;
+    try {
+      scanInner();
+    } finally {
+      _scanning = false;
+    }
+  }
+  function scanInner() {
+    const tables = document.querySelectorAll("table");
+    if (tables.length === 0) return;
+    const preOpMap = loadPreOpMap();
+    const now = Date.now();
+    tables.forEach((table) => {
+      const rows = table.querySelectorAll("tbody tr");
+      rows.forEach((row) => {
+        if (row.classList.contains("dataTables_empty")) return;
+        const idVisit = extractIdVisitFromRow(row);
+        if (!idVisit) return;
+        const btn = ensurePreOpButton(row, idVisit);
+        if (!btn) return;
+        if (_pendingToggle.has(idVisit)) {
+          paintPending(btn);
+          return;
+        }
+        const isMarked = effectiveMarked(idVisit, preOpMap, now);
+        const done = row.getAttribute("data-ext-preop-marked") === String(isMarked);
+        if (done) return;
+        updateRowVisual(row, idVisit, isMarked, resolveBadgeCell(row, table));
+      });
+    });
+  }
+  function ensurePreOpButton(row, idVisit) {
+    let actionCell = Array.from(row.querySelectorAll("td")).find((td) => {
+      return td.querySelector('button, a, [onclick*="detail"]') !== null;
+    });
+    if (!actionCell) {
+      actionCell = row.cells[row.cells.length - 1];
+    }
+    if (!actionCell) return null;
+    let btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+    if (btn) return btn;
+    btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ext-preop-btn";
+    btn.setAttribute("data-ext-preop-btn", idVisit);
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (_pendingToggle.has(idVisit) || btn.disabled) return;
+      const info = extractPatientInfo(row);
+      const nextState = !effectiveMarked(idVisit, loadPreOpMap());
+      if (nextState) setPreOp(idVisit, info);
+      else removePreOp(idVisit);
+      if (nextState) delete _localUnmarkAt[idVisit];
+      else _localUnmarkAt[idVisit] = Date.now();
+      updateRowVisual(row, idVisit, nextState, badgeCellFor(row));
+      _pendingToggle.add(idVisit);
+      paintPending(btn);
+      const settle = () => {
+        _pendingToggle.delete(idVisit);
+        try {
+          updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()), badgeCellFor(row));
+        } catch {
+        }
+      };
+      try {
+        void Promise.resolve(
+          togglePreOpCentral(idVisit, nextState, {
+            norm: info.norm,
+            nama: info.nama,
+            noReg: info.noReg,
+            user: readPetugas(),
+            visitDatetime: info.visitDatetime,
+            poli: info.poli
+          })
+        ).then(settle, settle);
+      } catch {
+        settle();
+      }
+      window.setTimeout(() => {
+        if (_pendingToggle.has(idVisit)) settle();
+      }, PENDING_FALLBACK_MS);
+      void logUsage("mKlaimPreOp", nextState ? "mark_preop" : "unmark_preop", true, {
+        idVisit,
+        norm: info.norm,
+        nama: info.nama
+      });
+    });
+    actionCell.appendChild(btn);
+    return btn;
+  }
+  function debouncedScan() {
+    if (_debounceTimer !== null) clearTimeout(_debounceTimer);
+    _debounceTimer = window.setTimeout(() => {
+      if (!_booted) return;
+      scanAndInjectPreOpButtons();
+    }, 100);
+  }
+  function showSyncToast(msg, ms = 5e3) {
+    try {
+      let t = document.getElementById("ext-preop-sync-toast");
+      if (!t) {
+        t = document.createElement("div");
+        t.id = "ext-preop-sync-toast";
+        t.style.cssText = "position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#e8f0fd;color:#175cd3;border-left:5px solid #175cd3;font-weight:600;font-size:15px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.15);font-family:'Roboto','Segoe UI',system-ui,sans-serif;max-width:420px;";
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      window.clearTimeout(t._t);
+      t._t = window.setTimeout(() => t?.remove(), ms);
+    } catch {
+    }
+  }
+  function gatherVisibleSyncRows() {
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const table of document.querySelectorAll("table")) {
+      for (const row of table.querySelectorAll("tbody tr")) {
+        if (row.classList.contains("dataTables_empty")) continue;
+        const id = extractIdVisitFromRow(row);
+        if (!id || seen.has(id) || _pendingToggle.has(id)) continue;
+        seen.add(id);
+        out.push({ idVisit: id, info: extractPatientInfo(row) });
+      }
+    }
+    return out;
+  }
+  var _syncRunning = false;
+  function localBackfillStore() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  function readMigratedIds() {
+    try {
+      return loadMigratedIds(localBackfillStore());
+    } catch {
+      return [];
+    }
+  }
+  function writeMigratedIds(ids) {
+    try {
+      const store = localBackfillStore();
+      saveMigratedIds(store, [...loadMigratedIds(store), ...ids]);
+    } catch {
+    }
+  }
+  function pendingSyncCount() {
+    try {
+      const pre = countPreOpPending(loadPreOpMap(), readMigratedIds());
+      let tel = 0;
+      try {
+        tel = countTelaahPending(loadTelaahMap(), loadTelaahMigratedIds());
+      } catch {
+      }
+      return pre + tel;
+    } catch {
+      return 0;
+    }
+  }
+  function updateSyncBadge() {
+    try {
+      const btn = document.getElementById("ext-preop-sync-btn");
+      const label = btn?.querySelector("[data-sync-label]");
+      if (!btn || !label) return;
+      const n = pendingSyncCount();
+      const text = n > 0 ? `Sinkron (${n})` : "Sinkron";
+      if (label.textContent !== text) label.textContent = text;
+      btn.title = n > 0 ? `Sinkron Casemix sekarang: ${n} tanda belum terkirim ke pusat (+ ambil tanda PC lain)` : "Sinkron Casemix sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain";
+    } catch {
+    }
+  }
+  async function resolveKlaimIdentities(ids, silent = false) {
+    if (!silent) showSyncToast(`Mencari identitas ${ids.length} pasien dari data M-KLAIM\u2026`, 12e4);
+    const headers = Array.from(document.querySelectorAll("#data-table thead th")).filter((th) => th.getAttribute("data-ext-bv-header") !== "1").map((th) => th.textContent?.trim() ?? "");
+    const rows = await fetchKlaimIdentity(ids, {
+      headers,
+      pick: pickPatientInfo,
+      onProgress: silent ? void 0 : (p) => showSyncToast(
+        `Mencari identitas pasien\u2026 ${p.found}/${p.need} ditemukan (permintaan ${p.request}/${p.total})`,
+        12e4
+      )
+    });
+    let user;
+    try {
+      user = readPetugas();
+    } catch {
+    }
+    if (!user) return rows;
+    return rows.map((r) => ({ ...r, info: { ...r.info, user } }));
+  }
+  async function syncPreOpNow() {
+    if (_syncRunning) return;
+    _syncRunning = true;
+    const awaiting = pendingSyncCount();
+    showSyncToast(
+      awaiting > 0 ? `Menyinkronkan Casemix dengan pusat\u2026 (${awaiting} menunggu kirim)` : "Menyinkronkan Casemix dengan pusat\u2026"
+    );
+    try {
+      const user = (() => {
+        try {
+          return readPetugas();
+        } catch {
+          return void 0;
+        }
+      })();
+      const counts = await syncCasemixNow(gatherVisibleSyncRows(), {
+        loadLocal: () => loadPreOpMap(),
+        readUnmarks: () => ({ ..._localUnmarkAt }),
+        readMigrated: readMigratedIds,
+        markMigrated: writeMigratedIds,
+        postToggle: async (id, marked, info) => {
+          try {
+            const res = await requestCentral("/api/casemix/pre-op/toggle", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                id_visit: id,
+                marked,
+                norm: info?.norm ?? null,
+                nama: info?.nama ?? null,
+                no_reg: info?.noReg ?? null,
+                visit_datetime: info?.visitDatetime ?? null,
+                poli: info?.poli ?? null,
+                user: user ?? null
+              }),
+              credentials: "omit"
+            });
+            return !!res && res.ok;
+          } catch {
+            return false;
+          }
+        },
+        fetchMarks: async (ids) => {
+          const marks = await fetchPreOpBatch(ids);
+          return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+        },
+        fetchRecent: async () => {
+          const marks = await fetchPreOpRecent(30);
+          return marks === null ? { ok: false, marks: {} } : { ok: true, marks };
+        },
+        saveMark: (id) => {
+          try {
+            setPreOp(id, {}, void 0, Date.now(), true);
+          } catch {
+          }
+        },
+        // Rekonsiliasi unmark lintas-PC (langkah 4 sinkron): lupakan entry
+        // fromCentral yang sudah tak ada di pusat — tanpa antre unmark.
+        forgetMark: (id) => {
+          try {
+            forgetCentralMark(id);
+          } catch {
+          }
+        },
+        // Tabel hanya merender halaman aktif (DataTables, 10 baris/halaman) →
+        // identitas id lain diambil dari endpoint data M-KLAIM yang sama.
+        resolveIdentity: async (ids) => resolveKlaimIdentities(ids)
+      });
+      try {
+        scanAndInjectPreOpButtons();
+      } catch {
+      }
+      let telaahSummary = "";
+      try {
+        const t = await runTelaahSync({
+          rows: gatherVisibleSyncRows(),
+          resolveIdentity: (ids) => resolveKlaimIdentities(ids),
+          readUnmarks: readTelaahUnmarks,
+          getUser: () => {
+            try {
+              return readPetugas();
+            } catch {
+              return void 0;
+            }
+          }
+        });
+        counts.offline = counts.offline || t.offline;
+        const tp = [];
+        if (t.pushed > 0) tp.push(`${t.pushed} terkirim`);
+        if (t.enriched > 0) tp.push(`${t.enriched} dilengkapi`);
+        if (t.pulled > 0) tp.push(`${t.pulled} baru dari pusat`);
+        if (tp.length > 0) telaahSummary = ` Telaah: ${tp.join(", ")}.`;
+        try {
+          document.dispatchEvent(new CustomEvent("ext:telaah-synced"));
+        } catch {
+        }
+      } catch {
+      }
+      const parts = [];
+      if (counts.pushed > 0) parts.push(`${counts.pushed} terkirim`);
+      if (counts.enriched > 0) parts.push(`${counts.enriched} dilengkapi`);
+      if (counts.pulled > 0) parts.push(`${counts.pulled} baru dari pusat`);
+      const rest = pendingSyncCount();
+      let msg = parts.length > 0 ? `Sinkron selesai: ${parts.join(", ")}.${telaahSummary}` : `Sinkron selesai: tidak ada perubahan.${telaahSummary}`;
+      if (counts.offline && rest > 0) {
+        msg += ` (${rest} masih menunggu \u2014 server tak terjangkau, coba lagi nanti)`;
+      } else if (counts.offline) {
+        msg += " (sebagian gagal \u2014 server tak terjangkau, coba lagi nanti)";
+      }
+      showSyncToast(msg, 7e3);
+      updateSyncBadge();
+      void logUsage("mKlaimPreOp", "sync_manual", !counts.offline, { ...counts });
+    } finally {
+      _syncRunning = false;
+    }
+  }
+  function injectSyncButton() {
+    if (document.getElementById("ext-preop-sync-btn")) return;
+    const anchor = document.getElementById("ext-laporan-klaim-btn") ?? Array.from(
+      document.querySelectorAll('button, input[type="button"], input[type="submit"]')
+    ).find((b) => {
+      const t = (b.value || b.textContent || "").trim().toLowerCase();
+      return /^(cari|tampil|tampilkan|filter)$/.test(t);
+    });
+    const refBtn = anchor ?? document.querySelector('button[onclick*="loadTableExcel"]');
+    const btn = document.createElement("button");
+    btn.id = "ext-preop-sync-btn";
+    btn.type = "button";
+    btn.className = refBtn?.className || "btn btn-info";
+    const refStyle = refBtn?.getAttribute("style");
+    if (refStyle) btn.setAttribute("style", refStyle);
+    btn.style.display = "inline-block";
+    btn.style.marginLeft = "8px";
+    const icon = refBtn?.querySelector("i");
+    if (icon) {
+      btn.appendChild(icon.cloneNode(true));
+      btn.appendChild(document.createTextNode(" "));
+    }
+    const labelSpan = document.createElement("span");
+    labelSpan.setAttribute("data-sync-label", "1");
+    labelSpan.textContent = "Sinkron";
+    btn.appendChild(labelSpan);
+    btn.title = "Sinkron Casemix sekarang: kirim tanda PC ini ke pusat + ambil tanda PC lain";
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      void syncPreOpNow().catch((err) => {
+        window.console.warn("[mKlaimPreOp] sinkron manual gagal:", err);
+      });
+    });
+    if (anchor?.parentNode) {
+      anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    } else {
+      const table = document.querySelector("table");
+      table?.parentNode?.insertBefore(btn, table);
+    }
+    updateSyncBadge();
+  }
+  function initPreOpMarker() {
+    if (window.location.pathname.includes("/detail")) return;
+    if (_observer) _observer.disconnect();
+    _observer = new MutationObserver(() => {
+      debouncedScan();
+    });
+    _observer.observe(document.body, { childList: true, subtree: true });
+    runWhenIdle(() => {
+      _booted = true;
+      scanAndInjectPreOpButtons();
+      refreshCentral();
+      initCasemixBackfill((ids) => resolveKlaimIdentities(ids, true));
+      injectSyncButton();
+      if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
+      _scanIntervalId = window.setInterval(() => {
+        scanAndInjectPreOpButtons();
+        refreshCentral();
+        injectSyncButton();
+        updateSyncBadge();
+      }, 1500);
+    });
+    window.addEventListener("pagehide", () => {
+      try {
+        _observer?.disconnect();
+        if (_scanIntervalId !== null) {
+          window.clearInterval(_scanIntervalId);
+          _scanIntervalId = null;
+        }
+      } catch {
+      }
+    });
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.preOpMarker = {
+      id: "preOpMarker",
+      name: "Pre-op Marker (M-KLAIM)",
+      description: "Tandai pasien Pre-op pada kolom aksi tabel M-KLAIM (tersimpan 1 bulan)",
+      match: {
+        oneOf: [
+          { pathname: "/v2/m-klaim" },
+          { pathname: "/v2/m-klaim/" },
+          { pathname: "/v2/m-klaim/index" }
+        ],
+        exclude: [{ prefix: "/v2/m-klaim/detail" }]
+      },
+      run: initPreOpMarker
+    };
+  }
+  whenFeatureEnabled("preOpMarker", () => {
+    if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPreOpMarker);
+      } else {
+        initPreOpMarker();
+      }
+    }
+  });
+  return __toCommonJS(mKlaimPreOp_exports);
+})();
+//# sourceMappingURL=mKlaimPreOp.js.map

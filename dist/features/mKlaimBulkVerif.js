@@ -1,4 +1,47 @@
-"use strict";var __morbis_feature=(()=>{var I=Object.defineProperty;var Z=Object.getOwnPropertyDescriptor;var ee=Object.getOwnPropertyNames;var te=Object.prototype.hasOwnProperty;var ne=(e,t)=>{for(var n in t)I(e,n,{get:t[n],enumerable:!0})},re=(e,t,n,r)=>{if(t&&typeof t=="object"||typeof t=="function")for(let o of ee(t))!te.call(e,o)&&o!==n&&I(e,o,{get:()=>t[o],enumerable:!(r=Z(t,o))||r.enumerable});return e};var oe=e=>re(I({},"__esModule",{value:!0}),e);var Ee={};ne(Ee,{applySelectAll:()=>U,clearSelection:()=>w,getSelected:()=>_,initMKlaimBulkVerifFeature:()=>Y,isEligible:()=>N,parseIdVisit:()=>ie,pruneSelection:()=>O});function R(){return window}var z="ext-batch-shared-style";function C(){if(document.getElementById(z))return;let e=document.createElement("style");e.id=z,e.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/mKlaimBulkVerif.ts
+  var mKlaimBulkVerif_exports = {};
+  __export(mKlaimBulkVerif_exports, {
+    applySelectAll: () => applySelectAll,
+    clearSelection: () => clearSelection,
+    getSelected: () => getSelected,
+    initMKlaimBulkVerifFeature: () => initMKlaimBulkVerifFeature,
+    isEligible: () => isEligible,
+    parseIdVisit: () => parseIdVisit,
+    pruneSelection: () => pruneSelection
+  });
+
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/batchUtils.ts
+  var BATCH_UTILS_STYLE_ID = "ext-batch-shared-style";
+  function injectSharedCSS() {
+    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = BATCH_UTILS_STYLE_ID;
+    style.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -154,7 +197,27 @@
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `,document.head.appendChild(e)}function F(e,t,n=2){let r=o=>fetch(e,t).catch(i=>{if(o<=0)throw i;return new Promise(a=>setTimeout(a,1e3*(3-o))).then(()=>r(o-1))});return r(n)}function y(e){return new Promise(t=>{C();let n=e.variant==="danger"?"ext-btn-danger":"ext-btn-primary",r=document.createElement("div");r.style.cssText="position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);",r.innerHTML=`
+  `;
+    document.head.appendChild(style);
+  }
+  function safeFetch(url, options, retries = 2) {
+    const attempt = (n) => {
+      return fetch(url, options).catch((err) => {
+        if (n <= 0) throw err;
+        return new Promise((resolve) => setTimeout(resolve, 1e3 * (3 - n))).then(
+          () => attempt(n - 1)
+        );
+      });
+    };
+    return attempt(retries);
+  }
+  function confirmLegacy(opts) {
+    return new Promise((resolve) => {
+      injectSharedCSS();
+      const variantClass = opts.variant === "danger" ? "ext-btn-danger" : "ext-btn-primary";
+      const overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);";
+      overlay.innerHTML = `
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -162,45 +225,159 @@
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${e.hideCancel?"":`<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel??"Batal"}</button>`}
-          <button class="ext-btn ${n}" data-ext-ok>${e.okLabel??"Lanjut"}</button>
+          ${opts.hideCancel ? "" : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${opts.cancelLabel ?? "Batal"}</button>`}
+          <button class="ext-btn ${variantClass}" data-ext-ok>${opts.okLabel ?? "Lanjut"}</button>
         </div>
-      </div>`,r.querySelector("h3").textContent=e.title;let o=r.querySelector(".ext-confirm-body");e.message&&e.message.split(`
-`).forEach((d,f)=>{f>0&&o.appendChild(document.createElement("br")),o.appendChild(document.createTextNode(d))});let i=d=>{r.remove(),document.removeEventListener("keydown",a),t(d)},a=d=>{d.key==="Escape"&&i(!1)};r.querySelector(".ext-modal-close").addEventListener("click",()=>i(!1)),r.addEventListener("click",d=>{d.target===r&&i(!1)}),r.querySelector("[data-ext-ok]").addEventListener("click",()=>i(!0));let l=r.querySelector("[data-ext-cancel]");l&&l.addEventListener("click",()=>i(!1)),document.addEventListener("keydown",a),document.body.appendChild(r)})}var K=R(),s={endpointVerif:"/v2/m-klaim/control/verif",endpointBatal:"/v2/m-klaim/control/batal-verif",delayMs:600,barId:"ext-bulk-verif-bar",cssId:"ext-bulk-verif-style",readyTimeoutMs:15e3,readyPollMs:250,warnIfMoreThan:100,UJI_SAJA:!1},p=[{sel:"#data-table",kind:"main",nama:"Klaim",aksi:"Verif",endpoint:s.endpointVerif,danger:!1},{sel:"#data-table-verif",kind:"verif",nama:"Sudah Terverifikasi",aksi:"Batal Verif",endpoint:s.endpointBatal,danger:!0}],b={main:new Set,verif:new Set},g=!1;function U(e,t,n){let r=0;return t.forEach(o=>{!o.id||!o.eligible||(n?b[e].add(o.id):b[e].delete(o.id),r+=1)}),r}function O(e,t){let n=new Set;t.forEach(o=>{o.id&&o.eligible&&n.add(o.id)});let r=0;return Array.from(b[e]).forEach(o=>{n.has(o)||(b[e].delete(o),r+=1)}),r}function _(e){return Array.from(b[e])}function w(e){b[e].clear()}function ie(e){let t=e.match(/\d+/);return t?t[0]:null}function N(e,t,n){return t?e==="main"?!0:n:!1}function ae(){if(document.getElementById(s.cssId))return;let e=document.createElement("style");e.id=s.cssId,e.textContent=`
-    #${s.barId} {
+      </div>`;
+      overlay.querySelector("h3").textContent = opts.title;
+      const body = overlay.querySelector(".ext-confirm-body");
+      if (opts.message) {
+        opts.message.split("\n").forEach((line, i) => {
+          if (i > 0) body.appendChild(document.createElement("br"));
+          body.appendChild(document.createTextNode(line));
+        });
+      }
+      const done = (result) => {
+        overlay.remove();
+        document.removeEventListener("keydown", onKey);
+        resolve(result);
+      };
+      const onKey = (e) => {
+        if (e.key === "Escape") done(false);
+      };
+      overlay.querySelector(".ext-modal-close").addEventListener("click", () => done(false));
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) done(false);
+      });
+      overlay.querySelector("[data-ext-ok]").addEventListener("click", () => done(true));
+      const cancelBtn = overlay.querySelector("[data-ext-cancel]");
+      if (cancelBtn) cancelBtn.addEventListener("click", () => done(false));
+      document.addEventListener("keydown", onKey);
+      document.body.appendChild(overlay);
+    });
+  }
+
+  // src/features/mKlaimBulkVerif.ts
+  var g = getMorbisGlobals();
+  var CONFIG = {
+    endpointVerif: "/v2/m-klaim/control/verif",
+    endpointBatal: "/v2/m-klaim/control/batal-verif",
+    delayMs: 600,
+    // jeda antar permintaan
+    barId: "ext-bulk-verif-bar",
+    cssId: "ext-bulk-verif-style",
+    readyTimeoutMs: 15e3,
+    readyPollMs: 250,
+    // Di atas ambang ini, petugas diberi tahu soal waktu proses.
+    warnIfMoreThan: 100,
+    // MODE UJI (true): kolom checkbox ditampilkan tapi SEMUA checkbox nonaktif
+    // dan tombol aksi tidak muncul. Dipakai untuk memastikan kolom termuat di
+    // browser petugas sebelum mengaktifkan proses massal.
+    // false: seleksi aktif - checkbox bisa dicentang dan aksi (POST) berjalan
+    // setelah konfirmasi petugas. Ubah dengan sengaja hanya setelah kolom
+    // terlihat benar (header khusus + tidak bergeser).
+    UJI_SAJA: false
+  };
+  var TABLES = [
+    {
+      sel: "#data-table",
+      kind: "main",
+      nama: "Klaim",
+      aksi: "Verif",
+      endpoint: CONFIG.endpointVerif,
+      danger: false
+    },
+    {
+      sel: "#data-table-verif",
+      kind: "verif",
+      nama: "Sudah Terverifikasi",
+      aksi: "Batal Verif",
+      endpoint: CONFIG.endpointBatal,
+      danger: true
+    }
+  ];
+  var dipilih = {
+    main: /* @__PURE__ */ new Set(),
+    verif: /* @__PURE__ */ new Set()
+  };
+  var sedangProses = false;
+  function applySelectAll(kind, rows, checked) {
+    let jumlah = 0;
+    rows.forEach((r) => {
+      if (!r.id || !r.eligible) return;
+      if (checked) dipilih[kind].add(r.id);
+      else dipilih[kind].delete(r.id);
+      jumlah += 1;
+    });
+    return jumlah;
+  }
+  function pruneSelection(kind, existingRows) {
+    const validIds = /* @__PURE__ */ new Set();
+    existingRows.forEach((r) => {
+      if (r.id && r.eligible) validIds.add(r.id);
+    });
+    let gugur = 0;
+    Array.from(dipilih[kind]).forEach((id) => {
+      if (!validIds.has(id)) {
+        dipilih[kind].delete(id);
+        gugur += 1;
+      }
+    });
+    return gugur;
+  }
+  function getSelected(kind) {
+    return Array.from(dipilih[kind]);
+  }
+  function clearSelection(kind) {
+    dipilih[kind].clear();
+  }
+  function parseIdVisit(onclick) {
+    const m = onclick.match(/\d+/);
+    return m ? m[0] : null;
+  }
+  function isEligible(kind, hasDetail, hasBatalVerifBtn) {
+    if (!hasDetail) return false;
+    return kind === "main" ? true : hasBatalVerifBtn;
+  }
+  function injectCSS() {
+    if (document.getElementById(CONFIG.cssId)) return;
+    const style = document.createElement("style");
+    style.id = CONFIG.cssId;
+    style.textContent = `
+    #${CONFIG.barId} {
       position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
       z-index: 2147482000; display: none; align-items: center; gap: 14px;
       background: #0f172a; color: #f8fafc; border-radius: 12px;
       padding: 10px 16px; font-family: 'Inter', system-ui, sans-serif;
       font-size: 13px; box-shadow: 0 8px 28px rgba(15,23,42,.35);
     }
-    #${s.barId} .bv-item { display: flex; align-items: center; gap: 8px; }
-    #${s.barId} .bv-label { color: #cbd5e1; }
-    #${s.barId} .bv-count { color: #f8fafc; font-weight: 700; }
-    #${s.barId} button {
+    #${CONFIG.barId} .bv-item { display: flex; align-items: center; gap: 8px; }
+    #${CONFIG.barId} .bv-label { color: #cbd5e1; }
+    #${CONFIG.barId} .bv-count { color: #f8fafc; font-weight: 700; }
+    #${CONFIG.barId} button {
       border: none; border-radius: 8px; cursor: pointer; padding: 7px 14px;
       font-size: 12.5px; font-weight: 700; font-family: inherit;
     }
-    #${s.barId} .bv-aksi { background: #2563eb; color: #fff; }
-    #${s.barId} .bv-aksi:hover { background: #1d4ed8; }
-    #${s.barId} .bv-aksi-danger { background: #dc2626; color: #fff; }
-    #${s.barId} .bv-aksi-danger:hover { background: #b91c1c; }
-    #${s.barId} .bv-reset { background: #334155; color: #e2e8f0; }
-    #${s.barId} .bv-reset:hover { background: #475569; }
-    #${s.barId} button:disabled { opacity: .55; cursor: not-allowed; }
+    #${CONFIG.barId} .bv-aksi { background: #2563eb; color: #fff; }
+    #${CONFIG.barId} .bv-aksi:hover { background: #1d4ed8; }
+    #${CONFIG.barId} .bv-aksi-danger { background: #dc2626; color: #fff; }
+    #${CONFIG.barId} .bv-aksi-danger:hover { background: #b91c1c; }
+    #${CONFIG.barId} .bv-reset { background: #334155; color: #e2e8f0; }
+    #${CONFIG.barId} .bv-reset:hover { background: #475569; }
+    #${CONFIG.barId} button:disabled { opacity: .55; cursor: not-allowed; }
 
     /* Status + progress saat proses massal berjalan */
-    #${s.barId} .bv-status { color: #f8fafc; font-weight: 700; min-width: 150px; }
-    #${s.barId} .bv-progress {
+    #${CONFIG.barId} .bv-status { color: #f8fafc; font-weight: 700; min-width: 150px; }
+    #${CONFIG.barId} .bv-progress {
       position: relative; width: 220px; height: 9px; border-radius: 999px;
       background: #1e293b; overflow: hidden; flex: 0 0 auto;
     }
-    #${s.barId} .bv-progress > i {
+    #${CONFIG.barId} .bv-progress > i {
       position: absolute; top: 0; left: 0; bottom: 0; width: 0%;
       border-radius: 999px; background: linear-gradient(90deg, #2563eb, #38bdf8);
       transition: width .25s ease;
     }
-    #${s.barId} .bv-progress.done > i {
+    #${CONFIG.barId} .bv-progress.done > i {
       background: linear-gradient(90deg, #16a34a, #4ade80);
     }
 
@@ -235,6 +412,601 @@
     td.bv-sel input:disabled { cursor: not-allowed; }
     /* Penanda fitur aktif - memudahkan diagnosis di console */
     html[data-ext-bulk-verif='1'] td.bv-sel { background: #eff6ff; }
-  `,document.head.appendChild(e),C()}function u(e){return document.querySelector(e.sel)}function j(e){let t=window.jQuery;if(!t)return null;try{return t(e.sel).DataTable()??null}catch{return null}}function J(e){return(Array.isArray(e)?e:[e]).filter(t=>t instanceof HTMLElement)}function A(e){let t=e.querySelector('[onclick*="detail("]');if(t){let r=(t.getAttribute("onclick")||"").match(/\d+/);if(r)return r[0]}let n=e.querySelector('[onclick*="BatalVerif("]');if(n){let r=(n.getAttribute("onclick")||"").match(/\d+/);if(r)return r[0]}return null}function P(e,t){return N(e.kind,!!t.querySelector('button[onclick*="detail("]'),!!t.querySelector('button[onclick*="BatalVerif("]'))}function V(e,t){return{id:A(t),eligible:P(e,t)}}function D(e){let t=u(e);if(!t)return[];let n=j(e);if(n)try{return J(n.rows({search:"applied"}).nodes().toArray())}catch{}return Array.from(t.querySelectorAll("tbody tr")).filter(r=>!r.classList.contains("dataTables_empty"))}function se(e){let t=u(e);if(!t)return[];let n=j(e);if(n)try{return J(n.rows().nodes().toArray())}catch{}return Array.from(t.querySelectorAll("tbody tr")).filter(r=>!r.classList.contains("dataTables_empty"))}function le(e,t){let n=A(t);if(!n){let a=document.createElement("td");a.className="bv-sel",a.dataset.extBvUnid="1";let l=document.createElement("input");l.type="checkbox",l.disabled=!0,l.title="id_visit tidak terbaca dari markup baris ini",a.appendChild(l),t.insertBefore(a,t.firstChild);return}let r=P(e,t),o=document.createElement("td");o.className="bv-sel";let i=document.createElement("input");i.type="checkbox",i.dataset.extBvId=n,i.checked=b[e.kind].has(n),s.UJI_SAJA?(i.disabled=!0,i.title="Mode uji - belum bisa dipilih"):(i.disabled=g||!r,i.title=g?"Sedang diproses...":r?"Pilih baris ini":"Baris tidak memenuhi syarat aksi ini",i.addEventListener("change",()=>{i.checked?b[e.kind].add(n):b[e.kind].delete(n),L(),k(e)})),o.appendChild(i),t.insertBefore(o,t.firstChild)}function de(e){e.querySelectorAll("tbody td.bv-sel").forEach(t=>t.remove())}function G(e){let t=u(e);t&&(de(t),t.querySelectorAll("tbody tr").forEach(n=>le(e,n)),k(e))}function k(e){let n=u(e)?.querySelector("thead input[data-ext-bv-header]");if(!n)return;let r=D(e).filter(a=>P(e,a)),o=r.length,i=r.filter(a=>{let l=A(a);return!!l&&b[e.kind].has(l)}).length;n.disabled=s.UJI_SAJA||g||o===0,n.checked=o>0&&i===o,n.indeterminate=i>0&&i<o}function ce(e){if(!e)return!1;try{if(window.jQuery?.fn?.DataTable?.isDataTable?.(e))return!0}catch{}return e.classList.contains("dataTable")}function Q(e){let t=u(e);if(!ce(t))return;let n=t?.querySelector("thead tr");if(!n)return;if(n.querySelector('th[data-ext-bv-header="1"]')){k(e);return}let o=document.createElement("th");o.className="bv-sel-th",o.dataset.extBvHeader="1",o.title="Pilih / batal pilih semua baris yang cocok dengan pencarian";let i=document.createElement("input");i.type="checkbox",i.dataset.extBvHeader="1",i.disabled=!0,s.UJI_SAJA?i.title="Mode uji - belum bisa dipilih":(i.title="Pilih semua hasil pencarian",i.addEventListener("change",()=>{let a=D(e).map(l=>V(e,l));U(e.kind,a,i.checked),G(e),L()})),o.appendChild(i),n.insertBefore(o,n.firstChild),s.UJI_SAJA?i.disabled=!0:k(e)}function q(){p.forEach(S),L()}function M(){return document.getElementById(s.barId)}function B(e,t,n,r,o,i=!1){let a=M();if(!a)return;let l=n>0?Math.min(100,Math.round(t/n*100)):0;a.innerHTML="";let d=document.createElement("div");d.className="bv-item";let f=document.createElement("span");f.className="bv-status",f.textContent=i?`Selesai - ${e.nama}`:`${e.nama}: ${t}/${n}`;let c=document.createElement("div");c.className=i?"bv-progress done":"bv-progress";let v=document.createElement("i");v.style.width=`${l}%`,c.appendChild(v);let m=document.createElement("span");m.className="bv-label",i?m.textContent=o>0?`OK ${r} \xB7 Gagal ${o}`:`OK ${r} dari ${n}`:m.textContent=o>0?`OK ${r} \xB7 Gagal ${o}`:`OK ${r}`,d.append(f,c,m),a.appendChild(d),a.style.display="flex"}function L(){let e=M();if(!e)return;let t=p.map(r=>[r,b[r.kind].size]).filter(([,r])=>r>0);if(s.UJI_SAJA||t.length===0){e.style.display="none";return}if(g)return;e.innerHTML="",t.forEach(([r,o])=>{let i=document.createElement("div");i.className="bv-item";let a=document.createElement("span");a.className="bv-label",a.textContent=`${r.nama}: `;let l=document.createElement("span");l.className="bv-count",l.textContent=`${o} dipilih`;let d=document.createElement("button");d.className=r.danger?"bv-aksi bv-aksi-danger":"bv-aksi",d.textContent=r.aksi,d.addEventListener("click",()=>{fe(r)}),i.append(a,l,d),e.appendChild(i)});let n=document.createElement("button");n.className="bv-reset",n.textContent="Batal Pilih",n.addEventListener("click",()=>{p.forEach(r=>w(r.kind)),q()}),e.appendChild(n),e.style.display="flex"}function ue(){if(M())return;let e=document.createElement("div");e.id=s.barId,e.style.display="none",document.body.appendChild(e)}async function be(e,t){try{let n=new URLSearchParams({id_visit:t}),r=await F(e,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest"},body:n.toString(),credentials:"same-origin"});if(!r.ok)return{id:t,ok:!1,pesan:`HTTP ${r.status}`};let o=await r.json(),i=String(o.kode)==="200";return{id:t,ok:i,pesan:o.message??(i?"Sukses":"Gagal")}}catch(n){return{id:t,ok:!1,pesan:n.message||"Gagal koneksi"}}}function pe(e){let t=se(e).map(r=>V(e,r)),n=O(e.kind,t);return{valid:_(e.kind),gugur:n}}async function fe(e){if(g)return;let{valid:t,gugur:n}=pe(e);if(t.length===0){w(e.kind),q(),await y({title:"Tidak ada baris yang bisa diproses",message:"Pilihan tidak lagi cocok dengan data di tabel. Silakan pilih ulang.",okLabel:"Mengerti",hideCancel:!0});return}let r=Math.ceil(t.length*s.delayMs/1e3),o=[`${e.nama}: ${t.length} baris akan diproses.`];if(n>0&&o.push(`${n} pilihan diabaikan (data berubah/tidak memenuhi syarat).`),o.push(e.danger?"Verifikasi yang dibatalkan kembali ke daftar belum terverifikasi.":"Data yang tidak memenuhi syarat akan ditolak server."),t.length>s.warnIfMoreThan&&o.push(`PERINGATAN: jumlah besar, proses \xB1${r} detik. Jangan tutup halaman.`),o.push("Lanjutkan?"),!await y({title:`${e.aksi} ${t.length} data?`,message:o.join(`
-`),variant:e.danger?"danger":"primary",okLabel:`Ya, ${e.aksi}`,cancelLabel:"Batal"}))return;g=!0,p.forEach(c=>k(c)),B(e,0,t.length,0,0);let a=[],l=0;for(let c=0;c<t.length;c+=1){let v=await be(e.endpoint,t[c]);v.ok?l+=1:a.push(v),B(e,c+1,t.length,l,a.length),c<t.length-1&&await new Promise(m=>setTimeout(m,s.delayMs))}g=!1,w(e.kind),B(e,t.length,t.length,l,a.length,!0),await new Promise(c=>setTimeout(c,700));let d=[`${e.aksi} selesai.`,`Berhasil: ${l} dari ${t.length}`];a.length>0&&(d.push("",`Gagal: ${a.length}`),a.slice(0,10).forEach(c=>d.push(`#${c.id} - ${c.pesan}`)),a.length>10&&d.push(`... dan ${a.length-10} lainnya`));let f=M();f&&(f.style.display="none"),await y({title:"Hasil",message:d.join(`
-`),okLabel:"Muat ulang tabel",hideCancel:!0}),ye(),window.location.reload()}function ge(){return new Promise(e=>{let t=Date.now(),n=()=>{if(p.some(o=>u(o))||Date.now()-t>s.readyTimeoutMs){e();return}setTimeout(n,s.readyPollMs)};n()})}var h=!1,T=[],E=new Map;function me(){T.forEach(e=>e.disconnect()),T.length=0,E.clear()}function x(e){if(!h){h=!0;try{Q(e),G(e),L()}finally{h=!1}}}function W(e){let t=e.querySelectorAll("tbody tr").length;return t===0||e.querySelectorAll("tbody td.bv-sel").length===t}function he(e,t){let n=new MutationObserver(()=>{if(h)return;let o=u(e);if(o){if(o!==t){S(e);return}W(o)||x(e)}});n.observe(t,{childList:!0,subtree:!0}),T.push(n);let r=t.parentElement;if(r){let o=new MutationObserver(()=>{let i=u(e);i&&i!==t&&S(e)});o.observe(r,{childList:!0}),T.push(o)}}function S(e){let t=u(e);if(t){if(Q(e),E.get(e.sel)===t){x(e);return}E.set(e.sel,t),x(e),he(e,t)}}function xe(){setInterval(()=>{h||p.forEach(e=>{let t=E.get(e.sel),n=u(e);n&&(!t||!document.contains(t)||n!==t)?S(e):(n&&!W(n)||n&&!n.querySelector('thead th[data-ext-bv-header="1"]'))&&x(e)})},Math.max(1e3,s.readyPollMs*4))}function ve(){let e=window.jQuery;e&&p.forEach(t=>{let n=u(t);if(!(!n||n.dataset.extBvBound==="1")){n.dataset.extBvBound="1";try{e(t.sel).off("draw.dt.extBv").on("draw.dt.extBv",()=>{g||h||x(t)})}catch{}}})}var X="ext-bv-dtsearch-",$="ext-bv-filter";function H(e){return(u(e)?.closest(".dataTables_wrapper")??document.getElementById(`${e.sel.replace(/^#/,"")}_wrapper`))?.querySelector(".dataTables_filter input")??null}function ke(e,t){e.value=t,e.dispatchEvent(new Event("input",{bubbles:!0})),e.dispatchEvent(new KeyboardEvent("keyup",{bubbles:!0,key:"a"})),e.dispatchEvent(new Event("search",{bubbles:!0})),e.dispatchEvent(new Event("change",{bubbles:!0}))}function ye(){try{p.forEach(t=>{let n=j(t),r=n?String(n.search()??""):H(t)?.value??null;r!==null&&sessionStorage.setItem(X+t.kind,r)});let e={};document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), select, textarea').forEach(t=>{let n=t.id||t.name;n&&(t.closest(`#${s.barId}`)||(e[n]=t.value??""))}),sessionStorage.setItem($,JSON.stringify(e))}catch{}}function we(){let e=()=>{Array.from(document.querySelectorAll('button, a, input[type="button"], input[type="submit"]')).find(r=>(r.getAttribute("onclick")||"").replace(/\s+/g,"").startsWith("cari("))?.click()},t=n=>{p.every(o=>{let i=u(o);return!!i&&i.classList.contains("dataTable")})?window.setTimeout(e,250):n<60?window.setTimeout(()=>t(n+1),250):e()};t(0)}function Te(){try{let e=sessionStorage.getItem($),t=!1;if(e){let n=JSON.parse(e);for(let[r,o]of Object.entries(n)){let i=document.getElementById(r)||document.querySelector(`[name="${r}"]`);if(i){let a=i;a.value!==o&&(t=!0),a.value=o,i.dispatchEvent(new Event("input",{bubbles:!0})),i.dispatchEvent(new Event("change",{bubbles:!0}))}}sessionStorage.removeItem($)}t&&we(),p.forEach(n=>{let r=X+n.kind,o=sessionStorage.getItem(r);if(o===null)return;let i=a=>{let l=H(n);if(!l){a<40?window.setTimeout(()=>i(a+1),250):sessionStorage.removeItem(r);return}ke(l,o),window.setTimeout(()=>{(H(n)?.value??null)===o?sessionStorage.removeItem(r):a<10?i(a+1):sessionStorage.removeItem(r)},600)};i(0)})}catch{}}function Y(){try{ae(),ge().then(()=>{me(),ue(),q(),ve(),xe(),Te(),document.documentElement.setAttribute("data-ext-bulk-verif","1");let e=p.map(t=>{let n=u(t),r=n?n.querySelectorAll("tbody tr:not(.dataTables_empty)").length:0,o=n?n.querySelectorAll("tbody td.bv-sel").length:0,i=n?n.querySelectorAll("tbody td.bv-sel[data-ext-bv-unid]").length:0,a=n?!!n.querySelector('thead th[data-ext-bv-header="1"]'):!1;return`${t.sel}: kolom=${o}/${r}${i?` (${i} tanpa id)`:""} ${a?"header=ok":"header=BELUM"}`});console.log("[BulkVerif] Init complete -",e.join(" | "),s.UJI_SAJA?"(MODE UJI: checkbox nonaktif)":"")})}catch(e){console.error("[BulkVerif] Init error:",e)}}typeof K.featureModules<"u"&&(K.featureModules.mKlaimBulkVerif={id:"mKlaimBulkVerif",name:"Bulk Verif / Batal Verif",description:"Verifikasi atau batalkan verifikasi banyak klaim sekaligus",match:{regex:/^\/v2\/m-klaim\/?$/},run:Y});return oe(Ee);})();
+  `;
+    document.head.appendChild(style);
+    injectSharedCSS();
+  }
+  function getTableEl(target) {
+    return document.querySelector(target.sel);
+  }
+  function getDataTable(target) {
+    const jq = window.jQuery;
+    if (!jq) return null;
+    try {
+      return jq(target.sel).DataTable() ?? null;
+    } catch {
+      return null;
+    }
+  }
+  function toEl(node) {
+    return (Array.isArray(node) ? node : [node]).filter(
+      (n) => n instanceof HTMLElement
+    );
+  }
+  function getIdVisit(row) {
+    const el = row.querySelector('[onclick*="detail("]');
+    if (el) {
+      const m = (el.getAttribute("onclick") || "").match(/\d+/);
+      if (m) return m[0];
+    }
+    const bV = row.querySelector('[onclick*="BatalVerif("]');
+    if (bV) {
+      const m = (bV.getAttribute("onclick") || "").match(/\d+/);
+      if (m) return m[0];
+    }
+    return null;
+  }
+  function bolehPilih(target, row) {
+    return isEligible(
+      target.kind,
+      !!row.querySelector('button[onclick*="detail("]'),
+      !!row.querySelector('button[onclick*="BatalVerif("]')
+    );
+  }
+  function toBarisInfo(target, row) {
+    return { id: getIdVisit(row), eligible: bolehPilih(target, row) };
+  }
+  function getBarisTersaring(target) {
+    const table = getTableEl(target);
+    if (!table) return [];
+    const dt = getDataTable(target);
+    if (dt) {
+      try {
+        return toEl(dt.rows({ search: "applied" }).nodes().toArray());
+      } catch {
+      }
+    }
+    return Array.from(table.querySelectorAll("tbody tr")).filter(
+      (tr) => !tr.classList.contains("dataTables_empty")
+    );
+  }
+  function getSemuaBaris(target) {
+    const table = getTableEl(target);
+    if (!table) return [];
+    const dt = getDataTable(target);
+    if (dt) {
+      try {
+        return toEl(dt.rows().nodes().toArray());
+      } catch {
+      }
+    }
+    return Array.from(table.querySelectorAll("tbody tr")).filter(
+      (tr) => !tr.classList.contains("dataTables_empty")
+    );
+  }
+  function renderCheckbox(target, row) {
+    const id = getIdVisit(row);
+    if (!id) {
+      const cell2 = document.createElement("td");
+      cell2.className = "bv-sel";
+      cell2.dataset.extBvUnid = "1";
+      const cb2 = document.createElement("input");
+      cb2.type = "checkbox";
+      cb2.disabled = true;
+      cb2.title = "id_visit tidak terbaca dari markup baris ini";
+      cell2.appendChild(cb2);
+      row.insertBefore(cell2, row.firstChild);
+      return;
+    }
+    const sel = bolehPilih(target, row);
+    const cell = document.createElement("td");
+    cell.className = "bv-sel";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.dataset.extBvId = id;
+    cb.checked = dipilih[target.kind].has(id);
+    if (CONFIG.UJI_SAJA) {
+      cb.disabled = true;
+      cb.title = "Mode uji - belum bisa dipilih";
+    } else {
+      cb.disabled = sedangProses || !sel;
+      cb.title = sedangProses ? "Sedang diproses..." : sel ? "Pilih baris ini" : "Baris tidak memenuhi syarat aksi ini";
+      cb.addEventListener("change", () => {
+        if (cb.checked) dipilih[target.kind].add(id);
+        else dipilih[target.kind].delete(id);
+        updateBar();
+        syncHeaderState(target);
+      });
+    }
+    cell.appendChild(cb);
+    row.insertBefore(cell, row.firstChild);
+  }
+  function stripRowCheckboxes(table) {
+    table.querySelectorAll("tbody td.bv-sel").forEach((el) => el.remove());
+  }
+  function syncRows(target) {
+    const table = getTableEl(target);
+    if (!table) return;
+    stripRowCheckboxes(table);
+    table.querySelectorAll("tbody tr").forEach((tr) => renderCheckbox(target, tr));
+    syncHeaderState(target);
+  }
+  function syncHeaderState(target) {
+    const table = getTableEl(target);
+    const cb = table?.querySelector("thead input[data-ext-bv-header]");
+    if (!cb) return;
+    const baris = getBarisTersaring(target).filter((tr) => bolehPilih(target, tr));
+    const total = baris.length;
+    const tercentang = baris.filter((tr) => {
+      const id = getIdVisit(tr);
+      return !!id && dipilih[target.kind].has(id);
+    }).length;
+    cb.disabled = CONFIG.UJI_SAJA || sedangProses || total === 0;
+    cb.checked = total > 0 && tercentang === total;
+    cb.indeterminate = tercentang > 0 && tercentang < total;
+  }
+  function isDataTableAktif(table) {
+    if (!table) return false;
+    try {
+      const jq = window.jQuery;
+      if (jq?.fn?.DataTable?.isDataTable?.(table)) return true;
+    } catch {
+    }
+    return table.classList.contains("dataTable");
+  }
+  function renderHeaderCheckbox(target) {
+    const table = getTableEl(target);
+    if (!isDataTableAktif(table)) return;
+    const barisHeader = table?.querySelector("thead tr");
+    if (!barisHeader) return;
+    const thAda = barisHeader.querySelector('th[data-ext-bv-header="1"]');
+    if (thAda) {
+      syncHeaderState(target);
+      return;
+    }
+    const th = document.createElement("th");
+    th.className = "bv-sel-th";
+    th.dataset.extBvHeader = "1";
+    th.title = "Pilih / batal pilih semua baris yang cocok dengan pencarian";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.dataset.extBvHeader = "1";
+    cb.disabled = true;
+    if (CONFIG.UJI_SAJA) {
+      cb.title = "Mode uji - belum bisa dipilih";
+    } else {
+      cb.title = "Pilih semua hasil pencarian";
+      cb.addEventListener("change", () => {
+        const baris = getBarisTersaring(target).map((tr) => toBarisInfo(target, tr));
+        applySelectAll(target.kind, baris, cb.checked);
+        syncRows(target);
+        updateBar();
+      });
+    }
+    th.appendChild(cb);
+    barisHeader.insertBefore(th, barisHeader.firstChild);
+    if (CONFIG.UJI_SAJA) {
+      cb.disabled = true;
+    } else {
+      syncHeaderState(target);
+    }
+  }
+  function renderAll() {
+    TABLES.forEach(initTabel);
+    updateBar();
+  }
+  function getBar() {
+    return document.getElementById(CONFIG.barId);
+  }
+  function renderProgres(target, selesai, total, sukses, gagal, final = false) {
+    const bar = getBar();
+    if (!bar) return;
+    const pct = total > 0 ? Math.min(100, Math.round(selesai / total * 100)) : 0;
+    bar.innerHTML = "";
+    const item = document.createElement("div");
+    item.className = "bv-item";
+    const status = document.createElement("span");
+    status.className = "bv-status";
+    status.textContent = final ? `Selesai - ${target.nama}` : `${target.nama}: ${selesai}/${total}`;
+    const prog = document.createElement("div");
+    prog.className = final ? "bv-progress done" : "bv-progress";
+    const fill = document.createElement("i");
+    fill.style.width = `${pct}%`;
+    prog.appendChild(fill);
+    const ringkas = document.createElement("span");
+    ringkas.className = "bv-label";
+    if (final) {
+      ringkas.textContent = gagal > 0 ? `OK ${sukses} \xB7 Gagal ${gagal}` : `OK ${sukses} dari ${total}`;
+    } else {
+      ringkas.textContent = gagal > 0 ? `OK ${sukses} \xB7 Gagal ${gagal}` : `OK ${sukses}`;
+    }
+    item.append(status, prog, ringkas);
+    bar.appendChild(item);
+    bar.style.display = "flex";
+  }
+  function updateBar() {
+    const bar = getBar();
+    if (!bar) return;
+    const isi = TABLES.map((t) => [t, dipilih[t.kind].size]).filter(([, n]) => n > 0);
+    if (CONFIG.UJI_SAJA || isi.length === 0) {
+      bar.style.display = "none";
+      return;
+    }
+    if (sedangProses) return;
+    bar.innerHTML = "";
+    isi.forEach(([t, n]) => {
+      const item = document.createElement("div");
+      item.className = "bv-item";
+      const label = document.createElement("span");
+      label.className = "bv-label";
+      label.textContent = `${t.nama}: `;
+      const count = document.createElement("span");
+      count.className = "bv-count";
+      count.textContent = `${n} dipilih`;
+      const btn = document.createElement("button");
+      btn.className = t.danger ? "bv-aksi bv-aksi-danger" : "bv-aksi";
+      btn.textContent = t.aksi;
+      btn.addEventListener("click", () => void jalankanAksi(t));
+      item.append(label, count, btn);
+      bar.appendChild(item);
+    });
+    const reset = document.createElement("button");
+    reset.className = "bv-reset";
+    reset.textContent = "Batal Pilih";
+    reset.addEventListener("click", () => {
+      TABLES.forEach((t) => clearSelection(t.kind));
+      renderAll();
+    });
+    bar.appendChild(reset);
+    bar.style.display = "flex";
+  }
+  function buildBar() {
+    if (getBar()) return;
+    const bar = document.createElement("div");
+    bar.id = CONFIG.barId;
+    bar.style.display = "none";
+    document.body.appendChild(bar);
+  }
+  async function kirimSatu(endpoint, idVisit) {
+    try {
+      const body = new URLSearchParams({ id_visit: idVisit });
+      const res = await safeFetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: body.toString(),
+        credentials: "same-origin"
+      });
+      if (!res.ok) return { id: idVisit, ok: false, pesan: `HTTP ${res.status}` };
+      const json = await res.json();
+      const ok = String(json.kode) === "200";
+      return { id: idVisit, ok, pesan: json.message ?? (ok ? "Sukses" : "Gagal") };
+    } catch (err) {
+      return { id: idVisit, ok: false, pesan: err.message || "Gagal koneksi" };
+    }
+  }
+  function validasiUlang(target) {
+    const semua = getSemuaBaris(target).map((tr) => toBarisInfo(target, tr));
+    const gugur = pruneSelection(target.kind, semua);
+    return { valid: getSelected(target.kind), gugur };
+  }
+  async function jalankanAksi(target) {
+    if (sedangProses) return;
+    const { valid, gugur } = validasiUlang(target);
+    if (valid.length === 0) {
+      clearSelection(target.kind);
+      renderAll();
+      await confirmLegacy({
+        title: "Tidak ada baris yang bisa diproses",
+        message: "Pilihan tidak lagi cocok dengan data di tabel. Silakan pilih ulang.",
+        okLabel: "Mengerti",
+        hideCancel: true
+      });
+      return;
+    }
+    const perkiraanDetik = Math.ceil(valid.length * CONFIG.delayMs / 1e3);
+    const pesan = [`${target.nama}: ${valid.length} baris akan diproses.`];
+    if (gugur > 0) pesan.push(`${gugur} pilihan diabaikan (data berubah/tidak memenuhi syarat).`);
+    pesan.push(
+      target.danger ? "Verifikasi yang dibatalkan kembali ke daftar belum terverifikasi." : "Data yang tidak memenuhi syarat akan ditolak server."
+    );
+    if (valid.length > CONFIG.warnIfMoreThan) {
+      pesan.push(`PERINGATAN: jumlah besar, proses \xB1${perkiraanDetik} detik. Jangan tutup halaman.`);
+    }
+    pesan.push("Lanjutkan?");
+    const konfirmasi = await confirmLegacy({
+      title: `${target.aksi} ${valid.length} data?`,
+      message: pesan.join("\n"),
+      variant: target.danger ? "danger" : "primary",
+      okLabel: `Ya, ${target.aksi}`,
+      cancelLabel: "Batal"
+    });
+    if (!konfirmasi) return;
+    sedangProses = true;
+    TABLES.forEach((t) => syncHeaderState(t));
+    renderProgres(target, 0, valid.length, 0, 0);
+    const gagal = [];
+    let sukses = 0;
+    for (let i = 0; i < valid.length; i += 1) {
+      const hasil = await kirimSatu(target.endpoint, valid[i]);
+      if (hasil.ok) sukses += 1;
+      else gagal.push(hasil);
+      renderProgres(target, i + 1, valid.length, sukses, gagal.length);
+      if (i < valid.length - 1) await new Promise((r) => setTimeout(r, CONFIG.delayMs));
+    }
+    sedangProses = false;
+    clearSelection(target.kind);
+    renderProgres(target, valid.length, valid.length, sukses, gagal.length, true);
+    await new Promise((r) => setTimeout(r, 700));
+    const laporan = [`${target.aksi} selesai.`, `Berhasil: ${sukses} dari ${valid.length}`];
+    if (gagal.length > 0) {
+      laporan.push("", `Gagal: ${gagal.length}`);
+      gagal.slice(0, 10).forEach((h) => laporan.push(`#${h.id} - ${h.pesan}`));
+      if (gagal.length > 10) laporan.push(`... dan ${gagal.length - 10} lainnya`);
+    }
+    const barSelesai = getBar();
+    if (barSelesai) barSelesai.style.display = "none";
+    await confirmLegacy({
+      title: "Hasil",
+      message: laporan.join("\n"),
+      okLabel: "Muat ulang tabel",
+      hideCancel: true
+    });
+    simpanFilterSebelumReload();
+    window.location.reload();
+  }
+  function waitForTables() {
+    return new Promise((resolve) => {
+      const mulai = Date.now();
+      const cek = () => {
+        const ada = TABLES.some((t) => getTableEl(t));
+        if (ada || Date.now() - mulai > CONFIG.readyTimeoutMs) {
+          resolve();
+          return;
+        }
+        setTimeout(cek, CONFIG.readyPollMs);
+      };
+      cek();
+    });
+  }
+  var syncing = false;
+  var observers = [];
+  var teramati = /* @__PURE__ */ new Map();
+  function buangObserver() {
+    observers.forEach((o) => o.disconnect());
+    observers.length = 0;
+    teramati.clear();
+  }
+  function safeSync(target) {
+    if (syncing) return;
+    syncing = true;
+    try {
+      renderHeaderCheckbox(target);
+      syncRows(target);
+      updateBar();
+    } finally {
+      syncing = false;
+    }
+  }
+  function kolomKonsisten(table) {
+    const tr = table.querySelectorAll("tbody tr").length;
+    return tr === 0 || table.querySelectorAll("tbody td.bv-sel").length === tr;
+  }
+  function amatiTabel(t, el) {
+    const mo = new MutationObserver(() => {
+      if (syncing) return;
+      const kini = getTableEl(t);
+      if (!kini) return;
+      if (kini !== el) {
+        initTabel(t);
+        return;
+      }
+      if (!kolomKonsisten(kini)) safeSync(t);
+    });
+    mo.observe(el, { childList: true, subtree: true });
+    observers.push(mo);
+    const parent = el.parentElement;
+    if (parent) {
+      const pm = new MutationObserver(() => {
+        const kini = getTableEl(t);
+        if (kini && kini !== el) initTabel(t);
+      });
+      pm.observe(parent, { childList: true });
+      observers.push(pm);
+    }
+  }
+  function initTabel(t) {
+    const el = getTableEl(t);
+    if (!el) return;
+    renderHeaderCheckbox(t);
+    if (teramati.get(t.sel) === el) {
+      safeSync(t);
+      return;
+    }
+    teramati.set(t.sel, el);
+    safeSync(t);
+    amatiTabel(t, el);
+  }
+  function jagaHidup() {
+    setInterval(
+      () => {
+        if (syncing) return;
+        TABLES.forEach((t) => {
+          const el = teramati.get(t.sel);
+          const kini = getTableEl(t);
+          if (kini && (!el || !document.contains(el) || kini !== el)) {
+            initTabel(t);
+          } else if (kini && !kolomKonsisten(kini)) {
+            safeSync(t);
+          } else if (kini && !kini.querySelector('thead th[data-ext-bv-header="1"]')) {
+            safeSync(t);
+          }
+        });
+      },
+      Math.max(1e3, CONFIG.readyPollMs * 4)
+    );
+  }
+  function bindDataTablesRedraw() {
+    const jq = window.jQuery;
+    if (!jq) return;
+    TABLES.forEach((t) => {
+      const el = getTableEl(t);
+      if (!el || el.dataset.extBvBound === "1") return;
+      el.dataset.extBvBound = "1";
+      try {
+        jq(t.sel).off("draw.dt.extBv").on("draw.dt.extBv", () => {
+          if (sedangProses || syncing) return;
+          safeSync(t);
+        });
+      } catch {
+      }
+    });
+  }
+  var SS_DTSEARCH_PREFIX = "ext-bv-dtsearch-";
+  var SS_FILTER = "ext-bv-filter";
+  function getSearchInput(target) {
+    const table = getTableEl(target);
+    const wrapper = table?.closest(".dataTables_wrapper") ?? document.getElementById(`${target.sel.replace(/^#/, "")}_wrapper`);
+    return wrapper?.querySelector(".dataTables_filter input") ?? null;
+  }
+  function applySearchInput(input, value) {
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, key: "a" }));
+    input.dispatchEvent(new Event("search", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  function simpanFilterSebelumReload() {
+    try {
+      TABLES.forEach((t) => {
+        const dt = getDataTable(t);
+        const nilai = dt ? String(dt.search() ?? "") : getSearchInput(t)?.value ?? null;
+        if (nilai !== null) sessionStorage.setItem(SS_DTSEARCH_PREFIX + t.kind, nilai);
+      });
+      const data = {};
+      document.querySelectorAll(
+        'input:not([type="checkbox"]):not([type="radio"]), select, textarea'
+      ).forEach((el) => {
+        const key = el.id || el.name;
+        if (!key) return;
+        if (el.closest(`#${CONFIG.barId}`)) return;
+        data[key] = el.value ?? "";
+      });
+      sessionStorage.setItem(SS_FILTER, JSON.stringify(data));
+    } catch {
+    }
+  }
+  function muatUlangDenganFilter() {
+    const klikCari = () => {
+      const tombol = Array.from(
+        document.querySelectorAll(
+          'button, a, input[type="button"], input[type="submit"]'
+        )
+      ).find((el) => (el.getAttribute("onclick") || "").replace(/\s+/g, "").startsWith("cari("));
+      tombol?.click();
+    };
+    const tungguSiap = (percobaan) => {
+      const siap = TABLES.every((t) => {
+        const el = getTableEl(t);
+        return !!el && el.classList.contains("dataTable");
+      });
+      if (siap) {
+        window.setTimeout(klikCari, 250);
+      } else if (percobaan < 60) {
+        window.setTimeout(() => tungguSiap(percobaan + 1), 250);
+      } else {
+        klikCari();
+      }
+    };
+    tungguSiap(0);
+  }
+  function pulihFilterSetelahReload() {
+    try {
+      const raw = sessionStorage.getItem(SS_FILTER);
+      let filterBerubah = false;
+      if (raw) {
+        const data = JSON.parse(raw);
+        for (const [key, val] of Object.entries(data)) {
+          const el = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+          if (el) {
+            const kontrol = el;
+            if (kontrol.value !== val) filterBerubah = true;
+            kontrol.value = val;
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        sessionStorage.removeItem(SS_FILTER);
+      }
+      if (filterBerubah) muatUlangDenganFilter();
+      TABLES.forEach((t) => {
+        const storageKey = SS_DTSEARCH_PREFIX + t.kind;
+        const saved = sessionStorage.getItem(storageKey);
+        if (saved === null) return;
+        const terapkan = (percobaan) => {
+          const input = getSearchInput(t);
+          if (!input) {
+            if (percobaan < 40) window.setTimeout(() => terapkan(percobaan + 1), 250);
+            else sessionStorage.removeItem(storageKey);
+            return;
+          }
+          applySearchInput(input, saved);
+          window.setTimeout(() => {
+            const kini = getSearchInput(t)?.value ?? null;
+            if (kini === saved) {
+              sessionStorage.removeItem(storageKey);
+            } else if (percobaan < 10) {
+              terapkan(percobaan + 1);
+            } else {
+              sessionStorage.removeItem(storageKey);
+            }
+          }, 600);
+        };
+        terapkan(0);
+      });
+    } catch {
+    }
+  }
+  function initMKlaimBulkVerifFeature() {
+    try {
+      injectCSS();
+      void waitForTables().then(() => {
+        buangObserver();
+        buildBar();
+        renderAll();
+        bindDataTablesRedraw();
+        jagaHidup();
+        pulihFilterSetelahReload();
+        document.documentElement.setAttribute("data-ext-bulk-verif", "1");
+        const ringkas = TABLES.map((t) => {
+          const tbl = getTableEl(t);
+          const baris = tbl ? tbl.querySelectorAll("tbody tr:not(.dataTables_empty)").length : 0;
+          const selBv = tbl ? tbl.querySelectorAll("tbody td.bv-sel").length : 0;
+          const unid = tbl ? tbl.querySelectorAll("tbody td.bv-sel[data-ext-bv-unid]").length : 0;
+          const thHdr = tbl ? !!tbl.querySelector('thead th[data-ext-bv-header="1"]') : false;
+          return `${t.sel}: kolom=${selBv}/${baris}${unid ? ` (${unid} tanpa id)` : ""} ${thHdr ? "header=ok" : "header=BELUM"}`;
+        });
+        console.log(
+          "[BulkVerif] Init complete -",
+          ringkas.join(" | "),
+          CONFIG.UJI_SAJA ? "(MODE UJI: checkbox nonaktif)" : ""
+        );
+      });
+    } catch (err) {
+      console.error("[BulkVerif] Init error:", err);
+    }
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.mKlaimBulkVerif = {
+      id: "mKlaimBulkVerif",
+      name: "Bulk Verif / Batal Verif",
+      description: "Verifikasi atau batalkan verifikasi banyak klaim sekaligus",
+      match: { regex: /^\/v2\/m-klaim\/?$/ },
+      run: initMKlaimBulkVerifFeature
+    };
+  }
+  return __toCommonJS(mKlaimBulkVerif_exports);
+})();
+//# sourceMappingURL=mKlaimBulkVerif.js.map
