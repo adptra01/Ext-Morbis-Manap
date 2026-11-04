@@ -11,11 +11,13 @@
 
 ### ✨ feat
 
+- add visiteKonsul feature for manual input of doctor visits and consultations (`b0f5ef9`)
 - **batchUpload** — hapus tombol Analisis File — auto-deteksi langsung saat pilih/drop file (`d4900a0`)
 - **batchUpload** — ganti Mode Manual (Paste URL) dengan dropzone upload file (`9092c57`)
 
 ### 🧹 chore
 
+- **dist** — sync (`751aada`)
 - **dist** — sync (`bc57291`)
 
 ## 2026-11-03
@@ -1947,4 +1949,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d4900a0e00a942d66fd28b65004df462ed58ced9 -->
+<!-- changelog-upto: b0f5ef957947f5a38c10aa6c249b1e98ee5d3e01 -->

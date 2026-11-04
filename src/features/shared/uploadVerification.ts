@@ -12,7 +12,6 @@
  * Modul ini murni (tanpa DOM/fetch/chrome) supaya bisa diuji di vitest.
  *
  * Aturan konservatif — jangan pernah menuduh gagal tanpa bukti:
- *  - nama file kita terbaca di body respons                     → 'saved'
  *  - baris daftar yang cocok (nama file / keterangan) bertambah  → 'saved'
  *  - ada baris BARU tapi tidak cocok jarum kita                  → 'mismatch'
  *    (server me-rename dengan pola lain — tampilkan barisnya, jangan klaim gagal)
@@ -70,12 +69,6 @@ export function countDocumentMatches(
   return count;
 }
 
-/** Bukti kuat pertama: nama file kita terbaca di body respons server. */
-export function isSavedByResponseBody(responseBody: string, fileName: string): boolean {
-  const needle = documentMatchNeedle(fileName);
-  return needle.length >= MIN_NEEDLE_LENGTH && normalizeForMatch(responseBody).includes(needle);
-}
-
 /** Teks baris untuk ditampilkan di pesan diagnosa (rapi + dibatasi). */
 function rowForDisplay(row: string, maxLength = 160): string {
   const clean = String(row ?? '')
@@ -108,8 +101,12 @@ export function diffDocumentRows(before: readonly string[], after: readonly stri
 }
 
 export interface SaveVerificationInput {
-  /** Body respons upload (HTML/JSON/teks) apa adanya. */
-  responseBody: string;
+  /**
+   * Body respons upload. TIDAK dipakai sebagai bukti: halaman "Error - Aplikasi"
+   * MORBIS memantulkan nama file yang dikirim, sehingga body pernah membuat
+   * upload GAGAL tampil "Sukses" (2026-11-04). Bukti = `rowsBefore`/`rowsAfter`.
+   */
+  responseBody?: string;
   /** Nama file yang DIKIRIM (hasil rewriteUploadFilename, bukan nama asli). */
   fileName: string;
   /** Jarum tambahan, mis. keterangan timestamp yang ikut dikirim ke server. */
@@ -151,22 +148,17 @@ export function verifyDocumentSaved(input: SaveVerificationInput): SaveVerificat
     rowsAfterCount: after ? after.length : null,
   };
 
-  // 1) Nama file kita terbaca di body respons → server sudah menyimpan.
-  if (isSavedByResponseBody(input.responseBody, input.fileName)) {
-    return { ...result, status: 'saved', matchedNeedle: fileNeedle };
-  }
-
-  // 2) Tanpa kedua snapshot kita tidak bisa membandingkan apa pun.
+  // 1) Tanpa kedua snapshot kita tidak bisa membandingkan apa pun.
   if (before === null || after === null) return result;
 
-  // 3) Baris yang cocok bertambah → tersimpan.
+  // 2) Baris yang cocok bertambah → tersimpan.
   for (const needle of needles) {
     if (countDocumentMatches(after, [needle]) > countDocumentMatches(before, [needle])) {
       return { ...result, status: 'saved', matchedNeedle: needle };
     }
   }
 
-  // 4) Ada baris baru tapi tidak cocok jarum kita → server memakai nama lain.
+  // 3) Ada baris baru tapi tidak cocok jarum kita → server memakai nama lain.
   const added = diffDocumentRows(before, after);
   if (added.length === 0) return { ...result, status: 'missing' };
   const capped = added.slice(0, MAX_ADDED_ROWS_REPORTED);

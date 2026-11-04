@@ -4,7 +4,6 @@ import {
   countDocumentMatches,
   diffDocumentRows,
   documentMatchNeedle,
-  isSavedByResponseBody,
   normalizeForMatch,
   usableNeedles,
   verifyDocumentSaved,
@@ -55,21 +54,6 @@ describe('countDocumentMatches', () => {
   });
 });
 
-describe('isSavedByResponseBody', () => {
-  it('true hanya bila nama file kita terbaca di body', () => {
-    expect(
-      isSavedByResponseBody(
-        `<script>var url='/assets/dokumen-pasien/${UPLOAD_NAME}';</script>`,
-        UPLOAD_NAME,
-      ),
-    ).toBe(true);
-    expect(isSavedByResponseBody('<html><body>Error - Aplikasi</body></html>', UPLOAD_NAME)).toBe(
-      false,
-    );
-    expect(isSavedByResponseBody('', UPLOAD_NAME)).toBe(false);
-  });
-});
-
 describe('diffDocumentRows', () => {
   it('melaporkan hanya baris yang benar-benar baru', () => {
     expect(diffDocumentRows([ROW_OLD], [ROW_OLD, ROW_NEW])).toEqual([ROW_NEW]);
@@ -92,16 +76,17 @@ describe('diffDocumentRows', () => {
 describe('verifyDocumentSaved', () => {
   const base = { responseBody: '', fileName: UPLOAD_NAME };
 
-  it('saved: nama file terbaca di body respons (halaman detail setelah simpan)', () => {
-    const body = `<html><body><div class="div-file-upload"><script>var url = '/assets/dokumen-pasien/00005288-1760832001-${UPLOAD_NAME}';</script></div></body></html>`;
+  it('body respons yang memantulkan nama file BUKAN bukti (halaman Error - Aplikasi)', () => {
+    // Regresi 2026-11-04: halaman error MORBIS memuat nama file yang dikirim,
+    // dulu itu dianggap "saved" padahal insert GAGAL (ORA-01722).
+    const body = `<html><body><p>Detail Error: Message: An exception occurred while executing 'INSERT INTO DOK_RM_PASIEN' with params ["2026-04-01", "--1793759032-${UPLOAD_NAME}", ...] ORA-01722: invalid number</p></body></html>`;
     const result = verifyDocumentSaved({
       ...base,
       responseBody: body,
       rowsBefore: [ROW_OLD],
       rowsAfter: [ROW_OLD],
     });
-    expect(result.status).toBe('saved');
-    expect(result.matchedNeedle).toBe(UPLOAD_NEEDLE);
+    expect(result.status).toBe('missing');
   });
 
   it('saved: jumlah baris daftar bertambah setelah upload', () => {

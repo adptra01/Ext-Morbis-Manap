@@ -17,11 +17,7 @@ import {
   parseMorbisHtmlResponse,
   summarizeMorbisResponse,
 } from './shared/morbisResponse.js';
-import {
-  isSavedByResponseBody,
-  verifyDocumentSaved,
-  type SaveVerification,
-} from './shared/uploadVerification.js';
+import { verifyDocumentSaved, type SaveVerification } from './shared/uploadVerification.js';
 
 const g = getMorbisGlobals();
 
@@ -674,6 +670,28 @@ function toggleUIProcessingState(isUploading: boolean): void {
   });
 }
 
+/**
+ * NORM pasien dari halaman detail M-KLAIM (input `#norm`, mis. `00004779`).
+ *
+ * Ini sumber resmi. Sebelumnya NORM hanya ditebak dari nama file: nama tanpa
+ * token angka ≥6 digit menghasilkan norm kosong → server menyimpannya sebagai
+ * ID_PASIEN `"-"` → `ORA-01722: invalid number` → insert GAGAL (2026-11-04).
+ */
+function getPatientNormFromPage(): string {
+  const el = document.querySelector<HTMLInputElement>('#norm, input[name="norm"]');
+  return (el?.value || '').trim();
+}
+
+/** NORM yang aman dikirim: wajib angka (ID_PASIEN bertipe NUMBER di Oracle). */
+function resolveNorm(metadata: BatchItem): string {
+  const candidates = [metadata.norm, getPatientNormFromPage()];
+  for (const candidate of candidates) {
+    const value = String(candidate ?? '').trim();
+    if (/^\d{1,12}$/.test(value)) return value;
+  }
+  return '';
+}
+
 function extractNormFromName(name: string): string {
   const nameWithoutExt = name.replace(/\.[^/.]+$/, '');
   const parts = nameWithoutExt.split(/[-_\s]+/);
@@ -736,7 +754,7 @@ function analyzeFiles(): void {
   batchQueue = validFiles.map((file) => {
     const filename = file.name;
     const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-    const norm = extractNormFromName(filename);
+    const norm = getPatientNormFromPage() || extractNormFromName(filename);
     const keteranganParts = nameWithoutExt
       .split(/[-_\s]+/)
       .filter((p) => !/^\d{10}$/.test(p) && p !== norm);
@@ -1131,52 +1149,12 @@ async function getDocRowsSnapshot(
   return rows;
 }
 
-/**
- * Teks halaman yang BENAR-BENAR dirender ke pengguna.
- *
- * Setiap section (file upload, SEP, hasil lab, radiologi, …) memuat partial
- * sendiri dan menulis nama berkasnya inline (`var url = '/assets/dokumen-pasien/…'`),
- * jadi DOM halaman + resource yang sudah dimuat adalah bukti paling jujur —
- * jauh lebih lengkap daripada membaca satu partial saja.
- */
-function getRenderedPageText(): string {
-  const loaded = performance
-    .getEntriesByType('resource')
-    .map((entry) => entry.name)
-    .filter((name) => name.includes('/assets/dokumen-pasien/'));
-  return `${document.documentElement.outerHTML}\n${loaded.join('\n')}`;
-}
-
-/**
- * Cek apakah nama file kita muncul di halaman yang sedang dibuka (section mana
- * pun: file upload, SEP, hasil lab, …). Dokumen M-KLAIM bisa tampil di salah
- * satunya walau tidak terdaftar di halaman dokumen-pasien.
- */
-async function isDocumentVisibleOnCurrentPage(fileName: string): Promise<boolean | null> {
-  // Hanya relevan di halaman modul klaim (tempat fitur ini dipakai).
-  if (!/\/v2\/m-klaim\//i.test(window.location.pathname)) return null;
-  const idVisit = new URLSearchParams(window.location.search).get('id_visit');
-  if (!idVisit) return null;
-  // DOM bisa belum memuat dokumen yang baru di-upload → cek partial slot upload
-  // yang selalu fresh. Section lain sudah tercermin di DOM.
-  try {
-    const response = await fetch(
-      `${window.location.origin}/v2/m-klaim/partials/div-file-upload?id_visit=${encodeURIComponent(idVisit)}`,
-      { credentials: 'same-origin', cache: 'no-store', signal: _getBatchAbortSignal() },
-    );
-    if (response.ok && isSavedByResponseBody(await response.text(), fileName)) return true;
-  } catch {
-    // Partial tidak terbaca — DOM tetap dipakai sebagai bukti.
-  }
-  return isSavedByResponseBody(getRenderedPageText(), fileName) ? true : null;
-}
-
 interface UploadVerificationOutcome {
   status: SaveVerification;
   /** Ringkasan bukti/diagnosa untuk pesan UI & console. */
   detail: string;
-  /** Dari mana bukti tersimpan diperoleh. */
-  source?: 'body' | 'rows' | 'claim-page';
+  /** Dari mana bukti tersimpan diperoleh (hanya daftar dokumen server). */
+  source?: 'rows';
 }
 
 /** Ringkasan angka + baris baru untuk pesan diagnosa. */
@@ -1198,24 +1176,20 @@ function describeVerification(result: ReturnType<typeof verifyDocumentSaved>): s
 /**
  * Buktikan dokumen benar-benar tersimpan (aturan di shared/uploadVerification.ts).
  *
- * `responseBodyForProof` hanya boleh berisi body respons yang TIDAK memuat pesan
- * gagal — kalau server jelas menolak, body tidak boleh jadi bukti.
+ * Bukti sah HANYA daftar dokumen pasien (baris yang benar-benar dilihat
+ * pengguna). Body respons TIDAK boleh dipakai: halaman "Error - Aplikasi"
+ * MORBIS memantulkan nama file yang kita kirim, sehingga dulu setiap upload
+ * GAGAL tampil "Sukses" (2026-11-04).
  */
 async function verifyDocumentUpload(
   idVisit: string,
   fileName: string,
   extraNeedles: readonly string[],
-  responseBodyForProof: string,
   rowsBefore: readonly string[] | null,
 ): Promise<UploadVerificationOutcome> {
-  // Fast-path: server memantulkan nama file kita → tidak perlu fetch daftar.
-  if (isSavedByResponseBody(responseBodyForProof, fileName)) {
-    return { status: 'saved', detail: 'nama file terbaca di respons server', source: 'body' };
-  }
-
   const snapshot = async (): Promise<ReturnType<typeof verifyDocumentSaved>> =>
     verifyDocumentSaved({
-      responseBody: responseBodyForProof,
+      responseBody: '',
       fileName,
       extraNeedles,
       rowsBefore,
@@ -1233,18 +1207,6 @@ async function verifyDocumentUpload(
     result = await snapshot();
     if (result.status === 'saved') {
       return { status: 'saved', detail: describeVerification(result), source: 'rows' };
-    }
-  }
-
-  // Halaman klaim (preview `div-file-upload`) bisa menampilkan dokumen yang
-  // tidak terdaftar di halaman dokumen-pasien → cek sebelum menyimpulkan gagal.
-  if (result.status === 'missing' || result.status === 'mismatch') {
-    if ((await isDocumentVisibleOnCurrentPage(fileName)) === true) {
-      return {
-        status: 'saved',
-        detail: 'nama file tampil di halaman klaim (tidak ada di daftar dokumen-pasien)',
-        source: 'claim-page',
-      };
     }
   }
 
@@ -1335,9 +1297,20 @@ async function processAndUploadSingleUrl(
     }
     file = await convertFileToPdf(file);
 
+    // ID_PASIEN di Oracle bertipe NUMBER — norm kosong/"-" membuat insert gagal
+    // (ORA-01722) sementara server tetap membalas 200. Tolak lebih awal.
+    const norm = resolveNorm(metadata);
+    if (!norm) {
+      return {
+        success: false,
+        error: 'NORM pasien tidak terbaca dari halaman — upload dibatalkan (bukan sukses)',
+      };
+    }
+    metadata.norm = norm;
+
     const formData = new FormData();
     formData.append('id_visit', idVisitStr);
-    formData.append('norm', metadata.norm);
+    formData.append('norm', norm);
     formData.append('tgl_file', metadata.tanggal);
     formData.append('jenis_dokumen', metadata.jenis_dokumen || 'Lain-lain');
     formData.append('dok', file);
@@ -1384,25 +1357,13 @@ async function processAndUploadSingleUrl(
     // muncul sebagai baris baru di daftar dokumen pasien.
     const verification = _getBatchAbortSignal().aborted
       ? { status: 'unknown' as SaveVerification, detail: 'batch dibatalkan' }
-      : await verifyDocumentUpload(
-          idVisitStr,
-          file.name,
-          [keterangan],
-          verdict.ok ? result : '',
-          rowsBefore,
-        );
+      : await verifyDocumentUpload(idVisitStr, file.name, [keterangan], rowsBefore);
 
     if (verification.status === 'saved') {
       if (!verdict.ok) {
         console.warn(
           '[Batch Upload] Respons server terlihat gagal, tapi dokumen ADA di daftar dokumen — dianggap sukses.',
           verdict.message,
-        );
-      }
-      if (verification.source === 'claim-page') {
-        console.info(
-          '[Batch Upload] Dokumen tampil di halaman klaim tapi TIDAK di daftar dokumen-pasien:',
-          file.name,
         );
       }
       return { success: true, result };
