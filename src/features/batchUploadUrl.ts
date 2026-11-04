@@ -186,6 +186,18 @@ async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 2):
 let batchQueue: BatchItem[] = [];
 let isProcessing = false;
 
+/**
+ * Dokumen yang benar-benar akan di-upload.
+ *
+ * WAJIB mengecualikan yang sudah `success`: tombol "Ulangi Gagal/Belum Pasti"
+ * hanya mengembalikan item error/warning ke `pending`, sisanya tetap `success`
+ * dan dulu ikut ter-upload ulang — satu dokumen bermasalah membuat SELURUH
+ * batch terkirim lagi (2026-11-04).
+ */
+function isUploadCandidate(item: BatchItem): boolean {
+  return item.selected !== false && item.status !== 'success';
+}
+
 // Batch cancellation support
 let _batchAbortController: AbortController | null = null;
 
@@ -1473,7 +1485,7 @@ async function runBatchQueue(): Promise<void> {
   let errorCount = 0;
   let unverifiedCount = 0;
   let cancelled = false;
-  const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+  const itemsToUpload = batchQueue.filter(isUploadCandidate);
   const total = itemsToUpload.length;
 
   if (total === 0) {
@@ -1807,7 +1819,7 @@ async function runBatchQueueToSidepanel(): Promise<void> {
     let successCount = 0;
     let errorCount = 0;
     let unverifiedCount = 0;
-    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const itemsToUpload = batchQueue.filter(isUploadCandidate);
     const total = itemsToUpload.length;
 
     if (total === 0) {
