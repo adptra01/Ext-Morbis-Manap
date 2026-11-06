@@ -91,6 +91,7 @@ const ROLES = {
   ADMIN: 'admin',
   LABOR: 'labor',
   PENDAFTARAN: 'pendaftaran',
+  IGD: 'igd',
 } as const;
 
 const DEFAULT_CUSTOM_URLS: CustomUrl[] = [
@@ -175,6 +176,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       allowedRoles: ['casemix', 'admin'],
       name: 'Bulk Verif / Batal Verif',
       description: 'Pilih banyak klaim lalu Verif atau Batal Verif sekaligus (halaman M-Klaim)',
+    },
+    mKlaimPrint: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Cetak Rapi M-KLAIM',
+      description:
+        'Modul cetak terpisah untuk merapikan dan mencetak section M-KLAIM detail ke format A4 profesional',
     },
     fetchWatchdog: {
       enabled: true,
@@ -357,6 +365,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Sembunyikan section checklist telaah resep di halaman detail untuk unit DEPO RANAP',
     },
+    visiteKonsul: {
+      enabled: true,
+      allowedRoles: ['admin', 'igd'],
+      name: 'Visite & Konsul Dokter (IGD)',
+      description:
+        'Input manual visite & konsul dokter spesialis IGD di halaman utama pelayanan (data di Reports SIMRS)',
+    },
   },
 };
 
@@ -395,6 +410,14 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
     if (newFeatures[key]) {
       (newFeatures[key] as { allowedRoles: string[] }).allowedRoles = [...Object.values(ROLES)];
     }
+  }
+
+  // Role igd (baru 2026-11-06): ikut semua fitur yang mengizinkan dokter.
+  // Tanpa backfill ini user ber-role igd cuma melihat visiteKonsul karena
+  // allowedRoles tersimpan (config lama) belum memuat 'igd'.
+  for (const key of validFeatures) {
+    const ar = (newFeatures[key] as { allowedRoles: string[] }).allowedRoles;
+    if (Array.isArray(ar) && ar.includes('dokter') && !ar.includes('igd')) ar.push('igd');
   }
 
   // Antrian Tools: pastikan role admin & pendaftaran selalu diizinkan (config lama yang

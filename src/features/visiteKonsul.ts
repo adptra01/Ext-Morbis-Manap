@@ -10,14 +10,11 @@
  */
 import { resolveReportsBase } from './shared/resumeHistory.js';
 import { runWhenIdle } from './shared/whenIdle.js';
+import { getMorbisGlobals, type MorbisGlobals } from './shared/types.js';
 
 const LOG_PREFIX = '[MORBIS Ext] visiteKonsul';
 
-const g = window as unknown as { __extVisiteKonsul?: boolean };
-if (g.__extVisiteKonsul) {
-  throw new Error('skip double inject visiteKonsul');
-}
-g.__extVisiteKonsul = true;
+const g = getMorbisGlobals() as MorbisGlobals & { __extVisiteKonsul?: boolean };
 
 function getIdVisit(): string | null {
   try {
@@ -298,6 +295,11 @@ async function init() {
   const idVisit = getIdVisit();
   if (!idVisit) return;
 
+  // guard anti double inject — dipindah ke sini (bukan top-level) supaya
+  // registrasi featureModules di bawah tetap jalan saat script ter-inject 2×.
+  if (g.__extVisiteKonsul) return;
+  g.__extVisiteKonsul = true;
+
   injectStyles();
 
   const user = readPetugas();
@@ -327,10 +329,23 @@ async function init() {
   console.log(LOG_PREFIX, 'loaded', rows.length, 'rows for visit', idVisit);
 }
 
-runWhenIdle(() => {
-  try {
-    init();
-  } catch (e) {
-    console.error(LOG_PREFIX, e);
-  }
-}, 500);
+// Registrasi ke registry init.ts — HANYA inject di halaman utama pelayanan.
+// Tanpa ini fitur jalan sendiri di semua halaman yang match manifest
+// (detail-rawat-inap, rm-rawat-jalan-new, pelaksanaan-operasi, dll) dan
+// toggle di popup tidak berpengaruh.
+if (typeof g.featureModules !== 'undefined') {
+  g.featureModules.visiteKonsul = {
+    id: 'visiteKonsul',
+    name: 'Visite & Konsul Dokter (IGD)',
+    description:
+      'Input manual visite & konsul dokter spesialis IGD di halaman utama pelayanan (data di Reports SIMRS)',
+    match: { pathname: '/admisi/pelaksanaan_pelayanan/halaman-utama' },
+    enabledWhen: () => !!getIdVisit(),
+    run: () =>
+      runWhenIdle(() => {
+        init().catch((e) => console.error(LOG_PREFIX, e));
+      }, 500),
+  };
+} else {
+  console.warn(LOG_PREFIX, 'featureModules not defined, registration skipped');
+}

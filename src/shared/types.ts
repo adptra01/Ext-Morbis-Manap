@@ -8,7 +8,8 @@ export interface FeatureConfig {
   comingSoon?: boolean;
 }
 
-export type Role = 'casemix' | 'kasir' | 'dokter' | 'apotek' | 'admin' | 'labor' | 'pendaftaran';
+export type Role =
+  'casemix' | 'kasir' | 'dokter' | 'apotek' | 'admin' | 'labor' | 'pendaftaran' | 'igd';
 
 export interface ExtensionConfig {
   extensionEnabled: boolean;

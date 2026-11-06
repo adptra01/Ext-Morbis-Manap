@@ -7,6 +7,7 @@ const roleOptions: { value: Role; label: string }[] = [
   { value: 'apotek', label: 'Apotek' },
   { value: 'admin', label: 'Admin' },
   { value: 'pendaftaran', label: 'Pendaftaran' },
+  { value: 'igd', label: 'IGD' },
 ];
 
 interface RoleSelectorProps {
