@@ -11,6 +11,8 @@
 
 ### 🐛 fix
 
+- **pa-print** — Saran side-by-side seperti Catatan; 1 baris tanpa dash (`0c4e4bc`)
+- **gate** — pindahOperasi dapat toggle + banner antrian farmasi senyap saat OFF (`58c4caa`)
 - **visiteKonsul** — scope ke halaman utama + gate config & role idg (`1432385`)
 
 ### 🧹 chore
@@ -1969,4 +1971,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: b60292f78d015a978ace9c7da0b03e043bc076bf -->
+<!-- changelog-upto: 0c4e4bc3e6314023ef89f29ec693892f119d115a -->

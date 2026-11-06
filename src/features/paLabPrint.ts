@@ -657,9 +657,9 @@ whenFeatureEnabled('paLabPrint', function () {
             '<table border="0" cellspacing="0" cellpadding="2"><tr>' +
             '<td valign="top" style="font-size:' +
             r.judul.fs +
-            'pt"><b><u>' +
+            'pt"><b>' +
             label +
-            '</u></b></td><td valign="top" style="font-size:' +
+            '</b></td><td valign="top" style="font-size:' +
             r.catatan.fs +
             'pt;line-height:' +
             r.catatan.lh +
@@ -690,9 +690,9 @@ whenFeatureEnabled('paLabPrint', function () {
         hasilDoc +=
           '<p style="margin:12pt 0 0 0;font-size:' +
           r.judul.fs +
-          'pt;"><b><u>' +
+          'pt;"><b>' +
           esc(s.title.toUpperCase()) +
-          '</u></b></p>';
+          '</b></p>';
         // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
         // (SARAN sudah tampil side-by-side seperti Catatan di atas.)
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
@@ -1154,7 +1154,6 @@ whenFeatureEnabled('paLabPrint', function () {
             font-weight: bold;
             margin-top: 12px;
             font-size: 6pt;
-            text-decoration: underline;
             text-transform: uppercase;
         }
 

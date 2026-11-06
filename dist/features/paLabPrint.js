@@ -560,7 +560,7 @@ var __morbis_feature = (() => {
             const rows = s.items.length ? s.items : ["Tidak ada"];
             const multi = rows.length > 1;
             const label = isSaran(s.title) ? "SARAN:" : "CATATAN:";
-            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>' + label + '</u></b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map(
+            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b>' + label + '</b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map(
               (it) => (multi ? "- " : "") + "<b>" + esc(stripBullet(it) || "Tidak ada") + "</b>"
             ).join("<br>") + "</td></tr></table>";
             continue;
@@ -571,7 +571,7 @@ var __morbis_feature = (() => {
             });
             continue;
           }
-          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b><u>' + esc(s.title.toUpperCase()) + "</u></b></p>";
+          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b>' + esc(s.title.toUpperCase()) + "</b></p>";
           const isKesimpulan = normTitle(s.title) === "kesimpulan";
           const isIcdo = normTitle(s.title) === "icdo";
           const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
@@ -801,7 +801,6 @@ var __morbis_feature = (() => {
             font-weight: bold;
             margin-top: 12px;
             font-size: 6pt;
-            text-decoration: underline;
             text-transform: uppercase;
         }
 
