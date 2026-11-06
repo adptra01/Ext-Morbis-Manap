@@ -43,13 +43,14 @@ var __morbis_feature = (() => {
     window.setTimeout(cb, Math.min(timeoutMs, 1500));
   }
 
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
   // src/features/visiteKonsul.ts
   var LOG_PREFIX = "[MORBIS Ext] visiteKonsul";
-  var g = window;
-  if (g.__extVisiteKonsul) {
-    throw new Error("skip double inject visiteKonsul");
-  }
-  g.__extVisiteKonsul = true;
+  var g = getMorbisGlobals();
   function getIdVisit() {
     try {
       const p = new URLSearchParams(location.search);
@@ -281,6 +282,8 @@ var __morbis_feature = (() => {
   async function init() {
     const idVisit = getIdVisit();
     if (!idVisit) return;
+    if (g.__extVisiteKonsul) return;
+    g.__extVisiteKonsul = true;
     injectStyles();
     const user = readPetugas();
     let host = document.querySelector(
@@ -302,12 +305,19 @@ var __morbis_feature = (() => {
     buildSection("KONSUL", "konsul", rows, idVisit, user, card);
     console.log(LOG_PREFIX, "loaded", rows.length, "rows for visit", idVisit);
   }
-  runWhenIdle(() => {
-    try {
-      init();
-    } catch (e) {
-      console.error(LOG_PREFIX, e);
-    }
-  }, 500);
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.visiteKonsul = {
+      id: "visiteKonsul",
+      name: "Visite & Konsul Dokter (IGD)",
+      description: "Input manual visite & konsul dokter spesialis IGD di halaman utama pelayanan (data di Reports SIMRS)",
+      match: { pathname: "/admisi/pelaksanaan_pelayanan/halaman-utama" },
+      enabledWhen: () => !!getIdVisit(),
+      run: () => runWhenIdle(() => {
+        init().catch((e) => console.error(LOG_PREFIX, e));
+      }, 500)
+    };
+  } else {
+    console.warn(LOG_PREFIX, "featureModules not defined, registration skipped");
+  }
 })();
 //# sourceMappingURL=visiteKonsul.js.map

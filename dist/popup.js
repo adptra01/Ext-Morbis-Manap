@@ -31,6 +31,10 @@ var ROLES = [
 	{
 		value: "pendaftaran",
 		label: "Pendaftaran"
+	},
+	{
+		value: "igd",
+		label: "IGD"
 	}
 ];
 var ROLE_LABELS = {
@@ -40,7 +44,8 @@ var ROLE_LABELS = {
 	apotek: "Apotek",
 	admin: "Admin",
 	labor: "Labor",
-	pendaftaran: "Pendaftaran"
+	pendaftaran: "Pendaftaran",
+	igd: "IGD"
 };
 function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {

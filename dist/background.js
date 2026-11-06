@@ -137,7 +137,8 @@ var __morbis_bg = (() => {
     APOTEK: "apotek",
     ADMIN: "admin",
     LABOR: "labor",
-    PENDAFTARAN: "pendaftaran"
+    PENDAFTARAN: "pendaftaran",
+    IGD: "igd"
   };
   var DEFAULT_CUSTOM_URLS = [
     { id: "default-1", url: "http://192.168.8.4", enabled: true, isDefault: true },
@@ -212,6 +213,12 @@ var __morbis_bg = (() => {
         allowedRoles: ["casemix", "admin"],
         name: "Bulk Verif / Batal Verif",
         description: "Pilih banyak klaim lalu Verif atau Batal Verif sekaligus (halaman M-Klaim)"
+      },
+      mKlaimPrint: {
+        enabled: true,
+        allowedRoles: ["casemix", "admin"],
+        name: "Cetak Rapi M-KLAIM",
+        description: "Modul cetak terpisah untuk merapikan dan mencetak section M-KLAIM detail ke format A4 profesional"
       },
       fetchWatchdog: {
         enabled: true,
@@ -380,6 +387,12 @@ var __morbis_bg = (() => {
         allowedRoles: ["admin", "apotek"],
         name: "Sembunyikan Telaah Resep (Depo Ranap)",
         description: "Sembunyikan section checklist telaah resep di halaman detail untuk unit DEPO RANAP"
+      },
+      visiteKonsul: {
+        enabled: true,
+        allowedRoles: ["admin", "igd"],
+        name: "Visite & Konsul Dokter (IGD)",
+        description: "Input manual visite & konsul dokter spesialis IGD di halaman utama pelayanan (data di Reports SIMRS)"
       }
     }
   };
@@ -415,6 +428,10 @@ var __morbis_bg = (() => {
       if (newFeatures[key]) {
         newFeatures[key].allowedRoles = [...Object.values(ROLES)];
       }
+    }
+    for (const key of validFeatures) {
+      const ar = newFeatures[key].allowedRoles;
+      if (Array.isArray(ar) && ar.includes("dokter") && !ar.includes("igd")) ar.push("igd");
     }
     if (newFeatures["antrianTools"]) {
       const at = newFeatures["antrianTools"];

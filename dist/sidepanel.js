@@ -314,6 +314,10 @@ var roleOptions = [
 	{
 		value: "pendaftaran",
 		label: "Pendaftaran"
+	},
+	{
+		value: "igd",
+		label: "IGD"
 	}
 ];
 function RoleSelector({ value, onChange }) {

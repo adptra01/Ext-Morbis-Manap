@@ -39,7 +39,8 @@ var __morbis_core = (() => {
     APOTEK: "apotek",
     ADMIN: "admin",
     LABOR: "labor",
-    PENDAFTARAN: "pendaftaran"
+    PENDAFTARAN: "pendaftaran",
+    IGD: "igd"
   };
   var currentConfig = null;
   var isExtensionEnabled = true;
