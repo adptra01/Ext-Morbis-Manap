@@ -522,7 +522,10 @@ var __morbis_feature = (() => {
         /^icd-?o\s*:/i.test(it) ? "<strong>" + esc(it) + "</strong>" : esc(it)
       );
       const isCatatan = (t) => /^catatan/i.test(t.trim());
-      const stripBullet = (it) => it.replace(/^catatan\s*:?\s*/i, "").replace(/^[-•–—*]+\s*/, "").trim();
+      const isSaran = (t) => /^saran/i.test(t.trim());
+      const isSide = (t) => isCatatan(t) || isSaran(t);
+      const sideLabel = (t) => isSaran(t) ? "Saran:" : "Catatan:";
+      const stripBullet = (it) => it.replace(/^(catatan|saran)\s*:?\s*/i, "").replace(/^[-•–—*]+\s*/, "").trim();
       const noPA = infoClean.find(([l]) => /^no\.?pa/i.test(l))?.[1].replace(/[^a-zA-Z0-9]+/g, "-") || "tanpa-no";
       function dataUrl(src) {
         if (/^data:/i.test(src)) return Promise.resolve(src);
@@ -553,9 +556,13 @@ var __morbis_feature = (() => {
         }
         let hasilDoc = "";
         for (const s of sections) {
-          if (isCatatan(s.title)) {
+          if (isSide(s.title)) {
             const rows = s.items.length ? s.items : ["Tidak ada"];
-            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>CATATAN:</u></b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map((it) => "- <b>" + esc(stripBullet(it) || "Tidak ada") + "</b>").join("<br>") + "</td></tr></table>";
+            const multi = rows.length > 1;
+            const label = isSaran(s.title) ? "SARAN:" : "CATATAN:";
+            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b><u>' + label + '</u></b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map(
+              (it) => (multi ? "- " : "") + "<b>" + esc(stripBullet(it) || "Tidak ada") + "</b>"
+            ).join("<br>") + "</td></tr></table>";
             continue;
           }
           if (s.bare) {
@@ -571,9 +578,11 @@ var __morbis_feature = (() => {
           const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
           const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
           s.items.forEach((it, i) => {
-            const body = boldAll ? "<b>" + esc(it) + "</b>" : fmtItem(it);
             const mk = splitListMarker(it);
-            const hang = mk ? "margin-left:18pt;text-indent:-18pt;" : "";
+            const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
+            const plain = dashOnly ? stripBullet(it) || mk[1] : it;
+            const body = boldAll ? "<b>" + esc(plain) + "</b>" : fmtItem(plain);
+            const hang = mk && !dashOnly ? "margin-left:18pt;text-indent:-18pt;" : "";
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
@@ -590,11 +599,13 @@ var __morbis_feature = (() => {
         }, 4e3);
       }
       const hasilHtml = sections.map((s) => {
-        if (isCatatan(s.title)) {
+        if (isSide(s.title)) {
           const rows = s.items.length ? s.items : ["Tidak ada"];
-          return '<div class="section-catatan"><span class="catatan-label">Catatan:</span><div class="catatan-list">' + rows.map(
-            (it) => '<div class="catatan-item"><span class="catatan-dash">-</span><span>' + esc(stripBullet(it) || "Tidak ada") + "</span></div>"
-          ).join("") + "</div></div>";
+          const multi = rows.length > 1;
+          return '<div class="section-catatan"><span class="catatan-label">' + sideLabel(s.title) + '</span><div class="catatan-list">' + rows.map((it) => {
+            const body = "<span>" + esc(stripBullet(it) || "Tidak ada") + "</span>";
+            return multi ? '<div class="catatan-item"><span class="catatan-dash">-</span>' + body + "</div>" : '<div class="catatan-item">' + body + "</div>";
+          }).join("") + "</div></div>";
         }
         const isKesimpulan = normTitle(s.title) === "kesimpulan";
         const isIcdo = normTitle(s.title) === "icdo";
@@ -602,7 +613,7 @@ var __morbis_feature = (() => {
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
           const mk = splitListMarker(it);
-          if (mk) {
+          if (mk && !(s.items.length === 1 && /^[-•–—*]$/.test(mk[0]))) {
             const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
             return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
           }

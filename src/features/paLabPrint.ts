@@ -581,10 +581,16 @@ whenFeatureEnabled('paLabPrint', function () {
       /^icd-?o\s*:/i.test(it) ? '<strong>' + esc(it) + '</strong>' : esc(it);
 
     const isCatatan = (t: string): boolean => /^catatan/i.test(t.trim());
+    const isSaran = (t: string): boolean => /^saran/i.test(t.trim());
+
+    // Catatan & Saran tampil side-by-side sama seperti Catatan
+    // (label di kiri, isi di kanan) — permintaan user.
+    const isSide = (t: string): boolean => isCatatan(t) || isSaran(t);
+    const sideLabel = (t: string): string => (isSaran(t) ? 'Saran:' : 'Catatan:');
 
     const stripBullet = (it: string): string =>
       it
-        .replace(/^catatan\s*:?\s*/i, '')
+        .replace(/^(catatan|saran)\s*:?\s*/i, '')
         .replace(/^[-•–—*]+\s*/, '')
         .trim();
 
@@ -642,18 +648,27 @@ whenFeatureEnabled('paLabPrint', function () {
       }
       let hasilDoc = '';
       for (const s of sections) {
-        if (isCatatan(s.title)) {
+        if (isSide(s.title)) {
           const rows = s.items.length ? s.items : ['Tidak ada'];
+          // value 1 baris → tanpa "-" (permintaan user); >1 baris → "- ".
+          const multi = rows.length > 1;
+          const label = isSaran(s.title) ? 'SARAN:' : 'CATATAN:';
           hasilDoc +=
             '<table border="0" cellspacing="0" cellpadding="2"><tr>' +
             '<td valign="top" style="font-size:' +
             r.judul.fs +
-            'pt"><b><u>CATATAN:</u></b></td><td valign="top" style="font-size:' +
+            'pt"><b><u>' +
+            label +
+            '</u></b></td><td valign="top" style="font-size:' +
             r.catatan.fs +
             'pt;line-height:' +
             r.catatan.lh +
             ';">' +
-            rows.map((it) => '- <b>' + esc(stripBullet(it) || 'Tidak ada') + '</b>').join('<br>') +
+            rows
+              .map(
+                (it) => (multi ? '- ' : '') + '<b>' + esc(stripBullet(it) || 'Tidak ada') + '</b>',
+              )
+              .join('<br>') +
             '</td></tr></table>';
           continue;
         }
@@ -678,9 +693,8 @@ whenFeatureEnabled('paLabPrint', function () {
           'pt;"><b><u>' +
           esc(s.title.toUpperCase()) +
           '</u></b></p>';
-        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user) +
-        // SARAN juga bold seluruhnya (permintaan user 2026-10-15),
-        // tapi SARAN tetap grup font Isi (bukan grup Kesimpulan).
+        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
+        // (SARAN sudah tampil side-by-side seperti Catatan di atas.)
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
         const isIcdo = normTitle(s.title) === 'icdo';
         const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === 'saran';
@@ -688,9 +702,13 @@ whenFeatureEnabled('paLabPrint', function () {
         const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
         const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
         s.items.forEach((it, i) => {
-          const body = boldAll ? '<b>' + esc(it) + '</b>' : fmtItem(it);
           const mk = splitListMarker(it);
-          const hang = mk ? 'margin-left:18pt;text-indent:-18pt;' : '';
+          // Section 1 baris ber-dash ("- …") → tampil polos tanpa "-"
+          // (permintaan user 2026-11-06).
+          const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
+          const plain = dashOnly ? stripBullet(it) || mk[1] : it;
+          const body = boldAll ? '<b>' + esc(plain) + '</b>' : fmtItem(plain);
+          const hang = mk && !dashOnly ? 'margin-left:18pt;text-indent:-18pt;' : '';
           hasilDoc +=
             '<p style="margin:' +
             (s.para.includes(i) ? '14pt' : '0') +
@@ -776,23 +794,28 @@ whenFeatureEnabled('paLabPrint', function () {
 
     const hasilHtml = sections
       .map((s) => {
-        // CATATAN: render "Catatan: - …" dengan baris lanjutan rata
-        // di bawah dash pertama (hanging list via flex, bukan tab
-        // karena tab collapse di HTML). Bullet dinormalisasi ke "- ".
-        if (isCatatan(s.title)) {
+        // CATATAN & SARAN: label di kiri, isi di kanan (hanging list
+        // via flex, bukan tab karena tab collapse di HTML).
+        // Bullet dinormalisasi ke "- " HANYA bila >1 baris; value
+        // 1 baris tampil polos tanpa "-" (permintaan user 2026-11-06).
+        if (isSide(s.title)) {
           const rows = s.items.length ? s.items : ['Tidak ada'];
+          const multi = rows.length > 1;
           return (
             '<div class="section-catatan">' +
-            '<span class="catatan-label">Catatan:</span>' +
+            '<span class="catatan-label">' +
+            sideLabel(s.title) +
+            '</span>' +
             '<div class="catatan-list">' +
             rows
-              .map(
-                (it) =>
-                  '<div class="catatan-item"><span class="catatan-dash">-</span>' +
-                  '<span>' +
-                  esc(stripBullet(it) || 'Tidak ada') +
-                  '</span></div>',
-              )
+              .map((it) => {
+                const body = '<span>' + esc(stripBullet(it) || 'Tidak ada') + '</span>';
+                return multi
+                  ? '<div class="catatan-item"><span class="catatan-dash">-</span>' +
+                      body +
+                      '</div>'
+                  : '<div class="catatan-item">' + body + '</div>';
+              })
               .join('') +
             '</div>' +
             '</div>'
@@ -802,12 +825,13 @@ whenFeatureEnabled('paLabPrint', function () {
         // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi bold kapital
         // lewat .section-isi-bare, dengan grup font/spasi sendiri
         // (⚙️ Gaya → ICD-O).
-        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user) +
-        // SARAN juga bold seluruhnya (permintaan user 2026-10-15),
-        // tapi SARAN tetap grup font Isi (tanpa .section-kesimpulan).
+        // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
+        // SARAN tampil side-by-side seperti Catatan (isSide di atas),
+        // bukan lewat jalur ini.
         // hanging indent untuk baris bernomor/berpoin (permintaan user):
         // penanda ("1.", "II.", "-") di kolom kiri tetap, teks lanjutan
-        // sejajar di bawah teks — bukan di bawah penanda.
+        // sejajar di bawah teks — bukan di bawah penanda. Section
+        // 1 baris ber-dash tampil polos tanpa penanda (user 2026-11-06).
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
         const isIcdo = normTitle(s.title) === 'icdo';
         const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === 'saran';
@@ -821,7 +845,9 @@ whenFeatureEnabled('paLabPrint', function () {
             .map((it, i) => {
               const paraCls = s.para.includes(i) ? ' item-para' : '';
               const mk = splitListMarker(it);
-              if (mk) {
+              // Section 1 baris ber-dash → tampil polos tanpa "-"
+              // (permintaan user 2026-11-06).
+              if (mk && !(s.items.length === 1 && /^[-•–—*]$/.test(mk[0]))) {
                 const rest = boldAll ? '<strong>' + esc(mk[1]) + '</strong>' : fmtItem(mk[1]);
                 return (
                   '<div class="item-list has-marker' +
