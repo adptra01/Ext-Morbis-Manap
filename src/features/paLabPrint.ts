@@ -676,14 +676,15 @@ whenFeatureEnabled('paLabPrint', function () {
           continue;
         }
         if (s.bare) {
+          // ICD-O bare menyatu dengan Catatan/Saran → grup Isi (user 2026-11-06).
           s.items.forEach((it, i) => {
             hasilDoc +=
               '<p style="margin:' +
               (i === 0 ? '12pt' : '0') +
               ' 0 6pt 0;font-size:' +
-              r.icdo.fs +
+              r.isi.fs +
               'pt;line-height:' +
-              r.icdo.lh +
+              r.isi.lh +
               ';"><b>' +
               esc(it.toUpperCase()) +
               '</b></p>';
@@ -692,10 +693,12 @@ whenFeatureEnabled('paLabPrint', function () {
         }
         // Header Makroskopik/Mikroskopik/Kesimpulan bergaris bawah di Word
         // juga (user 2026-11-06) — section lain tetap tanpa garis.
+        // Header ICD-O menyatu dengan isinya → grup Isi (bukan Judul).
         const uOn = ['makroskopik', 'mikroskopik', 'kesimpulan'].includes(normTitle(s.title));
+        const isIcdoH = normTitle(s.title) === 'icdo';
         hasilDoc +=
           '<p style="margin:12pt 0 0 0;font-size:' +
-          r.judul.fs +
+          (isIcdoH ? r.isi.fs : r.judul.fs) +
           'pt;"><b>' +
           (uOn ? '<u>' : '') +
           esc(s.title.toUpperCase()) +
@@ -706,9 +709,9 @@ whenFeatureEnabled('paLabPrint', function () {
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
         const isIcdo = normTitle(s.title) === 'icdo';
         const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === 'saran';
-        // Kesimpulan & ICD-O ikut grup gaya sendiri (bukan grup Isi).
-        const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
-        const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
+        // Kesimpulan ikut grup sendiri; ICD-O ikut Isi (menyatu).
+        const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
+        const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
           const mk = splitListMarker(it);
           // Section 1 baris ber-dash ("- …") → tampil polos tanpa "-"
@@ -831,8 +834,8 @@ whenFeatureEnabled('paLabPrint', function () {
         }
         // Section virtual ICD-O tampil tanpa judul (bare): cukup baris
         // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi bold kapital
-        // lewat .section-isi-bare, dengan grup font/spasi sendiri
-        // (⚙️ Gaya → ICD-O).
+        // lewat .section-isi-bare, memakai grup Isi (⚙️ Gaya → Isi),
+        // sama dengan Catatan/Saran yang menyatu.
         // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
         // SARAN tampil side-by-side seperti Catatan (isSide di atas),
         // bukan lewat jalur ini.
@@ -879,10 +882,11 @@ whenFeatureEnabled('paLabPrint', function () {
           '</div>';
         if (s.bare) return isi;
         // Header Makroskopik/Mikroskopik/Kesimpulan bergaris bawah (user 2026-11-06).
-        const u = ['makroskopik', 'mikroskopik', 'kesimpulan'].includes(normTitle(s.title))
-          ? ' u'
-          : '';
-        return '<div class="section-judul' + u + '">' + esc(s.title) + '</div>' + isi;
+        // Header ICD-O menyatu dengan isinya → grup Isi (kelas 'i').
+        const nt = normTitle(s.title);
+        const u = ['makroskopik', 'mikroskopik', 'kesimpulan'].includes(nt) ? ' u' : '';
+        const icls = nt === 'icdo' ? ' i' : '';
+        return '<div class="section-judul' + u + icls + '">' + esc(s.title) + '</div>' + isi;
       })
       .join('');
 
@@ -1343,12 +1347,20 @@ whenFeatureEnabled('paLabPrint', function () {
         }
 
         /* Isi ICD-O yang dirender server DENGAN judul section sendiri:
-           grup font & spasi sendiri, terpisah dari Isi, dan selalu bold.
-           Varian tanpa judul memakai .section-isi-bare (grup ICD-O sama). */
+           menyatu dengan Catatan/Saran → ikut grup Isi yang sama
+           (user 2026-11-06), selalu bold.
+           Varian tanpa judul memakai .section-isi-bare (grup Isi sama). */
         .section-icdo {
-            font-size: var(--pa-icdo-fs, 6pt);
+            font-size: var(--pa-isi-fs, 5pt);
             font-weight: bold;
-            line-height: var(--pa-icdo-lh, 1.2);
+            line-height: var(--pa-isi-lh, 1.25);
+        }
+
+        /* Header ICD-O berjudul menyatu dengan isinya → grup Isi
+           (bukan Judul), supaya header+isi sama besar. */
+        .section-judul.i {
+            font-size: var(--pa-isi-fs, 5pt);
+            line-height: var(--pa-isi-lh, 1.25);
         }
 
         /* Hanging indent: baris bernomor/berpoin — penanda di kolom
@@ -1373,14 +1385,14 @@ whenFeatureEnabled('paLabPrint', function () {
 
         /* ICD-O tanpa judul (bare, id=154696): "ICD-O : …" saja tanpa
            dobel judul "ICD-0" — font, margin & padding sama persis
-           seperti section-judul (minus garis bawah), tapi ukuran font
-           dan spasi baris punya grup sendiri (⚙️ Gaya → ICD-O). */
+           seperti section-judul (minus garis bawah), dan memakai grup
+           Isi yang sama dengan Catatan/Saran (user 2026-11-06). */
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: var(--pa-icdo-fs, 6pt);
+            font-size: var(--pa-isi-fs, 5pt);
             font-weight: bold;
-            line-height: var(--pa-icdo-lh, 1.2);
+            line-height: var(--pa-isi-lh, 1.25);
             text-transform: uppercase;
         }
 

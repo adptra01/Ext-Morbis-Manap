@@ -15,6 +15,8 @@
 
 ### 🐛 fix
 
+- **pa-print** — Saran/Catatan header+isi ikuti grup Isi (menyatu, pensiun grup Catatan) (`5591ebe`)
+- **pa-print** — header Makroskopik/Mikroskopik/Kesimpulan pakai garis bawah (`29b113e`)
 - **pa-print** — hapus garis bawah header isi (layar + Export Word) (`23d7ae0`)
 - **pa-print** — Saran side-by-side seperti Catatan; 1 baris tanpa dash (`674e23a`)
 - **gate** — pindahOperasi dapat toggle + banner antrian farmasi senyap saat OFF (`58c4caa`)
@@ -1978,4 +1980,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 590888be6d06996e368dc289564fa3d0bf5af4b6 -->
+<!-- changelog-upto: 5591ebef4982fc569bb8a6facfe568713594a9c5 -->

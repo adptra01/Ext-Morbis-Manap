@@ -64,9 +64,8 @@ var __morbis_feature = (() => {
     { key: "kop", label: "Kop Surat" },
     { key: "pasien", label: "Data Pasien" },
     { key: "judul", label: "Judul Bagian Isi" },
-    { key: "isi", label: "Isi (termasuk Saran & Catatan)" },
+    { key: "isi", label: "Isi (termasuk ICD-O, Saran & Catatan)" },
     { key: "kesimpulan", label: "Kesimpulan" },
-    { key: "icdo", label: "ICD-O" },
     { key: "ttd", label: "TTD" }
   ];
   var DEFAULT_TYPO = {
@@ -566,17 +565,18 @@ var __morbis_feature = (() => {
           }
           if (s.bare) {
             s.items.forEach((it, i) => {
-              hasilDoc += '<p style="margin:' + (i === 0 ? "12pt" : "0") + " 0 6pt 0;font-size:" + r.icdo.fs + "pt;line-height:" + r.icdo.lh + ';"><b>' + esc(it.toUpperCase()) + "</b></p>";
+              hasilDoc += '<p style="margin:' + (i === 0 ? "12pt" : "0") + " 0 6pt 0;font-size:" + r.isi.fs + "pt;line-height:" + r.isi.lh + ';"><b>' + esc(it.toUpperCase()) + "</b></p>";
             });
             continue;
           }
           const uOn = ["makroskopik", "mikroskopik", "kesimpulan"].includes(normTitle(s.title));
-          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b>' + (uOn ? "<u>" : "") + esc(s.title.toUpperCase()) + (uOn ? "</u>" : "") + "</b></p>";
+          const isIcdoH = normTitle(s.title) === "icdo";
+          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + (isIcdoH ? r.isi.fs : r.judul.fs) + 'pt;"><b>' + (uOn ? "<u>" : "") + esc(s.title.toUpperCase()) + (uOn ? "</u>" : "") + "</b></p>";
           const isKesimpulan = normTitle(s.title) === "kesimpulan";
           const isIcdo = normTitle(s.title) === "icdo";
           const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
-          const fs = isKesimpulan ? r.kesimpulan.fs : isIcdo ? r.icdo.fs : r.isi.fs;
-          const lh = isKesimpulan ? r.kesimpulan.lh : isIcdo ? r.icdo.lh : r.isi.lh;
+          const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
+          const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
           s.items.forEach((it, i) => {
             const mk = splitListMarker(it);
             const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
@@ -620,8 +620,10 @@ var __morbis_feature = (() => {
           return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
-        const u = ["makroskopik", "mikroskopik", "kesimpulan"].includes(normTitle(s.title)) ? " u" : "";
-        return '<div class="section-judul' + u + '">' + esc(s.title) + "</div>" + isi;
+        const nt = normTitle(s.title);
+        const u = ["makroskopik", "mikroskopik", "kesimpulan"].includes(nt) ? " u" : "";
+        const icls = nt === "icdo" ? " i" : "";
+        return '<div class="section-judul' + u + icls + '">' + esc(s.title) + "</div>" + isi;
       }).join("");
       document.body.innerHTML = '<a href="' + esc(exportHref) + '" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">\u2699\uFE0F Gaya</button><div class="t-typo no-print" id="ext-pa-typo" hidden></div><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' + esc(logoSrc) + '" alt="Logo"></div><div class="kop-text">' + kopLines.slice(0, 3).map((l) => '<h1 class="kop-atas">' + esc(l) + "</h1>").join("") + '<div class="kop-alamat">' + addrLines.map((l) => esc(l)).join("<br>") + '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' + esc(judul) + '</div><div class="patient-info-container">' + infoHtml + '</div><div class="hasil-pa">' + hasilHtml + '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' + esc(thanks) + "</p><p>" + esc(dateLine) + "</p>" + (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : "") + '<p style="font-weight: bold; margin-bottom: 0;">' + esc(docName) + '</p><p style="margin-top: 2px;">' + esc(nip) + "</p></div></div></div>";
       bodyScripts.forEach((s) => document.body.appendChild(s));
@@ -979,12 +981,20 @@ var __morbis_feature = (() => {
         }
 
         /* Isi ICD-O yang dirender server DENGAN judul section sendiri:
-           grup font & spasi sendiri, terpisah dari Isi, dan selalu bold.
-           Varian tanpa judul memakai .section-isi-bare (grup ICD-O sama). */
+           menyatu dengan Catatan/Saran \u2192 ikut grup Isi yang sama
+           (user 2026-11-06), selalu bold.
+           Varian tanpa judul memakai .section-isi-bare (grup Isi sama). */
         .section-icdo {
-            font-size: var(--pa-icdo-fs, 6pt);
+            font-size: var(--pa-isi-fs, 5pt);
             font-weight: bold;
-            line-height: var(--pa-icdo-lh, 1.2);
+            line-height: var(--pa-isi-lh, 1.25);
+        }
+
+        /* Header ICD-O berjudul menyatu dengan isinya \u2192 grup Isi
+           (bukan Judul), supaya header+isi sama besar. */
+        .section-judul.i {
+            font-size: var(--pa-isi-fs, 5pt);
+            line-height: var(--pa-isi-lh, 1.25);
         }
 
         /* Hanging indent: baris bernomor/berpoin \u2014 penanda di kolom
@@ -1009,14 +1019,14 @@ var __morbis_feature = (() => {
 
         /* ICD-O tanpa judul (bare, id=154696): "ICD-O : \u2026" saja tanpa
            dobel judul "ICD-0" \u2014 font, margin & padding sama persis
-           seperti section-judul (minus garis bawah), tapi ukuran font
-           dan spasi baris punya grup sendiri (\u2699\uFE0F Gaya \u2192 ICD-O). */
+           seperti section-judul (minus garis bawah), dan memakai grup
+           Isi yang sama dengan Catatan/Saran (user 2026-11-06). */
         .section-isi-bare {
             margin: 12px 0 0;
             padding: 0;
-            font-size: var(--pa-icdo-fs, 6pt);
+            font-size: var(--pa-isi-fs, 5pt);
             font-weight: bold;
-            line-height: var(--pa-icdo-lh, 1.2);
+            line-height: var(--pa-isi-lh, 1.25);
             text-transform: uppercase;
         }
 
