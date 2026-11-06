@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-11-06
+
+### 🐛 fix
+
+- **visiteKonsul** — scope ke halaman utama + gate config & role idg (`1432385`)
+
+### 🧹 chore
+
+- **dist** — sync versi 1.5.187 (`b60292f`)
+- **dist** — sync (visiteKonsul scope + role igd) (`4b7a3a5`)
+
 ## 2026-11-04
 
 ### ✨ feat
@@ -22,6 +33,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync (v1.5.186) (`7a717ec`)
 - **dist** — sync (`75d2716`)
 - **dist** — sync (v1.5.185) (`628e6cc`)
 - **dist** — sync (`dda5ae1`)
@@ -1957,4 +1969,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 75d27169e4b3e14401aebfd8412415a79f4d8786 -->
+<!-- changelog-upto: b60292f78d015a978ace9c7da0b03e043bc076bf -->

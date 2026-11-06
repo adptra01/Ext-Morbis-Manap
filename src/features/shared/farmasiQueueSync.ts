@@ -367,9 +367,14 @@ export function whenAntrianFarmasiActive(cb: () => void, timeoutMs = 5000): void
   const el = document.documentElement;
   const t0 = Date.now();
   const iv = window.setInterval(() => {
-    if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
+    const state = el.getAttribute('data-ext-antrian-farmasi');
+    if (state === '1') {
       window.clearInterval(iv);
       cb();
+    } else if (state === '0') {
+      // Fitur memang OFF / role tak diizinkan → berhenti senyap (tanpa banner;
+      // user sendiri yang mematikan, tak perlu disuruh reload).
+      window.clearInterval(iv);
     } else if (Date.now() - t0 > timeoutMs) {
       window.clearInterval(iv);
       // Tampilkan notifikasi ke user agar tahu fitur tidak aktif

@@ -1,4 +1,5 @@
 import { confirmLegacy } from '../shared/batchUtils.js';
+import { decideFeatureGate, type FeatureGateConfig } from '../shared/featureGate.js';
 
 function pindahOperasi(): void {
   const form = document.querySelector<HTMLFormElement>('#form-data');
@@ -83,12 +84,10 @@ function pindahOperasi(): void {
 async function isAllowed(): Promise<boolean> {
   try {
     const result = await chrome.storage.sync.get('extensionConfig');
-    const cfg = result.extensionConfig;
+    const cfg = result.extensionConfig as
+      (FeatureGateConfig & { extensionEnabled?: boolean }) | undefined;
     if (!cfg || cfg.extensionEnabled !== true) return false;
-    const role = cfg.currentRole ?? 'admin';
-    // default admin; kalau nanti ada key pindahOperasi di config, pakai allowedRoles-nya
-    const allowed = cfg.features?.pindahOperasi?.allowedRoles ?? ['admin'];
-    return allowed.includes(role);
+    return decideFeatureGate('pindahOperasi', cfg);
   } catch {
     return false; // ISOLATED world: chrome.storage tersedia; gagal baca = jangan jalan
   }

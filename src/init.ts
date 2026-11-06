@@ -98,6 +98,11 @@ async function initExtension(): Promise<void> {
   const afCfg = cfg?.features?.antrianFarmasi;
   if (afCfg?.enabled && window.ExtensionCore.isFeatureAllowed('antrianFarmasi')) {
     document.documentElement.setAttribute('data-ext-antrian-farmasi', '1');
+  } else if (cfg) {
+    // Config terbaca & fitur memang OFF (atau role tak diizinkan) → tulis '0'
+    // eksplisit. Pembaca MAIN-world (farmasiQueueSync) membedakan '0' (senyap)
+    // dari atribut hilang (config belum termuat → boleh tampilkan banner).
+    document.documentElement.setAttribute('data-ext-antrian-farmasi', '0');
   } else {
     document.documentElement.removeAttribute('data-ext-antrian-farmasi');
   }

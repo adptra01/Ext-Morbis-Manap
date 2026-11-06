@@ -358,6 +358,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Format ulang halaman cetak resep asli rawat inap - header 3 kolom, metadata pasien+dokter, daftar obat rapi, checklist telaah, adaptive density',
     },
+    pindahOperasi: {
+      enabled: true,
+      allowedRoles: ['admin'],
+      name: 'Pindah Operasi',
+      description: 'Tombol pindah data operasi ke visit/kunjungan lain di halaman edit operasi',
+    },
     hideTelaahDepoRanap: {
       enabled: true,
       allowedRoles: ['admin', 'apotek'],
