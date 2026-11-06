@@ -36,7 +36,9 @@ const TOOLBAR_URLS = {
   rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
   ranap: '/admisi/detail-rawat-inap/resume-ri',
   dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
-  editResumeRajal: '/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new',
+  // Edit Resume Rajal harus ke halaman daftar/histori /rj dulu (bukan
+  // langsung ke form rm-rawat-jalan-new) — permintaan user 2026-11-06.
+  editResumeRajalList: '/admisi/pelaksanaan_pelayanan/rj',
   editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
   triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
   spri: '/admisi/detail-rawat-inap/surat-pengantar-ri',
@@ -80,8 +82,13 @@ function extractIdVisit(): string | null {
   return extractParam('id_visit');
 }
 
-function extractIdRawatJalan(): string | null {
-  return (document.getElementById('id_rawat_jalan') as HTMLInputElement)?.value || null;
+function extractIdKunjungan(): string | null {
+  const fromUrl = extractParam('id_kunjungan');
+  if (fromUrl) return fromUrl;
+  const hidden = (document.getElementById('id_kunjungan') as HTMLInputElement)?.value;
+  if (hidden) return hidden;
+  const named = document.querySelector<HTMLInputElement>('input[name="id_kunjungan"]')?.value;
+  return named || null;
 }
 
 function buildUrl(path: string, qs: string): string {
@@ -107,9 +114,12 @@ function editResumeUrl(): string | null {
   const id = extractIdVisit();
   if (!id) return null;
   if (isRawatJalan()) {
-    const idRj = extractIdRawatJalan();
-    const qs = idRj ? `id_visit=${id}&id=${idRj}&page=6` : `id_visit=${id}&page=6`;
-    return buildUrl(TOOLBAR_URLS.editResumeRajal, qs);
+    // Pasien rawat jalan: ke halaman daftar/histori /rj (page=6), bukan
+    // langsung ke form rm-rawat-jalan-new — pola:
+    // /admisi/pelaksanaan_pelayanan/rj?id_visit=…&page=6&status_periksa=belum&id_kunjungan=…
+    const kunj = extractIdKunjungan();
+    const qs = `id_visit=${id}&page=6&status_periksa=belum` + (kunj ? `&id_kunjungan=${kunj}` : '');
+    return buildUrl(TOOLBAR_URLS.editResumeRajalList, qs);
   }
   if (isRawatInap()) return buildUrl(TOOLBAR_URLS.editResumeRanap, `idVisit=${id}`);
   return null;

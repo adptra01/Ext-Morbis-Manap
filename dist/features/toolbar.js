@@ -1184,7 +1184,9 @@ var __morbis_feature = (() => {
     rajal: "/admisi/pelaksanaan_pelayanan/halaman-utama",
     ranap: "/admisi/detail-rawat-inap/resume-ri",
     dokumenPasien: "/admisi/pelaksanaan_pelayanan/dokumen-pasien",
-    editResumeRajal: "/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new",
+    // Edit Resume Rajal harus ke halaman daftar/histori /rj dulu (bukan
+    // langsung ke form rm-rawat-jalan-new) — permintaan user 2026-11-06.
+    editResumeRajalList: "/admisi/pelaksanaan_pelayanan/rj",
     editResumeRanap: "/admisi/detail-rawat-inap/resume-ri",
     triageIgd: "/admisi/pelaksanaan_pelayanan/triage_terintegrasi",
     spri: "/admisi/detail-rawat-inap/surat-pengantar-ri",
@@ -1221,8 +1223,13 @@ var __morbis_feature = (() => {
   function extractIdVisit() {
     return extractParam2("id_visit");
   }
-  function extractIdRawatJalan() {
-    return document.getElementById("id_rawat_jalan")?.value || null;
+  function extractIdKunjungan() {
+    const fromUrl = extractParam2("id_kunjungan");
+    if (fromUrl) return fromUrl;
+    const hidden = document.getElementById("id_kunjungan")?.value;
+    if (hidden) return hidden;
+    const named = document.querySelector('input[name="id_kunjungan"]')?.value;
+    return named || null;
   }
   function buildUrl(path, qs) {
     return `${window.location.origin}${path}?${qs}`;
@@ -1243,9 +1250,9 @@ var __morbis_feature = (() => {
     const id = extractIdVisit();
     if (!id) return null;
     if (isRawatJalan()) {
-      const idRj = extractIdRawatJalan();
-      const qs = idRj ? `id_visit=${id}&id=${idRj}&page=6` : `id_visit=${id}&page=6`;
-      return buildUrl(TOOLBAR_URLS.editResumeRajal, qs);
+      const kunj = extractIdKunjungan();
+      const qs = `id_visit=${id}&page=6&status_periksa=belum` + (kunj ? `&id_kunjungan=${kunj}` : "");
+      return buildUrl(TOOLBAR_URLS.editResumeRajalList, qs);
     }
     if (isRawatInap()) return buildUrl(TOOLBAR_URLS.editResumeRanap, `idVisit=${id}`);
     return null;
