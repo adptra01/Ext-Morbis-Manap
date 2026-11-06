@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- **mKlaimPrint** — daftarkan fitur Cetak Rapi M-KLAIM ke manifest + build (`9343935`)
+- **mKlaimPrint** — daftarkan fitur Cetak Rapi M-KLAIM ke manifest + build (`c9965a8`)
 
 ### 🐛 fix
 
@@ -22,6 +22,8 @@
 
 ### 🧹 chore
 
+- hapus 5 file mati + lengkapi FALLBACK_FEATURES 12 key (Hapus antrianFarmasiDisplay/billingFilterPersistence/farmasiBridge/farmasiIssue/antrianFarmasiTotal; test purification guard pensiun karena file target dihapus) (`590888b`)
+- **dist** — sync mKlaimPrint + pindahOperasi gate (v1.5.189) (`fe7c6c6`)
 - **dist** — sync versi 1.5.187 (`b60292f`)
 - **dist** — sync (visiteKonsul scope + role igd) (`4b7a3a5`)
 
@@ -1976,4 +1978,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9343935892da2d8f054d67c3060bad50d75baa8d -->
+<!-- changelog-upto: 590888be6d06996e368dc289564fa3d0bf5af4b6 -->

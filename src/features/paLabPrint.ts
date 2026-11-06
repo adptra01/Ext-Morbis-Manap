@@ -687,11 +687,16 @@ whenFeatureEnabled('paLabPrint', function () {
           });
           continue;
         }
+        // Header Makroskopik/Mikroskopik/Kesimpulan bergaris bawah di Word
+        // juga (user 2026-11-06) — section lain tetap tanpa garis.
+        const uOn = ['makroskopik', 'mikroskopik', 'kesimpulan'].includes(normTitle(s.title));
         hasilDoc +=
           '<p style="margin:12pt 0 0 0;font-size:' +
           r.judul.fs +
           'pt;"><b>' +
+          (uOn ? '<u>' : '') +
           esc(s.title.toUpperCase()) +
+          (uOn ? '</u>' : '') +
           '</b></p>';
         // Isi KESIMPULAN selalu bold seluruhnya (permintaan user).
         // (SARAN sudah tampil side-by-side seperti Catatan di atas.)
@@ -870,7 +875,11 @@ whenFeatureEnabled('paLabPrint', function () {
             .join('') +
           '</div>';
         if (s.bare) return isi;
-        return '<div class="section-judul">' + esc(s.title) + '</div>' + isi;
+        // Header Makroskopik/Mikroskopik/Kesimpulan bergaris bawah (user 2026-11-06).
+        const u = ['makroskopik', 'mikroskopik', 'kesimpulan'].includes(normTitle(s.title))
+          ? ' u'
+          : '';
+        return '<div class="section-judul' + u + '">' + esc(s.title) + '</div>' + isi;
       })
       .join('');
 
@@ -1155,6 +1164,12 @@ whenFeatureEnabled('paLabPrint', function () {
             margin-top: 12px;
             font-size: 6pt;
             text-transform: uppercase;
+        }
+
+        /* Garis bawah hanya untuk header Makroskopik/Mikroskopik/Kesimpulan
+           (permintaan user 2026-11-06). */
+        .section-judul.u {
+            text-decoration: underline;
         }
 
         .section-isi {

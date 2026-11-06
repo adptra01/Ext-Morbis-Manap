@@ -571,7 +571,8 @@ var __morbis_feature = (() => {
             });
             continue;
           }
-          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b>' + esc(s.title.toUpperCase()) + "</b></p>";
+          const uOn = ["makroskopik", "mikroskopik", "kesimpulan"].includes(normTitle(s.title));
+          hasilDoc += '<p style="margin:12pt 0 0 0;font-size:' + r.judul.fs + 'pt;"><b>' + (uOn ? "<u>" : "") + esc(s.title.toUpperCase()) + (uOn ? "</u>" : "") + "</b></p>";
           const isKesimpulan = normTitle(s.title) === "kesimpulan";
           const isIcdo = normTitle(s.title) === "icdo";
           const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
@@ -620,7 +621,8 @@ var __morbis_feature = (() => {
           return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
-        return '<div class="section-judul">' + esc(s.title) + "</div>" + isi;
+        const u = ["makroskopik", "mikroskopik", "kesimpulan"].includes(normTitle(s.title)) ? " u" : "";
+        return '<div class="section-judul' + u + '">' + esc(s.title) + "</div>" + isi;
       }).join("");
       document.body.innerHTML = '<a href="' + esc(exportHref) + '" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><button type="button" class="no-print" id="btn-typo" title="Atur font & spasi cetakan">\u2699\uFE0F Gaya</button><div class="t-typo no-print" id="ext-pa-typo" hidden></div><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' + esc(logoSrc) + '" alt="Logo"></div><div class="kop-text">' + kopLines.slice(0, 3).map((l) => '<h1 class="kop-atas">' + esc(l) + "</h1>").join("") + '<div class="kop-alamat">' + addrLines.map((l) => esc(l)).join("<br>") + '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' + esc(judul) + '</div><div class="patient-info-container">' + infoHtml + '</div><div class="hasil-pa">' + hasilHtml + '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' + esc(thanks) + "</p><p>" + esc(dateLine) + "</p>" + (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : "") + '<p style="font-weight: bold; margin-bottom: 0;">' + esc(docName) + '</p><p style="margin-top: 2px;">' + esc(nip) + "</p></div></div></div>";
       bodyScripts.forEach((s) => document.body.appendChild(s));
@@ -802,6 +804,12 @@ var __morbis_feature = (() => {
             margin-top: 12px;
             font-size: 6pt;
             text-transform: uppercase;
+        }
+
+        /* Garis bawah hanya untuk header Makroskopik/Mikroskopik/Kesimpulan
+           (permintaan user 2026-11-06). */
+        .section-judul.u {
+            text-decoration: underline;
         }
 
         .section-isi {
