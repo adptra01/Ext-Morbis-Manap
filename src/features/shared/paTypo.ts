@@ -1,11 +1,11 @@
 /**
  * paTypo — pengaturan tipografi dinamis cetakan PA (murni, unit-tested).
  *
- * 8 grup (sesuai kesepakatan user): kop (surat + judul laporan), pasien
- * (data pasien), judul (judul-judul bagian isi), isi (badan teks),
- * kesimpulan (isi Kesimpulan), icdo (baris ICD-O tanpa judul), catatan
- * (isi Catatan) — ketiganya terpisah dari isi, ttd (blok tanda tangan).
- * Tiap grup: font-size (pt) + line-height. Disimpan di
+ * 7 grup (sesuai kesepakatan user): kop (surat + judul laporan), pasien
+ * (data pasien), judul (judul-judul bagian isi), isi (badan teks +
+ * header/isi Saran & Catatan yang menyatu), kesimpulan (isi Kesimpulan),
+ * icdo (baris ICD-O tanpa judul), ttd (blok tanda tangan). Tiap grup:
+ * font-size (pt) + line-height. Disimpan di
  * localStorage halaman (world MAIN tak punya chrome.storage), diterapkan
  * via CSS variable sehingga pratinjau live tanpa rebuild + berlaku sama
  * di layar dan kertas (WYSIWYG).
@@ -40,17 +40,17 @@ export const TYPO_GROUPS: Array<{ key: TypoGroupKey; label: string }> = [
   { key: 'kop', label: 'Kop Surat' },
   { key: 'pasien', label: 'Data Pasien' },
   { key: 'judul', label: 'Judul Bagian Isi' },
-  { key: 'isi', label: 'Isi' },
+  { key: 'isi', label: 'Isi (termasuk Saran & Catatan)' },
   { key: 'kesimpulan', label: 'Kesimpulan' },
   { key: 'icdo', label: 'ICD-O' },
-  { key: 'catatan', label: 'Catatan' },
   { key: 'ttd', label: 'TTD' },
 ];
 
 /** Default = tampilan approved saat ini (pt). Kesimpulan defaultnya
  *  sama dengan isi agar tampilan awal tidak berubah; ICD-O dulu ikut
- *  grup judul (6pt/1.2) dan isi Catatan ikut grup isi (5pt/1.25) —
- *  default barunya disamakan supaya tampilan awal tetap sama. */
+ *  grup judul (6pt/1.2) — default barunya disamakan supaya tampilan
+ *  awal tetap sama. Field `catatan` dipertahankan hanya untuk kompatibilitas
+ *  simpanan lama; Saran/Catatan kini memakai grup Isi (user 2026-11-06). */
 export const DEFAULT_TYPO: PaTypo = {
   kop: { fs: 16, lh: 1.2 },
   pasien: { fs: 4, lh: 1 },

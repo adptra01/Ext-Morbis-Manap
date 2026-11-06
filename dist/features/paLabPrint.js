@@ -64,10 +64,9 @@ var __morbis_feature = (() => {
     { key: "kop", label: "Kop Surat" },
     { key: "pasien", label: "Data Pasien" },
     { key: "judul", label: "Judul Bagian Isi" },
-    { key: "isi", label: "Isi" },
+    { key: "isi", label: "Isi (termasuk Saran & Catatan)" },
     { key: "kesimpulan", label: "Kesimpulan" },
     { key: "icdo", label: "ICD-O" },
-    { key: "catatan", label: "Catatan" },
     { key: "ttd", label: "TTD" }
   ];
   var DEFAULT_TYPO = {
@@ -560,7 +559,7 @@ var __morbis_feature = (() => {
             const rows = s.items.length ? s.items : ["Tidak ada"];
             const multi = rows.length > 1;
             const label = isSaran(s.title) ? "SARAN:" : "CATATAN:";
-            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.judul.fs + 'pt"><b>' + label + '</b></td><td valign="top" style="font-size:' + r.catatan.fs + "pt;line-height:" + r.catatan.lh + ';">' + rows.map(
+            hasilDoc += '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top" style="font-size:' + r.isi.fs + "pt;line-height:" + r.isi.lh + ';"><b>' + label + '</b></td><td valign="top" style="font-size:' + r.isi.fs + "pt;line-height:" + r.isi.lh + ';">' + rows.map(
               (it) => (multi ? "- " : "") + "<b>" + esc(stripBullet(it) || "Tidak ada") + "</b>"
             ).join("<br>") + "</td></tr></table>";
             continue;
@@ -1026,27 +1025,27 @@ var __morbis_feature = (() => {
             padding: 0;
         }
 
-        /* CATATAN: label + list gantung \u2014 baris lanjutan rata di bawah
+        /* CATATAN & SARAN: label + list gantung \u2014 baris lanjutan rata di bawah
            dash pertama ("Catatan: - \u2026" lalu "- \u2026" sejajar di bawahnya).
-           Label tetap grup Judul Bagian Isi (heading); isi Catatan punya
-           grup font & spasi baris sendiri (\u2699\uFE0F Gaya \u2192 Catatan) dan
-           seluruh isinya bold (permintaan user). */
+           Header dan isi menyatu dalam satu baris, jadi keduanya memakai
+           grup Isi yang sama (\u2699\uFE0F Gaya \u2192 Isi), sama besar dengan isi \u2014
+           sesuai permintaan user 2026-11-06. Seluruh isinya bold. */
         .section-catatan {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: var(--pa-catatan-fs, 5pt);
+            font-size: var(--pa-isi-fs, 5pt);
             font-weight: bold;
-            line-height: var(--pa-catatan-lh, 1.25);
+            line-height: var(--pa-isi-lh, 1.25);
             text-align: justify;
         }
 
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: var(--pa-judul-fs, 6pt);
-            line-height: var(--pa-judul-lh, 1.2);
+            font-size: var(--pa-isi-fs, 5pt);
+            line-height: var(--pa-isi-lh, 1.25);
             text-transform: uppercase;
         }
 

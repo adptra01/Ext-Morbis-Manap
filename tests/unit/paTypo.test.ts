@@ -127,10 +127,13 @@ describe('paTypo — resolve & vars', () => {
     expect(vars['--pa-isi-fs']).toBe('5pt');
   });
 
-  it('panel Gaya memuat 8 grup unik (termasuk ICD-O & Catatan)', () => {
-    expect(TYPO_GROUPS).toHaveLength(8);
-    expect(new Set(TYPO_GROUPS.map((g) => g.key)).size).toBe(8);
+  it('panel Gaya memuat 7 grup unik (Catatan pensiun → ikut Isi)', () => {
+    expect(TYPO_GROUPS).toHaveLength(7);
+    expect(new Set(TYPO_GROUPS.map((g) => g.key)).size).toBe(7);
     expect(TYPO_GROUPS.map((g) => g.key)).toContain('icdo');
-    expect(TYPO_GROUPS.map((g) => g.key)).toContain('catatan');
+    // Catatan tidak lagi terpisah di panel (user 2026-11-06): header+isi
+    // Saran/Catatan menyatu memakai grup Isi. Field `catatan` tetap ada
+    // di data hanya untuk compat simpanan lama (sanitize/vars di bawah tetap hijau).
+    expect(TYPO_GROUPS.map((g) => g.key)).not.toContain('catatan');
   });
 });

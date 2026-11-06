@@ -651,18 +651,21 @@ whenFeatureEnabled('paLabPrint', function () {
         if (isSide(s.title)) {
           const rows = s.items.length ? s.items : ['Tidak ada'];
           // value 1 baris → tanpa "-" (permintaan user); >1 baris → "- ".
+          // Header + isi Saran/Catatan menyatu → grup Isi yang sama (user 2026-11-06).
           const multi = rows.length > 1;
           const label = isSaran(s.title) ? 'SARAN:' : 'CATATAN:';
           hasilDoc +=
             '<table border="0" cellspacing="0" cellpadding="2"><tr>' +
             '<td valign="top" style="font-size:' +
-            r.judul.fs +
-            'pt"><b>' +
+            r.isi.fs +
+            'pt;line-height:' +
+            r.isi.lh +
+            ';"><b>' +
             label +
             '</b></td><td valign="top" style="font-size:' +
-            r.catatan.fs +
+            r.isi.fs +
             'pt;line-height:' +
-            r.catatan.lh +
+            r.isi.lh +
             ';">' +
             rows
               .map(
@@ -1386,27 +1389,27 @@ whenFeatureEnabled('paLabPrint', function () {
             padding: 0;
         }
 
-        /* CATATAN: label + list gantung — baris lanjutan rata di bawah
+        /* CATATAN & SARAN: label + list gantung — baris lanjutan rata di bawah
            dash pertama ("Catatan: - …" lalu "- …" sejajar di bawahnya).
-           Label tetap grup Judul Bagian Isi (heading); isi Catatan punya
-           grup font & spasi baris sendiri (⚙️ Gaya → Catatan) dan
-           seluruh isinya bold (permintaan user). */
+           Header dan isi menyatu dalam satu baris, jadi keduanya memakai
+           grup Isi yang sama (⚙️ Gaya → Isi), sama besar dengan isi —
+           sesuai permintaan user 2026-11-06. Seluruh isinya bold. */
         .section-catatan {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             margin-top: 12px;
-            font-size: var(--pa-catatan-fs, 5pt);
+            font-size: var(--pa-isi-fs, 5pt);
             font-weight: bold;
-            line-height: var(--pa-catatan-lh, 1.25);
+            line-height: var(--pa-isi-lh, 1.25);
             text-align: justify;
         }
 
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
-            font-size: var(--pa-judul-fs, 6pt);
-            line-height: var(--pa-judul-lh, 1.2);
+            font-size: var(--pa-isi-fs, 5pt);
+            line-height: var(--pa-isi-lh, 1.25);
             text-transform: uppercase;
         }
 
