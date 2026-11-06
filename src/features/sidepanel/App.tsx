@@ -158,9 +158,81 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
   },
   {
     key: 'mKlaimVerifLog',
-    name: 'Verifikasi Klaim Log',
-    desc: 'Catat log resume saat klik verif berkas',
+    name: 'Verifikasi Klaim & Log Resume',
+    desc: 'Simpan snapshot resume & catat ke riwayat log saat klik verif berkas',
     roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'mKlaimBulkVerif',
+    name: 'Bulk Verif / Batal Verif',
+    desc: 'Pilih banyak klaim lalu Verif atau Batal Verif sekaligus (halaman M-Klaim)',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'mKlaimPrint',
+    name: 'Cetak Rapi M-KLAIM',
+    desc: 'Cetak section M-KLAIM detail ke format A4 profesional',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'telaahBerkas',
+    name: 'Telaah Berkas (M-KLAIM)',
+    desc: 'Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'partialBerkas',
+    name: 'Pasien Partial (M-KLAIM)',
+    desc: 'Tandai Pasien Partial di list + footer detail klaim, sinkron lintas-PC',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'telaahResep',
+    name: 'UI Telaah Resep (Cetak)',
+    desc: 'Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, info pasien/dokter)',
+    roles: ['admin', 'apotek'],
+  },
+  {
+    key: 'billingAdjustment',
+    name: 'Billing Adjustment',
+    desc: 'Edit manual total billing & pembulatan, recalculate otomatis',
+    roles: ['admin'],
+  },
+  {
+    key: 'paLabPrint',
+    name: 'Cetak Hasil Lab PA (Redesign)',
+    desc: 'Redesign format cetak Laporan Hasil PA agar rapi saat tampil & dicetak A4',
+    roles: ['labor', 'admin'],
+  },
+  {
+    key: 'resepAsli',
+    name: 'Cetak Resep Asli (Rawat Inap)',
+    desc: 'Format ulang cetak resep asli rawat inap — header 3 kolom, daftar obat rapi',
+    roles: ['admin', 'apotek'],
+  },
+  {
+    key: 'ttsServer',
+    name: 'Suara Server Cadangan',
+    desc: 'Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS.',
+    roles: ['apotek', 'admin'],
+  },
+  {
+    key: 'hideTelaahDepoRanap',
+    name: 'Sembunyikan Telaah Resep (Depo Ranap)',
+    desc: 'Sembunyikan section checklist telaah resep di halaman detail untuk unit DEPO RANAP',
+    roles: ['admin', 'apotek'],
+  },
+  {
+    key: 'visiteKonsul',
+    name: 'Visite & Konsul Dokter (IGD)',
+    desc: 'Input manual visite & konsul dokter spesialis IGD di halaman utama pelayanan',
+    roles: ['admin', 'igd'],
+  },
+  {
+    key: 'pindahOperasi',
+    name: 'Pindah Operasi',
+    desc: 'Tombol pindah data operasi ke visit/kunjungan lain di halaman edit operasi',
+    roles: ['admin'],
   },
 ];
 
