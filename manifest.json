@@ -70,6 +70,7 @@
         "features/mKlaimVerifLog.js",
         "features/mKlaimLaporanLinks.js",
         "features/mKlaimBulkVerif.js",
+        "features/mKlaimPrint.js",
         "init.js"
       ],
       "run_at": "document_end",
