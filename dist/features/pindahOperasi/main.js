@@ -211,6 +211,18 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/featureGate.ts
+  function decideFeatureGate(key, config, role) {
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+
   // src/features/pindahOperasi/main.ts
   function pindahOperasi() {
     const form = document.querySelector("#form-data");
@@ -285,9 +297,7 @@ var __morbis_feature = (() => {
       const result = await chrome.storage.sync.get("extensionConfig");
       const cfg = result.extensionConfig;
       if (!cfg || cfg.extensionEnabled !== true) return false;
-      const role = cfg.currentRole ?? "admin";
-      const allowed = cfg.features?.pindahOperasi?.allowedRoles ?? ["admin"];
-      return allowed.includes(role);
+      return decideFeatureGate("pindahOperasi", cfg);
     } catch {
       return false;
     }

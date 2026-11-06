@@ -9,9 +9,14 @@
 
 ## 2026-11-06
 
+### ✨ feat
+
+- **mKlaimPrint** — daftarkan fitur Cetak Rapi M-KLAIM ke manifest + build (`9343935`)
+
 ### 🐛 fix
 
-- **pa-print** — Saran side-by-side seperti Catatan; 1 baris tanpa dash (`0c4e4bc`)
+- **pa-print** — hapus garis bawah header isi (layar + Export Word) (`23d7ae0`)
+- **pa-print** — Saran side-by-side seperti Catatan; 1 baris tanpa dash (`674e23a`)
 - **gate** — pindahOperasi dapat toggle + banner antrian farmasi senyap saat OFF (`58c4caa`)
 - **visiteKonsul** — scope ke halaman utama + gate config & role idg (`1432385`)
 
@@ -1971,4 +1976,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0c4e4bc3e6314023ef89f29ec693892f119d115a -->
+<!-- changelog-upto: 9343935892da2d8f054d67c3060bad50d75baa8d -->

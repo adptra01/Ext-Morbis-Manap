@@ -110,6 +110,8 @@ var __morbis_init = (() => {
     const afCfg = cfg?.features?.antrianFarmasi;
     if (afCfg?.enabled && window.ExtensionCore.isFeatureAllowed("antrianFarmasi")) {
       document.documentElement.setAttribute("data-ext-antrian-farmasi", "1");
+    } else if (cfg) {
+      document.documentElement.setAttribute("data-ext-antrian-farmasi", "0");
     } else {
       document.documentElement.removeAttribute("data-ext-antrian-farmasi");
     }
