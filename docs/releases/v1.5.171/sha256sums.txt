@@ -1,0 +1,2 @@
+a47f6f287cb0eb257040ae56bc9fb0d07080eaefd8d0204817e9b3eaeb5cbbd3  morbis-v1.5.171.crx
+56a49da9fede38940288ced7add2cbcfa4759b90866c4a1f78936a013bffbb21  morbis-v1.5.171.zip

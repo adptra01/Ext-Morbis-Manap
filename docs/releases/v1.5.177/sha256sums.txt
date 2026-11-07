@@ -1,0 +1,2 @@
+be2e7845a1d37f8c2aba63ee506a08feac3dfdeae60ec0cdabc2dc0bbb70abab  morbis-v1.5.177.crx
+fa9b3ee9327da220e1c5210776680478d00973bad51bee68be25ccd3bc3f6181  morbis-v1.5.177.zip
