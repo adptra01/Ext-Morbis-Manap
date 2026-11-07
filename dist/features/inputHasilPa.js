@@ -515,9 +515,35 @@ var __morbis_feature = (() => {
         else fieldset.after(container);
       }
     }
+    function renameCaraPerolehanLabel() {
+      try {
+        const labels = Array.from(document.querySelectorAll("label"));
+        for (const l of labels) {
+          const t = (l.textContent || "").trim();
+          if (/^(cara|care)\s+peroleh(an)?$/i.test(t)) l.textContent = "Cara Perolehan";
+        }
+        if (!labels.some((l) => (l.textContent || "").trim() === "Cara Perolehan")) {
+          const ta = document.querySelector('#cara_peroleh, textarea[name="cara_peroleh"]');
+          if (ta) {
+            const parent = ta.parentElement;
+            const cand = parent?.querySelectorAll("span, div");
+            if (cand) {
+              for (const el of Array.from(cand)) {
+                if (/^(cara|care)\s+peroleh(an)?$/i.test((el.textContent || "").trim())) {
+                  el.textContent = "Cara Perolehan";
+                  break;
+                }
+              }
+            }
+          }
+        }
+      } catch {
+      }
+    }
     function injectUi() {
       if (!document.documentElement.getAttribute("data-ext-lab-history")) return;
       startKeepCase();
+      renameCaraPerolehanLabel();
       renderActions();
     }
     const start = performance.now();

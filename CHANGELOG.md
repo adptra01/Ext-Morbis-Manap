@@ -15,6 +15,8 @@
 
 ### 🐛 fix
 
+- **toolbar** — tombol Edit Resume Rajal ke /rj (daftar), bukan langsung form rm-rawat-jalan-new (`333393d`)
+- **pa-print** — ICD-O/Catatan/Saran menyatu pakai grup Isi (pensiun grup ICD-O) (`62d3996`)
 - **pa-print** — Saran/Catatan header+isi ikuti grup Isi (menyatu, pensiun grup Catatan) (`5591ebe`)
 - **pa-print** — header Makroskopik/Mikroskopik/Kesimpulan pakai garis bawah (`29b113e`)
 - **pa-print** — hapus garis bawah header isi (layar + Export Word) (`23d7ae0`)
@@ -1980,4 +1982,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 5591ebef4982fc569bb8a6facfe568713594a9c5 -->
+<!-- changelog-upto: 333393d46b35717ac03a92bf42bf51056f116eef -->

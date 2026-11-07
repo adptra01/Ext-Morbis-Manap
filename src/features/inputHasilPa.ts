@@ -396,9 +396,44 @@ whenFeatureEnabled('labHistory', function () {
     }
   }
 
+  /** Ganti label form "Cara Peroleh" → "Cara Perolehan" (user 2026-11-08).
+   *  Hanya teks labelnya; name/id textarea cara_peroleh tetap. Noting `for`
+   *  server sempat salah arah (ke `lokasi`) jadi cocokkan juga teksnya. */
+  function renameCaraPerolehanLabel(): void {
+    try {
+      const labels = Array.from(document.querySelectorAll('label'));
+      for (const l of labels) {
+        const t = (l.textContent || '').trim();
+        if (/^(cara|care)\s+peroleh(an)?$/i.test(t)) l.textContent = 'Cara Perolehan';
+      }
+      // Cadangan: bila label tidak ada (mis. span/div), cari elemen whose
+      // teks persis "Cara Peroleh" yang berdiri sebagai label field.
+      if (!labels.some((l) => (l.textContent || '').trim() === 'Cara Perolehan')) {
+        const ta = document.querySelector<HTMLElement>(
+          '#cara_peroleh, textarea[name="cara_peroleh"]',
+        );
+        if (ta) {
+          const parent = ta.parentElement as HTMLElement | null;
+          const cand = parent?.querySelectorAll('span, div');
+          if (cand) {
+            for (const el of Array.from(cand)) {
+              if (/^(cara|care)\s+peroleh(an)?$/i.test((el.textContent || '').trim())) {
+                el.textContent = 'Cara Perolehan';
+                break;
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      /* abaikan */
+    }
+  }
+
   function injectUi(): void {
     if (!document.documentElement.getAttribute('data-ext-lab-history')) return;
     startKeepCase();
+    renameCaraPerolehanLabel();
     renderActions();
   }
 

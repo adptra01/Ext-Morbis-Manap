@@ -499,6 +499,7 @@ var __morbis_feature = (() => {
       );
       const titleCase = (s) => s.toLowerCase().split(/\s+/).map((w) => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
       const infoClean = infoItems.map(([l, v]) => {
+        if (/^(cara|care)\s+peroleh(an)?$/i.test(l.trim())) return ["Cara Perolehan", v];
         if (!/^ruang/i.test(l)) return [l, v];
         const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, "").trim() || v;
         const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, "").trim();

@@ -546,6 +546,9 @@ whenFeatureEnabled('paLabPrint', function () {
         .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
         .join(' ');
     const infoClean: Array<[string, string]> = infoItems.map(([l, v]) => {
+      // Koreksi label server "Cara Peroleh" → "Cara Perolehan"
+      // (user 2026-11-08, tampil di cetak + Word).
+      if (/^(cara|care)\s+peroleh(an)?$/i.test(l.trim())) return ['Cara Perolehan', v];
       if (!/^ruang/i.test(l)) return [l, v];
       const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
       const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
