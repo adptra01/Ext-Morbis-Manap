@@ -243,7 +243,14 @@ var __morbis_feature = (() => {
       }
     }
   };
-  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+  var ce = typeof window !== "undefined" ? window.customElements : null;
+  if (ce) {
+    try {
+      if (!ce.get("ext-btn")) ce.define("ext-btn", ExtBtn);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-btn:", e);
+    }
+  }
 
   // src/ui/web/ext-input.ts
   var STYLE2 = `
@@ -319,7 +326,14 @@ var __morbis_feature = (() => {
       this.input.focus();
     }
   };
-  if (!customElements.get("ext-input")) customElements.define("ext-input", ExtInput);
+  var ce2 = typeof window !== "undefined" ? window.customElements : null;
+  if (ce2) {
+    try {
+      if (!ce2.get("ext-input")) ce2.define("ext-input", ExtInput);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-input:", e);
+    }
+  }
 
   // src/features/visiteKonsul.ts
   var LOG_PREFIX = "[MORBIS Ext] visiteKonsul";
@@ -413,6 +427,7 @@ var __morbis_feature = (() => {
     .ext-vk-table th, .ext-vk-table td { border: 1px solid var(--ext-border); padding: 4px 6px; font-size: var(--ext-font-size-sm); color: var(--ext-text); }
     .ext-vk-table th { background: var(--ext-surface-2); }
     .ext-vk-autocomplete { position: relative; }
+    .ext-vk-input { width: 100%; box-sizing: border-box; padding: 6px 10px; font-size: var(--ext-font-size-sm); border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); font-family: var(--ext-font-family); color: var(--ext-text); background: var(--ext-surface); }
     .ext-vk-suggest { position: absolute; top: 100%; left: 0; right: 0; background: var(--ext-surface); border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); max-height: 160px; overflow-y: auto; z-index: 9999; box-shadow: var(--ext-shadow-md); }
     .ext-vk-suggest div { padding: 6px 8px; font-size: var(--ext-font-size-sm); color: var(--ext-text); cursor: pointer; }
     .ext-vk-suggest div:hover { background: var(--ext-surface-2); }
@@ -422,6 +437,18 @@ var __morbis_feature = (() => {
     document.head.appendChild(style);
   }
   function makeAutocomplete(input, row, onSelect) {
+    const readVal = () => {
+      const v = input.value;
+      return typeof v === "string" ? v : input.getAttribute("value") ?? "";
+    };
+    const writeVal = (v) => {
+      const anyEl = input;
+      try {
+        anyEl.value = v;
+      } catch {
+      }
+      input.setAttribute("value", v);
+    };
     const wrap = input.parentElement;
     let box = null;
     let timer = null;
@@ -434,7 +461,7 @@ var __morbis_feature = (() => {
     input.addEventListener("input", () => {
       if (timer) window.clearTimeout(timer);
       timer = window.setTimeout(async () => {
-        const q = input.value.trim();
+        const q = readVal().trim();
         if (q.length < 2) {
           close();
           return;
@@ -457,7 +484,7 @@ var __morbis_feature = (() => {
           item.textContent = d.nama;
           item.addEventListener("mousedown", (e) => {
             e.preventDefault();
-            input.value = d.nama;
+            writeVal(d.nama);
             onSelect(d.id, d.nama);
             close();
           });
@@ -506,11 +533,25 @@ var __morbis_feature = (() => {
         const tdDoc = document.createElement("td");
         const acWrap = document.createElement("div");
         acWrap.className = "ext-vk-autocomplete";
-        const input = document.createElement("ext-input");
-        input.setAttribute("type", "text");
-        input.setAttribute("size", "sm");
-        input.setAttribute("placeholder", "Ketik nama dokter...");
-        input.value = row.nama_dokter;
+        let input;
+        if (window.customElements?.get?.("ext-input")) {
+          input = document.createElement("ext-input");
+          input.setAttribute("type", "text");
+          input.setAttribute("size", "sm");
+          input.setAttribute("placeholder", "Ketik nama dokter...");
+          try {
+            input.value = row.nama_dokter;
+          } catch {
+          }
+          input.setAttribute("value", row.nama_dokter);
+        } else {
+          const ni = document.createElement("input");
+          ni.type = "text";
+          ni.placeholder = "Ketik nama dokter...";
+          ni.value = row.nama_dokter;
+          ni.className = "ext-vk-input";
+          input = ni;
+        }
         acWrap.appendChild(input);
         tdDoc.appendChild(acWrap);
         makeAutocomplete(input, row, (id, nama) => {
@@ -519,7 +560,8 @@ var __morbis_feature = (() => {
           status.textContent = "Belum disimpan";
         });
         input.addEventListener("change", () => {
-          row.nama_dokter = input.value.trim();
+          const v = input.value;
+          row.nama_dokter = (typeof v === "string" ? v : input.getAttribute("value") ?? "").trim();
           status.textContent = "Belum disimpan";
         });
         tr.appendChild(tdDoc);

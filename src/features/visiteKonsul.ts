@@ -13,7 +13,6 @@ import { runWhenIdle } from './shared/whenIdle.js';
 import { getMorbisGlobals, type MorbisGlobals } from './shared/types.js';
 import '../ui/web/ext-btn';
 import '../ui/web/ext-input';
-import { ExtInput } from '../ui/web/ext-input';
 import { injectGlobalTokens } from '../ui/web/tokens';
 
 const LOG_PREFIX = '[MORBIS Ext] visiteKonsul';
@@ -129,6 +128,7 @@ function injectStyles() {
     .ext-vk-table th, .ext-vk-table td { border: 1px solid var(--ext-border); padding: 4px 6px; font-size: var(--ext-font-size-sm); color: var(--ext-text); }
     .ext-vk-table th { background: var(--ext-surface-2); }
     .ext-vk-autocomplete { position: relative; }
+    .ext-vk-input { width: 100%; box-sizing: border-box; padding: 6px 10px; font-size: var(--ext-font-size-sm); border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); font-family: var(--ext-font-family); color: var(--ext-text); background: var(--ext-surface); }
     .ext-vk-suggest { position: absolute; top: 100%; left: 0; right: 0; background: var(--ext-surface); border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); max-height: 160px; overflow-y: auto; z-index: 9999; box-shadow: var(--ext-shadow-md); }
     .ext-vk-suggest div { padding: 6px 8px; font-size: var(--ext-font-size-sm); color: var(--ext-text); cursor: pointer; }
     .ext-vk-suggest div:hover { background: var(--ext-surface-2); }
@@ -138,7 +138,25 @@ function injectStyles() {
   document.head.appendChild(style);
 }
 
-function makeAutocomplete(input: ExtInput, row: Row, onSelect: (id: number, nama: string) => void) {
+function makeAutocomplete(
+  input: HTMLElement,
+  row: Row,
+  onSelect: (id: number, nama: string) => void,
+) {
+  const readVal = () => {
+    const v = (input as { value?: unknown }).value;
+    return typeof v === 'string' ? v : (input.getAttribute('value') ?? '');
+  };
+  const writeVal = (v: string) => {
+    const anyEl = input as { value?: string };
+    try {
+      anyEl.value = v;
+    } catch {
+      /* ignore */
+    }
+    input.setAttribute('value', v);
+  };
+
   const wrap = input.parentElement as HTMLElement;
   let box: HTMLDivElement | null = null;
   let timer: number | null = null;
@@ -153,7 +171,7 @@ function makeAutocomplete(input: ExtInput, row: Row, onSelect: (id: number, nama
   input.addEventListener('input', () => {
     if (timer) window.clearTimeout(timer);
     timer = window.setTimeout(async () => {
-      const q = input.value.trim();
+      const q = readVal().trim();
       if (q.length < 2) {
         close();
         return;
@@ -176,7 +194,7 @@ function makeAutocomplete(input: ExtInput, row: Row, onSelect: (id: number, nama
         item.textContent = d.nama;
         item.addEventListener('mousedown', (e) => {
           e.preventDefault();
-          input.value = d.nama;
+          writeVal(d.nama);
           onSelect(d.id, d.nama);
           close();
         });
@@ -240,11 +258,26 @@ function buildSection(
       const tdDoc = document.createElement('td');
       const acWrap = document.createElement('div');
       acWrap.className = 'ext-vk-autocomplete';
-      const input = document.createElement('ext-input') as ExtInput;
-      input.setAttribute('type', 'text');
-      input.setAttribute('size', 'sm');
-      input.setAttribute('placeholder', 'Ketik nama dokter...');
-      input.value = row.nama_dokter;
+      let input: HTMLElement;
+      if (window.customElements?.get?.('ext-input')) {
+        input = document.createElement('ext-input');
+        input.setAttribute('type', 'text');
+        input.setAttribute('size', 'sm');
+        input.setAttribute('placeholder', 'Ketik nama dokter...');
+        try {
+          (input as { value?: string }).value = row.nama_dokter;
+        } catch {
+          /* ignore */
+        }
+        input.setAttribute('value', row.nama_dokter);
+      } else {
+        const ni = document.createElement('input');
+        ni.type = 'text';
+        ni.placeholder = 'Ketik nama dokter...';
+        ni.value = row.nama_dokter;
+        ni.className = 'ext-vk-input';
+        input = ni;
+      }
       acWrap.appendChild(input);
       tdDoc.appendChild(acWrap);
 
@@ -255,7 +288,8 @@ function buildSection(
       });
 
       input.addEventListener('change', () => {
-        row.nama_dokter = input.value.trim();
+        const v = (input as { value?: unknown }).value;
+        row.nama_dokter = (typeof v === 'string' ? v : (input.getAttribute('value') ?? '')).trim();
         status.textContent = 'Belum disimpan';
       });
 

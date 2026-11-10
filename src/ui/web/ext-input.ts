@@ -91,4 +91,13 @@ export class ExtInput extends HTMLElement {
   }
 }
 
-if (!customElements.get('ext-input')) customElements.define('ext-input', ExtInput);
+const ce2 = (
+  typeof window !== 'undefined' ? window.customElements : null
+) as CustomElementRegistry | null;
+if (ce2) {
+  try {
+    if (!ce2.get('ext-input')) ce2.define('ext-input', ExtInput);
+  } catch (e) {
+    console.warn('[MORBIS Ext] gagal registrasi ext-input:', e);
+  }
+}

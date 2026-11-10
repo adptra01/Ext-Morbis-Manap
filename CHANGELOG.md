@@ -11,7 +11,12 @@
 
 ### 🐛 fix
 
+- **visiteKonsul** — tampilkan galat API visite-konsul (503) di banner + kotak pencarian dokter, bukan gagal senyap (`0ed6948`)
 - **visiteKonsul** — card di bawah judul HALAMAN UTAMA + tombol Simpan eksplisit per bagian (`ff6ef6c`)
+
+### ♻️ refactor
+
+- **visiteKonsul** — tombol & input pakai shared UI components (ext-btn, ext-input) (`0a9d851`)
 
 ## 2026-11-07
 
@@ -1994,4 +1999,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ff6ef6cb7cf2dc4185f5a5c3b6ee2ac6287d1457 -->
+<!-- changelog-upto: 0a9d851d2c1d68f2e9cd79743e1ed39e6bea1b63 -->
