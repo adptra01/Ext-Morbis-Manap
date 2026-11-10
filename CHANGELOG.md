@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **igdPukulAutofill** — tambah toggle on/off di popup & sidebar (gate via data-ext-igd-pukul) (`0e8941d`)
 - **igdPukulAutofill** — auto-fill waktu sekarang + fix deleteElementObat selector (Rajal/Ranap IGD) (`7d287f1`)
 - **visiteKonsul** — simpan lokal dulu + antrian pending + tombol Sinkron (offline-resilient) (`e68c87c`)
 
@@ -2012,4 +2013,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c523211f7d646cdac94153a11c090dbc5f414e8b -->
+<!-- changelog-upto: 4a9af47c8a5ea272ef471fd6c4cba2a515574de2 -->

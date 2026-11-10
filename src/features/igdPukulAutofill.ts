@@ -1,14 +1,17 @@
 /**
  * FEATURE: IGD Pukul Auto-Fill (Main World)
- * Halaman pengkajian awal IGD (Rajal & Ranap): kolom Pukul (datetime-local)
- * pada tabel Tindakan/Terapi.
+ * Halaman pengkajian awal IGD (Rajal & Ranap): kolom Pukul pada tabel
+ * Tindakan/Terapi.
  *
- * 1. Auto-fill: baris BARU otomatis terisi tanggal & waktu sekarang (dinamis),
- *    bukan nilai hardcode. Baris lama (dari DB) tidak ditimpa.
- * 2. Fix deleteElementObat: selector re-indexing diubah dari input[type=text]
- *    ke input[type=datetime-local] agar ID/Name tetap sinkron setelah hapus baris.
+ * Masalah asli: input bertipe datetime-local sering ter-reset menjadi kosong
+ * saat kehilangan fokus (konflik dengan skrip lama/watermark/validasi).
  *
- * Berjalan di main world (world: MAIN) agar bisa override fungsi global.
+ * Solusi (sesuai permintaan user): ubah kolom Pukul menjadi input teks biasa
+ * (type="text") agar nilainya tidak divalidasi/reset oleh browser, sekaligus
+ * auto-fill baris BARU dengan waktu sekarang. Baris lama (dari DB) tidak ditimpa.
+ * Juga perbaiki re-index deleteElementObat (selector input[type=text] kini cocok).
+ *
+ * Berjalan di main world (world: MAIN), gate via data-ext-igd-pukul.
  */
 (function () {
   const MAX_WAIT = 200;
@@ -20,10 +23,54 @@
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  // Override deleteElementObat dengan selector yang benar (datetime-local).
+  // Konversi datetime-local → text dan kunci agar tidak dikembalikan oleh skrip lain.
+  function toText(input: HTMLInputElement): void {
+    if (input.type !== 'text') {
+      const val = input.value;
+      input.type = 'text';
+      input.setAttribute('type', 'text');
+      if (val) input.value = val;
+    }
+    input.setAttribute('autocomplete', 'off');
+    // blokir perubahan tipe balik ke datetime-local
+    if (!(input as any).__igdPukulGuarded) {
+      (input as any).__igdPukulGuarded = true;
+      input.addEventListener(
+        'focus',
+        () => {
+          if (input.type !== 'text') {
+            const v = input.value;
+            input.type = 'text';
+            input.value = v;
+          }
+        },
+        true,
+      );
+      input.addEventListener(
+        'click',
+        () => {
+          if (input.type !== 'text') {
+            const v = input.value;
+            input.type = 'text';
+            input.value = v;
+          }
+        },
+        true,
+      );
+    }
+  }
+
+  function convertAll(): void {
+    document
+      .querySelectorAll('input[id^="pukulobat"]')
+      .forEach((inp) => toText(inp as HTMLInputElement));
+  }
+
+  // Override deleteElementObat: selector td:eq(0) input (kini text).
   function patchDelete(): void {
     const w = window as unknown as Record<string, unknown>;
     const $ = (window as any).jQuery || (window as any).$;
+    if (!$) return;
     w.deleteElementObat = function (el: HTMLElement): void {
       const parent = el.parentNode && (el.parentNode as HTMLElement).parentNode;
       if (parent && parent.parentNode) parent.parentNode.removeChild(parent);
@@ -35,11 +82,11 @@
 
         $row
           .children('td:eq(0)')
-          .children('input[type="datetime-local"]')
+          .children('input')
           .attr('id', 'pukulobat' + (i + 1));
         $row
           .children('td:eq(0)')
-          .children('input[type="datetime-local"]')
+          .children('input')
           .attr('name', 'medis[' + (i + 1) + '][pukulobat]');
         $row
           .children('td:eq(1)')
@@ -85,22 +132,17 @@
     };
   }
 
-  // Auto-fill: tandai baris yang sudah ada saat load, lalu isi baris baru dengan waktu sekarang.
-  // Hanya timpa nilai yang BUKAN bagian dari data DB (dilindungi).
+  // Auto-fill: baris baru (hardcoded value) → ganti dengan waktu sekarang.
   function setupAutofill(): void {
     const seen = new WeakSet<HTMLElement>();
     const protectedValues = new Set<string>();
 
     function collectProtected(): void {
       document.querySelectorAll('.obat_tr').forEach((tr) => {
-        tr.querySelectorAll('input[type="datetime-local"]').forEach((inp) => {
+        tr.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => {
           protectedValues.add((inp as HTMLInputElement).value);
         });
       });
-    }
-
-    function markExisting(): void {
-      document.querySelectorAll('.obat_tr').forEach((tr) => seen.add(tr as HTMLElement));
     }
 
     function fillNew(): void {
@@ -108,8 +150,9 @@
         const row = tr as HTMLElement;
         if (seen.has(row)) return;
         seen.add(row);
-        row.querySelectorAll('input[type="datetime-local"]').forEach((inp) => {
+        row.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => {
           const el = inp as HTMLInputElement;
+          toText(el);
           if (!protectedValues.has(el.value)) {
             el.value = nowLocal();
           }
@@ -118,15 +161,23 @@
       });
     }
 
-    // Tunda agar semua baris awal (dari DB) sudah render & terlindungi.
+    // Tunda agar baris awal (DB) sudah render & terlindungi.
     setTimeout(() => {
+      convertAll();
       collectProtected();
       markExisting();
       fillNew();
       const target = document.querySelector('#obattable') || document.body;
-      const obs = new MutationObserver(() => fillNew());
+      const obs = new MutationObserver(() => {
+        convertAll();
+        fillNew();
+      });
       obs.observe(target, { childList: true, subtree: true });
     }, 1500);
+
+    function markExisting(): void {
+      document.querySelectorAll('.obat_tr').forEach((tr) => seen.add(tr as HTMLElement));
+    }
   }
 
   const check = setInterval(function () {
@@ -139,15 +190,13 @@
       run();
     } else if (waited >= MAX_WAIT) {
       clearInterval(check);
-      // fallback: config mungkin tidak termuat, jalankan default
-      run();
+      run(); // fallback default-ON
     }
   }, 50);
 
   function run(): void {
     const $ = (window as any).jQuery || (window as any).$;
     if (!$) {
-      // tunggu jQuery
       const w2 = setInterval(function () {
         const jq = (window as any).jQuery || (window as any).$;
         if (jq) {

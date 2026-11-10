@@ -9,9 +9,39 @@ var __morbis_feature = (() => {
       const pad = (n) => String(n).padStart(2, "0");
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
+    function toText(input) {
+      if (input.type !== "text") {
+        const val = input.value;
+        input.type = "text";
+        input.setAttribute("type", "text");
+        if (val) input.value = val;
+      }
+      input.setAttribute("autocomplete", "off");
+      if (!input.__igdPukulGuarded) {
+        input.__igdPukulGuarded = true;
+        input.addEventListener("focus", () => {
+          if (input.type !== "text") {
+            const v = input.value;
+            input.type = "text";
+            input.value = v;
+          }
+        }, true);
+        input.addEventListener("click", () => {
+          if (input.type !== "text") {
+            const v = input.value;
+            input.type = "text";
+            input.value = v;
+          }
+        }, true);
+      }
+    }
+    function convertAll() {
+      document.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => toText(inp));
+    }
     function patchDelete() {
       const w = window;
       const $ = window.jQuery || window.$;
+      if (!$) return;
       w.deleteElementObat = function(el) {
         const parent = el.parentNode && el.parentNode.parentNode;
         if (parent && parent.parentNode) parent.parentNode.removeChild(parent);
@@ -20,8 +50,8 @@ var __morbis_feature = (() => {
         for (let i = 0; i < count; i++) {
           const $row = $(`.obat_tr:eq(${i})`);
           $row.removeClass("even odd").addClass((i + 1) % 2 !== 0 ? "even" : "odd");
-          $row.children("td:eq(0)").children('input[type="datetime-local"]').attr("id", "pukulobat" + (i + 1));
-          $row.children("td:eq(0)").children('input[type="datetime-local"]').attr("name", "medis[" + (i + 1) + "][pukulobat]");
+          $row.children("td:eq(0)").children("input").attr("id", "pukulobat" + (i + 1));
+          $row.children("td:eq(0)").children("input").attr("name", "medis[" + (i + 1) + "][pukulobat]");
           $row.children("td:eq(1)").children(".auto").attr("id", "nama_barang" + (i + 1));
           $row.children("td:eq(1)").children(".auto").attr("name", "medis[" + (i + 1) + "][nama_barang]");
           $row.children("td:eq(1)").children(".hideauto").attr("id", "id_barang" + (i + 1));
@@ -40,21 +70,19 @@ var __morbis_feature = (() => {
       const protectedValues = /* @__PURE__ */ new Set();
       function collectProtected() {
         document.querySelectorAll(".obat_tr").forEach((tr) => {
-          tr.querySelectorAll('input[type="datetime-local"]').forEach((inp) => {
+          tr.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => {
             protectedValues.add(inp.value);
           });
         });
-      }
-      function markExisting() {
-        document.querySelectorAll(".obat_tr").forEach((tr) => seen.add(tr));
       }
       function fillNew() {
         document.querySelectorAll(".obat_tr").forEach((tr) => {
           const row = tr;
           if (seen.has(row)) return;
           seen.add(row);
-          row.querySelectorAll('input[type="datetime-local"]').forEach((inp) => {
+          row.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => {
             const el = inp;
+            toText(el);
             if (!protectedValues.has(el.value)) {
               el.value = nowLocal();
             }
@@ -63,13 +91,20 @@ var __morbis_feature = (() => {
         });
       }
       setTimeout(() => {
+        convertAll();
         collectProtected();
         markExisting();
         fillNew();
         const target = document.querySelector("#obattable") || document.body;
-        const obs = new MutationObserver(() => fillNew());
+        const obs = new MutationObserver(() => {
+          convertAll();
+          fillNew();
+        });
         obs.observe(target, { childList: true, subtree: true });
       }, 1500);
+      function markExisting() {
+        document.querySelectorAll(".obat_tr").forEach((tr) => seen.add(tr));
+      }
     }
     const check = setInterval(function() {
       waited++;
