@@ -27,6 +27,7 @@
 
 ### 🧹 chore
 
+- remove trigger.tmp (`8b4365e`)
 - trigger production deploy (`7c9cc50`)
 - rebuild dist (igdPukulAutofill manifest + sourcemap) (`c627613`)
 
@@ -2011,4 +2012,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 376b04447cb237b8928ad264b6e9fe28dab8a9d3 -->
+<!-- changelog-upto: c523211f7d646cdac94153a11c090dbc5f414e8b -->

@@ -18460,7 +18460,7 @@ var __morbis_feature = (() => {
           hideOrUnhideDehydratedBoundary(dehydratedInstance, false);
         }
         function unhideInstance(instance, props) {
-          props = props[STYLE5];
+          props = props[STYLE6];
           props = void 0 !== props && null !== props && props.hasOwnProperty("display") ? props.display : null;
           instance.style.display = null == props || "boolean" === typeof props ? "" : ("" + props).trim();
         }
@@ -18512,7 +18512,7 @@ var __morbis_feature = (() => {
         }
         function restoreViewTransitionName(instance, props) {
           instance = instance.style;
-          props = props[STYLE5];
+          props = props[STYLE6];
           var viewTransitionName = null != props ? props.hasOwnProperty("viewTransitionName") ? props.viewTransitionName : props.hasOwnProperty("view-transition-name") ? props["view-transition-name"] : null : null;
           instance.viewTransitionName = null == viewTransitionName || "boolean" === typeof viewTransitionName ? "" : ("" + viewTransitionName).trim();
           viewTransitionName = null != props ? props.hasOwnProperty("viewTransitionClass") ? props.viewTransitionClass : props.hasOwnProperty("view-transition-class") ? props["view-transition-class"] : null : null;
@@ -22835,7 +22835,7 @@ var __morbis_feature = (() => {
           "beforetoggle cancel close invalid load scroll scrollend toggle".split(" ").concat(mediaEventTypes)
         ), listeningMarker = "_reactListening" + Math.random().toString(36).slice(2), didWarnControlledToUncontrolled = false, didWarnUncontrolledToControlled = false, didWarnFormActionType = false, didWarnFormActionName = false, didWarnFormActionTarget = false, didWarnFormActionMethod = false, didWarnPopoverTargetObject = false;
         var didWarnForNewBooleanPropsWithEmptyValue = {};
-        var NORMALIZE_NEWLINES_REGEX = /\r\n?/g, NORMALIZE_NULL_AND_REPLACEMENT_REGEX = /\u0000|\uFFFD/g, xlinkNamespace = "http://www.w3.org/1999/xlink", xmlNamespace = "http://www.w3.org/XML/1998/namespace", emptyProps = {}, EXPECTED_FORM_ACTION_URL = "javascript:throw new Error('React form unexpectedly submitted.')", SUPPRESS_HYDRATION_WARNING = "suppressHydrationWarning", ACTIVITY_START_DATA = "&", ACTIVITY_END_DATA = "/&", SUSPENSE_START_DATA = "$", SUSPENSE_END_DATA = "/$", SUSPENSE_PENDING_START_DATA = "$?", SUSPENSE_QUEUED_START_DATA = "$~", SUSPENSE_FALLBACK_START_DATA = "$!", PREAMBLE_CONTRIBUTION_HTML = "html", PREAMBLE_CONTRIBUTION_BODY = "body", PREAMBLE_CONTRIBUTION_HEAD = "head", FORM_STATE_IS_MATCHING = "F!", FORM_STATE_IS_NOT_MATCHING = "F", DOCUMENT_READY_STATE_LOADING = "loading", STYLE5 = "style", HostContextNamespaceNone = 0, HostContextNamespaceSvg = 1, HostContextNamespaceMath = 2, eventsEnabled = null, selectionInformation = null, didWarnScriptTags = false, warnedUnknownTags = { dialog: true, webview: true }, currentPopstateTransitionEvent = null, schedulerEvent = void 0, scheduleTimeout = "function" === typeof setTimeout ? setTimeout : void 0, cancelTimeout = "function" === typeof clearTimeout ? clearTimeout : void 0, noTimeout = -1, localPromise = "function" === typeof Promise ? Promise : void 0, localRequestAnimationFrame = "function" === typeof requestAnimationFrame ? requestAnimationFrame : scheduleTimeout, scheduleMicrotask = "function" === typeof queueMicrotask ? queueMicrotask : "undefined" !== typeof localPromise ? function(callback) {
+        var NORMALIZE_NEWLINES_REGEX = /\r\n?/g, NORMALIZE_NULL_AND_REPLACEMENT_REGEX = /\u0000|\uFFFD/g, xlinkNamespace = "http://www.w3.org/1999/xlink", xmlNamespace = "http://www.w3.org/XML/1998/namespace", emptyProps = {}, EXPECTED_FORM_ACTION_URL = "javascript:throw new Error('React form unexpectedly submitted.')", SUPPRESS_HYDRATION_WARNING = "suppressHydrationWarning", ACTIVITY_START_DATA = "&", ACTIVITY_END_DATA = "/&", SUSPENSE_START_DATA = "$", SUSPENSE_END_DATA = "/$", SUSPENSE_PENDING_START_DATA = "$?", SUSPENSE_QUEUED_START_DATA = "$~", SUSPENSE_FALLBACK_START_DATA = "$!", PREAMBLE_CONTRIBUTION_HTML = "html", PREAMBLE_CONTRIBUTION_BODY = "body", PREAMBLE_CONTRIBUTION_HEAD = "head", FORM_STATE_IS_MATCHING = "F!", FORM_STATE_IS_NOT_MATCHING = "F", DOCUMENT_READY_STATE_LOADING = "loading", STYLE6 = "style", HostContextNamespaceNone = 0, HostContextNamespaceSvg = 1, HostContextNamespaceMath = 2, eventsEnabled = null, selectionInformation = null, didWarnScriptTags = false, warnedUnknownTags = { dialog: true, webview: true }, currentPopstateTransitionEvent = null, schedulerEvent = void 0, scheduleTimeout = "function" === typeof setTimeout ? setTimeout : void 0, cancelTimeout = "function" === typeof clearTimeout ? clearTimeout : void 0, noTimeout = -1, localPromise = "function" === typeof Promise ? Promise : void 0, localRequestAnimationFrame = "function" === typeof requestAnimationFrame ? requestAnimationFrame : scheduleTimeout, scheduleMicrotask = "function" === typeof queueMicrotask ? queueMicrotask : "undefined" !== typeof localPromise ? function(callback) {
           return localPromise.resolve(null).then(callback).catch(handleErrorInNextTick);
         } : scheduleTimeout, SUSPENSEY_FONT_AND_IMAGE_TIMEOUT = 500;
         ViewTransitionPseudoElement.prototype.animate = function(keyframes, options) {
@@ -24024,7 +24024,14 @@ var __morbis_feature = (() => {
       }
     }
   };
-  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+  var ce = typeof window !== "undefined" ? window.customElements : null;
+  if (ce) {
+    try {
+      if (!ce.get("ext-btn")) ce.define("ext-btn", ExtBtn);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-btn:", e);
+    }
+  }
 
   // src/ui/web/ext-badge.ts
   var STYLE2 = `
@@ -24278,6 +24285,89 @@ var __morbis_feature = (() => {
     }
   };
   if (!customElements.get("ext-modal")) customElements.define("ext-modal", ExtModal);
+
+  // src/ui/web/ext-input.ts
+  var STYLE5 = `
+  :host { display: block; }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-md);
+    line-height: var(--ext-line-height);
+    color: var(--ext-text);
+    background: var(--ext-surface);
+    border: 1px solid var(--ext-border);
+    border-radius: var(--ext-radius-md);
+    padding: 9px 12px;
+    min-height: 42px;
+    transition: border-color var(--ext-duration-fast) var(--ext-ease),
+      box-shadow var(--ext-duration-fast) var(--ext-ease);
+  }
+  input::placeholder { color: var(--ext-text-muted); }
+  input:focus { outline: none; border-color: var(--ext-primary); box-shadow: var(--ext-ring); }
+  input:disabled { background: var(--ext-surface-2); color: var(--ext-text-muted); cursor: not-allowed; }
+  :host([invalid]) input { border-color: var(--ext-danger); }
+
+  :host([size='sm']) input {
+    font-size: var(--ext-font-size-sm);
+    padding: 6px 10px;
+    min-height: 32px;
+    border-radius: var(--ext-radius-sm);
+  }
+  :host([size='lg']) input {
+    font-size: var(--ext-font-size-lg);
+    padding: 12px 14px;
+    min-height: 50px;
+  }
+`;
+  var ExtInput = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `<style>${STYLE5}</style><input />`;
+      this.input = root.querySelector("input");
+      for (const ev of ["change", "focus", "blur"]) {
+        this.input.addEventListener(ev, () => this.dispatchEvent(new Event(ev)));
+      }
+    }
+    static get observedAttributes() {
+      return ["type", "placeholder", "value", "disabled", "invalid"];
+    }
+    connectedCallback() {
+      this.sync();
+    }
+    attributeChangedCallback() {
+      this.sync();
+    }
+    sync() {
+      const { input } = this;
+      if (!input) return;
+      input.type = this.getAttribute("type") || "text";
+      input.placeholder = this.getAttribute("placeholder") || "";
+      input.disabled = this.hasAttribute("disabled");
+      input.setAttribute("aria-invalid", this.hasAttribute("invalid") ? "true" : "false");
+      const v = this.getAttribute("value");
+      if (v !== null && input.value !== v) input.value = v;
+    }
+    get value() {
+      return this.input.value;
+    }
+    set value(v) {
+      this.input.value = v ?? "";
+    }
+    focus() {
+      this.input.focus();
+    }
+  };
+  var ce2 = typeof window !== "undefined" ? window.customElements : null;
+  if (ce2) {
+    try {
+      if (!ce2.get("ext-input")) ce2.define("ext-input", ExtInput);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-input:", e);
+    }
+  }
 
   // src/ui/web/confirm.ts
   function confirmExt(opts) {

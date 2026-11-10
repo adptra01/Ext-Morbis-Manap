@@ -199,6 +199,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-hide-telaah');
   }
 
+  const ipCfg = cfg?.features?.igdPukulAutofill;
+  if (ipCfg?.enabled && window.ExtensionCore.isFeatureAllowed('igdPukulAutofill')) {
+    document.documentElement.setAttribute('data-ext-igd-pukul', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-igd-pukul');
+  }
+
   const ctx: FeatureContext = {
     pathname: normalizePath(window.location.pathname),
     url: new URL(window.location.href),

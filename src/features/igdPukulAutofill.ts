@@ -131,17 +131,34 @@
 
   const check = setInterval(function () {
     waited++;
-    const $ = (window as any).jQuery || (window as any).$;
-    if ($) {
+    const enabled = document.documentElement.getAttribute('data-ext-igd-pukul');
+
+    if (enabled !== null) {
       clearInterval(check);
-      patchDelete();
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupAutofill);
-      } else {
-        setupAutofill();
-      }
+      if (enabled !== '1') return;
+      run();
     } else if (waited >= MAX_WAIT) {
       clearInterval(check);
+      // fallback: config mungkin tidak termuat, jalankan default
+      run();
     }
   }, 50);
+
+  function run(): void {
+    const $ = (window as any).jQuery || (window as any).$;
+    if (!$) {
+      // tunggu jQuery
+      const w2 = setInterval(function () {
+        const jq = (window as any).jQuery || (window as any).$;
+        if (jq) {
+          clearInterval(w2);
+          patchDelete();
+          setupAutofill();
+        }
+      }, 50);
+      return;
+    }
+    patchDelete();
+    setupAutofill();
+  }
 })();

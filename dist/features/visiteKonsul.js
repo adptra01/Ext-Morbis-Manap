@@ -468,12 +468,17 @@ var __morbis_feature = (() => {
     const s = safeStore();
     if (!s) return;
     try {
-      s.setItem(cacheKey(idVisit), JSON.stringify(rows.map((r) => ({
-        id: r.id,
-        jenis: r.jenis,
-        nama_dokter: r.nama_dokter,
-        id_dokter: r.id_dokter
-      }))));
+      s.setItem(
+        cacheKey(idVisit),
+        JSON.stringify(
+          rows.map((r) => ({
+            id: r.id,
+            jenis: r.jenis,
+            nama_dokter: r.nama_dokter,
+            id_dokter: r.id_dokter
+          }))
+        )
+      );
     } catch {
     }
   }
@@ -501,12 +506,18 @@ var __morbis_feature = (() => {
     if (!s) return;
     try {
       if (!rows.length) s.removeItem(pendingKey(idVisit));
-      else s.setItem(pendingKey(idVisit), JSON.stringify(rows.map((r) => ({
-        id: r.id,
-        jenis: r.jenis,
-        nama_dokter: r.nama_dokter,
-        id_dokter: r.id_dokter
-      }))));
+      else
+        s.setItem(
+          pendingKey(idVisit),
+          JSON.stringify(
+            rows.map((r) => ({
+              id: r.id,
+              jenis: r.jenis,
+              nama_dokter: r.nama_dokter,
+              id_dokter: r.id_dokter
+            }))
+          )
+        );
     } catch {
     }
   }
@@ -724,7 +735,9 @@ var __morbis_feature = (() => {
       if (failed.length) writePending(idVisit, [...readPending(idVisit), ...failed]);
       else {
         const remaining = readPending(idVisit).filter(
-          (p) => !mine.some((m) => m.jenis === p.jenis && m.nama_dokter.trim().toLowerCase() === p.nama_dokter.trim().toLowerCase())
+          (p) => !mine.some(
+            (m) => m.jenis === p.jenis && m.nama_dokter.trim().toLowerCase() === p.nama_dokter.trim().toLowerCase()
+          )
         );
         writePending(idVisit, remaining);
       }
@@ -761,7 +774,9 @@ var __morbis_feature = (() => {
       const otherPending = readPending(idVisit).filter((p) => p.jenis !== jenis);
       writePending(idVisit, [...otherPending, ...stillPending]);
       for (const r of pending) {
-        if (!rows.some((x) => x.jenis === r.jenis && x.nama_dokter.trim().toLowerCase() === r.nama_dokter.trim().toLowerCase())) {
+        if (!rows.some(
+          (x) => x.jenis === r.jenis && x.nama_dokter.trim().toLowerCase() === r.nama_dokter.trim().toLowerCase()
+        )) {
           rows.push({ ...r, saving: false });
         }
       }

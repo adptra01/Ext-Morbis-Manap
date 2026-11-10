@@ -186,7 +186,14 @@ var __morbis_feature = (() => {
       }
     }
   };
-  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+  var ce = typeof window !== "undefined" ? window.customElements : null;
+  if (ce) {
+    try {
+      if (!ce.get("ext-btn")) ce.define("ext-btn", ExtBtn);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-btn:", e);
+    }
+  }
 
   // src/features/shared/featureGate.ts
   var STORAGE_KEY = "extensionConfig";
@@ -523,7 +530,9 @@ var __morbis_feature = (() => {
           if (/^(cara|care)\s+peroleh(an)?$/i.test(t)) l.textContent = "Cara Perolehan";
         }
         if (!labels.some((l) => (l.textContent || "").trim() === "Cara Perolehan")) {
-          const ta = document.querySelector('#cara_peroleh, textarea[name="cara_peroleh"]');
+          const ta = document.querySelector(
+            '#cara_peroleh, textarea[name="cara_peroleh"]'
+          );
           if (ta) {
             const parent = ta.parentElement;
             const cand = parent?.querySelectorAll("span, div");

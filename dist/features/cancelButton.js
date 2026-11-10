@@ -186,7 +186,14 @@ var __morbis_feature = (() => {
       }
     }
   };
-  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+  var ce = typeof window !== "undefined" ? window.customElements : null;
+  if (ce) {
+    try {
+      if (!ce.get("ext-btn")) ce.define("ext-btn", ExtBtn);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-btn:", e);
+    }
+  }
 
   // src/ui/web/ext-badge.ts
   var STYLE2 = `
@@ -440,6 +447,89 @@ var __morbis_feature = (() => {
     }
   };
   if (!customElements.get("ext-modal")) customElements.define("ext-modal", ExtModal);
+
+  // src/ui/web/ext-input.ts
+  var STYLE5 = `
+  :host { display: block; }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-md);
+    line-height: var(--ext-line-height);
+    color: var(--ext-text);
+    background: var(--ext-surface);
+    border: 1px solid var(--ext-border);
+    border-radius: var(--ext-radius-md);
+    padding: 9px 12px;
+    min-height: 42px;
+    transition: border-color var(--ext-duration-fast) var(--ext-ease),
+      box-shadow var(--ext-duration-fast) var(--ext-ease);
+  }
+  input::placeholder { color: var(--ext-text-muted); }
+  input:focus { outline: none; border-color: var(--ext-primary); box-shadow: var(--ext-ring); }
+  input:disabled { background: var(--ext-surface-2); color: var(--ext-text-muted); cursor: not-allowed; }
+  :host([invalid]) input { border-color: var(--ext-danger); }
+
+  :host([size='sm']) input {
+    font-size: var(--ext-font-size-sm);
+    padding: 6px 10px;
+    min-height: 32px;
+    border-radius: var(--ext-radius-sm);
+  }
+  :host([size='lg']) input {
+    font-size: var(--ext-font-size-lg);
+    padding: 12px 14px;
+    min-height: 50px;
+  }
+`;
+  var ExtInput = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `<style>${STYLE5}</style><input />`;
+      this.input = root.querySelector("input");
+      for (const ev of ["change", "focus", "blur"]) {
+        this.input.addEventListener(ev, () => this.dispatchEvent(new Event(ev)));
+      }
+    }
+    static get observedAttributes() {
+      return ["type", "placeholder", "value", "disabled", "invalid"];
+    }
+    connectedCallback() {
+      this.sync();
+    }
+    attributeChangedCallback() {
+      this.sync();
+    }
+    sync() {
+      const { input } = this;
+      if (!input) return;
+      input.type = this.getAttribute("type") || "text";
+      input.placeholder = this.getAttribute("placeholder") || "";
+      input.disabled = this.hasAttribute("disabled");
+      input.setAttribute("aria-invalid", this.hasAttribute("invalid") ? "true" : "false");
+      const v = this.getAttribute("value");
+      if (v !== null && input.value !== v) input.value = v;
+    }
+    get value() {
+      return this.input.value;
+    }
+    set value(v) {
+      this.input.value = v ?? "";
+    }
+    focus() {
+      this.input.focus();
+    }
+  };
+  var ce2 = typeof window !== "undefined" ? window.customElements : null;
+  if (ce2) {
+    try {
+      if (!ce2.get("ext-input")) ce2.define("ext-input", ExtInput);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-input:", e);
+    }
+  }
 
   // src/ui/web/confirm.ts
   function confirmExt(opts) {

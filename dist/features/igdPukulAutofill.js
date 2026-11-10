@@ -73,19 +73,32 @@ var __morbis_feature = (() => {
     }
     const check = setInterval(function() {
       waited++;
-      const $ = window.jQuery || window.$;
-      if ($) {
+      const enabled = document.documentElement.getAttribute("data-ext-igd-pukul");
+      if (enabled !== null) {
         clearInterval(check);
-        patchDelete();
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", setupAutofill);
-        } else {
-          setupAutofill();
-        }
+        if (enabled !== "1") return;
+        run();
       } else if (waited >= MAX_WAIT) {
         clearInterval(check);
+        run();
       }
     }, 50);
+    function run() {
+      const $ = window.jQuery || window.$;
+      if (!$) {
+        const w2 = setInterval(function() {
+          const jq = window.jQuery || window.$;
+          if (jq) {
+            clearInterval(w2);
+            patchDelete();
+            setupAutofill();
+          }
+        }, 50);
+        return;
+      }
+      patchDelete();
+      setupAutofill();
+    }
   })();
 })();
 //# sourceMappingURL=igdPukulAutofill.js.map
