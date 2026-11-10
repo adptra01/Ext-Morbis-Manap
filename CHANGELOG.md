@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-11-10
+
+### 🐛 fix
+
+- **visiteKonsul** — card di bawah judul HALAMAN UTAMA + tombol Simpan eksplisit per bagian (`ff6ef6c`)
+
+## 2026-11-07
+
+### 🐛 fix
+
+- **pa-print** — label Cara Peroleh menjadi Cara Perolehan (cetak + Word + form input) (`96ce554`)
+
 ## 2026-11-06
 
 ### ✨ feat
@@ -1982,4 +1994,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 333393d46b35717ac03a92bf42bf51056f116eef -->
+<!-- changelog-upto: ff6ef6cb7cf2dc4185f5a5c3b6ee2ac6287d1457 -->

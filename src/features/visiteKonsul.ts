@@ -37,13 +37,18 @@ interface Row {
 const base = resolveReportsBase();
 const API = base + '/api/visite-konsul';
 
-async function apiList(idVisit: string): Promise<Row[]> {
+/** Ambil pesan galat API (mis. 503 API_DISABLED) supaya tidak gagal senyap. */
+function apiErrMsg(j: { message?: string; code?: string } | null, res?: Response): string {
+  return j?.message || (res ? `HTTP ${res.status}` : 'gagal menghubungi server');
+}
+
+async function apiList(idVisit: string): Promise<{ rows: Row[]; error?: string }> {
   const res = await fetch(`${API}/list?id_visit=${encodeURIComponent(idVisit)}`, {
     credentials: 'omit',
   });
-  const j = await res.json();
-  if (!j?.ok) return [];
-  return (j.data || []).map(
+  const j = await res.json().catch(() => null);
+  if (!j?.ok) return { rows: [], error: apiErrMsg(j, res) };
+  const rows = (j.data || []).map(
     (r: { id: number; jenis: string; nama_dokter: string; id_dokter: number | null }) => ({
       id: r.id,
       jenis: r.jenis,
@@ -52,6 +57,7 @@ async function apiList(idVisit: string): Promise<Row[]> {
       saving: false,
     }),
   );
+  return { rows };
 }
 
 async function apiSave(idVisit: string, row: Row, user: string): Promise<Row | null> {
@@ -90,11 +96,13 @@ async function apiDelete(id: number, idVisit: string): Promise<boolean> {
   return !!j?.ok;
 }
 
-async function searchDokter(q: string): Promise<{ id: number; nama: string }[]> {
+async function searchDokter(
+  q: string,
+): Promise<{ items: { id: number; nama: string }[]; error?: string }> {
   const res = await fetch(`${API}/dokter?q=${encodeURIComponent(q)}`, { credentials: 'omit' });
-  const j = await res.json();
-  if (!j?.ok) return [];
-  return j.data || [];
+  const j = await res.json().catch(() => null);
+  if (!j?.ok) return { items: [], error: apiErrMsg(j, res) };
+  return { items: j.data || [] };
 }
 
 function readPetugas(): string {
@@ -125,6 +133,7 @@ function injectStyles() {
     .ext-vk-suggest div { padding: 4px 6px; font-size: 12px; cursor: pointer; }
     .ext-vk-suggest div:hover { background: #e2e8f0; }
     .ext-vk-status { font-size: 11px; color: #64748b; margin-left: 6px; }
+    .ext-vk-warn { margin: 0 0 8px; padding: 6px 8px; font-size: 12px; border-radius: 6px; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
   `;
   document.head.appendChild(style);
 }
@@ -153,12 +162,20 @@ function makeAutocomplete(
         close();
         return;
       }
-      const list = await searchDokter(q);
+      const { items, error } = await searchDokter(q);
       close();
-      if (!list.length) return;
+      if (!items.length && !error) return;
       box = document.createElement('div');
       box.className = 'ext-vk-suggest';
-      for (const d of list) {
+      if (error && !items.length) {
+        const msg = document.createElement('div');
+        msg.textContent = `Pencarian dokter gagal: ${error}`;
+        msg.style.color = '#b91c1c';
+        box.appendChild(msg);
+        wrap.appendChild(box);
+        return;
+      }
+      for (const d of items) {
         const item = document.createElement('div');
         item.textContent = d.nama;
         item.addEventListener('mousedown', (e) => {
@@ -362,7 +379,14 @@ async function init() {
   if (heading) heading.insertAdjacentElement('afterend', card);
   else host.insertBefore(card, host.firstChild);
 
-  const existing = await apiList(idVisit);
+  const { rows: existing, error: listErr } = await apiList(idVisit);
+  if (listErr) {
+    const warn = document.createElement('div');
+    warn.className = 'ext-vk-warn';
+    warn.textContent = `API visite-konsul tidak aktif (${listErr}). Pencarian & simpan dokter akan gagal sampai admin Reports mengaktifkan grup API ini.`;
+    card.appendChild(warn);
+    console.warn(LOG_PREFIX, 'api list gagal:', listErr);
+  }
   const rows: Row[] = existing;
 
   buildSection('VISITE', 'visite', rows, idVisit, user, card);
