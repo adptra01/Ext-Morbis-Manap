@@ -27,6 +27,7 @@
 
 ### 🧹 chore
 
+- trigger production deploy (`7c9cc50`)
 - rebuild dist (igdPukulAutofill manifest + sourcemap) (`c627613`)
 
 ## 2026-11-07
@@ -2010,4 +2011,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f27d5fe8b3ae0d5c001d6c1250cf463ea7708b72 -->
+<!-- changelog-upto: 376b04447cb237b8928ad264b6e9fe28dab8a9d3 -->
