@@ -117,6 +117,7 @@ function injectStyles() {
     .ext-vk-table th { background: #f1f5f9; }
     .ext-vk-table input { width: 100%; box-sizing: border-box; padding: 2px 4px; font-size: 12px; }
     .ext-vk-btn { padding: 3px 8px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; margin-right: 4px; }
+    .ext-vk-btn:disabled { opacity: 0.6; cursor: default; }
     .ext-vk-btn.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
     .ext-vk-btn.danger { background: #dc2626; color: #fff; border-color: #dc2626; }
     .ext-vk-autocomplete { position: relative; }
@@ -203,6 +204,11 @@ function buildSection(
   addBtn.textContent = '+ Tambah';
   card.appendChild(addBtn);
 
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'ext-vk-btn primary';
+  saveBtn.textContent = 'Simpan';
+  card.appendChild(saveBtn);
+
   const status = document.createElement('span');
   status.className = 'ext-vk-status';
   card.appendChild(status);
@@ -232,12 +238,12 @@ function buildSection(
       makeAutocomplete(input, row, (id, nama) => {
         row.id_dokter = id;
         row.nama_dokter = nama;
-        saveRow(row);
+        status.textContent = 'Belum disimpan';
       });
 
       input.addEventListener('change', () => {
         row.nama_dokter = input.value.trim();
-        if (row.nama_dokter) saveRow(row);
+        status.textContent = 'Belum disimpan';
       });
 
       tr.appendChild(tdDoc);
@@ -266,21 +272,32 @@ function buildSection(
     });
   }
 
-  async function saveRow(row: Row) {
-    if (!row.nama_dokter.trim()) return;
+  async function saveRow(row: Row): Promise<boolean> {
+    if (!row.nama_dokter.trim() || row.saving) return false;
     row.saving = true;
-    status.textContent = 'Menyimpan...';
     const saved = await apiSave(idVisit, row, user);
     row.saving = false;
-    if (saved) {
-      row.id = saved.id;
-      row.id_dokter = saved.id_dokter;
-      row.nama_dokter = saved.nama_dokter;
-      status.textContent = 'Tersimpan';
-    } else {
-      status.textContent = 'Gagal simpan';
-    }
+    if (!saved) return false;
+    row.id = saved.id;
+    row.id_dokter = saved.id_dokter;
+    row.nama_dokter = saved.nama_dokter;
+    return true;
   }
+
+  saveBtn.addEventListener('click', async () => {
+    const mine = rows.filter((r) => r.jenis === jenis && r.nama_dokter.trim());
+    if (!mine.length) {
+      status.textContent = 'Belum ada data';
+      return;
+    }
+    saveBtn.disabled = true;
+    status.textContent = 'Menyimpan...';
+    let ok = 0;
+    for (const r of mine) if (await saveRow(r)) ok++;
+    saveBtn.disabled = false;
+    status.textContent = ok === mine.length ? 'Tersimpan' : `Tersimpan ${ok}/${mine.length}`;
+    if (ok !== mine.length) console.warn(LOG_PREFIX, 'gagal simpan', jenis, ok, '/', mine.length);
+  });
 
   addBtn.addEventListener('click', () => {
     rows.push({ id: null, jenis, nama_dokter: '', id_dokter: null, saving: false });
@@ -289,6 +306,29 @@ function buildSection(
 
   render();
   container.appendChild(card);
+}
+
+/** Cari judul "HALAMAN UTAMA" — h2.judul diutamakan, fallback h1/h2/h3 mana pun. */
+function findMainHeading(): HTMLElement | null {
+  const h2 = Array.from(document.querySelectorAll<HTMLElement>('h2.judul')).find((el) =>
+    /halaman\s+utama/i.test(el.textContent || ''),
+  );
+  if (h2) return h2;
+  return (
+    Array.from(document.querySelectorAll<HTMLElement>('h1, h2, h3')).find((el) =>
+      /halaman\s+utama/i.test(el.textContent || ''),
+    ) || null
+  );
+}
+
+/** Konten MORBIS kadang datang belakangan — tunggu sebentar sebelum fallback. */
+async function waitMainHeading(timeoutMs = 5000): Promise<HTMLElement | null> {
+  const end = Date.now() + timeoutMs;
+  for (;;) {
+    const h = findMainHeading();
+    if (h || Date.now() > end) return h;
+    await new Promise((r) => setTimeout(r, 250));
+  }
 }
 
 async function init() {
@@ -318,7 +358,9 @@ async function init() {
   title.style.fontWeight = '700';
   title.style.marginBottom = '8px';
   card.appendChild(title);
-  host.insertBefore(card, host.firstChild);
+  const heading = await waitMainHeading();
+  if (heading) heading.insertAdjacentElement('afterend', card);
+  else host.insertBefore(card, host.firstChild);
 
   const existing = await apiList(idVisit);
   const rows: Row[] = existing;
