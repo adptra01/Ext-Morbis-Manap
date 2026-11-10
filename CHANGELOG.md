@@ -25,6 +25,10 @@
 
 - **visiteKonsul** — tombol & input pakai shared UI components (ext-btn, ext-input) (`0a9d851`)
 
+### 🧹 chore
+
+- rebuild dist (igdPukulAutofill manifest + sourcemap) (`c627613`)
+
 ## 2026-11-07
 
 ### 🐛 fix
@@ -2006,4 +2010,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 7d287f120b68cdaef18c61576c564afe66456e7b -->
+<!-- changelog-upto: f27d5fe8b3ae0d5c001d6c1250cf463ea7708b72 -->
