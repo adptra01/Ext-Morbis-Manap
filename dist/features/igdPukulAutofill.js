@@ -9,39 +9,65 @@ var __morbis_feature = (() => {
       const pad = (n) => String(n).padStart(2, "0");
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
-    function toText(input) {
-      if (input.type !== "text") {
-        const val = input.value;
-        input.type = "text";
-        input.setAttribute("type", "text");
-        if (val) input.value = val;
-      }
+    function harden(input) {
+      input.classList.remove("watermark", "auto", "ac_inputs", "tanggal");
       input.setAttribute("autocomplete", "off");
+      input.removeAttribute("onclick");
+      if (input.type !== "datetime-local") {
+        const v = input.value;
+        input.type = "datetime-local";
+        input.setAttribute("type", "datetime-local");
+        if (v) input.value = v;
+      }
+      if (input.value && !input.getAttribute("data-vk-val")) {
+        input.setAttribute("data-vk-val", input.value);
+      }
       if (!input.__igdPukulGuarded) {
         input.__igdPukulGuarded = true;
-        input.addEventListener("focus", () => {
-          if (input.type !== "text") {
-            const v = input.value;
-            input.type = "text";
-            input.value = v;
-          }
-        }, true);
-        input.addEventListener("click", () => {
-          if (input.type !== "text") {
-            const v = input.value;
-            input.type = "text";
-            input.value = v;
-          }
+        input.addEventListener("change", () => {
+          if (input.value) input.setAttribute("data-vk-val", input.value);
+        });
+        input.addEventListener("input", () => {
+          if (input.value) input.setAttribute("data-vk-val", input.value);
+        });
+        input.addEventListener("blur", () => {
+          setTimeout(() => {
+            if (!input.value) {
+              const saved = input.getAttribute("data-vk-val");
+              if (saved) input.value = saved;
+            } else {
+              input.setAttribute("data-vk-val", input.value);
+            }
+          }, 0);
         }, true);
       }
     }
-    function convertAll() {
-      document.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => toText(inp));
+    function hardenAll() {
+      document.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => harden(inp));
+    }
+    function observeType() {
+      const obs = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.type === "attributes" && m.attributeName === "type") {
+            const el = m.target;
+            if (el && /^pukulobat/.test(el.id) && el.getAttribute("type") !== "datetime-local") {
+              const v = el.value || el.getAttribute("data-vk-val") || "";
+              el.setAttribute("type", "datetime-local");
+              try {
+                el.type = "datetime-local";
+              } catch (e) {
+              }
+              if (v) el.value = v;
+            }
+          }
+        }
+      });
+      obs.observe(document.body, { attributes: true, attributeFilter: ["type"], subtree: true });
     }
     function patchDelete() {
-      const w = window;
       const $ = window.jQuery || window.$;
       if (!$) return;
+      const w = window;
       w.deleteElementObat = function(el) {
         const parent = el.parentNode && el.parentNode.parentNode;
         if (parent && parent.parentNode) parent.parentNode.removeChild(parent);
@@ -50,8 +76,8 @@ var __morbis_feature = (() => {
         for (let i = 0; i < count; i++) {
           const $row = $(`.obat_tr:eq(${i})`);
           $row.removeClass("even odd").addClass((i + 1) % 2 !== 0 ? "even" : "odd");
-          $row.children("td:eq(0)").children("input").attr("id", "pukulobat" + (i + 1));
-          $row.children("td:eq(0)").children("input").attr("name", "medis[" + (i + 1) + "][pukulobat]");
+          $row.children("td:eq(0)").children('input[type="datetime-local"]').attr("id", "pukulobat" + (i + 1));
+          $row.children("td:eq(0)").children('input[type="datetime-local"]').attr("name", "medis[" + (i + 1) + "][pukulobat]");
           $row.children("td:eq(1)").children(".auto").attr("id", "nama_barang" + (i + 1));
           $row.children("td:eq(1)").children(".auto").attr("name", "medis[" + (i + 1) + "][nama_barang]");
           $row.children("td:eq(1)").children(".hideauto").attr("id", "id_barang" + (i + 1));
@@ -75,6 +101,9 @@ var __morbis_feature = (() => {
           });
         });
       }
+      function markExisting() {
+        document.querySelectorAll(".obat_tr").forEach((tr) => seen.add(tr));
+      }
       function fillNew() {
         document.querySelectorAll(".obat_tr").forEach((tr) => {
           const row = tr;
@@ -82,29 +111,27 @@ var __morbis_feature = (() => {
           seen.add(row);
           row.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => {
             const el = inp;
-            toText(el);
+            harden(el);
             if (!protectedValues.has(el.value)) {
               el.value = nowLocal();
+              el.setAttribute("data-vk-val", el.value);
             }
             protectedValues.add(el.value);
           });
         });
       }
       setTimeout(() => {
-        convertAll();
+        hardenAll();
         collectProtected();
         markExisting();
         fillNew();
         const target = document.querySelector("#obattable") || document.body;
         const obs = new MutationObserver(() => {
-          convertAll();
+          hardenAll();
           fillNew();
         });
         obs.observe(target, { childList: true, subtree: true });
       }, 1500);
-      function markExisting() {
-        document.querySelectorAll(".obat_tr").forEach((tr) => seen.add(tr));
-      }
     }
     const check = setInterval(function() {
       waited++;
@@ -127,12 +154,14 @@ var __morbis_feature = (() => {
             clearInterval(w2);
             patchDelete();
             setupAutofill();
+            observeType();
           }
         }, 50);
         return;
       }
       patchDelete();
       setupAutofill();
+      observeType();
     }
   })();
 })();

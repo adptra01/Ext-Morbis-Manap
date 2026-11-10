@@ -3,13 +3,14 @@
  * Halaman pengkajian awal IGD (Rajal & Ranap): kolom Pukul pada tabel
  * Tindakan/Terapi.
  *
- * Masalah asli: input bertipe datetime-local sering ter-reset menjadi kosong
- * saat kehilangan fokus (konflik dengan skrip lama/watermark/validasi).
- *
- * Solusi (sesuai permintaan user): ubah kolom Pukul menjadi input teks biasa
- * (type="text") agar nilainya tidak divalidasi/reset oleh browser, sekaligus
- * auto-fill baris BARU dengan waktu sekarang. Baris lama (dari DB) tidak ditimpa.
- * Juga perbaiki re-index deleteElementObat (selector input[type=text] kini cocok).
+ * Solusi (native datetime-local, tanpa library):
+ *  - Pertahankan type="datetime-local" agar muncul picker bawaan browser.
+ *  - Bersihkan kelas/atribut pemicu skrip lama (watermark, auto, ac_inputs).
+ *  - Anti-reset: simpan nilai terakhir; jika blur mengosongkannya, pulihkan.
+ *  - MutationObserver memaksa type tetap datetime-local bila ada skrip yang
+ *    mengubahnya.
+ *  - Baris baru auto-fill dengan waktu sekarang; baris DB tidak ditimpa.
+ *  - Perbaiki re-index deleteElementObat (selector datetime-local).
  *
  * Berjalan di main world (world: MAIN), gate via data-ext-igd-pukul.
  */
@@ -23,54 +24,80 @@
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  // Konversi datetime-local → text dan kunci agar tidak dikembalikan oleh skrip lain.
-  function toText(input: HTMLInputElement): void {
-    if (input.type !== 'text') {
-      const val = input.value;
-      input.type = 'text';
-      input.setAttribute('type', 'text');
-      if (val) input.value = val;
-    }
+  function harden(input: HTMLInputElement): void {
+    // bersihkan pemicu skrip lama
+    input.classList.remove('watermark', 'auto', 'ac_inputs', 'tanggal');
     input.setAttribute('autocomplete', 'off');
-    // blokir perubahan tipe balik ke datetime-local
+    input.removeAttribute('onclick');
+    // pastikan type datetime-local
+    if (input.type !== 'datetime-local') {
+      const v = input.value;
+      input.type = 'datetime-local';
+      input.setAttribute('type', 'datetime-local');
+      if (v) input.value = v;
+    }
+    if (input.value && !input.getAttribute('data-vk-val')) {
+      input.setAttribute('data-vk-val', input.value);
+    }
     if (!(input as any).__igdPukulGuarded) {
       (input as any).__igdPukulGuarded = true;
+      input.addEventListener('change', () => {
+        if (input.value) input.setAttribute('data-vk-val', input.value);
+      });
+      input.addEventListener('input', () => {
+        if (input.value) input.setAttribute('data-vk-val', input.value);
+      });
+      // anti-reset: jika blur mengosongkan nilai, pulihkan
       input.addEventListener(
-        'focus',
+        'blur',
         () => {
-          if (input.type !== 'text') {
-            const v = input.value;
-            input.type = 'text';
-            input.value = v;
-          }
-        },
-        true,
-      );
-      input.addEventListener(
-        'click',
-        () => {
-          if (input.type !== 'text') {
-            const v = input.value;
-            input.type = 'text';
-            input.value = v;
-          }
+          setTimeout(() => {
+            if (!input.value) {
+              const saved = input.getAttribute('data-vk-val');
+              if (saved) input.value = saved;
+            } else {
+              input.setAttribute('data-vk-val', input.value);
+            }
+          }, 0);
         },
         true,
       );
     }
   }
 
-  function convertAll(): void {
+  function hardenAll(): void {
     document
       .querySelectorAll('input[id^="pukulobat"]')
-      .forEach((inp) => toText(inp as HTMLInputElement));
+      .forEach((inp) => harden(inp as HTMLInputElement));
   }
 
-  // Override deleteElementObat: selector td:eq(0) input (kini text).
+  // MutationObserver: paksa type tetap datetime-local bila skrip lain mengubahnya
+  function observeType(): void {
+    const obs = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type === 'attributes' && m.attributeName === 'type') {
+          const el = m.target as HTMLInputElement;
+          if (el && /^pukulobat/.test(el.id) && el.getAttribute('type') !== 'datetime-local') {
+            const v = el.value || el.getAttribute('data-vk-val') || '';
+            el.setAttribute('type', 'datetime-local');
+            try {
+              el.type = 'datetime-local';
+            } catch {
+              /* ignore */
+            }
+            if (v) el.value = v;
+          }
+        }
+      }
+    });
+    obs.observe(document.body, { attributes: true, attributeFilter: ['type'], subtree: true });
+  }
+
+  // Override deleteElementObat: selector datetime-local.
   function patchDelete(): void {
-    const w = window as unknown as Record<string, unknown>;
     const $ = (window as any).jQuery || (window as any).$;
     if (!$) return;
+    const w = window as unknown as Record<string, unknown>;
     w.deleteElementObat = function (el: HTMLElement): void {
       const parent = el.parentNode && (el.parentNode as HTMLElement).parentNode;
       if (parent && parent.parentNode) parent.parentNode.removeChild(parent);
@@ -82,11 +109,11 @@
 
         $row
           .children('td:eq(0)')
-          .children('input')
+          .children('input[type="datetime-local"]')
           .attr('id', 'pukulobat' + (i + 1));
         $row
           .children('td:eq(0)')
-          .children('input')
+          .children('input[type="datetime-local"]')
           .attr('name', 'medis[' + (i + 1) + '][pukulobat]');
         $row
           .children('td:eq(1)')
@@ -132,7 +159,7 @@
     };
   }
 
-  // Auto-fill: baris baru (hardcoded value) → ganti dengan waktu sekarang.
+  // Auto-fill: baris baru → waktu sekarang. Baris DB tidak ditimpa.
   function setupAutofill(): void {
     const seen = new WeakSet<HTMLElement>();
     const protectedValues = new Set<string>();
@@ -145,6 +172,10 @@
       });
     }
 
+    function markExisting(): void {
+      document.querySelectorAll('.obat_tr').forEach((tr) => seen.add(tr as HTMLElement));
+    }
+
     function fillNew(): void {
       document.querySelectorAll('.obat_tr').forEach((tr) => {
         const row = tr as HTMLElement;
@@ -152,32 +183,28 @@
         seen.add(row);
         row.querySelectorAll('input[id^="pukulobat"]').forEach((inp) => {
           const el = inp as HTMLInputElement;
-          toText(el);
+          harden(el);
           if (!protectedValues.has(el.value)) {
             el.value = nowLocal();
+            el.setAttribute('data-vk-val', el.value);
           }
           protectedValues.add(el.value);
         });
       });
     }
 
-    // Tunda agar baris awal (DB) sudah render & terlindungi.
     setTimeout(() => {
-      convertAll();
+      hardenAll();
       collectProtected();
       markExisting();
       fillNew();
       const target = document.querySelector('#obattable') || document.body;
       const obs = new MutationObserver(() => {
-        convertAll();
+        hardenAll();
         fillNew();
       });
       obs.observe(target, { childList: true, subtree: true });
     }, 1500);
-
-    function markExisting(): void {
-      document.querySelectorAll('.obat_tr').forEach((tr) => seen.add(tr as HTMLElement));
-    }
   }
 
   const check = setInterval(function () {
@@ -190,7 +217,7 @@
       run();
     } else if (waited >= MAX_WAIT) {
       clearInterval(check);
-      run(); // fallback default-ON
+      run();
     }
   }, 50);
 
@@ -203,11 +230,13 @@
           clearInterval(w2);
           patchDelete();
           setupAutofill();
+          observeType();
         }
       }, 50);
       return;
     }
     patchDelete();
     setupAutofill();
+    observeType();
   }
 })();
