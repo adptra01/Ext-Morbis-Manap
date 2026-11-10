@@ -48,6 +48,279 @@ var __morbis_feature = (() => {
     return window;
   }
 
+  // src/ui/web/tokens.ts
+  var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  var TOKENS_CSS = `
+  :host {
+    /* Brand */
+    --ext-primary: #00875a;
+    --ext-primary-hover: #007049;
+    --ext-primary-soft: #e6f4ef;
+
+    /* Semantic */
+    --ext-success: #027a48;
+    --ext-success-soft: #e8f6ef;
+    --ext-warning: #b54708;
+    --ext-warning-soft: #fdf1e3;
+    --ext-danger: #d92d20;
+    --ext-danger-hover: #b42318;
+    --ext-danger-soft: #fdeceb;
+    --ext-info: #175cd3;
+    --ext-info-soft: #e8f0fd;
+
+    /* Surface */
+    --ext-bg: #f4f6f8;
+    --ext-surface: #ffffff;
+    --ext-surface-2: #f8fafc;
+    --ext-border: #d0d5dd;
+
+    /* Text \u2014 kontras tinggi untuk keterbacaan usia 30-40 */
+    --ext-text: #1c2530;
+    --ext-text-secondary: #475467;
+    --ext-text-muted: #667085;
+    --ext-text-on-primary: #ffffff;
+
+    /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
+    --ext-font-family: ${FONT_STACK};
+    --ext-font-size-xs: 12px;
+    --ext-font-size-sm: 13px;
+    --ext-font-size-md: 15px;
+    --ext-font-size-lg: 17px;
+    --ext-font-size-xl: 20px;
+    --ext-line-height: 1.5;
+
+    /* Radius */
+    --ext-radius-sm: 6px;
+    --ext-radius-md: 10px;
+    --ext-radius-lg: 14px;
+
+    /* Spacing */
+    --ext-space-1: 4px;
+    --ext-space-2: 8px;
+    --ext-space-3: 12px;
+    --ext-space-4: 16px;
+    --ext-space-5: 20px;
+    --ext-space-6: 24px;
+    --ext-space-8: 32px;
+
+    /* Shadow */
+    --ext-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --ext-shadow-md: 0 6px 20px rgba(16, 24, 40, 0.1);
+    --ext-shadow-lg: 0 20px 50px rgba(16, 24, 40, 0.18);
+
+    /* Focus ring \u2014 terlihat jelas, penting utk usability */
+    --ext-ring: 0 0 0 3px rgba(0, 135, 90, 0.35);
+
+    /* Motion */
+    --ext-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ext-duration-fast: 140ms;
+    --ext-duration-normal: 220ms;
+  }
+`;
+  var sharedSheet = null;
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
+  }
+  var fontInjected = false;
+  function ensureFont() {
+    if (fontInjected || document.getElementById("ext-pjs-font")) return;
+    fontInjected = true;
+    const link = document.createElement("link");
+    link.id = "ext-pjs-font";
+    link.rel = "stylesheet";
+    link.href = "http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";
+    document.head.appendChild(link);
+  }
+  function attachShadowWithTokens(el, mode = "open") {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
+  }
+  var tokensInjected = false;
+  function injectGlobalTokens() {
+    if (tokensInjected) return;
+    tokensInjected = true;
+    const style = document.createElement("style");
+    style.id = "ext-token-css";
+    style.textContent = TOKENS_CSS.replace(":host", ":root");
+    document.head.appendChild(style);
+  }
+
+  // src/ui/web/ext-btn.ts
+  var STYLE = `
+  :host { display: inline-block; }
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ext-space-2);
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-md);
+    font-weight: 600;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    border-radius: var(--ext-radius-md);
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background-color var(--ext-duration-fast) var(--ext-ease),
+      border-color var(--ext-duration-fast) var(--ext-ease),
+      transform var(--ext-duration-fast) var(--ext-ease),
+      box-shadow var(--ext-duration-fast) var(--ext-ease);
+    min-height: 42px;
+    white-space: nowrap;
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:focus-visible { outline: none; box-shadow: var(--ext-ring); }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* sizes */
+  :host([size='sm']) button { font-size: var(--ext-font-size-sm); padding: 6px 12px; min-height: 32px; border-radius: var(--ext-radius-sm); }
+  :host([size='lg']) button { font-size: var(--ext-font-size-lg); padding: 13px 24px; min-height: 50px; }
+
+  /* variants */
+  :host([variant='primary']) button { background: var(--ext-primary); color: var(--ext-text-on-primary); }
+  :host([variant='primary']) button:hover:not(:disabled) { background: var(--ext-primary-hover); }
+  :host([variant='danger']) button { background: var(--ext-danger); color: var(--ext-text-on-primary); }
+  :host([variant='danger']) button:hover:not(:disabled) { background: var(--ext-danger-hover); }
+  :host([variant='success']) button { background: var(--ext-success); color: var(--ext-text-on-primary); }
+  :host([variant='secondary']) button { background: var(--ext-surface); color: var(--ext-text); border-color: var(--ext-border); }
+  :host([variant='secondary']) button:hover:not(:disabled) { background: var(--ext-surface-2); }
+  :host([variant='ghost']) button { background: transparent; color: var(--ext-primary); }
+  :host([variant='ghost']) button:hover:not(:disabled) { background: var(--ext-primary-soft); }
+  :host([variant='ghost-danger']) button { background: transparent; color: var(--ext-danger); }
+  :host([variant='ghost-danger']) button:hover:not(:disabled) { background: var(--ext-danger-soft); }
+
+  /* loading spinner */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: ext-spin 0.7s linear infinite;
+    display: none;
+  }
+  :host([loading]) .spinner { display: inline-block; }
+  :host([loading]) button { pointer-events: none; opacity: 0.8; }
+  @keyframes ext-spin { to { transform: rotate(360deg); } }
+`;
+  var ExtBtn = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE}</style>
+      <button type="button">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="label"><slot></slot></span>
+      </button>
+    `;
+      this.btn = root.querySelector("button");
+    }
+    connectedCallback() {
+      this.btn.disabled = this.hasAttribute("disabled") || this.hasAttribute("loading");
+      this.btn.setAttribute("aria-busy", this.hasAttribute("loading") ? "true" : "false");
+      this.btn.addEventListener("click", (e) => {
+        if (this.hasAttribute("loading") || this.hasAttribute("disabled")) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      });
+    }
+    static get observedAttributes() {
+      return ["disabled", "loading"];
+    }
+    attributeChangedCallback(name) {
+      if (name === "disabled" || name === "loading") {
+        this.btn.disabled = this.hasAttribute("disabled") || this.hasAttribute("loading");
+        this.btn.setAttribute("aria-busy", this.hasAttribute("loading") ? "true" : "false");
+      }
+    }
+  };
+  if (!customElements.get("ext-btn")) customElements.define("ext-btn", ExtBtn);
+
+  // src/ui/web/ext-input.ts
+  var STYLE2 = `
+  :host { display: block; }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-md);
+    line-height: var(--ext-line-height);
+    color: var(--ext-text);
+    background: var(--ext-surface);
+    border: 1px solid var(--ext-border);
+    border-radius: var(--ext-radius-md);
+    padding: 9px 12px;
+    min-height: 42px;
+    transition: border-color var(--ext-duration-fast) var(--ext-ease),
+      box-shadow var(--ext-duration-fast) var(--ext-ease);
+  }
+  input::placeholder { color: var(--ext-text-muted); }
+  input:focus { outline: none; border-color: var(--ext-primary); box-shadow: var(--ext-ring); }
+  input:disabled { background: var(--ext-surface-2); color: var(--ext-text-muted); cursor: not-allowed; }
+  :host([invalid]) input { border-color: var(--ext-danger); }
+
+  :host([size='sm']) input {
+    font-size: var(--ext-font-size-sm);
+    padding: 6px 10px;
+    min-height: 32px;
+    border-radius: var(--ext-radius-sm);
+  }
+  :host([size='lg']) input {
+    font-size: var(--ext-font-size-lg);
+    padding: 12px 14px;
+    min-height: 50px;
+  }
+`;
+  var ExtInput = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `<style>${STYLE2}</style><input />`;
+      this.input = root.querySelector("input");
+      for (const ev of ["change", "focus", "blur"]) {
+        this.input.addEventListener(ev, () => this.dispatchEvent(new Event(ev)));
+      }
+    }
+    static get observedAttributes() {
+      return ["type", "placeholder", "value", "disabled", "invalid"];
+    }
+    connectedCallback() {
+      this.sync();
+    }
+    attributeChangedCallback() {
+      this.sync();
+    }
+    sync() {
+      const { input } = this;
+      if (!input) return;
+      input.type = this.getAttribute("type") || "text";
+      input.placeholder = this.getAttribute("placeholder") || "";
+      input.disabled = this.hasAttribute("disabled");
+      input.setAttribute("aria-invalid", this.hasAttribute("invalid") ? "true" : "false");
+      const v = this.getAttribute("value");
+      if (v !== null && input.value !== v) input.value = v;
+    }
+    get value() {
+      return this.input.value;
+    }
+    set value(v) {
+      this.input.value = v ?? "";
+    }
+    focus() {
+      this.input.focus();
+    }
+  };
+  if (!customElements.get("ext-input")) customElements.define("ext-input", ExtInput);
+
   // src/features/visiteKonsul.ts
   var LOG_PREFIX = "[MORBIS Ext] visiteKonsul";
   var g = getMorbisGlobals();
@@ -133,22 +406,18 @@ var __morbis_feature = (() => {
   function injectStyles() {
     const style = document.createElement("style");
     style.textContent = `
-    .ext-vk-card { margin: 12px 0; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
-    .ext-vk-card h3 { margin: 0 0 8px; font-size: 14px; font-weight: 700; }
+    .ext-vk-card { margin: 12px 0; padding: 12px; border: 1px solid var(--ext-border); border-radius: var(--ext-radius-md); background: var(--ext-surface); font-family: var(--ext-font-family); }
+    .ext-vk-card h2, .ext-vk-card h3 { margin: 0 0 8px; font-size: var(--ext-font-size-md); font-weight: 700; color: var(--ext-text); }
+    .ext-vk-card > ext-btn { margin-right: 6px; }
     .ext-vk-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .ext-vk-table th, .ext-vk-table td { border: 1px solid #e2e8f0; padding: 4px 6px; font-size: 12px; }
-    .ext-vk-table th { background: #f1f5f9; }
-    .ext-vk-table input { width: 100%; box-sizing: border-box; padding: 2px 4px; font-size: 12px; }
-    .ext-vk-btn { padding: 3px 8px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; margin-right: 4px; }
-    .ext-vk-btn:disabled { opacity: 0.6; cursor: default; }
-    .ext-vk-btn.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
-    .ext-vk-btn.danger { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .ext-vk-table th, .ext-vk-table td { border: 1px solid var(--ext-border); padding: 4px 6px; font-size: var(--ext-font-size-sm); color: var(--ext-text); }
+    .ext-vk-table th { background: var(--ext-surface-2); }
     .ext-vk-autocomplete { position: relative; }
-    .ext-vk-suggest { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; max-height: 160px; overflow-y: auto; z-index: 9999; }
-    .ext-vk-suggest div { padding: 4px 6px; font-size: 12px; cursor: pointer; }
-    .ext-vk-suggest div:hover { background: #e2e8f0; }
-    .ext-vk-status { font-size: 11px; color: #64748b; margin-left: 6px; }
-    .ext-vk-warn { margin: 0 0 8px; padding: 6px 8px; font-size: 12px; border-radius: 6px; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+    .ext-vk-suggest { position: absolute; top: 100%; left: 0; right: 0; background: var(--ext-surface); border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); max-height: 160px; overflow-y: auto; z-index: 9999; box-shadow: var(--ext-shadow-md); }
+    .ext-vk-suggest div { padding: 6px 8px; font-size: var(--ext-font-size-sm); color: var(--ext-text); cursor: pointer; }
+    .ext-vk-suggest div:hover { background: var(--ext-surface-2); }
+    .ext-vk-status { font-size: var(--ext-font-size-xs); color: var(--ext-text-muted); margin-left: 6px; }
+    .ext-vk-warn { margin: 0 0 8px; padding: 8px 10px; font-size: var(--ext-font-size-sm); border-radius: var(--ext-radius-sm); background: var(--ext-danger-soft); border: 1px solid #f3c1be; color: var(--ext-danger); }
   `;
     document.head.appendChild(style);
   }
@@ -178,7 +447,7 @@ var __morbis_feature = (() => {
         if (error && !items.length) {
           const msg = document.createElement("div");
           msg.textContent = `Pencarian dokter gagal: ${error}`;
-          msg.style.color = "#b91c1c";
+          msg.style.color = "var(--ext-danger)";
           box.appendChild(msg);
           wrap.appendChild(box);
           return;
@@ -213,12 +482,14 @@ var __morbis_feature = (() => {
     const tbody = document.createElement("tbody");
     table.appendChild(tbody);
     card.appendChild(table);
-    const addBtn = document.createElement("button");
-    addBtn.className = "ext-vk-btn primary";
+    const addBtn = document.createElement("ext-btn");
+    addBtn.setAttribute("variant", "secondary");
+    addBtn.setAttribute("size", "sm");
     addBtn.textContent = "+ Tambah";
     card.appendChild(addBtn);
-    const saveBtn = document.createElement("button");
-    saveBtn.className = "ext-vk-btn primary";
+    const saveBtn = document.createElement("ext-btn");
+    saveBtn.setAttribute("variant", "primary");
+    saveBtn.setAttribute("size", "sm");
     saveBtn.textContent = "Simpan";
     card.appendChild(saveBtn);
     const status = document.createElement("span");
@@ -233,16 +504,15 @@ var __morbis_feature = (() => {
         tdNo.textContent = String(idx + 1);
         tr.appendChild(tdNo);
         const tdDoc = document.createElement("td");
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = row.nama_dokter;
-        input.placeholder = "Ketik nama dokter...";
-        tdDoc.appendChild(input);
         const acWrap = document.createElement("div");
         acWrap.className = "ext-vk-autocomplete";
-        acWrap.style.position = "relative";
-        tdDoc.appendChild(acWrap);
+        const input = document.createElement("ext-input");
+        input.setAttribute("type", "text");
+        input.setAttribute("size", "sm");
+        input.setAttribute("placeholder", "Ketik nama dokter...");
+        input.value = row.nama_dokter;
         acWrap.appendChild(input);
+        tdDoc.appendChild(acWrap);
         makeAutocomplete(input, row, (id, nama) => {
           row.id_dokter = id;
           row.nama_dokter = nama;
@@ -254,8 +524,9 @@ var __morbis_feature = (() => {
         });
         tr.appendChild(tdDoc);
         const tdAct = document.createElement("td");
-        const delBtn = document.createElement("button");
-        delBtn.className = "ext-vk-btn danger";
+        const delBtn = document.createElement("ext-btn");
+        delBtn.setAttribute("variant", "danger");
+        delBtn.setAttribute("size", "sm");
         delBtn.textContent = "Hapus";
         delBtn.addEventListener("click", async () => {
           if (row.id) {
@@ -292,11 +563,11 @@ var __morbis_feature = (() => {
         status.textContent = "Belum ada data";
         return;
       }
-      saveBtn.disabled = true;
+      saveBtn.setAttribute("loading", "");
       status.textContent = "Menyimpan...";
       let ok = 0;
       for (const r of mine) if (await saveRow(r)) ok++;
-      saveBtn.disabled = false;
+      saveBtn.removeAttribute("loading");
       status.textContent = ok === mine.length ? "Tersimpan" : `Tersimpan ${ok}/${mine.length}`;
       if (ok !== mine.length) console.warn(LOG_PREFIX, "gagal simpan", jenis, ok, "/", mine.length);
     });
@@ -329,6 +600,7 @@ var __morbis_feature = (() => {
     if (!idVisit) return;
     if (g.__extVisiteKonsul) return;
     g.__extVisiteKonsul = true;
+    injectGlobalTokens();
     injectStyles();
     const user = readPetugas();
     let host = document.querySelector(
@@ -339,9 +611,6 @@ var __morbis_feature = (() => {
     card.className = "ext-vk-card";
     const title = document.createElement("h2");
     title.textContent = "Visite & Konsul Dokter Spesialis IGD (input manual)";
-    title.style.fontSize = "15px";
-    title.style.fontWeight = "700";
-    title.style.marginBottom = "8px";
     card.appendChild(title);
     const heading = await waitMainHeading();
     if (heading) heading.insertAdjacentElement("afterend", card);

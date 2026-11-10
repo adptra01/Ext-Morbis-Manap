@@ -11,6 +11,10 @@
 import { resolveReportsBase } from './shared/resumeHistory.js';
 import { runWhenIdle } from './shared/whenIdle.js';
 import { getMorbisGlobals, type MorbisGlobals } from './shared/types.js';
+import '../ui/web/ext-btn';
+import '../ui/web/ext-input';
+import { ExtInput } from '../ui/web/ext-input';
+import { injectGlobalTokens } from '../ui/web/tokens';
 
 const LOG_PREFIX = '[MORBIS Ext] visiteKonsul';
 
@@ -118,31 +122,23 @@ function readPetugas(): string {
 function injectStyles() {
   const style = document.createElement('style');
   style.textContent = `
-    .ext-vk-card { margin: 12px 0; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
-    .ext-vk-card h3 { margin: 0 0 8px; font-size: 14px; font-weight: 700; }
+    .ext-vk-card { margin: 12px 0; padding: 12px; border: 1px solid var(--ext-border); border-radius: var(--ext-radius-md); background: var(--ext-surface); font-family: var(--ext-font-family); }
+    .ext-vk-card h2, .ext-vk-card h3 { margin: 0 0 8px; font-size: var(--ext-font-size-md); font-weight: 700; color: var(--ext-text); }
+    .ext-vk-card > ext-btn { margin-right: 6px; }
     .ext-vk-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .ext-vk-table th, .ext-vk-table td { border: 1px solid #e2e8f0; padding: 4px 6px; font-size: 12px; }
-    .ext-vk-table th { background: #f1f5f9; }
-    .ext-vk-table input { width: 100%; box-sizing: border-box; padding: 2px 4px; font-size: 12px; }
-    .ext-vk-btn { padding: 3px 8px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; margin-right: 4px; }
-    .ext-vk-btn:disabled { opacity: 0.6; cursor: default; }
-    .ext-vk-btn.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
-    .ext-vk-btn.danger { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .ext-vk-table th, .ext-vk-table td { border: 1px solid var(--ext-border); padding: 4px 6px; font-size: var(--ext-font-size-sm); color: var(--ext-text); }
+    .ext-vk-table th { background: var(--ext-surface-2); }
     .ext-vk-autocomplete { position: relative; }
-    .ext-vk-suggest { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; max-height: 160px; overflow-y: auto; z-index: 9999; }
-    .ext-vk-suggest div { padding: 4px 6px; font-size: 12px; cursor: pointer; }
-    .ext-vk-suggest div:hover { background: #e2e8f0; }
-    .ext-vk-status { font-size: 11px; color: #64748b; margin-left: 6px; }
-    .ext-vk-warn { margin: 0 0 8px; padding: 6px 8px; font-size: 12px; border-radius: 6px; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+    .ext-vk-suggest { position: absolute; top: 100%; left: 0; right: 0; background: var(--ext-surface); border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); max-height: 160px; overflow-y: auto; z-index: 9999; box-shadow: var(--ext-shadow-md); }
+    .ext-vk-suggest div { padding: 6px 8px; font-size: var(--ext-font-size-sm); color: var(--ext-text); cursor: pointer; }
+    .ext-vk-suggest div:hover { background: var(--ext-surface-2); }
+    .ext-vk-status { font-size: var(--ext-font-size-xs); color: var(--ext-text-muted); margin-left: 6px; }
+    .ext-vk-warn { margin: 0 0 8px; padding: 8px 10px; font-size: var(--ext-font-size-sm); border-radius: var(--ext-radius-sm); background: var(--ext-danger-soft); border: 1px solid #f3c1be; color: var(--ext-danger); }
   `;
   document.head.appendChild(style);
 }
 
-function makeAutocomplete(
-  input: HTMLInputElement,
-  row: Row,
-  onSelect: (id: number, nama: string) => void,
-) {
+function makeAutocomplete(input: ExtInput, row: Row, onSelect: (id: number, nama: string) => void) {
   const wrap = input.parentElement as HTMLElement;
   let box: HTMLDivElement | null = null;
   let timer: number | null = null;
@@ -170,7 +166,7 @@ function makeAutocomplete(
       if (error && !items.length) {
         const msg = document.createElement('div');
         msg.textContent = `Pencarian dokter gagal: ${error}`;
-        msg.style.color = '#b91c1c';
+        msg.style.color = 'var(--ext-danger)';
         box.appendChild(msg);
         wrap.appendChild(box);
         return;
@@ -216,13 +212,15 @@ function buildSection(
   table.appendChild(tbody);
   card.appendChild(table);
 
-  const addBtn = document.createElement('button');
-  addBtn.className = 'ext-vk-btn primary';
+  const addBtn = document.createElement('ext-btn');
+  addBtn.setAttribute('variant', 'secondary');
+  addBtn.setAttribute('size', 'sm');
   addBtn.textContent = '+ Tambah';
   card.appendChild(addBtn);
 
-  const saveBtn = document.createElement('button');
-  saveBtn.className = 'ext-vk-btn primary';
+  const saveBtn = document.createElement('ext-btn');
+  saveBtn.setAttribute('variant', 'primary');
+  saveBtn.setAttribute('size', 'sm');
   saveBtn.textContent = 'Simpan';
   card.appendChild(saveBtn);
 
@@ -240,17 +238,15 @@ function buildSection(
       tr.appendChild(tdNo);
 
       const tdDoc = document.createElement('td');
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = row.nama_dokter;
-      input.placeholder = 'Ketik nama dokter...';
-      tdDoc.appendChild(input);
       const acWrap = document.createElement('div');
       acWrap.className = 'ext-vk-autocomplete';
-      acWrap.style.position = 'relative';
-      tdDoc.appendChild(acWrap);
-      // move input into acWrap
+      const input = document.createElement('ext-input') as ExtInput;
+      input.setAttribute('type', 'text');
+      input.setAttribute('size', 'sm');
+      input.setAttribute('placeholder', 'Ketik nama dokter...');
+      input.value = row.nama_dokter;
       acWrap.appendChild(input);
+      tdDoc.appendChild(acWrap);
 
       makeAutocomplete(input, row, (id, nama) => {
         row.id_dokter = id;
@@ -266,8 +262,9 @@ function buildSection(
       tr.appendChild(tdDoc);
 
       const tdAct = document.createElement('td');
-      const delBtn = document.createElement('button');
-      delBtn.className = 'ext-vk-btn danger';
+      const delBtn = document.createElement('ext-btn');
+      delBtn.setAttribute('variant', 'danger');
+      delBtn.setAttribute('size', 'sm');
       delBtn.textContent = 'Hapus';
       delBtn.addEventListener('click', async () => {
         if (row.id) {
@@ -307,11 +304,11 @@ function buildSection(
       status.textContent = 'Belum ada data';
       return;
     }
-    saveBtn.disabled = true;
+    saveBtn.setAttribute('loading', '');
     status.textContent = 'Menyimpan...';
     let ok = 0;
     for (const r of mine) if (await saveRow(r)) ok++;
-    saveBtn.disabled = false;
+    saveBtn.removeAttribute('loading');
     status.textContent = ok === mine.length ? 'Tersimpan' : `Tersimpan ${ok}/${mine.length}`;
     if (ok !== mine.length) console.warn(LOG_PREFIX, 'gagal simpan', jenis, ok, '/', mine.length);
   });
@@ -357,6 +354,7 @@ async function init() {
   if (g.__extVisiteKonsul) return;
   g.__extVisiteKonsul = true;
 
+  injectGlobalTokens();
   injectStyles();
 
   const user = readPetugas();
@@ -371,9 +369,6 @@ async function init() {
   card.className = 'ext-vk-card';
   const title = document.createElement('h2');
   title.textContent = 'Visite & Konsul Dokter Spesialis IGD (input manual)';
-  title.style.fontSize = '15px';
-  title.style.fontWeight = '700';
-  title.style.marginBottom = '8px';
   card.appendChild(title);
   const heading = await waitMainHeading();
   if (heading) heading.insertAdjacentElement('afterend', card);

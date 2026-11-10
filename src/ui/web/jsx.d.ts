@@ -3,7 +3,7 @@
  * React 19 (react-jsx) memakai namespace React.JSX — deklarasi via
  * module augmentation pada module 'react' agar `npx tsc --noEmit` bersih.
  */
-import type { ExtBtn, ExtBadge, ExtTabs, ExtModal } from './web/index';
+import type { ExtBtn, ExtBadge, ExtTabs, ExtModal, ExtInput } from './web/index';
 
 declare module 'react' {
   namespace JSX {
@@ -17,6 +17,17 @@ declare module 'react' {
         },
         HTMLElement
       > & { ref?: React.Ref<ExtBtn> };
+      'ext-input': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          type?: string;
+          placeholder?: string;
+          value?: string;
+          size?: 'sm' | 'md' | 'lg';
+          disabled?: boolean | string;
+          invalid?: boolean | string;
+        },
+        HTMLElement
+      > & { ref?: React.Ref<ExtInput> };
       'ext-badge': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'primary';

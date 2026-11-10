@@ -11,10 +11,12 @@ import './ext-btn';
 import './ext-badge';
 import './ext-tabs';
 import './ext-modal';
+import './ext-input';
 import './confirm';
 
 export { getTokenSheet, adoptTokens, ensureFont, injectGlobalTokens } from './tokens';
 export { ExtBtn } from './ext-btn';
+export { ExtInput } from './ext-input';
 export { ExtBadge } from './ext-badge';
 export { ExtTabs } from './ext-tabs';
 export { ExtModal } from './ext-modal';
