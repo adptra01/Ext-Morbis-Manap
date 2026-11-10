@@ -9,6 +9,11 @@
 
 ## 2026-11-10
 
+### ✨ feat
+
+- **igdPukulAutofill** — auto-fill waktu sekarang + fix deleteElementObat selector (Rajal/Ranap IGD) (`7d287f1`)
+- **visiteKonsul** — simpan lokal dulu + antrian pending + tombol Sinkron (offline-resilient) (`e68c87c`)
+
 ### 🐛 fix
 
 - **visiteKonsul** — fallback native button ber-styling saat ext-btn tidak terdaftar (`8a6de99`)
@@ -2001,4 +2006,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 8a6de998b2e5d570fe6ba5e7b41a0dd86e320795 -->
+<!-- changelog-upto: 7d287f120b68cdaef18c61576c564afe66456e7b -->
