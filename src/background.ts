@@ -378,13 +378,6 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Input manual visite & konsul dokter spesialis IGD di halaman utama pelayanan (data di Reports SIMRS)',
     },
-    igdPukulAutofill: {
-      enabled: true,
-      allowedRoles: ['admin', 'igd', 'casemix', 'dokter'],
-      name: 'Auto-Fill Pukul IGD',
-      description:
-        'Auto-fill kolom Pukul (datetime) dengan waktu sekarang saat tambah baris tindakan/terapi di pengkajian awal IGD (Rajal & Ranap), dan perbaiki re-index ID saat hapus baris',
-    },
   },
 };
 

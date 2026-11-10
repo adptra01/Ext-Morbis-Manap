@@ -1494,17 +1494,6 @@ var FALLBACK_FEATURES = [
 		roles: ["admin"]
 	},
 	{
-		key: "igdPukulAutofill",
-		name: "Auto-Fill Pukul IGD",
-		desc: "Auto-fill kolom Pukul dengan waktu sekarang (Rajal & Ranap IGD)",
-		roles: [
-			"admin",
-			"igd",
-			"casemix",
-			"dokter"
-		]
-	},
-	{
 		key: "doctorFilterPersistence",
 		name: "Doctor Filter",
 		desc: "Simpan filter dokter",

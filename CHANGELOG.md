@@ -17,6 +17,8 @@
 
 ### 🐛 fix
 
+- **igdPukulAutofill** — kembalikan datetime-local (picker native) + anti-reset blur + auto-fill (`0fed5f4`)
+- **igdPukulAutofill** — kolom Pukul jadi input teks biasa (hindari reset datetime-local) + auto-fill (`ec77bff`)
 - **visiteKonsul** — fallback native button ber-styling saat ext-btn tidak terdaftar (`8a6de99`)
 - **visiteKonsul** — guard registrasi custom element + fallback native input (cegah crash 'reading get') (`816bf5b`)
 - **visiteKonsul** — tampilkan galat API visite-konsul (503) di banner + kotak pencarian dokter, bukan gagal senyap (`0ed6948`)
@@ -2013,4 +2015,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4a9af47c8a5ea272ef471fd6c4cba2a515574de2 -->
+<!-- changelog-upto: 0fed5f4d9cf3f1ffbfa74aee5fe44f7720ae593b -->

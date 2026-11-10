@@ -189,12 +189,6 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-hide-telaah");
     }
-    const ipCfg = cfg?.features?.igdPukulAutofill;
-    if (ipCfg?.enabled && window.ExtensionCore.isFeatureAllowed("igdPukulAutofill")) {
-      document.documentElement.setAttribute("data-ext-igd-pukul", "1");
-    } else {
-      document.documentElement.removeAttribute("data-ext-igd-pukul");
-    }
     const ctx = {
       pathname: normalizePath(window.location.pathname),
       url: new URL(window.location.href),
