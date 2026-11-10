@@ -139,6 +139,121 @@ function readPetugas(): string {
   return 'petugas';
 }
 
+function cacheKey(idVisit: string): string {
+  return `ext-vk-cache-${idVisit}`;
+}
+function pendingKey(idVisit: string): string {
+  return `ext-vk-pending-${idVisit}`;
+}
+
+function safeStore(): Storage | null {
+  try {
+    return window.localStorage || null;
+  } catch {
+    return null;
+  }
+}
+
+function readCache(idVisit: string): Row[] {
+  const s = safeStore();
+  if (!s) return [];
+  try {
+    const raw = s.getItem(cacheKey(idVisit));
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((r: any) => r && typeof r.nama_dokter === 'string')
+      .map((r: any) => ({
+        id: typeof r.id === 'number' ? r.id : null,
+        jenis: r.jenis === 'konsul' ? 'konsul' : 'visite',
+        nama_dokter: String(r.nama_dokter),
+        id_dokter: typeof r.id_dokter === 'number' ? r.id_dokter : null,
+        saving: false,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function writeCache(idVisit: string, rows: Row[]): void {
+  const s = safeStore();
+  if (!s) return;
+  try {
+    s.setItem(
+      cacheKey(idVisit),
+      JSON.stringify(
+        rows.map((r) => ({
+          id: r.id,
+          jenis: r.jenis,
+          nama_dokter: r.nama_dokter,
+          id_dokter: r.id_dokter,
+        })),
+      ),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function readPending(idVisit: string): Row[] {
+  const s = safeStore();
+  if (!s) return [];
+  try {
+    const raw = s.getItem(pendingKey(idVisit));
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((r: any) => r && typeof r.nama_dokter === 'string')
+      .map((r: any) => ({
+        id: typeof r.id === 'number' ? r.id : null,
+        jenis: r.jenis === 'konsul' ? 'konsul' : 'visite',
+        nama_dokter: String(r.nama_dokter),
+        id_dokter: typeof r.id_dokter === 'number' ? r.id_dokter : null,
+        saving: false,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function writePending(idVisit: string, rows: Row[]): void {
+  const s = safeStore();
+  if (!s) return;
+  try {
+    if (!rows.length) s.removeItem(pendingKey(idVisit));
+    else
+      s.setItem(
+        pendingKey(idVisit),
+        JSON.stringify(
+          rows.map((r) => ({
+            id: r.id,
+            jenis: r.jenis,
+            nama_dokter: r.nama_dokter,
+            id_dokter: r.id_dokter,
+          })),
+        ),
+      );
+  } catch {
+    /* ignore */
+  }
+}
+
+function mergeRows(apiRows: Row[], pendingRows: Row[]): Row[] {
+  // pending (lokal) menang untuk baris yang sama (jenis + nama), sisanya gabung
+  const out: Row[] = [...apiRows];
+  for (const p of pendingRows) {
+    const dup = out.find(
+      (r) =>
+        r.jenis === p.jenis &&
+        r.nama_dokter.trim().toLowerCase() === p.nama_dokter.trim().toLowerCase(),
+    );
+    if (!dup) out.push(p);
+  }
+  return out;
+}
+
 function injectStyles() {
   const style = document.createElement('style');
   style.textContent = `
@@ -263,6 +378,9 @@ function buildSection(
   const saveBtn = makeBtn('primary', 'sm', 'Simpan');
   card.appendChild(saveBtn);
 
+  const syncBtn = makeBtn('secondary', 'sm', 'Sinkron');
+  card.appendChild(syncBtn);
+
   const status = document.createElement('span');
   status.className = 'ext-vk-status';
   card.appendChild(status);
@@ -363,15 +481,82 @@ function buildSection(
       saveBtn.textContent = 'Menyimpan...';
     }
     status.textContent = 'Menyimpan...';
+    // lokal dulu: tulis cache supaya data tidak hilang bila jaringan putus
+    writeCache(idVisit, rows);
     let ok = 0;
-    for (const r of mine) if (await saveRow(r)) ok++;
+    const failed: Row[] = [];
+    for (const r of mine) {
+      if (await saveRow(r)) ok++;
+      else failed.push(r);
+    }
+    if (failed.length) writePending(idVisit, [...readPending(idVisit), ...failed]);
+    else {
+      // bersihkan pending yang sudah tersinkron
+      const remaining = readPending(idVisit).filter(
+        (p) =>
+          !mine.some(
+            (m) =>
+              m.jenis === p.jenis &&
+              m.nama_dokter.trim().toLowerCase() === p.nama_dokter.trim().toLowerCase(),
+          ),
+      );
+      writePending(idVisit, remaining);
+    }
+    writeCache(idVisit, rows);
     if (isExt) saveBtn.removeAttribute('loading');
     else {
       (saveBtn as HTMLButtonElement).disabled = false;
       saveBtn.textContent = 'Simpan';
     }
-    status.textContent = ok === mine.length ? 'Tersimpan' : `Tersimpan ${ok}/${mine.length}`;
+    if (ok === mine.length) status.textContent = 'Tersimpan';
+    else if (ok === 0) status.textContent = 'Offline — tersimpan lokal, akan dikirim saat online';
+    else status.textContent = `Tersimpan ${ok}/${mine.length} (sisanya lokal)`;
     if (ok !== mine.length) console.warn(LOG_PREFIX, 'gagal simpan', jenis, ok, '/', mine.length);
+  });
+
+  syncBtn.addEventListener('click', async () => {
+    const pending = readPending(idVisit).filter((r) => r.jenis === jenis);
+    if (!pending.length) {
+      status.textContent = 'Tidak ada data pending';
+      return;
+    }
+    const isExt = !!window.customElements?.get?.('ext-btn');
+    if (isExt) syncBtn.setAttribute('loading', '');
+    else {
+      (syncBtn as HTMLButtonElement).disabled = true;
+      syncBtn.textContent = 'Sinkron...';
+    }
+    status.textContent = 'Menyinkronkan...';
+    let ok = 0;
+    const stillPending: Row[] = [];
+    for (const r of pending) {
+      if (await saveRow(r)) ok++;
+      else stillPending.push(r);
+    }
+    const otherPending = readPending(idVisit).filter((p) => p.jenis !== jenis);
+    writePending(idVisit, [...otherPending, ...stillPending]);
+    // masukkan baris yang baru tersinkron ke rows bila belum ada
+    for (const r of pending) {
+      if (
+        !rows.some(
+          (x) =>
+            x.jenis === r.jenis &&
+            x.nama_dokter.trim().toLowerCase() === r.nama_dokter.trim().toLowerCase(),
+        )
+      ) {
+        rows.push({ ...r, saving: false });
+      }
+    }
+    writeCache(idVisit, rows);
+    render();
+    if (isExt) syncBtn.removeAttribute('loading');
+    else {
+      (syncBtn as HTMLButtonElement).disabled = false;
+      syncBtn.textContent = 'Sinkron';
+    }
+    status.textContent = stillPending.length
+      ? `Gagal ${stillPending.length}, coba lagi`
+      : `Sinkron ${ok} data`;
   });
 
   addBtn.addEventListener('click', () => {
@@ -435,15 +620,24 @@ async function init() {
   if (heading) heading.insertAdjacentElement('afterend', card);
   else host.insertBefore(card, host.firstChild);
 
+  const rows: Row[] = [];
   const { rows: existing, error: listErr } = await apiList(idVisit);
   if (listErr) {
     const warn = document.createElement('div');
     warn.className = 'ext-vk-warn';
-    warn.textContent = `API visite-konsul tidak aktif (${listErr}). Pencarian & simpan dokter akan gagal sampai admin Reports mengaktifkan grup API ini.`;
+    warn.textContent = `API visite-konsul tidak aktif (${listErr}). Menampilkan data lokal (cache). Pencarian & simpan dokter akan gagal sampai admin Reports mengaktifkan grup API ini.`;
     card.appendChild(warn);
     console.warn(LOG_PREFIX, 'api list gagal:', listErr);
+    // fallback: pakai cache lokal + pending
+    const cached = readCache(idVisit);
+    const pending = readPending(idVisit);
+    const merged = mergeRows(cached, pending);
+    rows.push(...merged);
+    // jangan panggil buildSection dua kali — rows sudah diisi, lanjut render
+  } else {
+    rows.push(...existing);
+    writeCache(idVisit, existing);
   }
-  const rows: Row[] = existing;
 
   buildSection('VISITE', 'visite', rows, idVisit, user, card);
   buildSection('KONSUL', 'konsul', rows, idVisit, user, card);

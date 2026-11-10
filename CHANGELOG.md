@@ -11,6 +11,8 @@
 
 ### 🐛 fix
 
+- **visiteKonsul** — fallback native button ber-styling saat ext-btn tidak terdaftar (`8a6de99`)
+- **visiteKonsul** — guard registrasi custom element + fallback native input (cegah crash 'reading get') (`816bf5b`)
 - **visiteKonsul** — tampilkan galat API visite-konsul (503) di banner + kotak pencarian dokter, bukan gagal senyap (`0ed6948`)
 - **visiteKonsul** — card di bawah judul HALAMAN UTAMA + tombol Simpan eksplisit per bagian (`ff6ef6c`)
 
@@ -1999,4 +2001,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0a9d851d2c1d68f2e9cd79743e1ed39e6bea1b63 -->
+<!-- changelog-upto: 8a6de998b2e5d570fe6ba5e7b41a0dd86e320795 -->
