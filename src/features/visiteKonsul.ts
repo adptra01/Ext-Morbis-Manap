@@ -108,6 +108,27 @@ async function searchDokter(
   return { items: j.data || [] };
 }
 
+function makeBtn(
+  variant: 'primary' | 'secondary' | 'danger',
+  size: 'sm' | 'md',
+  label: string,
+): HTMLElement {
+  const ce = (
+    typeof window !== 'undefined' ? window.customElements : null
+  ) as CustomElementRegistry | null;
+  if (ce?.get?.('ext-btn')) {
+    const b = document.createElement('ext-btn');
+    b.setAttribute('variant', variant);
+    b.setAttribute('size', size);
+    b.textContent = label;
+    return b;
+  }
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = label;
+  b.className = `ext-vk-btn ext-vk-btn--${variant} ext-vk-btn--${size}`;
+  return b;
+}
 function readPetugas(): string {
   try {
     const el = document.querySelector<HTMLInputElement>('input[name="id_user"], #id_user');
@@ -123,7 +144,13 @@ function injectStyles() {
   style.textContent = `
     .ext-vk-card { margin: 12px 0; padding: 12px; border: 1px solid var(--ext-border); border-radius: var(--ext-radius-md); background: var(--ext-surface); font-family: var(--ext-font-family); }
     .ext-vk-card h2, .ext-vk-card h3 { margin: 0 0 8px; font-size: var(--ext-font-size-md); font-weight: 700; color: var(--ext-text); }
-    .ext-vk-card > ext-btn { margin-right: 6px; }
+    .ext-vk-card > ext-btn, .ext-vk-card > .ext-vk-btn { margin-right: 6px; }
+    .ext-vk-btn { display: inline-flex; align-items: center; justify-content: center; font-family: var(--ext-font-family); font-weight: 600; border: 1px solid var(--ext-border); border-radius: var(--ext-radius-sm); cursor: pointer; margin-right: 6px; }
+    .ext-vk-btn--sm { font-size: var(--ext-font-size-sm); padding: 6px 12px; min-height: 32px; }
+    .ext-vk-btn--primary { background: var(--ext-primary); color: var(--ext-text-on-primary); border-color: var(--ext-primary); }
+    .ext-vk-btn--secondary { background: var(--ext-surface); color: var(--ext-text); }
+    .ext-vk-btn--danger { background: var(--ext-danger); color: var(--ext-text-on-primary); border-color: var(--ext-danger); }
+    .ext-vk-btn:disabled { opacity: 0.55; cursor: not-allowed; }
     .ext-vk-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .ext-vk-table th, .ext-vk-table td { border: 1px solid var(--ext-border); padding: 4px 6px; font-size: var(--ext-font-size-sm); color: var(--ext-text); }
     .ext-vk-table th { background: var(--ext-surface-2); }
@@ -230,16 +257,10 @@ function buildSection(
   table.appendChild(tbody);
   card.appendChild(table);
 
-  const addBtn = document.createElement('ext-btn');
-  addBtn.setAttribute('variant', 'secondary');
-  addBtn.setAttribute('size', 'sm');
-  addBtn.textContent = '+ Tambah';
+  const addBtn = makeBtn('secondary', 'sm', '+ Tambah');
   card.appendChild(addBtn);
 
-  const saveBtn = document.createElement('ext-btn');
-  saveBtn.setAttribute('variant', 'primary');
-  saveBtn.setAttribute('size', 'sm');
-  saveBtn.textContent = 'Simpan';
+  const saveBtn = makeBtn('primary', 'sm', 'Simpan');
   card.appendChild(saveBtn);
 
   const status = document.createElement('span');
@@ -296,10 +317,7 @@ function buildSection(
       tr.appendChild(tdDoc);
 
       const tdAct = document.createElement('td');
-      const delBtn = document.createElement('ext-btn');
-      delBtn.setAttribute('variant', 'danger');
-      delBtn.setAttribute('size', 'sm');
-      delBtn.textContent = 'Hapus';
+      const delBtn = makeBtn('danger', 'sm', 'Hapus');
       delBtn.addEventListener('click', async () => {
         if (row.id) {
           const ok = await apiDelete(row.id, idVisit);
@@ -338,11 +356,20 @@ function buildSection(
       status.textContent = 'Belum ada data';
       return;
     }
-    saveBtn.setAttribute('loading', '');
+    const isExt = !!window.customElements?.get?.('ext-btn');
+    if (isExt) saveBtn.setAttribute('loading', '');
+    else {
+      (saveBtn as HTMLButtonElement).disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+    }
     status.textContent = 'Menyimpan...';
     let ok = 0;
     for (const r of mine) if (await saveRow(r)) ok++;
-    saveBtn.removeAttribute('loading');
+    if (isExt) saveBtn.removeAttribute('loading');
+    else {
+      (saveBtn as HTMLButtonElement).disabled = false;
+      saveBtn.textContent = 'Simpan';
+    }
     status.textContent = ok === mine.length ? 'Tersimpan' : `Tersimpan ${ok}/${mine.length}`;
     if (ok !== mine.length) console.warn(LOG_PREFIX, 'gagal simpan', jenis, ok, '/', mine.length);
   });
