@@ -17,12 +17,17 @@
 
 ### 🐛 fix
 
+- **resepAsliPrint** — lengkapi obat (aturan pakai) & data pasien/dokter dari detail + density compact (`87c9047`)
 - **resepAsliPrint** — scrape obat hanya tabel R/N + gate unit apotek ranap + hide telaah-resep (`9583858`)
 - **resepAsliPrint** — hapus gate isResepAsliAllowed agar redesign selalu jalan di cetak-resep-asli (`8b26482`)
 
 ### ♻️ refactor
 
 - **resepAsliPrint** — hapus grid lampiran (Srt. Rujuk Balik | Surat Iter | Hasil Lab) (`da14dc2`)
+
+### 🎨 style
+
+- **resepAsliPrint** — label metadata pasien & dokter hijau + bold (`3d7f87d`)
 
 ### 🧹 chore
 
@@ -2037,4 +2042,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 73b49faf3caed7c592207ab58f4a6cefd2f986a1 -->
+<!-- changelog-upto: 87c9047ee34058e85e29dd43aa39b0c9e4d1092a -->
