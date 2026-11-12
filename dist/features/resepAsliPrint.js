@@ -105,6 +105,10 @@ var __morbis_feature = (() => {
       const resepId = params.get("id") || params.get("id_resep") || "";
       let noSep = "";
       let catatan = "";
+      let bed = "";
+      let alamatKeluarga = "";
+      let namaKeluarga = "";
+      let dokterApi = "";
       let diagnosisUtama = [];
       let diagnosisSekunder = [];
       async function fetchDetailData() {
@@ -121,6 +125,15 @@ var __morbis_feature = (() => {
           };
           noSep = inVal("no_sep") || noSep;
           catatan = inVal("catatan") || catatan;
+          const rowVal = (label) => {
+            const tr = Array.from(doc.querySelectorAll("tr")).find(
+              (t) => txt(t.querySelector("td")) === label
+            );
+            const tds = tr ? tr.querySelectorAll("td") : [];
+            return tds.length >= 3 ? txt(tds[2]) : "";
+          };
+          bed = rowVal("Bed") || bed;
+          alamatKeluarga = rowVal("Alamat") || inVal("alamat") || alamatKeluarga;
           const fieldsets = Array.from(doc.querySelectorAll("fieldset#perhatian"));
           const fs = fieldsets.find((f) => {
             const leg = f.querySelector("legend");
@@ -159,7 +172,7 @@ var __morbis_feature = (() => {
         } catch {
         }
       }
-      if (!catatan && resepId) {
+      if (resepId) {
         try {
           const envResp = await fetch(
             "/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=" + encodeURIComponent(resepId),
@@ -167,8 +180,11 @@ var __morbis_feature = (() => {
           );
           if (envResp.ok) {
             const env = await envResp.json();
-            const c = String(env?.CATATAN ?? "").trim();
-            if (c) catatan = c;
+            const str = (v) => String(v ?? "").trim();
+            if (!catatan) catatan = str(env?.CATATAN);
+            namaKeluarga = str(env?.NAMA_KELUARGA) || namaKeluarga;
+            alamatKeluarga = alamatKeluarga || str(env?.ALAMAT_KELUARGA);
+            dokterApi = str(env?.DOKTER) || dokterApi;
           }
         } catch {
         }
@@ -182,7 +198,9 @@ var __morbis_feature = (() => {
       const jk = getMeta("Jenis Kelamin");
       const jkShort = /^perempuan$/i.test(jk) ? "P" : /^laki-laki$/i.test(jk) ? "L" : jk;
       const pasienJK = (getMeta("Nama Pasien") || "-") + (jk ? " (" + jkShort + ")" : "");
-      const dokterRuang = (getMeta("Dokter Pengirim") || getMeta("Dokter") || "-") + (getMeta("Ruangan") || getMeta("Ruangan/Poli") ? " / " + (getMeta("Ruangan") || getMeta("Ruangan/Poli")) : "");
+      const namaDokter = getMeta("Nama Dokter") || dokterApi || getMeta("Dokter") || "-";
+      const unitAsal = getMeta("Unit Asal") || getMeta("Ruangan") || getMeta("Ruangan/Poli") || "";
+      const ruangBed = [unitAsal, bed].filter(Boolean).join(" / ") || "-";
       const look = (re) => {
         for (const k of metaMap.keys()) if (re.test(k)) return metaMap.get(k) || "";
         return "";
@@ -196,17 +214,19 @@ var __morbis_feature = (() => {
         ["Pasien", pasienJK, ""],
         ["No. RM", getMeta("No. RM"), ""],
         ["No. SEP", noSep || getMeta("No. SEP") || "-", ""],
-        ["No. Kartu", getMeta("No. Kartu") || "-", ""],
         ["Tgl. Lahir", getMeta("Tanggal Lahir") || getMeta("Tgl. Lahir/Umur") || "-", ""],
+        ["No. Telpon", getMeta("No. Telpon") || getMeta("No. HP") || "-", ""],
+        ["Unit Asal", ruangBed, ""],
         ["Alergi & BB", alergiBB, ""],
-        ["Alamat", getMeta("Alamat") || "-", "long"]
+        ["Alamat", alamatKeluarga || getMeta("Alamat") || "-", "long"],
+        ...namaKeluarga ? [["Keluarga", namaKeluarga, ""]] : []
       ];
       const doctorRows = [
-        ["Dokter", dokterRuang, ""],
+        ["Dokter", namaDokter, ""],
         ["SIP", getMeta("SIP") || getMeta("SIP Dokter") || "-", ""],
         ["No Resep", getMeta("No. Resep") || "-", ""],
-        ["Ruangan", getMeta("Ruangan") || getMeta("Ruangan/Poli") || "-", ""],
-        ["Tanggal", getMeta("Tanggal") || getMeta("Tanggal & Jam") || "-", ""],
+        ["Ruangan", ruangBed, ""],
+        ["Tanggal", getMeta("Tanggal Resep") || getMeta("Tanggal") || getMeta("Tanggal & Jam") || "-", ""],
         ["Penjamin", getMeta("Penjamin") || "-", ""]
       ];
       const diagValues = [
@@ -217,20 +237,26 @@ var __morbis_feature = (() => {
       const patientMetaHtml = '<section class="tm-card tm-card--left"><div class="tm-col">' + patientRows.map(([l, v, rc]) => metaLine(l, v, "", rc)).join("") + diagThen + "</div></section>";
       const doctorMetaHtml = '<section class="tm-card tm-card--right"><div class="tm-col">' + doctorRows.map(([l, v]) => metaLine(l, v)).join("") + "</div></section>";
       const meds = [];
+      const cleanAturan = (v) => v.replace(/^(?:-\s*)+/, "").trim();
       const allTables = Array.from(page.querySelectorAll("table"));
       const medTables = allTables.filter((t) => /^R\/\d+/i.test(txt(t.querySelector("tr td"))));
       (medTables.length ? medTables : allTables).forEach((table) => {
         table.querySelectorAll("tbody tr").forEach((tr) => {
           const cells = tr.querySelectorAll("td");
-          if (cells.length >= 2) {
-            const no = txt(cells[0]);
-            const nameRaw = txt(cells[1]);
-            const mJml = nameRaw.match(/^(.*?)\s*Jml\.?\s*([\d.,/]+)$/i);
-            const name = mJml ? mJml[1] : nameRaw;
-            const jml = cells.length > 2 ? txt(cells[2]) : mJml ? mJml[2] : "";
-            const aturan = cells.length > 3 ? txt(cells[3]) : "";
-            if (no && name) meds.push({ no, name, jml, aturan });
+          if (cells.length < 2) return;
+          const no = txt(cells[0]);
+          const nameRaw = txt(cells[1]);
+          if (!no) {
+            const prev = meds[meds.length - 1];
+            const at = cleanAturan(nameRaw);
+            if (prev && at && !prev.aturan) prev.aturan = at;
+            return;
           }
+          const mJml = nameRaw.match(/^(.*?)\s*Jml\.?\s*([\d.,/]+)$/i);
+          const name = mJml ? mJml[1] : nameRaw;
+          const jml = cells.length > 2 ? txt(cells[2]) : mJml ? mJml[2] : "";
+          const aturan = cells.length > 3 ? cleanAturan(txt(cells[3])) : "";
+          if (name) meds.push({ no, name, jml, aturan });
         });
       });
       if (!meds.length && resepId) {
@@ -315,8 +341,8 @@ var __morbis_feature = (() => {
           const atr2 = m.aturan ? '<div class="med-aturan">' + esc(m.aturan) + "</div>" : "";
           return '<div class="med">' + lines + jadi + atr2 + "</div>";
         }
-        const jml = m.jml ? ", Jml: " + esc(m.jml) : "";
-        const atr = m.aturan ? '<div class="med-aturan">' + esc(m.aturan) + "</div>" : "";
+        const jml = (m.jml ? ", Jml: " + esc(m.jml) : "") + (m.aturan ? " \xB7 " + esc(m.aturan) : "");
+        const atr = "";
         const raw = m.raw ? ' style="font-family:monospace;font-size:10px;white-space:pre-wrap"' : "";
         return '<div class="med"><div class="med-line"' + raw + '><span class="med-no">' + esc(m.no) + '</span> <span class="med-name">' + esc(m.name) + "</span>" + jml + "</div>" + atr + "</div>";
       }).join("");
@@ -403,15 +429,20 @@ var __morbis_feature = (() => {
         })();
       }
       const TARGET = 866;
-      const pageH = page.scrollHeight;
-      if (pageH > TARGET) {
-        page.classList.add("compact");
-        void page.offsetHeight;
+      const settle = () => {
+        page.classList.remove("compact", "ultra");
         if (page.scrollHeight > TARGET) {
-          page.classList.remove("compact");
-          page.classList.add("ultra");
+          page.classList.add("compact");
+          void page.offsetHeight;
+          if (page.scrollHeight > TARGET) {
+            page.classList.remove("compact");
+            page.classList.add("ultra");
+          }
         }
-      }
+      };
+      settle();
+      setTimeout(settle, 400);
+      setTimeout(settle, 1500);
       const SID = "ext-resepAsli-style";
       if (!document.getElementById(SID)) {
         document.head.appendChild(
@@ -452,6 +483,10 @@ var __morbis_feature = (() => {
               /* Med list */
               ".med{margin-bottom:6px}",
               ".med-line{font-size:11px;line-height:1.35;text-align:left}",
+              ".halaman.compact .med{margin-bottom:3px}",
+              ".halaman.compact .med-line{line-height:1.2}",
+              ".halaman.ultra .med{margin-bottom:2px}",
+              ".halaman.ultra .med-line{font-size:10px!important;line-height:1.15}",
               ".med-line.indent{margin-left:0}",
               ".med-no{font-weight:400}",
               ".med-name{font-weight:600}",
@@ -467,6 +502,12 @@ var __morbis_feature = (() => {
               ".halaman th,.halaman td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:10px!important;line-height:1.2}",
               "thead th{font-weight:400}",
               ".yt{width:32px;text-align:center}",
+              ".halaman.compact .yt{width:26px}",
+              ".halaman.compact .tm-card{margin-bottom:2px}",
+              ".halaman.compact .t-check td,.halaman.compact .t-check th{font-size:10px!important;padding:0.5px 2px}",
+              ".halaman.ultra .yt{width:22px}",
+              ".halaman.ultra .num{width:13px}",
+              ".halaman.ultra .t-check td,.halaman.ultra .t-check th{font-size:9px!important;line-height:1.15;padding:0.5px 2px}",
               ".num{width:16px;text-align:center}",
               ".l{text-align:left}",
               ".c{text-align:center}",

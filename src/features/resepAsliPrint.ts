@@ -62,6 +62,10 @@ whenFeatureEnabled('resepAsli', function () {
 
     let noSep = '';
     let catatan = '';
+    let bed = '';
+    let alamatKeluarga = '';
+    let namaKeluarga = '';
+    let dokterApi = '';
     let diagnosisUtama: string[] = [];
     let diagnosisSekunder: string[] = [];
 
@@ -86,6 +90,17 @@ whenFeatureEnabled('resepAsli', function () {
         };
         noSep = inVal('no_sep') || noSep;
         catatan = inVal('catatan') || catatan;
+
+        // Baris "<td>Label</td><td></td><td>nilai</td>" — dipakai untuk Bed/Pegawai/Kelas.
+        const rowVal = (label: string): string => {
+          const tr = Array.from(doc.querySelectorAll('tr')).find(
+            (t) => txt(t.querySelector('td')) === label,
+          );
+          const tds = tr ? tr.querySelectorAll('td') : [];
+          return tds.length >= 3 ? txt(tds[2]) : '';
+        };
+        bed = rowVal('Bed') || bed;
+        alamatKeluarga = rowVal('Alamat') || inVal('alamat') || alamatKeluarga;
 
         // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
         const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
@@ -134,8 +149,8 @@ whenFeatureEnabled('resepAsli', function () {
       }
     }
 
-    // Fallback catatan dari API
-    if (!catatan && resepId) {
+    // Envelope resep: sumber terlengkap (nama pasien/dokter, alamat & keluarga, catatan).
+    if (resepId) {
       try {
         const envResp = await fetch(
           '/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=' +
@@ -144,8 +159,11 @@ whenFeatureEnabled('resepAsli', function () {
         );
         if (envResp.ok) {
           const env = await envResp.json();
-          const c = String(env?.CATATAN ?? '').trim();
-          if (c) catatan = c;
+          const str = (v: unknown): string => String(v ?? '').trim();
+          if (!catatan) catatan = str(env?.CATATAN);
+          namaKeluarga = str(env?.NAMA_KELUARGA) || namaKeluarga;
+          alamatKeluarga = alamatKeluarga || str(env?.ALAMAT_KELUARGA);
+          dokterApi = str(env?.DOKTER) || dokterApi;
         }
       } catch {
         /* skip */
@@ -168,11 +186,10 @@ whenFeatureEnabled('resepAsli', function () {
     const jk = getMeta('Jenis Kelamin');
     const jkShort = /^perempuan$/i.test(jk) ? 'P' : /^laki-laki$/i.test(jk) ? 'L' : jk;
     const pasienJK = (getMeta('Nama Pasien') || '-') + (jk ? ' (' + jkShort + ')' : '');
-    const dokterRuang =
-      (getMeta('Dokter Pengirim') || getMeta('Dokter') || '-') +
-      (getMeta('Ruangan') || getMeta('Ruangan/Poli')
-        ? ' / ' + (getMeta('Ruangan') || getMeta('Ruangan/Poli'))
-        : '');
+    // "Nama Dokter" = field baku halaman cetak; envelope API jadi cadangan.
+    const namaDokter = getMeta('Nama Dokter') || dokterApi || getMeta('Dokter') || '-';
+    const unitAsal = getMeta('Unit Asal') || getMeta('Ruangan') || getMeta('Ruangan/Poli') || '';
+    const ruangBed = [unitAsal, bed].filter(Boolean).join(' / ') || '-';
 
     const look = (re: RegExp): string => {
       for (const k of metaMap.keys()) if (re.test(k)) return metaMap.get(k) || '';
@@ -205,19 +222,25 @@ whenFeatureEnabled('resepAsli', function () {
       ['Pasien', pasienJK, ''],
       ['No. RM', getMeta('No. RM'), ''],
       ['No. SEP', noSep || getMeta('No. SEP') || '-', ''],
-      ['No. Kartu', getMeta('No. Kartu') || '-', ''],
       ['Tgl. Lahir', getMeta('Tanggal Lahir') || getMeta('Tgl. Lahir/Umur') || '-', ''],
+      ['No. Telpon', getMeta('No. Telpon') || getMeta('No. HP') || '-', ''],
+      ['Unit Asal', ruangBed, ''],
       ['Alergi & BB', alergiBB, ''],
-      ['Alamat', getMeta('Alamat') || '-', 'long'],
+      ['Alamat', alamatKeluarga || getMeta('Alamat') || '-', 'long'],
+      ...(namaKeluarga ? ([['Keluarga', namaKeluarga, '']] as [string, string, string][]) : []),
     ];
 
     // ==== KANAN ====
     const doctorRows: [string, string, string][] = [
-      ['Dokter', dokterRuang, ''],
+      ['Dokter', namaDokter, ''],
       ['SIP', getMeta('SIP') || getMeta('SIP Dokter') || '-', ''],
       ['No Resep', getMeta('No. Resep') || '-', ''],
-      ['Ruangan', getMeta('Ruangan') || getMeta('Ruangan/Poli') || '-', ''],
-      ['Tanggal', getMeta('Tanggal') || getMeta('Tanggal & Jam') || '-', ''],
+      ['Ruangan', ruangBed, ''],
+      [
+        'Tanggal',
+        getMeta('Tanggal Resep') || getMeta('Tanggal') || getMeta('Tanggal & Jam') || '-',
+        '',
+      ],
       ['Penjamin', getMeta('Penjamin') || '-', ''],
     ];
 
@@ -275,6 +298,9 @@ whenFeatureEnabled('resepAsli', function () {
       raw?: boolean;
     }[] = [];
 
+    // Halaman asli: baris aturan pakai sering berbentuk "- simm" / "- - 1x1 tab" / "- - -".
+    const cleanAturan = (v: string): string => v.replace(/^(?:-\s*)+/, '').trim();
+
     // Hanya tabel obat asli (baris pertama diawali "R/N"); tabel lain = metadata/admin.
     // ponytail: heuristik markup cetak ini; bila markup berubah, semua tabel diperiksa lagi.
     const allTables = Array.from(page.querySelectorAll('table'));
@@ -282,16 +308,22 @@ whenFeatureEnabled('resepAsli', function () {
     (medTables.length ? medTables : allTables).forEach((table) => {
       table.querySelectorAll('tbody tr').forEach((tr) => {
         const cells = tr.querySelectorAll('td');
-        if (cells.length >= 2) {
-          const no = txt(cells[0]);
-          const nameRaw = txt(cells[1]);
-          // "Iv Catheter 22G Jml. 1" → nama + jumlah (format sama dgn telaah).
-          const mJml = nameRaw.match(/^(.*?)\s*Jml\.?\s*([\d.,/]+)$/i);
-          const name = mJml ? mJml[1] : nameRaw;
-          const jml = cells.length > 2 ? txt(cells[2]) : mJml ? mJml[2] : '';
-          const aturan = cells.length > 3 ? txt(cells[3]) : '';
-          if (no && name) meds.push({ no, name, jml, aturan });
+        if (cells.length < 2) return;
+        const no = txt(cells[0]);
+        const nameRaw = txt(cells[1]);
+        // Halaman asli: baris tanpa nomor = aturan pakai obat di atasnya ("3x2", "simm").
+        if (!no) {
+          const prev = meds[meds.length - 1];
+          const at = cleanAturan(nameRaw);
+          if (prev && at && !prev.aturan) prev.aturan = at;
+          return;
         }
+        // "Iv Catheter 22G Jml. 1" → nama + jumlah (format sama dgn telaah).
+        const mJml = nameRaw.match(/^(.*?)\s*Jml\.?\s*([\d.,/]+)$/i);
+        const name = mJml ? mJml[1] : nameRaw;
+        const jml = cells.length > 2 ? txt(cells[2]) : mJml ? mJml[2] : '';
+        const aturan = cells.length > 3 ? cleanAturan(txt(cells[3])) : '';
+        if (name) meds.push({ no, name, jml, aturan });
       });
     });
 
@@ -413,8 +445,9 @@ whenFeatureEnabled('resepAsli', function () {
           const atr = m.aturan ? '<div class="med-aturan">' + esc(m.aturan) + '</div>' : '';
           return '<div class="med">' + lines + jadi + atr + '</div>';
         }
-        const jml = m.jml ? ', Jml: ' + esc(m.jml) : '';
-        const atr = m.aturan ? '<div class="med-aturan">' + esc(m.aturan) + '</div>' : '';
+        // Aturan pakai ikut satu baris — baris terpisah bikin halaman >241mm saat obat banyak.
+        const jml = (m.jml ? ', Jml: ' + esc(m.jml) : '') + (m.aturan ? ' · ' + esc(m.aturan) : '');
+        const atr = '';
         const raw = m.raw
           ? ' style="font-family:monospace;font-size:10px;white-space:pre-wrap"'
           : '';
@@ -621,16 +654,23 @@ whenFeatureEnabled('resepAsli', function () {
     }
 
     // === ADAPTIVE DENSITY ===
+    // Diukur ulang setelah font/gambar/data async siap — sekali ukur terlalu awal
+    // (halaman masih lebih pendek) sehingga hasil cetak bisa melewati 241mm.
     const TARGET = 866;
-    const pageH = page.scrollHeight;
-    if (pageH > TARGET) {
-      page.classList.add('compact');
-      void (page as HTMLElement).offsetHeight;
+    const settle = (): void => {
+      page.classList.remove('compact', 'ultra');
       if (page.scrollHeight > TARGET) {
-        page.classList.remove('compact');
-        page.classList.add('ultra');
+        page.classList.add('compact');
+        void (page as HTMLElement).offsetHeight;
+        if (page.scrollHeight > TARGET) {
+          page.classList.remove('compact');
+          page.classList.add('ultra');
+        }
       }
-    }
+    };
+    settle();
+    setTimeout(settle, 400);
+    setTimeout(settle, 1500);
 
     // === SELF-CONTAINED CSS ===
     const SID = 'ext-resepAsli-style';
@@ -673,6 +713,10 @@ whenFeatureEnabled('resepAsli', function () {
             /* Med list */
             '.med{margin-bottom:6px}',
             '.med-line{font-size:11px;line-height:1.35;text-align:left}',
+            '.halaman.compact .med{margin-bottom:3px}',
+            '.halaman.compact .med-line{line-height:1.2}',
+            '.halaman.ultra .med{margin-bottom:2px}',
+            '.halaman.ultra .med-line{font-size:10px!important;line-height:1.15}',
             '.med-line.indent{margin-left:0}',
             '.med-no{font-weight:400}',
             '.med-name{font-weight:600}',
@@ -688,6 +732,12 @@ whenFeatureEnabled('resepAsli', function () {
             '.halaman th,.halaman td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:10px!important;line-height:1.2}',
             'thead th{font-weight:400}',
             '.yt{width:32px;text-align:center}',
+            '.halaman.compact .yt{width:26px}',
+            '.halaman.compact .tm-card{margin-bottom:2px}',
+            '.halaman.compact .t-check td,.halaman.compact .t-check th{font-size:10px!important;padding:0.5px 2px}',
+            '.halaman.ultra .yt{width:22px}',
+            '.halaman.ultra .num{width:13px}',
+            '.halaman.ultra .t-check td,.halaman.ultra .t-check th{font-size:9px!important;line-height:1.15;padding:0.5px 2px}',
             '.num{width:16px;text-align:center}',
             '.l{text-align:left}',
             '.c{text-align:center}',
