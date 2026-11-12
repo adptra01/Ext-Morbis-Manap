@@ -1,4 +1,6 @@
 import { whenFeatureEnabled } from './shared/featureGate.js';
+import { isResepAsliAllowed } from './shared/unitGate.js';
+import { getConfig } from '../shared/storage.js';
 whenFeatureEnabled('resepAsli', function () {
   'use strict';
 
@@ -12,6 +14,12 @@ whenFeatureEnabled('resepAsli', function () {
 
     const root = document.querySelector('.halaman');
     if (!root || root.getAttribute(PAGE_GUARD)) return;
+
+    // Gate unit: hanya depo ranap (pasien rawat inap/IGD). Admin selalu boleh.
+    // Role lain sudah disaring `resepAsli.allowedRoles` di featureGate.
+    const role = (await getConfig().catch(() => null))?.currentRole ?? 'admin';
+    if (role !== 'admin' && !isResepAsliAllowed()) return;
+
     const page: Element = root;
     page.setAttribute(PAGE_GUARD, '1');
 
@@ -175,6 +183,23 @@ whenFeatureEnabled('resepAsli', function () {
     const bbTxt = bb ? (/\bkg\b/i.test(bb) ? bb : bb + ' kg') : '- kg';
     const alergiBB = (alergi ? alergi : '-') + ' / ' + (bb ? 'BB ' + bbTxt : bbTxt);
 
+    // --- Helpers ---
+    // metaLine dipakai saat membangun patientMetaHtml/doctorMetaHtml di bawah,
+    // jadi wajib dideklarasikan lebih dulu (const → TDZ bila dipakai sebelum init).
+    const metaLine = (label: string, value: string, vClass = '', rowClass = ''): string =>
+      '<div class="tm-row' +
+      (rowClass ? ' ' + rowClass : '') +
+      '">' +
+      '<span class="tm-label">' +
+      esc(label) +
+      ':</span>' +
+      '<span class="tm-val' +
+      (vClass ? ' ' + vClass : '') +
+      '">' +
+      (value && value.trim() ? esc(value) : '-') +
+      '</span>' +
+      '</div>';
+
     // ==== KIRI ====
     const patientRows: [string, string, string][] = [
       ['Pasien', pasienJK, ''],
@@ -250,14 +275,20 @@ whenFeatureEnabled('resepAsli', function () {
       raw?: boolean;
     }[] = [];
 
-    const tables = page.querySelectorAll('table');
-    tables.forEach((table) => {
+    // Hanya tabel obat asli (baris pertama diawali "R/N"); tabel lain = metadata/admin.
+    // ponytail: heuristik markup cetak ini; bila markup berubah, semua tabel diperiksa lagi.
+    const allTables = Array.from(page.querySelectorAll('table'));
+    const medTables = allTables.filter((t) => /^R\/\d+/i.test(txt(t.querySelector('tr td'))));
+    (medTables.length ? medTables : allTables).forEach((table) => {
       table.querySelectorAll('tbody tr').forEach((tr) => {
         const cells = tr.querySelectorAll('td');
         if (cells.length >= 2) {
           const no = txt(cells[0]);
-          const name = txt(cells[1]);
-          const jml = cells.length > 2 ? txt(cells[2]) : '';
+          const nameRaw = txt(cells[1]);
+          // "Iv Catheter 22G Jml. 1" → nama + jumlah (format sama dgn telaah).
+          const mJml = nameRaw.match(/^(.*?)\s*Jml\.?\s*([\d.,/]+)$/i);
+          const name = mJml ? mJml[1] : nameRaw;
+          const jml = cells.length > 2 ? txt(cells[2]) : mJml ? mJml[2] : '';
           const aturan = cells.length > 3 ? txt(cells[3]) : '';
           if (no && name) meds.push({ no, name, jml, aturan });
         }
@@ -437,21 +468,6 @@ whenFeatureEnabled('resepAsli', function () {
       ? txt(footerEl)
       : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
 
-    // --- Helpers ---
-    const metaLine = (label: string, value: string, vClass = '', rowClass = ''): string =>
-      '<div class="tm-row' +
-      (rowClass ? ' ' + rowClass : '') +
-      '">' +
-      '<span class="tm-label">' +
-      esc(label) +
-      ':</span>' +
-      '<span class="tm-val' +
-      (vClass ? ' ' + vClass : '') +
-      '">' +
-      (value && value.trim() ? esc(value) : '-') +
-      '</span>' +
-      '</div>';
-
     const checkTable = (title: string, rows: string[][]): string =>
       '<table class="t-check">' +
       '<thead><tr>' +
@@ -613,6 +629,7 @@ whenFeatureEnabled('resepAsli', function () {
           id: SID,
           textContent: [
             '/* PRINT: 105x241mm */',
+            '#telaah-resep{display:none!important}',
             '.halaman{box-sizing:border-box;width:105mm!important;height:auto!important;max-height:241mm;margin:0!important;padding:0 3mm}',
             '@page{size:105mm 241mm;margin:0}',
             '.halaman *{box-sizing:border-box;font-size:11px!important}',

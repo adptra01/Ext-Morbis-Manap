@@ -32,6 +32,43 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/unitGate.ts
+  function isDepoRanap(doc = document) {
+    const text = (doc.body?.textContent || "").toUpperCase();
+    return text.includes("DEPO RANAP");
+  }
+  function isRawatInapAtauIgd(doc = document) {
+    const metaMap = /* @__PURE__ */ new Map();
+    doc.querySelectorAll("table").forEach((t) => {
+      t.querySelectorAll("tr").forEach((tr) => {
+        const tds = tr.querySelectorAll("td");
+        if (tds.length < 2) return;
+        const label = (tds[0]?.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+        const value = (tds[1]?.textContent || "").replace(/\s+/g, " ").trim();
+        if (label && !metaMap.has(label)) metaMap.set(label, value);
+      });
+    });
+    const ruangan = (metaMap.get("ruangan") || metaMap.get("ruangan/poli") || "").toUpperCase();
+    const kelas = (metaMap.get("kelas") || metaMap.get("kelas rawat") || "").toUpperCase();
+    const jenis = (metaMap.get("jenis kunjungan") || metaMap.get("jenis") || "").toUpperCase();
+    if (ruangan.includes("IGD") || ruangan.includes("RAWAT INAP")) return true;
+    if (kelas.includes("IGD") || kelas.includes("RAWAT INAP")) return true;
+    if (jenis.includes("RAWAT INAP") || jenis.includes("IGD")) return true;
+    const bodyText = (doc.body?.textContent || "").toUpperCase();
+    if (bodyText.includes("RAWAT INAP") || bodyText.includes("IGD")) return true;
+    return false;
+  }
+  function isResepAsliAllowed(doc = document) {
+    return isDepoRanap(doc) || isRawatInapAtauIgd(doc);
+  }
+
+  // src/shared/storage.ts
+  var STORAGE_KEY2 = "extensionConfig";
+  async function getConfig() {
+    const result = await chrome.storage.sync.get(STORAGE_KEY2);
+    return result[STORAGE_KEY2] ?? null;
+  }
+
   // src/features/resepAsliPrint.ts
   whenFeatureEnabled("resepAsli", function() {
     "use strict";
@@ -39,6 +76,8 @@ var __morbis_feature = (() => {
       const PAGE_GUARD = "ext-resepAsli-proc";
       const root = document.querySelector(".halaman");
       if (!root || root.getAttribute(PAGE_GUARD)) return;
+      const role = (await getConfig().catch(() => null))?.currentRole ?? "admin";
+      if (role !== "admin" && !isResepAsliAllowed()) return;
       const page = root;
       page.setAttribute(PAGE_GUARD, "1");
       const txt = (el) => (el?.textContent || "").replace(/\s+/g, " ").trim();
@@ -152,6 +191,7 @@ var __morbis_feature = (() => {
       const bb = look(/berat|\bbb\b/i);
       const bbTxt = bb ? /\bkg\b/i.test(bb) ? bb : bb + " kg" : "- kg";
       const alergiBB = (alergi ? alergi : "-") + " / " + (bb ? "BB " + bbTxt : bbTxt);
+      const metaLine = (label, value, vClass = "", rowClass = "") => '<div class="tm-row' + (rowClass ? " " + rowClass : "") + '"><span class="tm-label">' + esc(label) + ':</span><span class="tm-val' + (vClass ? " " + vClass : "") + '">' + (value && value.trim() ? esc(value) : "-") + "</span></div>";
       const patientRows = [
         ["Pasien", pasienJK, ""],
         ["No. RM", getMeta("No. RM"), ""],
@@ -177,14 +217,17 @@ var __morbis_feature = (() => {
       const patientMetaHtml = '<section class="tm-card tm-card--left"><div class="tm-col">' + patientRows.map(([l, v, rc]) => metaLine(l, v, "", rc)).join("") + diagThen + "</div></section>";
       const doctorMetaHtml = '<section class="tm-card tm-card--right"><div class="tm-col">' + doctorRows.map(([l, v]) => metaLine(l, v)).join("") + "</div></section>";
       const meds = [];
-      const tables = page.querySelectorAll("table");
-      tables.forEach((table) => {
+      const allTables = Array.from(page.querySelectorAll("table"));
+      const medTables = allTables.filter((t) => /^R\/\d+/i.test(txt(t.querySelector("tr td"))));
+      (medTables.length ? medTables : allTables).forEach((table) => {
         table.querySelectorAll("tbody tr").forEach((tr) => {
           const cells = tr.querySelectorAll("td");
           if (cells.length >= 2) {
             const no = txt(cells[0]);
-            const name = txt(cells[1]);
-            const jml = cells.length > 2 ? txt(cells[2]) : "";
+            const nameRaw = txt(cells[1]);
+            const mJml = nameRaw.match(/^(.*?)\s*Jml\.?\s*([\d.,/]+)$/i);
+            const name = mJml ? mJml[1] : nameRaw;
+            const jml = cells.length > 2 ? txt(cells[2]) : mJml ? mJml[2] : "";
             const aturan = cells.length > 3 ? txt(cells[3]) : "";
             if (no && name) meds.push({ no, name, jml, aturan });
           }
@@ -302,7 +345,6 @@ var __morbis_feature = (() => {
         (el) => /Obat tidak boleh diganti/i.test(txt(el))
       );
       const footerText = footerEl ? txt(footerEl) : "Obat tidak boleh diganti tanpa sepengetahuan Dokter";
-      const metaLine = (label, value, vClass = "", rowClass = "") => '<div class="tm-row' + (rowClass ? " " + rowClass : "") + '"><span class="tm-label">' + esc(label) + ':</span><span class="tm-val' + (vClass ? " " + vClass : "") + '">' + (value && value.trim() ? esc(value) : "-") + "</span></div>";
       const checkTable = (title, rows) => '<table class="t-check"><thead><tr><th class="l" colspan="2">' + esc(title) + '</th><th class="yt">Y/T</th></tr></thead><tbody>' + rows.map(
         ([num, item]) => '<tr><td class="num">' + esc(num) + "</td><td>" + esc(item) + '</td><td class="yt"></td></tr>'
       ).join("") + "</tbody></table>";
@@ -356,6 +398,7 @@ var __morbis_feature = (() => {
             id: SID,
             textContent: [
               "/* PRINT: 105x241mm */",
+              "#telaah-resep{display:none!important}",
               ".halaman{box-sizing:border-box;width:105mm!important;height:auto!important;max-height:241mm;margin:0!important;padding:0 3mm}",
               "@page{size:105mm 241mm;margin:0}",
               ".halaman *{box-sizing:border-box;font-size:11px!important}",
