@@ -11,10 +11,12 @@
 
 ### ✨ feat
 
+- **cpptReader** — toggle popup/sidepanel berlaku seketika (tanpa reload) (`7456235`)
 - **cpptReader** — tombol Baca CPPT di detail/edit resep (gabung section Antrian Farmasi) (`095d9c5`)
 
 ### 🐛 fix
 
+- **resepAsliPrint** — scrape obat hanya tabel R/N + gate unit apotek ranap + hide telaah-resep (`9583858`)
 - **resepAsliPrint** — hapus gate isResepAsliAllowed agar redesign selalu jalan di cetak-resep-asli (`8b26482`)
 
 ### 🧹 chore
@@ -2030,4 +2032,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 095d9c545441f92049486e8d7c0aa02a5d408122 -->
+<!-- changelog-upto: 9583858976bd22bce2849a530c9de8029c2a183f -->

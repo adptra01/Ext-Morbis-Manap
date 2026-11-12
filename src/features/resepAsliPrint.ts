@@ -508,17 +508,6 @@ whenFeatureEnabled('resepAsli', function () {
         .join('') +
       '</tr></tbody></table>';
 
-    // Grid lampiran 3 kolom: Srt. Rujuk Balik | Surat Iter | Hasil Lab.
-    const lampiranHtml =
-      '<table class="t-admin t-lampiran">' +
-      '<thead><tr>' +
-      '<th class="c third">Srt. Rujuk Balik</th>' +
-      '<th class="c third">Surat Iter</th>' +
-      '<th class="c third">Hasil Lab</th>' +
-      '</tr></thead><tbody>' +
-      '<tr><td class="blk"></td><td class="blk"></td><td class="blk"></td></tr>' +
-      '</tbody></table>';
-
     const bawahHtml =
       '<table class="t-check">' +
       '<thead>' +
@@ -564,7 +553,6 @@ whenFeatureEnabled('resepAsli', function () {
           '</div></div>'
         : '') +
       adminHtml +
-      lampiranHtml +
       '</section>' +
       '<section class="t-right">' +
       doctorMetaHtml +
@@ -687,7 +675,6 @@ whenFeatureEnabled('resepAsli', function () {
             '.blk2{min-height:10px}',
             '.blk3{min-height:35px}',
             '.blk4{height:40px;padding:.5pt 3px}',
-            '.t-lampiran{margin-top:0}',
             '.t-sub{text-align:center;font-size:10px!important;margin:3px 0}',
             /* Footer */
             '.t-footer{margin-top:10px;text-align:center;font-weight:700;font-style:italic;font-size:11px}',
