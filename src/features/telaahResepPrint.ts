@@ -192,24 +192,22 @@ whenFeatureEnabled('telaahResep', function () {
       }
     }
 
-    // Daftar obat: tabel_penjualan_lama (halaman/transaksi edit) adalah sumber utama.
-    // data-resep-new hanya dipakai untuk menemukan ID_PENJUALAN, lalu fallback bila
-    // tabel edit tidak tersedia.
+    // Daftar obat: resep[] dari data-resep-new adalah sumber utama (urutan
+    // input, satuan = unit dosis). tabel_penjualan_lama (halaman edit) hanya
+    // fallback — server mengurutkannya per no_r lalu nama_barang.
     type ResepItem = Record<string, unknown>;
     type EditRow = Record<string, unknown>;
-    // Nama tampil di halaman edit = nama_barang + kekuatan + sediaan + satuan,
-    // mis. "<nama> <kekuatan>, <sediaan> @<satuan>". Komponen kosong dilewati
-    // beserta pemisahnya (terverifikasi cocok dengan kolom nama_barang_tampil).
+    // Nama tampil = nama_barang + sediaan (title-case). `kekuatan` dibuang
+    // (sudah terkandung di nama_barang) dan `satuan` dibuang — di endpoint edit
+    // kolom itu berisi satuan packing (@BOX), bukan unit dosis.
     function editDisplayName(row: EditRow): string {
       const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
-      let display = str(row.nama_barang);
-      const kekuatan = str(row.kekuatan);
+      const display = str(row.nama_barang);
       const sediaan = str(row.sediaan);
-      const satuan = str(row.satuan);
-      if (kekuatan) display += (display ? ' ' : '') + kekuatan;
-      if (sediaan) display += (display ? ', ' : '') + sediaan;
-      if (satuan) display += (display ? ' @' : '') + satuan;
-      return display;
+      if (!sediaan) return display;
+      const sed = sediaan.charAt(0).toUpperCase() + sediaan.slice(1).toLowerCase();
+      if (display.toLowerCase().includes(sed.toLowerCase())) return display;
+      return display ? display + ', ' + sed : sed;
     }
     function normalizeEditRow(row: EditRow): ResepItem {
       return {
@@ -237,8 +235,13 @@ whenFeatureEnabled('telaahResep', function () {
         if (!resp.ok) return [];
         const payload = (await resp.json()) as EditRow[] | Record<string, EditRow>;
         const rows = Array.isArray(payload) ? payload : Object.values(payload ?? {});
+        // Server mengurutkan no_r lalu nama_barang (bukan urutan input) — sort
+        // ulang pakai id detail resep supaya sama dengan urutan form.
+        const seq = (r: EditRow): number =>
+          Number(r.id_detail_penjualan_resep ?? r.id_detail_penjualan ?? r.ID ?? 0) || 0;
         return rows
           .filter((row): row is EditRow => typeof row === 'object' && row !== null)
+          .sort((a, b) => seq(a) - seq(b))
           .map(normalizeEditRow)
           .filter((item) => String(item.NO_R ?? '').trim() !== '');
       } catch {
@@ -264,12 +267,18 @@ whenFeatureEnabled('telaahResep', function () {
         // dari endpoint ini — scraping HTML mentah selalu kosong).
         const envCatatan = String(envelope?.CATATAN ?? '').trim();
         if (envCatatan !== '') catatan = envCatatan;
+        // Sumber utama: resep[] envelope — sudah urut input (urut ID) dan
+        // SATUAN-nya unit dosis (KAPSUL/TABLET/KAPLET), bukan satuan packing.
+        const envItems = Array.isArray(envelope?.resep) ? envelope.resep : [];
+        if (envItems.some((it) => String(it.JENIS_R ?? '').trim() !== '')) return envItems;
+        // Fallback: tabel_penjualan_lama (halaman edit) — hanya bila envelope
+        // tidak membawa penanda racikan (data lama).
         const penjualanId = String(envelope?.ID_PENJUALAN ?? '').trim();
         if (penjualanId && penjualanId !== '0') {
           const editItems = await fetchEditItems(penjualanId);
           if (editItems.length) return editItems;
         }
-        return Array.isArray(envelope?.resep) ? envelope.resep : [];
+        return envItems;
       } catch {
         return [];
       }
@@ -344,9 +353,14 @@ whenFeatureEnabled('telaahResep', function () {
       }
       for (const [noR, items] of groups) {
         const first = items[0];
+        // Racikan TIDAK ditentukan oleh jumlah bahan: racikan satu bahan tetap
+        // racikan. Penanda dari sistem: JENIS_R/JENIS_RSP, jumlah racikan > 0,
+        // atau sediaan racikan terisi.
         const isRacikan =
           String(first.JENIS_R ?? '').toLowerCase() === 'racikan' ||
-          String(first.JENIS_RSP ?? '').toLowerCase() === 'racikan';
+          String(first.JENIS_RSP ?? '').toLowerCase() === 'racikan' ||
+          Number(first.JUMLAH_RACIKAN ?? 0) > 0 ||
+          String(first.NAMA_RACIKAN ?? '').trim() !== '';
         const sediaanRacikan = String(first.NAMA_RACIKAN ?? '').trim();
         // Aturan: ambil dari ATURAN_PAKAI_MANUAL, buang leading "- "
         const rawAturan = String(first.ATURAN_PAKAI_MANUAL ?? '').trim();
@@ -514,8 +528,8 @@ whenFeatureEnabled('telaahResep', function () {
 
     const medListHtml = meds
       .map((m) => {
-        // Racikan: label "Racikan", tiap bahan "R/N Nama - qty" (pertama) /
-        // "Nama - qty" (indent), lalu "N Racikan - aturan".
+        // Racikan: nomor R/ sekali di bahan pertama, bahan berikut indent,
+        // lalu Embalage sebagai baris barang tersendiri + aturan pakai sekali.
         if (m.subMeds.length) {
           const lines = m.subMeds
             .map((s, i) => {
@@ -533,17 +547,21 @@ whenFeatureEnabled('telaahResep', function () {
               );
             })
             .join('');
-          // "10 Tablet - (3x1)": total + sediaan + aturan (dalam kurung).
-          const total = m.jumlahJadi ? esc(m.jumlahJadi) : '';
-          const satuan = m.sediaan ? esc(m.sediaan) : 'Racikan';
+          // Embalage = barang transaksi (bukan bahan aktif), nomor R/ tidak dipakai.
+          const embalage = m.jumlahJadi
+            ? '<div class="med-line indent">' +
+              '<span class="med-name">Embalage ' +
+              esc(m.sediaan || 'Racikan') +
+              '</span>, <span class="med-jml">Jml: ' +
+              esc(m.jumlahJadi) +
+              '</span></div>'
+            : '';
           const aturan = m.aturan.length
-            ? m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ''))).join(' ')
+            ? '<div class="med-aturan">Aturan pakai: ' +
+              m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ''))).join(' ') +
+              '</div>'
             : '';
-          const jadiTxt = total
-            ? 'Jml ' + total + ' ' + satuan + (aturan ? ' - (' + aturan + ')' : '')
-            : '';
-          const jadi = jadiTxt ? '<div class="med-jadiracik">' + jadiTxt + '</div>' : '';
-          return '<div class="med">' + lines + jadi + '</div>';
+          return '<div class="med">' + lines + embalage + aturan + '</div>';
         }
         // Tunggal: "R/N Nama - qty" + aturan.
         const jml = m.jml || '';
@@ -765,7 +783,6 @@ whenFeatureEnabled('telaahResep', function () {
         .med-sep{color:#374151}
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
-        .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
 
         /* CATATAN resep (dari textarea #catatan halaman detail) */
         .t-catatan{margin-bottom:8px;border:1px solid #f87171;border-radius:4px;padding:4px 6px;background:#fef2f2}

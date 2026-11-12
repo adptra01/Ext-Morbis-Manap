@@ -147,14 +147,12 @@ var __morbis_feature = (() => {
       }
       function editDisplayName(row) {
         const str = (v) => typeof v === "string" ? v.trim() : "";
-        let display = str(row.nama_barang);
-        const kekuatan = str(row.kekuatan);
+        const display = str(row.nama_barang);
         const sediaan = str(row.sediaan);
-        const satuan = str(row.satuan);
-        if (kekuatan) display += (display ? " " : "") + kekuatan;
-        if (sediaan) display += (display ? ", " : "") + sediaan;
-        if (satuan) display += (display ? " @" : "") + satuan;
-        return display;
+        if (!sediaan) return display;
+        const sed = sediaan.charAt(0).toUpperCase() + sediaan.slice(1).toLowerCase();
+        if (display.toLowerCase().includes(sed.toLowerCase())) return display;
+        return display ? display + ", " + sed : sed;
       }
       function normalizeEditRow(row) {
         return {
@@ -181,7 +179,8 @@ var __morbis_feature = (() => {
           if (!resp.ok) return [];
           const payload = await resp.json();
           const rows = Array.isArray(payload) ? payload : Object.values(payload ?? {});
-          return rows.filter((row) => typeof row === "object" && row !== null).map(normalizeEditRow).filter((item) => String(item.NO_R ?? "").trim() !== "");
+          const seq = (r) => Number(r.id_detail_penjualan_resep ?? r.id_detail_penjualan ?? r.ID ?? 0) || 0;
+          return rows.filter((row) => typeof row === "object" && row !== null).sort((a, b) => seq(a) - seq(b)).map(normalizeEditRow).filter((item) => String(item.NO_R ?? "").trim() !== "");
         } catch {
           return [];
         }
@@ -198,12 +197,14 @@ var __morbis_feature = (() => {
           const envelope = await resp.json();
           const envCatatan = String(envelope?.CATATAN ?? "").trim();
           if (envCatatan !== "") catatan = envCatatan;
+          const envItems = Array.isArray(envelope?.resep) ? envelope.resep : [];
+          if (envItems.some((it) => String(it.JENIS_R ?? "").trim() !== "")) return envItems;
           const penjualanId = String(envelope?.ID_PENJUALAN ?? "").trim();
           if (penjualanId && penjualanId !== "0") {
             const editItems = await fetchEditItems(penjualanId);
             if (editItems.length) return editItems;
           }
-          return Array.isArray(envelope?.resep) ? envelope.resep : [];
+          return envItems;
         } catch {
           return [];
         }
@@ -259,7 +260,7 @@ var __morbis_feature = (() => {
         }
         for (const [noR, items] of groups) {
           const first = items[0];
-          const isRacikan = String(first.JENIS_R ?? "").toLowerCase() === "racikan" || String(first.JENIS_RSP ?? "").toLowerCase() === "racikan";
+          const isRacikan = String(first.JENIS_R ?? "").toLowerCase() === "racikan" || String(first.JENIS_RSP ?? "").toLowerCase() === "racikan" || Number(first.JUMLAH_RACIKAN ?? 0) > 0 || String(first.NAMA_RACIKAN ?? "").trim() !== "";
           const sediaanRacikan = String(first.NAMA_RACIKAN ?? "").trim();
           const rawAturan = String(first.ATURAN_PAKAI_MANUAL ?? "").trim();
           const aturanTxt = rawAturan.replace(/^-\s*/, "").trim();
@@ -368,12 +369,9 @@ var __morbis_feature = (() => {
             const jml2 = s.jmlPerR || "";
             return '<div class="med-line' + (i > 0 ? " indent" : "") + '">' + (i === 0 ? '<span class="med-no">' + esc(m.no) + "</span> " : "") + '<span class="med-name">' + esc(s.name) + "</span>" + (jml2 ? ', <span class="med-jml">Jml: ' + esc(jml2) + "</span>" : "") + "</div>";
           }).join("");
-          const total = m.jumlahJadi ? esc(m.jumlahJadi) : "";
-          const satuan = m.sediaan ? esc(m.sediaan) : "Racikan";
-          const aturan = m.aturan.length ? m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ""))).join(" ") : "";
-          const jadiTxt = total ? "Jml " + total + " " + satuan + (aturan ? " - (" + aturan + ")" : "") : "";
-          const jadi = jadiTxt ? '<div class="med-jadiracik">' + jadiTxt + "</div>" : "";
-          return '<div class="med">' + lines + jadi + "</div>";
+          const embalage = m.jumlahJadi ? '<div class="med-line indent"><span class="med-name">Embalage ' + esc(m.sediaan || "Racikan") + '</span>, <span class="med-jml">Jml: ' + esc(m.jumlahJadi) + "</span></div>" : "";
+          const aturan = m.aturan.length ? '<div class="med-aturan">Aturan pakai: ' + m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ""))).join(" ") + "</div>" : "";
+          return '<div class="med">' + lines + embalage + aturan + "</div>";
         }
         const jml = m.jml || "";
         return '<div class="med"><div class="med-line"><span class="med-no">' + esc(m.no) + '</span> <span class="med-name">' + esc(m.name) + "</span>" + (jml ? ', <span class="med-jml">Jml: ' + esc(jml) + "</span>" : "") + "</div>" + (m.aturan.length ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join("<br/>") + "</div>" : "") + "</div>";
@@ -459,7 +457,6 @@ var __morbis_feature = (() => {
         .med-sep{color:#374151}
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
-        .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
 
         /* CATATAN resep (dari textarea #catatan halaman detail) */
         .t-catatan{margin-bottom:8px;border:1px solid #f87171;border-radius:4px;padding:4px 6px;background:#fef2f2}
