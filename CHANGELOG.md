@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **resepAsliPrint** — checklist telaah resep & obat pakai daftar baku (setara telaah) (`73b49fa`)
 - **cpptReader** — toggle popup/sidepanel berlaku seketika (tanpa reload) (`7456235`)
 - **cpptReader** — tombol Baca CPPT di detail/edit resep (gabung section Antrian Farmasi) (`095d9c5`)
 
@@ -18,6 +19,10 @@
 
 - **resepAsliPrint** — scrape obat hanya tabel R/N + gate unit apotek ranap + hide telaah-resep (`9583858`)
 - **resepAsliPrint** — hapus gate isResepAsliAllowed agar redesign selalu jalan di cetak-resep-asli (`8b26482`)
+
+### ♻️ refactor
+
+- **resepAsliPrint** — hapus grid lampiran (Srt. Rujuk Balik | Surat Iter | Hasil Lab) (`da14dc2`)
 
 ### 🧹 chore
 
@@ -2032,4 +2037,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9583858976bd22bce2849a530c9de8029c2a183f -->
+<!-- changelog-upto: 73b49faf3caed7c592207ab58f4a6cefd2f986a1 -->

@@ -439,7 +439,7 @@ var __morbis_feature = (() => {
               ".tm-row{display:grid;grid-template-columns:35% 65%;column-gap:4px;align-items:start}",
               ".tm-card--left .tm-row{grid-template-columns:20% 65%}",
               ".tm-card--right .tm-row{grid-template-columns:30% 65%}",
-              ".tm-label{color:#5b6470;font-size:10px;line-height:1.25;text-align:left}",
+              ".tm-label{color:#198754;font-weight:700;font-size:10px;line-height:1.25;text-align:left}",
               ".tm-val{color:#000;line-height:1.25;word-wrap:break-word;overflow-wrap:anywhere}",
               ".tm-row.long{display:grid}",
               ".tm-row.long .tm-label{display:block}",
