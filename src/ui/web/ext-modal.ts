@@ -171,4 +171,13 @@ export class ExtModal extends HTMLElement {
   }
 }
 
-if (!customElements.get('ext-modal')) customElements.define('ext-modal', ExtModal);
+const ce = (
+  typeof window !== 'undefined' ? window.customElements : null
+) as CustomElementRegistry | null;
+if (ce) {
+  try {
+    if (!ce.get('ext-modal')) ce.define('ext-modal', ExtModal);
+  } catch (e) {
+    console.warn('[MORBIS Ext] gagal registrasi ext-modal:', e);
+  }
+}

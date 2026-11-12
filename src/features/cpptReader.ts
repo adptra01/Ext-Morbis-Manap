@@ -1,308 +1,297 @@
 /**
  * cpptReader — tombol "Baca CPPT" di halaman detail/edit resep.
  *
- * Posisi: fieldset "Antrian Farmasi"-like bar di halaman resep
- * (sama konsep penjualanResepAntrian). Klik → modal berisi isian CPPT
- * pasien (rajal/ranap, auto-detect).
+ * Posisi: menempel di section "Antrian Farmasi" (#ext-antrian-fieldset, dibuat
+ * penjualanResepAntrian) sebagai baris kedua, jadi tidak ikut terhapus saat
+ * bar antrian re-render. Bila section itu tidak ada (mis. penerimaan/detail),
+ * fieldset sendiri dibuat.
  *
- * Role: admin & apotek (gate via background.ts allowedRoles).
+ * Data: AJAX CPPT bawaan MORBIS (bukan scrape halaman penuh):
+ *   rajal → /admisi/pelaksanaan_pelayanan/cppt/table?id_visit=
+ *   ranap → /admisi/detail-rawat-inap/cppt/table?id_visit=
+ *
+ * Modal dibuat dari DOM biasa — `customElements` bernilai null di sebagian
+ * halaman MORBIS, jadi web component tidak bisa diandalkan di sini.
+ *
+ * Role: admin & apotek (allowedRoles di background.ts).
  */
 import { whenFeatureEnabled } from './shared/featureGate.js';
-import '../ui/web/ext-btn';
-import { injectGlobalTokens } from '../ui/web/tokens';
+
+const BAR_ID = 'ext-cppt-bar';
+const BTN_ID = 'ext-cppt-btn';
+const MODAL_ID = 'ext-cppt-modal';
+
+interface CpptRow {
+  waktu: string;
+  subyektif: string;
+  obyektif: string;
+  assessment: string;
+  planning: string;
+  instruksi: string;
+  penginput: string;
+  dpjp: string;
+}
+
+/** id_visit: input hidden halaman dulu, lalu query string. */
+function resolveIdVisit(): string {
+  const fromInput = document.querySelector<HTMLInputElement>('#id_visit')?.value?.trim();
+  if (fromInput) return fromInput;
+  const p = new URLSearchParams(location.search);
+  return p.get('visit') || p.get('id_visit') || p.get('idVisit') || '';
+}
+
+const txt = (el: Element | null | undefined): string =>
+  (el?.textContent || '').replace(/\s+/g, ' ').trim();
+
+/** Parse tabel CPPT dari fragmen HTML; kolom dipetakan lewat judul header. */
+function parseRows(html: string): CpptRow[] {
+  const table = new DOMParser().parseFromString(html, 'text/html').querySelector('table');
+  if (!table) return [];
+
+  const trs = Array.from(table.querySelectorAll('tr'));
+  if (!trs.length) return [];
+
+  const header = trs.find((tr) => tr.querySelector('th')) ?? trs[0];
+  const heads = Array.from(header.querySelectorAll('th, td')).map((c) => txt(c).toLowerCase());
+  const col = (kw: string): number => heads.findIndex((h) => h.includes(kw));
+  const idx = {
+    waktu: col('waktu'),
+    subyektif: col('subyektif'),
+    obyektif: col('obyektif'),
+    assessment: col('assess'),
+    planning: col('planning'),
+    instruksi: col('instruksi'),
+    penginput: col('penginput'),
+    dpjp: col('dpjp'),
+  };
+
+  const rows: CpptRow[] = [];
+  for (const tr of trs) {
+    if (tr === header) continue;
+    const cells = Array.from(tr.querySelectorAll('td'));
+    if (cells.length < 5) continue;
+    const at = (i: number): string => (i >= 0 ? txt(cells[i]) : '');
+    const row: CpptRow = {
+      waktu: at(idx.waktu),
+      subyektif: at(idx.subyektif),
+      obyektif: at(idx.obyektif),
+      assessment: at(idx.assessment),
+      planning: at(idx.planning),
+      instruksi: at(idx.instruksi),
+      penginput: at(idx.penginput),
+      dpjp: at(idx.dpjp),
+    };
+    if (row.waktu || row.subyektif || row.assessment) rows.push(row);
+  }
+  return rows;
+}
+
+const SUMBER: ReadonlyArray<readonly [string, string]> = [
+  ['Rajal', '/admisi/pelaksanaan_pelayanan/cppt/table?id_visit='],
+  ['Ranap', '/admisi/detail-rawat-inap/cppt/table?id_visit='],
+];
+
+/** Ambil CPPT: coba endpoint rajal lalu ranap (sumber yang ada isinya dipakai). */
+async function fetchRows(idVisit: string): Promise<{ rows: CpptRow[]; source: string }> {
+  for (const [label, base] of SUMBER) {
+    try {
+      const resp = await fetch(base + encodeURIComponent(idVisit), { credentials: 'include' });
+      if (!resp.ok) continue;
+      const rows = parseRows(await resp.text());
+      if (rows.length) return { rows, source: label };
+    } catch {
+      /* coba sumber berikutnya */
+    }
+  }
+  return { rows: [], source: '' };
+}
+
+function el(tag: string, css?: string, text?: string): HTMLElement {
+  const node = document.createElement(tag);
+  if (css) node.style.cssText = css;
+  if (text) node.textContent = text;
+  return node;
+}
+
+function showModal(rows: CpptRow[], source: string): void {
+  document.getElementById(MODAL_ID)?.remove();
+
+  const overlay = el(
+    'div',
+    'position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;' +
+      'background:rgba(15,23,42,.55);padding:16px;',
+  );
+  overlay.id = MODAL_ID;
+
+  const card = el(
+    'div',
+    'width:920px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;background:#fff;' +
+      'border-radius:14px;box-shadow:0 20px 50px rgba(16,24,40,.18);font:13px/1.55 system-ui,sans-serif;color:#1c2530;',
+  );
+
+  const header = el(
+    'div',
+    'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #d0d5dd;',
+  );
+  header.appendChild(
+    el(
+      'h3',
+      'margin:0;font-size:17px;font-weight:700;',
+      `Isian CPPT${source ? ' (' + source + ')' : ''}`,
+    ),
+  );
+  const closeBtn = el(
+    'button',
+    'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1;',
+    '×',
+  ) as HTMLButtonElement;
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', 'Tutup');
+  header.appendChild(closeBtn);
+
+  const body = el('div', 'padding:14px 18px;overflow:auto;flex:1;');
+
+  if (!rows.length) {
+    body.appendChild(
+      el('p', 'margin:0;color:#667085;', 'Tidak ada isian CPPT untuk kunjungan ini.'),
+    );
+  }
+  rows.forEach((r, i) => {
+    const item = el(
+      'div',
+      'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;',
+    );
+    item.appendChild(
+      el(
+        'div',
+        'font-weight:700;color:#0f5132;margin-bottom:6px;',
+        `#${i + 1} — ${r.waktu}${r.penginput ? ' · ' + r.penginput : ''}`,
+      ),
+    );
+    const fields: Array<[string, string]> = [
+      ['S', r.subyektif],
+      ['O', r.obyektif],
+      ['A', r.assessment],
+      ['P', r.planning],
+      ['Instruksi', r.instruksi],
+      ['DPJP', r.dpjp],
+    ];
+    for (const [label, value] of fields) {
+      if (!value) continue;
+      item.appendChild(el('div', 'margin-bottom:3px;white-space:pre-wrap;', `${label}: ${value}`));
+    }
+    body.appendChild(item);
+  });
+
+  card.appendChild(header);
+  card.appendChild(body);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  const close = (): void => {
+    document.removeEventListener('keydown', onKey);
+    overlay.remove();
+  };
+  const onKey = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') close();
+  };
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  document.addEventListener('keydown', onKey);
+}
+
+async function onClick(btn: HTMLButtonElement): Promise<void> {
+  const idVisit = resolveIdVisit();
+  if (!idVisit) {
+    alert('[MORBIS Ext] id_visit tidak ditemukan — buka lewat halaman detail resep pasien.');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Memuat…';
+  try {
+    const { rows, source } = await fetchRows(idVisit);
+    showModal(rows, source);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Baca CPPT';
+  }
+}
+
+/** Fieldset sendiri bila section Antrian Farmasi tidak ada di halaman. */
+function ownHost(): HTMLElement | null {
+  if (!document.body) return null;
+  const fieldset = document.createElement('fieldset');
+  fieldset.id = 'ext-cppt-fieldset';
+  fieldset.style.cssText = 'margin-top:6px;';
+  fieldset.innerHTML = '<legend>CPPT</legend>';
+
+  const td = Array.from(document.querySelectorAll<HTMLTableCellElement>('td[valign="top"]')).find(
+    (c) => c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'),
+  );
+  if (td) {
+    td.appendChild(fieldset);
+    return fieldset;
+  }
+  const form = document.querySelector('form');
+  if (form) {
+    form.prepend(fieldset);
+    return fieldset;
+  }
+  const panel = document.querySelector('.card-body, .panel-body, .form-horizontal');
+  if (panel) {
+    panel.prepend(fieldset);
+    return fieldset;
+  }
+  fieldset.style.cssText =
+    'position:fixed;top:60px;right:12px;z-index:9999;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);';
+  document.body.appendChild(fieldset);
+  return fieldset;
+}
+
+function mount(allowOwn: boolean): boolean {
+  if (document.getElementById(BAR_ID)) return true;
+
+  // Dahulukan section Antrian Farmasi (dibuat penjualanResepAntrian, bisa telat
+  // karena config async) — baru buat fieldset sendiri bila memang tak ada.
+  let host = document.getElementById('ext-antrian-fieldset');
+  if (!host) {
+    if (!allowOwn) return false;
+    host = ownHost();
+  }
+  if (!host) return false;
+
+  const row = el('div', 'display:flex;flex-wrap:wrap;align-items:center;margin-top:4px;');
+  row.id = BAR_ID;
+
+  const btn = document.createElement('button');
+  btn.id = BTN_ID;
+  btn.type = 'button';
+  btn.className = 'btn';
+  btn.title = 'Baca isian CPPT pasien (rajal/ranap)';
+  btn.style.cssText = 'margin:2px 6px 2px 0;background:#2193cf;color:#fff;border-color:#2193cf;';
+  btn.textContent = 'Baca CPPT';
+  btn.addEventListener('click', () => void onClick(btn));
+
+  row.appendChild(btn);
+  host.appendChild(row);
+  return true;
+}
 
 whenFeatureEnabled('cpptReader', () => {
-  'use strict';
-
-  const urlParams = new URLSearchParams(location.search);
-  const idVisit =
-    urlParams.get('visit') ||
-    urlParams.get('id_visit') ||
-    document.querySelector<HTMLInputElement>('#id_visit')?.value?.trim() ||
-    '';
-
-  if (!idVisit) return;
-
-  injectGlobalTokens();
-
-  // --- fetch CPPT page & parse ---
-  interface CpptEntry {
-    waktu: string;
-    penginput: string;
-    subyektif: string;
-    obyektif: string;
-    assessment: string;
-    planning: string;
-    instruksi: string;
-  }
-
-  function parseCppt(html: string): CpptEntry[] {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const tables = Array.from(doc.querySelectorAll('table'));
-    const cpptTable = tables.find((t) => {
-      const h = t.querySelector('tr');
-      const txt = (h?.textContent || '').toLowerCase();
-      return txt.includes('subyektif') || txt.includes('assessment') || txt.includes('instruksi');
-    });
-    if (!cpptTable) return [];
-    const rows: CpptEntry[] = [];
-    cpptTable.querySelectorAll('tbody tr, tr').forEach((tr) => {
-      const tds = Array.from(tr.querySelectorAll('td'));
-      if (tds.length < 6) return;
-      // skip header rows
-      if (tds[0].tagName === 'TH') return;
-      const txt = (el: Element | null) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
-      // columns: No, Aksi, Waktu, S, O, A, P, Instruksi, Penginput (aksi col has buttons)
-      // find by index: try 9 cols
-      const vals = tds.map(txt);
-      // skip if first cell is "No" header
-      if (/^no$/i.test(vals[0])) return;
-      const entry: CpptEntry = {
-        waktu: vals[2] || vals[1] || '',
-        penginput: vals[vals.length - 1] || '',
-        subyektif: vals[3] || '',
-        obyektif: vals[4] || '',
-        assessment: vals[5] || '',
-        planning: vals[6] || '',
-        instruksi: vals[7] || '',
-      };
-      if (entry.waktu || entry.subyektif || entry.assessment) rows.push(entry);
-    });
-    return rows;
-  }
-
-  async function fetchCppt(isRanap: boolean): Promise<CpptEntry[]> {
-    const url = isRanap
-      ? '/admisi/detail-rawat-inap/cppt?idVisit=' + encodeURIComponent(idVisit)
-      : '/admisi/pelaksanaan_pelayanan/cppt?id_visit=' + encodeURIComponent(idVisit);
-    try {
-      const resp = await fetch(url, { credentials: 'include', cache: 'no-store' });
-      if (!resp.ok) return [];
-      const html = await resp.text();
-      return parseCppt(html);
-    } catch {
-      return [];
-    }
-  }
-
-  // tentukan rajal/ranap: cek mutasi pasien
-  function isRanap(): boolean {
-    const txt = (document.body?.textContent || '').toUpperCase();
-    // cari "RAWAT INAP" di riwayat mutasi
-    if (/RIWAYAT\s+MUTASI\s+PASIEN[\s\S]*RAWAT\s+INAP/i.test(txt)) return true;
-    if (/UNIT\s+ASAL[\s\S]*RAWAT\s+INAP/i.test(txt)) return true;
-    return false;
-  }
-
-  // --- modal ---
-  function showModal(entries: CpptEntry[], source: string): void {
-    const existing = document.getElementById('ext-cppt-reader-modal');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.id = 'ext-cppt-reader-modal';
-    overlay.style.cssText =
-      'position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);padding:16px;';
-
-    const card = document.createElement('div');
-    card.style.cssText =
-      'width:900px;max-width:100%;max-height:90vh;background:#fff;border-radius:14px;box-shadow:0 20px 50px rgba(16,24,40,.18);overflow:hidden;display:flex;flex-direction:column;font-family:var(--ext-font-family,system-ui);';
-
-    const header = document.createElement('div');
-    header.style.cssText =
-      'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;';
-    header.innerHTML =
-      '<h3 style="margin:0;font-size:17px;font-weight:700;">Isian CPPT Pasien (' +
-      source +
-      ')</h3><button type="button" id="ext-cppt-close" style="border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;">×</button>';
-
-    const body = document.createElement('div');
-    body.style.cssText = 'padding:14px 18px;overflow:auto;flex:1;';
-
-    if (!entries.length) {
-      body.innerHTML = '<p style="color:#667085;">Tidak ada data CPPT.</p>';
-    } else {
-      body.innerHTML = entries
-        .map(
-          (e, i) =>
-            '<div style="border:1px solid #d0d5dd;border-radius:8px;padding:10px;margin-bottom:10px;">' +
-            '<div style="font-weight:700;margin-bottom:6px;color:#00875a;">#' +
-            (i + 1) +
-            ' — ' +
-            esc(e.waktu) +
-            ' <span style="font-weight:400;color:#667085;font-size:12px;">(' +
-            esc(e.penginput) +
-            ')</span></div>' +
-            (e.subyektif
-              ? '<div style="margin-bottom:4px;"><b>S:</b> ' + esc(e.subyektif) + '</div>'
-              : '') +
-            (e.obyektif
-              ? '<div style="margin-bottom:4px;"><b>O:</b> ' + esc(e.obyektif) + '</div>'
-              : '') +
-            (e.assessment
-              ? '<div style="margin-bottom:4px;"><b>A:</b> ' + esc(e.assessment) + '</div>'
-              : '') +
-            (e.planning
-              ? '<div style="margin-bottom:4px;"><b>P:</b> ' + esc(e.planning) + '</div>'
-              : '') +
-            (e.instruksi
-              ? '<div style="margin-bottom:4px;"><b>Instruksi:</b> ' + esc(e.instruksi) + '</div>'
-              : '') +
-            '</div>',
-        )
-        .join('');
-    }
-
-    card.appendChild(header);
-    card.appendChild(body);
-    overlay.appendChild(card);
-    document.body.appendChild(overlay);
-
-    const close = () => overlay.remove();
-    overlay.querySelector('#ext-cppt-close')?.addEventListener('click', close);
-    overlay.addEventListener('click', (ev) => {
-      if (ev.target === overlay) close();
-    });
-  }
-
-  function esc(s: string): string {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  // --- inject button ---
-  function addCpptButton(): void {
-    if (document.getElementById('ext-cppt-btn')) return;
-    const findHost = (): HTMLElement | null => {
-      // coba fieldset perhatian / form / panel
-      const td = Array.from(
-        document.querySelectorAll<HTMLTableCellElement>('td[valign="top"]'),
-      ).find((c) => c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'));
-      if (td) {
-        const fs = document.createElement('fieldset');
-        fs.id = 'ext-cppt-fieldset';
-        fs.style.cssText = 'margin-top:6px;';
-        fs.innerHTML = '<legend>Baca CPPT</legend>';
-        const bar = document.createElement('div');
-        bar.id = 'ext-cppt-bar';
-        bar.style.cssText = 'display:flex;align-items:center;';
-        const btn = document.createElement('button');
-        btn.id = 'ext-cppt-btn';
-        btn.className = 'btn';
-        btn.style.cssText = 'margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;';
-        btn.textContent = 'Baca CPPT';
-        btn.addEventListener('click', onClick);
-        bar.appendChild(btn);
-        fs.appendChild(bar);
-        td.appendChild(fs);
-        return bar;
-      }
-      const form = document.querySelector('form');
-      if (form) {
-        const bar = document.createElement('div');
-        bar.id = 'ext-cppt-bar';
-        bar.style.cssText = 'display:flex;align-items:center;margin:6px 0;';
-        const btn = document.createElement('button');
-        btn.id = 'ext-cppt-btn';
-        btn.type = 'button';
-        btn.className = 'btn';
-        btn.style.cssText = 'background:#2193cf;color:#fff;border-color:#2193cf;';
-        btn.textContent = 'Baca CPPT';
-        btn.addEventListener('click', onClick);
-        bar.appendChild(btn);
-        form.prepend(bar);
-        return bar;
-      }
-      // fallback fixed
-      if (!document.getElementById('ext-cppt-bar')) {
-        const div = document.createElement('div');
-        div.id = 'ext-cppt-fieldset';
-        div.style.cssText =
-          'position:fixed;top:60px;right:12px;z-index:9999;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);';
-        div.innerHTML = '<div id="ext-cppt-bar" style="display:flex;align-items:center;"></div>';
-        document.body.appendChild(div);
-        const bar = div.querySelector('#ext-cppt-bar') as HTMLElement;
-        const btn = document.createElement('button');
-        btn.id = 'ext-cppt-btn';
-        btn.type = 'button';
-        btn.className = 'btn';
-        btn.style.cssText = 'background:#2193cf;color:#fff;border-color:#2193cf;';
-        btn.textContent = 'Baca CPPT';
-        btn.addEventListener('click', onClick);
-        bar.appendChild(btn);
-        return bar;
-      }
-      return null;
-    };
-
-    const tryInject = (): void => {
-      const existing = document.querySelector<HTMLElement>('#ext-cppt-bar');
-      const bar = existing || findHost();
-      if (!bar) return;
-      if (bar.querySelector('#ext-cppt-btn')) return;
-      const btn = document.createElement('button');
-      btn.id = 'ext-cppt-btn';
-      btn.type = 'button';
-      btn.className = 'btn';
-      btn.style.cssText = 'background:#2193cf;color:#fff;border-color:#2193cf;';
-      btn.textContent = 'Baca CPPT';
-      btn.addEventListener('click', onClick);
-      bar.appendChild(btn);
-    };
-
-    async function onClick(): Promise<void> {
-      const btn = document.getElementById('ext-cppt-btn') as HTMLButtonElement | null;
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Memuat...';
-      }
-      const ranap = isRanap();
-      const source = ranap ? 'Ranap' : 'Rajal';
-      let entries = await fetchCppt(ranap);
-      if (!entries.length && !ranap) {
-        // coba ranap sebagai fallback
-        entries = await fetchCppt(true);
-      }
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Baca CPPT';
-      }
-      showModal(entries, source);
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener(
-        'DOMContentLoaded',
-        () => {
-          window.setTimeout(tryInject, 500);
-          window.setTimeout(tryInject, 2000);
-        },
-        { once: true },
-      );
-    } else {
-      window.setTimeout(tryInject, 500);
-      window.setTimeout(tryInject, 2000);
-    }
-  }
-
-  // Gate role: admin & apotek saja (di-handle via background allowedRoles, tapi double-check)
-  // Feature registration
-  const g = (window as unknown as { featureModules?: Record<string, unknown> }).featureModules;
-  if (g) {
-    g.cpptReader = {
-      id: 'cpptReader',
-      name: 'Baca CPPT (Resep)',
-      description: 'Tombol baca isian CPPT pasien di halaman detail/edit resep',
-      match: {
-        oneOf: [
-          { pathname: '/inventory/resep/penerimaan/detail' },
-          { pathname: '/inventory/penjualan-resep-edit/detail' },
-        ],
-      },
-      enabledWhen: () => true,
-      run: () => addCpptButton(),
-    };
+  // Section antrian bisa muncul belakangan (config async) — coba berkala.
+  // 6 tick pertama (~3s) hanya menempel ke section antrian; setelah itu boleh
+  // membuat fieldset sendiri agar fitur tetap jalan saat antrianFarmasi OFF.
+  let attempts = 0;
+  const tick = (): void => {
+    attempts += 1;
+    if (mount(attempts > 6) || attempts >= 20) return;
+    window.setTimeout(tick, 500);
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tick, { once: true });
+  } else {
+    tick();
   }
 });
