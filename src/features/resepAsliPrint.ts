@@ -459,6 +459,29 @@ whenFeatureEnabled('resepAsli', function () {
     };
     const telaahResep = readCheck('Telaah Resep');
     const telaahObat = readCheck('Telaah Obat');
+    // Halaman cetak resep asli tak punya form checklist → pakai daftar baku telaah.
+    if (!telaahResep.length)
+      telaahResep.push(
+        ['1', 'Kejelasan Tulisan'],
+        ['2', 'Benar nama pasien'],
+        ['3', 'Benar nama obat'],
+        ['4', 'Benar dosis'],
+        ['5', 'Benar waktu dan frekuensi pemberian'],
+        ['6', 'Benar aturan minum obat'],
+        ['7', 'Ada atau tidaknya interaksi obat'],
+        ['8', 'Ada atau tidaknya kontraindikasi'],
+        ['9', 'Ada atau tidaknya polifarmasi'],
+        ['10', 'Ada atau tidaknya duplikasi'],
+      );
+    if (!telaahObat.length)
+      telaahObat.push(
+        ['1', 'Benar identitas pasien'],
+        ['2', 'Benar ketepatan obat'],
+        ['3', 'Benar dosis'],
+        ['4', 'Benar rute pemberian'],
+        ['5', 'Benar waktu pemberian'],
+        ['6', 'Kesesuaian obat dengan formularium'],
+      );
 
     // --- Footer ---
     const footerEl = Array.from(page.querySelectorAll('center, strong')).find((el) =>
