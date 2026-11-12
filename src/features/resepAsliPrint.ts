@@ -1,5 +1,4 @@
 import { whenFeatureEnabled } from './shared/featureGate.js';
-import { isResepAsliAllowed } from './shared/unitGate.js';
 whenFeatureEnabled('resepAsli', function () {
   'use strict';
 
@@ -13,8 +12,6 @@ whenFeatureEnabled('resepAsli', function () {
 
     const root = document.querySelector('.halaman');
     if (!root || root.getAttribute(PAGE_GUARD)) return;
-    // Gate: hanya jalan untuk DEPO RANAP atau pasien rawat inap/IGD.
-    if (!isResepAsliAllowed(document)) return;
     const page: Element = root;
     page.setAttribute(PAGE_GUARD, '1');
 

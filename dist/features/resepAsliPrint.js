@@ -32,36 +32,6 @@ var __morbis_feature = (() => {
     });
   }
 
-  // src/features/shared/unitGate.ts
-  function isDepoRanap(doc = document) {
-    const text = (doc.body?.textContent || "").toUpperCase();
-    return text.includes("DEPO RANAP");
-  }
-  function isRawatInapAtauIgd(doc = document) {
-    const metaMap = /* @__PURE__ */ new Map();
-    doc.querySelectorAll("table").forEach((t) => {
-      t.querySelectorAll("tr").forEach((tr) => {
-        const tds = tr.querySelectorAll("td");
-        if (tds.length < 2) return;
-        const label = (tds[0]?.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
-        const value = (tds[1]?.textContent || "").replace(/\s+/g, " ").trim();
-        if (label && !metaMap.has(label)) metaMap.set(label, value);
-      });
-    });
-    const ruangan = (metaMap.get("ruangan") || metaMap.get("ruangan/poli") || "").toUpperCase();
-    const kelas = (metaMap.get("kelas") || metaMap.get("kelas rawat") || "").toUpperCase();
-    const jenis = (metaMap.get("jenis kunjungan") || metaMap.get("jenis") || "").toUpperCase();
-    if (ruangan.includes("IGD") || ruangan.includes("RAWAT INAP")) return true;
-    if (kelas.includes("IGD") || kelas.includes("RAWAT INAP")) return true;
-    if (jenis.includes("RAWAT INAP") || jenis.includes("IGD")) return true;
-    const bodyText = (doc.body?.textContent || "").toUpperCase();
-    if (bodyText.includes("RAWAT INAP") || bodyText.includes("IGD")) return true;
-    return false;
-  }
-  function isResepAsliAllowed(doc = document) {
-    return isDepoRanap(doc) || isRawatInapAtauIgd(doc);
-  }
-
   // src/features/resepAsliPrint.ts
   whenFeatureEnabled("resepAsli", function() {
     "use strict";
@@ -69,7 +39,6 @@ var __morbis_feature = (() => {
       const PAGE_GUARD = "ext-resepAsli-proc";
       const root = document.querySelector(".halaman");
       if (!root || root.getAttribute(PAGE_GUARD)) return;
-      if (!isResepAsliAllowed(document)) return;
       const page = root;
       page.setAttribute(PAGE_GUARD, "1");
       const txt = (el) => (el?.textContent || "").replace(/\s+/g, " ").trim();
