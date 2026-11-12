@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **telaahResepPrint** — urutan, satuan, dan embalage racikan sesuai form (`c10e061`)
 - **resepAsliPrint** — lengkapi obat (aturan pakai) & data pasien/dokter dari detail + density compact (`87c9047`)
 - **resepAsliPrint** — scrape obat hanya tabel R/N + gate unit apotek ranap + hide telaah-resep (`9583858`)
 - **resepAsliPrint** — hapus gate isResepAsliAllowed agar redesign selalu jalan di cetak-resep-asli (`8b26482`)
@@ -27,6 +28,7 @@
 
 ### 🎨 style
 
+- **resepAsliPrint** — samakan tier font dengan telaahResepPrint (`68a2ea5`)
 - **resepAsliPrint** — label metadata pasien & dokter hijau + bold (`3d7f87d`)
 
 ### 🧹 chore
@@ -2042,4 +2044,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 87c9047ee34058e85e29dd43aa39b0c9e4d1092a -->
+<!-- changelog-upto: c10e06170ed2fdc1d5d3c188502b13c7cde6ecd4 -->

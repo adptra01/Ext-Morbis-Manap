@@ -550,7 +550,7 @@ whenFeatureEnabled('telaahResep', function () {
           // Embalage = barang transaksi (bukan bahan aktif), nomor R/ tidak dipakai.
           const embalage = m.jumlahJadi
             ? '<div class="med-line indent">' +
-              '<span class="med-name">Embalage ' +
+              '<span class="med-name">Sediaan Racikan: ' +
               esc(m.sediaan || 'Racikan') +
               '</span>, <span class="med-jml">Jml: ' +
               esc(m.jumlahJadi) +

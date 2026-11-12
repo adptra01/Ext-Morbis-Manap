@@ -369,7 +369,7 @@ var __morbis_feature = (() => {
             const jml2 = s.jmlPerR || "";
             return '<div class="med-line' + (i > 0 ? " indent" : "") + '">' + (i === 0 ? '<span class="med-no">' + esc(m.no) + "</span> " : "") + '<span class="med-name">' + esc(s.name) + "</span>" + (jml2 ? ', <span class="med-jml">Jml: ' + esc(jml2) + "</span>" : "") + "</div>";
           }).join("");
-          const embalage = m.jumlahJadi ? '<div class="med-line indent"><span class="med-name">Embalage ' + esc(m.sediaan || "Racikan") + '</span>, <span class="med-jml">Jml: ' + esc(m.jumlahJadi) + "</span></div>" : "";
+          const embalage = m.jumlahJadi ? '<div class="med-line indent"><span class="med-name">Sediaan Racikan: ' + esc(m.sediaan || "Racikan") + '</span>, <span class="med-jml">Jml: ' + esc(m.jumlahJadi) + "</span></div>" : "";
           const aturan = m.aturan.length ? '<div class="med-aturan">Aturan pakai: ' + m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ""))).join(" ") + "</div>" : "";
           return '<div class="med">' + lines + embalage + aturan + "</div>";
         }
