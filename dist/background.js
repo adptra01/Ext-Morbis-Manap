@@ -382,6 +382,12 @@ var __morbis_bg = (() => {
         name: "Cetak Resep Asli (Rawat Inap)",
         description: "Format ulang halaman cetak resep asli rawat inap - header 3 kolom, metadata pasien+dokter, daftar obat rapi, checklist telaah, adaptive density"
       },
+      cpptReader: {
+        enabled: true,
+        allowedRoles: ["admin", "apotek"],
+        name: "Baca CPPT (Resep)",
+        description: "Tombol baca isian CPPT pasien di halaman detail/edit resep (rajal/ranap)"
+      },
       pindahOperasi: {
         enabled: true,
         allowedRoles: ["admin"],

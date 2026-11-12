@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MORBIS Ext Unofficial",
-  "version": "1.5.207",
+  "version": "1.5.208",
   "minimum_chrome_version": "114",
   "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "adi putra",
@@ -617,6 +617,23 @@
       ],
       "run_at": "document_idle",
       "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://103.147.236.140/inventory/resep/penerimaan/detail*",
+        "http://103.147.236.138/inventory/resep/penerimaan/detail*",
+        "http://192.168.8.4/inventory/resep/penerimaan/detail*",
+        "http://dev.rsudkotajambi.id/inventory/resep/penerimaan/detail*",
+        "http://103.147.236.140/inventory/penjualan-resep-edit/detail*",
+        "http://103.147.236.138/inventory/penjualan-resep-edit/detail*",
+        "http://192.168.8.4/inventory/penjualan-resep-edit/detail*",
+        "http://dev.rsudkotajambi.id/inventory/penjualan-resep-edit/detail*"
+      ],
+      "js": [
+        "features/cpptReader.js"
+      ],
+      "run_at": "document_idle",
       "all_frames": false
     }
   ],

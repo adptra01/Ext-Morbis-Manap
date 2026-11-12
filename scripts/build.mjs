@@ -95,6 +95,7 @@ async function compileFeatureFiles() {
     'mKlaimBulkVerif.ts',
     'mKlaimPrint.ts',
     'visiteKonsul.ts',
+    'cpptReader.ts',
     'fetchWatchdog.ts',
   ];
 

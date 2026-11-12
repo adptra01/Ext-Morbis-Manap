@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-11-12
+
+### 🐛 fix
+
+- **resepAsliPrint** — hapus gate isResepAsliAllowed agar redesign selalu jalan di cetak-resep-asli (`8b26482`)
+
 ## 2026-11-10
 
 ### ✨ feat
@@ -30,6 +36,7 @@
 
 ### 🧹 chore
 
+- hapus fitur igdPukulAutofill (revert) (`dab9ed0`)
 - remove trigger.tmp (`8b4365e`)
 - trigger production deploy (`7c9cc50`)
 - rebuild dist (igdPukulAutofill manifest + sourcemap) (`c627613`)
@@ -2015,4 +2022,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0fed5f4d9cf3f1ffbfa74aee5fe44f7720ae593b -->
+<!-- changelog-upto: 8b2648289bba2a5773dabaf7d4aab9dbc61326f4 -->

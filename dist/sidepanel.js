@@ -1602,6 +1602,12 @@ var FALLBACK_FEATURES = [
 		roles: ["admin", "apotek"]
 	},
 	{
+		key: "cpptReader",
+		name: "Baca CPPT (Resep)",
+		desc: "Tombol baca isian CPPT pasien di detail/edit resep",
+		roles: ["admin", "apotek"]
+	},
+	{
 		key: "ttsServer",
 		name: "Suara Server Cadangan",
 		desc: "Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS.",
