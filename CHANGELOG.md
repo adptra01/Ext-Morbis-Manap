@@ -9,9 +9,17 @@
 
 ## 2026-11-12
 
+### ✨ feat
+
+- **cpptReader** — tombol Baca CPPT di detail/edit resep (gabung section Antrian Farmasi) (`095d9c5`)
+
 ### 🐛 fix
 
 - **resepAsliPrint** — hapus gate isResepAsliAllowed agar redesign selalu jalan di cetak-resep-asli (`8b26482`)
+
+### 🧹 chore
+
+- rebuild dist (resepAsliPrint gate removed) (`b49f862`)
 
 ## 2026-11-10
 
@@ -2022,4 +2030,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 8b2648289bba2a5773dabaf7d4aab9dbc61326f4 -->
+<!-- changelog-upto: 095d9c545441f92049486e8d7c0aa02a5d408122 -->

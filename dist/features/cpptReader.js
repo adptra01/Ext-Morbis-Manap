@@ -135,7 +135,9 @@ var __morbis_feature = (() => {
     header.appendChild(closeBtn);
     const body = el("div", "padding:14px 18px;overflow:auto;flex:1;");
     if (!rows.length) {
-      body.appendChild(el("p", "margin:0;color:#667085;", "Tidak ada isian CPPT untuk kunjungan ini."));
+      body.appendChild(
+        el("p", "margin:0;color:#667085;", "Tidak ada isian CPPT untuk kunjungan ini.")
+      );
     }
     rows.forEach((r, i) => {
       const item = el(
@@ -245,7 +247,7 @@ var __morbis_feature = (() => {
     host.appendChild(row);
     return true;
   }
-  whenFeatureEnabled("cpptReader", () => {
+  function start() {
     let attempts = 0;
     const tick = () => {
       attempts += 1;
@@ -257,6 +259,21 @@ var __morbis_feature = (() => {
     } else {
       tick();
     }
-  });
+  }
+  function stop() {
+    document.getElementById(BAR_ID)?.remove();
+    document.getElementById("ext-cppt-fieldset")?.remove();
+    document.getElementById(MODAL_ID)?.remove();
+  }
+  whenFeatureEnabled("cpptReader", start);
+  try {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "sync" || !changes["extensionConfig"]) return;
+      const cfg = changes["extensionConfig"].newValue;
+      if (decideFeatureGate("cpptReader", cfg)) start();
+      else stop();
+    });
+  } catch {
+  }
 })();
 //# sourceMappingURL=cpptReader.js.map

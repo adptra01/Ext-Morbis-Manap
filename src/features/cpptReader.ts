@@ -15,7 +15,11 @@
  *
  * Role: admin & apotek (allowedRoles di background.ts).
  */
-import { whenFeatureEnabled } from './shared/featureGate.js';
+import {
+  decideFeatureGate,
+  whenFeatureEnabled,
+  type FeatureGateConfig,
+} from './shared/featureGate.js';
 
 const BAR_ID = 'ext-cppt-bar';
 const BTN_ID = 'ext-cppt-btn';
@@ -279,7 +283,7 @@ function mount(allowOwn: boolean): boolean {
   return true;
 }
 
-whenFeatureEnabled('cpptReader', () => {
+function start(): void {
   // Section antrian bisa muncul belakangan (config async) — coba berkala.
   // 6 tick pertama (~3s) hanya menempel ke section antrian; setelah itu boleh
   // membuat fieldset sendiri agar fitur tetap jalan saat antrianFarmasi OFF.
@@ -294,4 +298,24 @@ whenFeatureEnabled('cpptReader', () => {
   } else {
     tick();
   }
-});
+}
+
+function stop(): void {
+  document.getElementById(BAR_ID)?.remove();
+  document.getElementById('ext-cppt-fieldset')?.remove();
+  document.getElementById(MODAL_ID)?.remove();
+}
+
+whenFeatureEnabled('cpptReader', start);
+
+// Toggle di popup/sidepanel berlaku seketika — sidepanel tidak me-reload tab.
+try {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'sync' || !changes['extensionConfig']) return;
+    const cfg = changes['extensionConfig'].newValue as FeatureGateConfig | null | undefined;
+    if (decideFeatureGate('cpptReader', cfg)) start();
+    else stop();
+  });
+} catch {
+  /* page world tanpa chrome.storage — gate di titik injeksi */
+}
