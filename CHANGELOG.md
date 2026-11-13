@@ -16,6 +16,8 @@
 
 ### 🐛 fix
 
+- **pasienRajalCounter** — ambil total dari teks 'Jumlah Total' (bukan hitung <tr> halaman) (`552168b`)
+- **pasienRajalCounter** — kirim X-Requested-With agar endpoint admisi mengembalikan data untuk role apotek (`3738f7d`)
 - **gate** — toggle popup/sidepanel langsung berlaku untuk semua fitur (`3f14f88`)
 
 ## 2026-11-12
@@ -2056,4 +2058,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4a18ec1d6d4b452cd00912c9d51a56a9c476294e -->
+<!-- changelog-upto: 552168b69d84cd357852b958ec5d273848c856a0 -->

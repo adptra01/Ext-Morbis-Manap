@@ -44,6 +44,14 @@ export function countDataRows(html: string): number {
   return rows.filter((r) => /<td[\s>]/i.test(r) && !/colspan/i.test(r)).length;
 }
 
+/** Total baris dari teks "Jumlah Total: N" (lebih andal daripada menghitung
+ *  <tr>, karena tabel hanya menampilkan 1 halaman). Cadangan: hitung <tr>. */
+export function parseTotal(html: string): number {
+  const m = /Jumlah\s+Totals?\s*:\s*(\d+)/i.exec(html);
+  if (m) return parseInt(m[1], 10);
+  return countDataRows(html);
+}
+
 function log(...args: unknown[]): void {
   console.log('[MORBIS Ext]', ...args);
 }
@@ -106,7 +114,7 @@ async function refresh(): Promise<void> {
           headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
         });
         if (!el) return;
-        el.textContent = resp.ok ? String(countDataRows(await resp.text())) : '—';
+        el.textContent = resp.ok ? String(parseTotal(await resp.text())) : '—';
       } catch {
         if (el) el.textContent = '—';
       }

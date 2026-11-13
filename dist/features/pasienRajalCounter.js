@@ -22,7 +22,8 @@ var __morbis_feature = (() => {
   var pasienRajalCounter_exports = {};
   __export(pasienRajalCounter_exports, {
     buildPelaksanaanUrl: () => buildPelaksanaanUrl,
-    countDataRows: () => countDataRows
+    countDataRows: () => countDataRows,
+    parseTotal: () => parseTotal
   });
 
   // src/features/shared/types.ts
@@ -44,6 +45,11 @@ var __morbis_feature = (() => {
   function countDataRows(html) {
     const rows = html.match(/<tr[\s>][\s\S]*?<\/tr>/gi) ?? [];
     return rows.filter((r) => /<td[\s>]/i.test(r) && !/colspan/i.test(r)).length;
+  }
+  function parseTotal(html) {
+    const m = /Jumlah\s+Totals?\s*:\s*(\d+)/i.exec(html);
+    if (m) return parseInt(m[1], 10);
+    return countDataRows(html);
   }
   function log(...args) {
     console.log("[MORBIS Ext]", ...args);
@@ -99,7 +105,7 @@ var __morbis_feature = (() => {
             headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
           });
           if (!el) return;
-          el.textContent = resp.ok ? String(countDataRows(await resp.text())) : "\u2014";
+          el.textContent = resp.ok ? String(parseTotal(await resp.text())) : "\u2014";
         } catch {
           if (el) el.textContent = "\u2014";
         }
