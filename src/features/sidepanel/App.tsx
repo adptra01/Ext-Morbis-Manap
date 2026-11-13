@@ -217,6 +217,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['admin', 'apotek'],
   },
   {
+    key: 'pasienRajalCounter',
+    name: 'Total Pasien Rajal',
+    desc: 'Ringkasan jumlah pasien rajal hari itu di halaman penerimaan resep',
+    roles: ['admin', 'apotek', 'pendaftaran'],
+  },
+  {
     key: 'ttsServer',
     name: 'Suara Server Cadangan',
     desc: 'Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS.',

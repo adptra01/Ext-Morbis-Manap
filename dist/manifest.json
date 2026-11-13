@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MORBIS Ext Unofficial",
-  "version": "1.5.210",
+  "version": "1.5.222",
   "minimum_chrome_version": "114",
   "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "adi putra",
@@ -491,6 +491,7 @@
       ],
       "js": [
         "core.js",
+        "features/pasienRajalCounter.js",
         "init.js"
       ],
       "run_at": "document_end",

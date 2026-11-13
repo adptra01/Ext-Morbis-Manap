@@ -9,6 +9,11 @@
 
 ## 2026-11-13
 
+### ✨ feat
+
+- cpptReader tampilkan riwayat kunjungan + tambah pasienRajalCounter di penerimaan (`9700f5a`)
+- **cpptReader** — tombol Detail Kunjungan di sebelah Baca CPPT (`3844ed7`)
+
 ### 🐛 fix
 
 - **gate** — toggle popup/sidepanel langsung berlaku untuk semua fitur (`3f14f88`)
@@ -2051,4 +2056,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 3f14f88fc303ba1ded7030f4fb2b786c2db5c33e -->
+<!-- changelog-upto: 9700f5a60946ac51d537b8ffd76b5bfa46fd8f01 -->

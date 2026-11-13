@@ -310,6 +310,12 @@ var __morbis_bg = (() => {
         name: "Rekap Penerimaan Resep (Reports SIMRS)",
         description: "Tombol export penerimaan membuka halaman Rekap Penerimaan Resep + Waktu Antrian di Reports SIMRS (filter ter-prefill, export XLSX/CSV di sana)"
       },
+      pasienRajalCounter: {
+        enabled: true,
+        allowedRoles: ["admin", "apotek", "pendaftaran"],
+        name: "Total Pasien Rajal",
+        description: "Ringkasan jumlah pasien rajal hari itu (belum diperiksa / sudah diperiksa / sudah bayar) di halaman penerimaan resep"
+      },
       resumeModal: {
         enabled: true,
         allowedRoles: ["casemix"],
