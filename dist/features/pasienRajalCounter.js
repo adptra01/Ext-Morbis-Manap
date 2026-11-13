@@ -95,7 +95,8 @@ var __morbis_feature = (() => {
         try {
           const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
             credentials: "include",
-            cache: "no-store"
+            cache: "no-store",
+            headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
           });
           if (!el) return;
           el.textContent = resp.ok ? String(countDataRows(await resp.text())) : "\u2014";

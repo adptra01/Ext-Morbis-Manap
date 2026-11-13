@@ -103,6 +103,7 @@ async function refresh(): Promise<void> {
         const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
           credentials: 'include',
           cache: 'no-store',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
         });
         if (!el) return;
         el.textContent = resp.ok ? String(countDataRows(await resp.text())) : '—';

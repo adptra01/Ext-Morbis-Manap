@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- cpptReader tampilkan riwayat kunjungan + tambah pasienRajalCounter di penerimaan (`9700f5a`)
+- cpptReader tampilkan riwayat kunjungan + tambah pasienRajalCounter di penerimaan (`4a18ec1`)
 - **cpptReader** — tombol Detail Kunjungan di sebelah Baca CPPT (`3844ed7`)
 
 ### 🐛 fix
@@ -2056,4 +2056,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9700f5a60946ac51d537b8ffd76b5bfa46fd8f01 -->
+<!-- changelog-upto: 4a18ec1d6d4b452cd00912c9d51a56a9c476294e -->
