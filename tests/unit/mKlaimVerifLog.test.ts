@@ -1,5 +1,30 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { isVerifButton, isBatalVerifButton } from '../../src/features/mKlaimVerifLog.js';
+
+// Regresi kritikal: file ini dulu punya blok auto-run di akhir file (cek
+// pathname saja) sehingga toggle OFF di popup/sidepanel tidak berpengaruh.
+// Sekarang satu-satunya jalan masuk = featureModules (init.ts yang menyaring
+// enabled + isFeatureAllowed). Import di halaman detail TIDAK boleh observe.
+describe('mKlaimVerifLog gate', () => {
+  it('tidak auto-run saat diimpor (wajib lewat featureModules/init.ts)', async () => {
+    const g = globalThis as unknown as Record<string, unknown>;
+    g.location = { pathname: '/v2/m-klaim/detail-v2-refaktor/123' };
+    let made = 0;
+    g.MutationObserver = class {
+      constructor() {
+        made++;
+      }
+      observe() {}
+      disconnect() {}
+    };
+    delete g.featureModules;
+    vi.resetModules();
+    await import('../../src/features/mKlaimVerifLog.js');
+    expect(made).toBe(0);
+    delete g.location;
+    delete g.MutationObserver;
+  });
+});
 
 function fakeEl(props: Record<string, unknown> = {}): HTMLElement {
   return {

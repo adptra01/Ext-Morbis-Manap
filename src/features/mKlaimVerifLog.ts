@@ -289,19 +289,3 @@ if (typeof g.featureModules !== 'undefined') {
     run: initMklaimVerifLog,
   };
 }
-
-// Auto-run if on detail page (dilewati di env non-DOM seperti unit test).
-try {
-  if (
-    typeof window !== 'undefined' &&
-    window.location?.pathname?.includes('/v2/m-klaim/detail-v2-refaktor')
-  ) {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initMklaimVerifLog);
-    } else {
-      initMklaimVerifLog();
-    }
-  }
-} catch {
-  /* non-DOM */
-}

@@ -136,11 +136,18 @@ var __morbis_core = (() => {
     isFeatureAllowed,
     getConfig: () => currentConfig
   };
+  var reloading = false;
+  function reloadForConfigChange(reason) {
+    if (reloading) return;
+    reloading = true;
+    log("Config changed (" + reason + "), reloading...");
+    window.location.reload();
+  }
+  chrome.storage.onChanged.addListener(function(changes, area) {
+    if (area === "sync" && changes["extensionConfig"]) reloadForConfigChange("storage");
+  });
   chrome.runtime.onMessage.addListener(function(message) {
-    if (message.type === "CONFIG_CHANGED") {
-      log("Config changed by background, reloading...");
-      window.location.reload();
-    }
+    if (message.type === "CONFIG_CHANGED") reloadForConfigChange("message");
   });
   var _window = window;
   _window.ExtensionCore = ExtensionCore;

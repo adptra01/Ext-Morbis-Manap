@@ -315,6 +315,7 @@ function overrideCetakEtiket(): void {
 
 function runResepTools(): void {
   if (
+    !g.currentConfig?.extensionEnabled ||
     !g.currentConfig?.features?.resepTools?.enabled ||
     !g.ExtensionCore.isFeatureAllowed('resepTools')
   )

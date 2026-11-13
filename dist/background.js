@@ -469,7 +469,9 @@ var __morbis_bg = (() => {
         return config2;
       }
       const config = migrateConfig(structuredClone(result[STORAGE_KEY]));
-      await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+      if (JSON.stringify(config) !== JSON.stringify(result[STORAGE_KEY])) {
+        await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+      }
       return config;
     } catch (e) {
       log.error("Error loading config:", e);

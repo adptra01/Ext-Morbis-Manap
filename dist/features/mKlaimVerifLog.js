@@ -502,16 +502,6 @@ var __morbis_feature = (() => {
       run: initMklaimVerifLog
     };
   }
-  try {
-    if (typeof window !== "undefined" && window.location?.pathname?.includes("/v2/m-klaim/detail-v2-refaktor")) {
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initMklaimVerifLog);
-      } else {
-        initMklaimVerifLog();
-      }
-    }
-  } catch {
-  }
   return __toCommonJS(mKlaimVerifLog_exports);
 })();
 //# sourceMappingURL=mKlaimVerifLog.js.map

@@ -468,7 +468,12 @@ async function loadConfig(): Promise<ExtensionConfig> {
       return config;
     }
     const config = migrateConfig(structuredClone(result[STORAGE_KEY]));
-    await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+    // Tulis HANYA bila migrasi benar-benar mengubah sesuatu. Tanpa guard ini
+    // setiap GET_CONFIG (setiap page load) menulis ke storage.sync → content
+    // script melihat storage.onChanged → reload → GET_CONFIG lagi → loop.
+    if (JSON.stringify(config) !== JSON.stringify(result[STORAGE_KEY])) {
+      await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+    }
     return config;
   } catch (e) {
     log.error('Error loading config:', e);

@@ -129,11 +129,27 @@ export const ExtensionCore = {
   getConfig: (): ExtensionConfig | null => currentConfig,
 };
 
+// Toggle fitur & role harus langsung berlaku — semua fitur membaca config
+// sekali saat load (init.ts set atribut data-ext-* sekali, featureModules
+// dijalankan sekali). Jadi satu-satunya cara konsisten: reload.
+// Dua sumber, satu eksekusi (guard `reloading`):
+//   1. chrome.storage.onChanged — jalan di SEMUA tab, termasuk saat toggle
+//      dari sidepanel (background dulu hanya kirim ke tab ber-URL cocok).
+//   2. pesan CONFIG_CHANGED dari background — fallback lama, dipertahankan.
+let reloading = false;
+function reloadForConfigChange(reason: string): void {
+  if (reloading) return;
+  reloading = true;
+  log('Config changed (' + reason + '), reloading...');
+  window.location.reload();
+}
+
+chrome.storage.onChanged.addListener(function (changes, area) {
+  if (area === 'sync' && changes['extensionConfig']) reloadForConfigChange('storage');
+});
+
 chrome.runtime.onMessage.addListener(function (message: MessagePayload) {
-  if (message.type === 'CONFIG_CHANGED') {
-    log('Config changed by background, reloading...');
-    window.location.reload();
-  }
+  if (message.type === 'CONFIG_CHANGED') reloadForConfigChange('message');
 });
 
 // Expose shared globals on window for feature modules & init (esbuild wraps in IIFE)

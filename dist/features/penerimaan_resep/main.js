@@ -316,7 +316,7 @@ var __morbis_feature = (() => {
     log("Resep Tools: cetak_etiket overridden");
   }
   function runResepTools() {
-    if (!g.currentConfig?.features?.resepTools?.enabled || !g.ExtensionCore.isFeatureAllowed("resepTools"))
+    if (!g.currentConfig?.extensionEnabled || !g.currentConfig?.features?.resepTools?.enabled || !g.ExtensionCore.isFeatureAllowed("resepTools"))
       return;
     log("Resep Tools: starting all sub-features");
     attachAturanValidators();
