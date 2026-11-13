@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-11-13
+
+### 🐛 fix
+
+- **gate** — toggle popup/sidepanel langsung berlaku untuk semua fitur (`3f14f88`)
+
 ## 2026-11-12
 
 ### ✨ feat
@@ -28,6 +34,7 @@
 
 ### 🎨 style
 
+- **telaahResepPrint** — label Embalage -> Sediaan Racikan (`da8163f`)
 - **resepAsliPrint** — samakan tier font dengan telaahResepPrint (`68a2ea5`)
 - **resepAsliPrint** — label metadata pasien & dokter hijau + bold (`3d7f87d`)
 
@@ -2044,4 +2051,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c10e06170ed2fdc1d5d3c188502b13c7cde6ecd4 -->
+<!-- changelog-upto: 3f14f88fc303ba1ded7030f4fb2b786c2db5c33e -->

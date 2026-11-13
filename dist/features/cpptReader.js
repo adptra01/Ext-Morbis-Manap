@@ -1,5 +1,29 @@
 "use strict";
 var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/cpptReader.ts
+  var cpptReader_exports = {};
+  __export(cpptReader_exports, {
+    buildVisitUrl: () => buildVisitUrl
+  });
+
   // src/features/shared/featureGate.ts
   var STORAGE_KEY = "extensionConfig";
   function decideFeatureGate(key, config, role) {
@@ -36,6 +60,7 @@ var __morbis_feature = (() => {
   var BAR_ID = "ext-cppt-bar";
   var BTN_ID = "ext-cppt-btn";
   var MODAL_ID = "ext-cppt-modal";
+  var LINK_ID = "ext-visit-link";
   function resolveIdVisit() {
     const fromInput = document.querySelector("#id_visit")?.value?.trim();
     if (fromInput) return fromInput;
@@ -244,8 +269,59 @@ var __morbis_feature = (() => {
     btn.textContent = "Baca CPPT";
     btn.addEventListener("click", () => void onClick(btn));
     row.appendChild(btn);
+    row.appendChild(visitLink());
     host.appendChild(row);
     return true;
+  }
+  function visitLink() {
+    const a = document.createElement("a");
+    a.id = LINK_ID;
+    a.className = "btn";
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.title = "Buka detail kunjungan pasien (rajal/ranap)";
+    a.style.cssText = "margin:2px 6px 2px 0;background:#0f766e;color:#fff;border-color:#0f766e;display:none;";
+    a.textContent = "Detail Kunjungan";
+    void resolveVisitUrl().then((url) => {
+      if (!url) return;
+      a.href = url;
+      a.style.display = "";
+    });
+    return a;
+  }
+  async function resolveVisitUrl() {
+    const idResep = document.querySelector("#id_resep")?.value?.trim() || new URLSearchParams(location.search).get("id") || "";
+    let idVisit = resolveIdVisit();
+    let idKunjungan = "";
+    let depo = "";
+    try {
+      const resp = await fetch(
+        "/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=" + encodeURIComponent(idResep),
+        { credentials: "include", cache: "no-store" }
+      );
+      if (resp.ok) {
+        const env = await resp.json();
+        const pick = (k) => String(env[k] ?? "").trim();
+        idVisit = pick("ID_VISIT") || pick("id_visit") || idVisit;
+        idKunjungan = pick("ID_KUNJUNGAN") || pick("id_kunjungan");
+        depo = pick("UNIT_TUJUAN_DEPO");
+      }
+    } catch {
+    }
+    if (!idVisit) return "";
+    return buildVisitUrl(depo, idVisit, idKunjungan);
+  }
+  function buildVisitUrl(depo, idVisit, idKunjungan) {
+    if (!idVisit) return "";
+    const p = (k, v) => k + "=" + encodeURIComponent(v);
+    if (/RAJAL/i.test(depo) || !depo) {
+      return "/admisi/pelaksanaan_pelayanan/billing_pasien?" + [
+        p("id_visit", idVisit),
+        "status_periksa=belum",
+        idKunjungan ? p("id_kunjungan", idKunjungan) : ""
+      ].filter(Boolean).join("&");
+    }
+    return "/admisi/detail-rawat-inap/cppt?" + p("idVisit", idVisit);
   }
   function start() {
     let attempts = 0;
@@ -275,5 +351,6 @@ var __morbis_feature = (() => {
     });
   } catch {
   }
+  return __toCommonJS(cpptReader_exports);
 })();
 //# sourceMappingURL=cpptReader.js.map

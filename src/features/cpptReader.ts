@@ -24,6 +24,7 @@ import {
 const BAR_ID = 'ext-cppt-bar';
 const BTN_ID = 'ext-cppt-btn';
 const MODAL_ID = 'ext-cppt-modal';
+const LINK_ID = 'ext-visit-link';
 
 interface CpptRow {
   waktu: string;
@@ -279,8 +280,81 @@ function mount(allowOwn: boolean): boolean {
   btn.addEventListener('click', () => void onClick(btn));
 
   row.appendChild(btn);
+  row.appendChild(visitLink());
   host.appendChild(row);
   return true;
+}
+
+/** Tombol "Detail Kunjungan" — tautan ke halaman pelaksanaan pasien:
+ *  rajal → /admisi/pelaksanaan_pelayanan/billing_pasien
+ *  ranap → /admisi/detail-rawat-inap/cppt
+ *  URL di-resolve sekali saat mount (butuh ID_KUNJUNGAN + depo dari envelope
+ *  data-resep-new), jadi klik = navigasi biasa (tanpa window.open). */
+function visitLink(): HTMLAnchorElement {
+  const a = document.createElement('a');
+  a.id = LINK_ID;
+  a.className = 'btn';
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.title = 'Buka detail kunjungan pasien (rajal/ranap)';
+  a.style.cssText =
+    'margin:2px 6px 2px 0;background:#0f766e;color:#fff;border-color:#0f766e;display:none;';
+  a.textContent = 'Detail Kunjungan';
+  void resolveVisitUrl().then((url) => {
+    if (!url) return; // id_visit/depo tak ketemu — tombol tidak ditampilkan
+    a.href = url;
+    a.style.display = '';
+  });
+  return a;
+}
+
+async function resolveVisitUrl(): Promise<string> {
+  const idResep =
+    document.querySelector<HTMLInputElement>('#id_resep')?.value?.trim() ||
+    new URLSearchParams(location.search).get('id') ||
+    '';
+  let idVisit = resolveIdVisit();
+  let idKunjungan = '';
+  let depo = '';
+  try {
+    const resp = await fetch(
+      '/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=' +
+        encodeURIComponent(idResep),
+      { credentials: 'include', cache: 'no-store' },
+    );
+    if (resp.ok) {
+      const env = (await resp.json()) as Record<string, unknown>;
+      const pick = (k: string): string => String(env[k] ?? '').trim();
+      idVisit = pick('ID_VISIT') || pick('id_visit') || idVisit;
+      idKunjungan = pick('ID_KUNJUNGAN') || pick('id_kunjungan');
+      depo = pick('UNIT_TUJUAN_DEPO');
+    }
+  } catch {
+    /* fallback: id_visit dari DOM, anggap rajal */
+  }
+  if (!idVisit) return '';
+  return buildVisitUrl(depo, idVisit, idKunjungan);
+}
+
+/** URL halaman pelaksanaan pasien. Depo rajal satu-satunya penanda "rawat
+ *  jalan" yang tegas; depo lain (RANAP/IGD/CATHLAB/Pdp/OK) = halaman ranap.
+ *  Depo kosong → anggap rajal (mayoritas resep). */
+export function buildVisitUrl(depo: string, idVisit: string, idKunjungan: string): string {
+  if (!idVisit) return '';
+  const p = (k: string, v: string): string => k + '=' + encodeURIComponent(v);
+  if (/RAJAL/i.test(depo) || !depo) {
+    return (
+      '/admisi/pelaksanaan_pelayanan/billing_pasien?' +
+      [
+        p('id_visit', idVisit),
+        'status_periksa=belum',
+        idKunjungan ? p('id_kunjungan', idKunjungan) : '',
+      ]
+        .filter(Boolean)
+        .join('&')
+    );
+  }
+  return '/admisi/detail-rawat-inap/cppt?' + p('idVisit', idVisit);
 }
 
 function start(): void {
