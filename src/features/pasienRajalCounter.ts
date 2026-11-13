@@ -137,18 +137,6 @@ function makeHost(): HTMLElement | null {
     box.appendChild(cap);
     row.appendChild(box);
   }
-  // Box tambahan: pasien dengan resep (kolom Status Kunjungan memuat RESEP).
-  const boxR = document.createElement('div');
-  const numR = document.createElement('div');
-  numR.id = HOST_ID + '-resep';
-  numR.style.cssText = 'font-size:20px;font-weight:700;line-height:1.1;';
-  numR.textContent = '…';
-  const capR = document.createElement('div');
-  capR.style.cssText = 'font-size:11px;color:#667085;';
-  capR.textContent = 'Dengan Resep';
-  boxR.appendChild(numR);
-  boxR.appendChild(capR);
-  row.appendChild(boxR);
   fs.appendChild(row);
   td.appendChild(fs);
   return fs;
@@ -193,10 +181,10 @@ async function refresh(): Promise<void> {
     const el = document.getElementById(HOST_ID + '-' + key);
     if (el) el.textContent = '…';
   }
-  let resepTotal = 0;
   await Promise.all(
     STATUS.map(async ([key]) => {
       const el = document.getElementById(HOST_ID + '-' + key);
+      let resepCount = 0;
       try {
         // Halaman 1 → total + hitung resep.
         let html = '';
@@ -211,7 +199,7 @@ async function refresh(): Promise<void> {
         }
         html = await resp.text();
         if (el) el.textContent = String(parseTotal(html));
-        resepTotal += countResepRows(html);
+        resepCount += countResepRows(html);
 
         // Lanjut halaman berikutnya untuk menghitung resep di semua halaman.
         let page = 2;
@@ -224,25 +212,20 @@ async function refresh(): Promise<void> {
           });
           if (!r2.ok) break;
           html = await r2.text();
-          resepTotal += countResepRows(html);
+          resepCount += countResepRows(html);
           if (!hasNextRajalPage(html)) break;
           page += 1;
+        }
+
+        if (el) {
+          el.title = 'Pasien dengan resep: ' + resepCount;
+          el.style.cursor = 'help';
         }
       } catch {
         if (el) el.textContent = '—';
       }
     }),
   );
-
-  // Tooltip hover: tampilkan jumlah pasien dengan resep (seluruh status).
-  const numR = document.getElementById(HOST_ID + '-resep');
-  if (numR) {
-    numR.textContent = String(resepTotal);
-    numR.title = 'Total pasien dengan resep: ' + resepTotal;
-    numR.style.cursor = 'help';
-  }
-  const fs = document.getElementById(HOST_ID);
-  if (fs) fs.title = 'Pasien dengan resep di Status Kunjungan: ' + resepTotal;
 
   // Ranap: 30 hari ke belakang s.d. hari ini (mirror default halaman ranap).
   const d0 = new Date();

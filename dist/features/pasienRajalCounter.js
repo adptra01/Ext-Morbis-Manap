@@ -109,17 +109,6 @@ var __morbis_feature = (() => {
       box.appendChild(cap);
       row.appendChild(box);
     }
-    const boxR = document.createElement("div");
-    const numR = document.createElement("div");
-    numR.id = HOST_ID + "-resep";
-    numR.style.cssText = "font-size:20px;font-weight:700;line-height:1.1;";
-    numR.textContent = "\u2026";
-    const capR = document.createElement("div");
-    capR.style.cssText = "font-size:11px;color:#667085;";
-    capR.textContent = "Dengan Resep";
-    boxR.appendChild(numR);
-    boxR.appendChild(capR);
-    row.appendChild(boxR);
     fs.appendChild(row);
     td.appendChild(fs);
     return fs;
@@ -159,10 +148,10 @@ var __morbis_feature = (() => {
       const el = document.getElementById(HOST_ID + "-" + key);
       if (el) el.textContent = "\u2026";
     }
-    let resepTotal = 0;
     await Promise.all(
       STATUS.map(async ([key]) => {
         const el = document.getElementById(HOST_ID + "-" + key);
+        let resepCount = 0;
         try {
           let html = "";
           const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
@@ -176,7 +165,7 @@ var __morbis_feature = (() => {
           }
           html = await resp.text();
           if (el) el.textContent = String(parseTotal(html));
-          resepTotal += countResepRows(html);
+          resepCount += countResepRows(html);
           let page = 2;
           while (hasNextRajalPage(html) && page <= 20) {
             const nextUrl = buildPelaksanaanUrl(key, ds, de) + "&page=" + page;
@@ -187,23 +176,19 @@ var __morbis_feature = (() => {
             });
             if (!r2.ok) break;
             html = await r2.text();
-            resepTotal += countResepRows(html);
+            resepCount += countResepRows(html);
             if (!hasNextRajalPage(html)) break;
             page += 1;
+          }
+          if (el) {
+            el.title = "Pasien dengan resep: " + resepCount;
+            el.style.cursor = "help";
           }
         } catch {
           if (el) el.textContent = "\u2014";
         }
       })
     );
-    const numR = document.getElementById(HOST_ID + "-resep");
-    if (numR) {
-      numR.textContent = String(resepTotal);
-      numR.title = "Total pasien dengan resep: " + resepTotal;
-      numR.style.cursor = "help";
-    }
-    const fs = document.getElementById(HOST_ID);
-    if (fs) fs.title = "Pasien dengan resep di Status Kunjungan: " + resepTotal;
     const d0 = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const tgl2 = `${pad(d0.getDate())}/${pad(d0.getMonth() + 1)}/${d0.getFullYear()}`;

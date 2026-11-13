@@ -18,6 +18,8 @@
 
 ### 🐛 fix
 
+- **pasienRajalCounter** — tooltip per angka (belum/selesai/bayar) tampilkan jumlah dengan resep (`46a9c43`)
+- **pasienRajalCounter** — tooltip hover pada angka Dengan Resep (`02ea8aa`)
 - **pasienRajalCounter** — ambil total dari teks 'Jumlah Total' (bukan hitung <tr> halaman) (`6d313b9`)
 - **pasienRajalCounter** — kirim X-Requested-With agar endpoint admisi mengembalikan data untuk role apotek (`3738f7d`)
 - **gate** — toggle popup/sidepanel langsung berlaku untuk semua fitur (`3f14f88`)
@@ -2060,4 +2062,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9b680077dbc59eb2df0dc2e42b40770e8573d761 -->
+<!-- changelog-upto: 46a9c434a925a686e1a238434da99ac2703cbded -->
