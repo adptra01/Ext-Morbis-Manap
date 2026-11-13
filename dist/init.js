@@ -183,12 +183,6 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-pa-print");
     }
-    const hideTelaahCfg = cfg?.features?.hideTelaahDepoRanap;
-    if (hideTelaahCfg?.enabled && window.ExtensionCore.isFeatureAllowed("hideTelaahDepoRanap")) {
-      document.documentElement.setAttribute("data-ext-hide-telaah", "1");
-    } else {
-      document.documentElement.removeAttribute("data-ext-hide-telaah");
-    }
     const ctx = {
       pathname: normalizePath(window.location.pathname),
       url: new URL(window.location.href),

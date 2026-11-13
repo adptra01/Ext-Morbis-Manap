@@ -25,8 +25,13 @@
 - **pasienRajalCounter** — kirim X-Requested-With agar endpoint admisi mengembalikan data untuk role apotek (`3738f7d`)
 - **gate** — toggle popup/sidepanel langsung berlaku untuk semua fitur (`3f14f88`)
 
+### 🔙 revert
+
+- **pasienRajalCounter** — kembalikan layout fieldset bertumpuk (seperti semula) (`f0308bb`)
+
 ### 🎨 style
 
+- **pasienRajalCounter** — flex sejajar, wrap jika sempit (`3be0af1`)
 - **pasienRajalCounter** — rajal & ranap sejajar 2 kolom grid (`8512cb6`)
 
 ## 2026-11-12
@@ -2067,4 +2072,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 8512cb6320d60f562646210403734980644c1187 -->
+<!-- changelog-upto: f0308bb10146e1869bc5721c69ccb25e02b4489a -->

@@ -229,8 +229,7 @@
       ],
       "js": [
         "features/resumeTab.js",
-        "features/resumeRanapTab.js",
-        "features/hideTelaahDepoRanap.js"
+        "features/resumeRanapTab.js"
       ],
       "run_at": "document_idle",
       "world": "MAIN",

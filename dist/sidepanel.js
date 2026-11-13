@@ -1608,6 +1608,12 @@ var FALLBACK_FEATURES = [
 		roles: ["admin", "apotek"]
 	},
 	{
+		key: "detailKunjungan",
+		name: "Detail Kunjungan (Resep)",
+		desc: "Tombol Detail Kunjungan di sebelah Baca CPPT di detail/edit resep",
+		roles: ["admin", "apotek"]
+	},
+	{
 		key: "pasienRajalCounter",
 		name: "Total Pasien Rajal",
 		desc: "Ringkasan jumlah pasien rajal hari itu di halaman penerimaan resep",
@@ -1622,12 +1628,6 @@ var FALLBACK_FEATURES = [
 		name: "Suara Server Cadangan",
 		desc: "Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS.",
 		roles: ["apotek", "admin"]
-	},
-	{
-		key: "hideTelaahDepoRanap",
-		name: "Sembunyikan Telaah Resep (Depo Ranap)",
-		desc: "Sembunyikan section checklist telaah resep di halaman detail untuk unit DEPO RANAP",
-		roles: ["admin", "apotek"]
 	},
 	{
 		key: "visiteKonsul",

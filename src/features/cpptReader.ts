@@ -510,7 +510,7 @@ function mount(allowOwn: boolean): boolean {
   btn.addEventListener('click', () => void onClick(btn));
 
   row.appendChild(btn);
-  row.appendChild(visitLink());
+  if (isDetailKunjunganEnabled()) row.appendChild(visitLink());
   host.appendChild(row);
   return true;
 }
@@ -570,6 +570,19 @@ export function buildVisitUrl(depo: string, idVisit: string, idKunjungan: string
   return '/admisi/detail-rawat-inap/cppt?' + p('idVisit', idVisit);
 }
 
+/** Cek toggle fitur Detail Kunjungan. */
+function isDetailKunjunganEnabled(): boolean {
+  const g = (window as unknown as { ExtensionCore?: { isFeatureAllowed?: (k: string) => boolean } })
+    .ExtensionCore;
+  const cfg = (
+    window as unknown as { currentConfig?: { features?: Record<string, { enabled?: boolean }> } }
+  ).currentConfig;
+  const f = cfg?.features?.detailKunjungan;
+  if (f && f.enabled === false) return false;
+  if (g?.isFeatureAllowed && !g.isFeatureAllowed('detailKunjungan')) return false;
+  return true;
+}
+
 function start(): void {
   // Section antrian bisa muncul belakangan (config async) — coba berkala.
   // 6 tick pertama (~3s) hanya menempel ke section antrian; setelah itu boleh
@@ -605,4 +618,26 @@ try {
   });
 } catch {
   /* page world tanpa chrome.storage — gate di titik injeksi */
+}
+
+// Toggle Detail Kunjungan berlaku seketika — tampilkan/sembunyikan tautan.
+try {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'sync' || !changes['extensionConfig']) return;
+    const cfg = changes['extensionConfig'].newValue as FeatureGateConfig | null | undefined;
+    const on = decideFeatureGate('detailKunjungan', cfg);
+    const link = document.getElementById(LINK_ID) as HTMLAnchorElement | null;
+    if (on) {
+      if (!link) {
+        const bar = document.getElementById(BAR_ID);
+        if (bar) bar.appendChild(visitLink());
+      } else {
+        link.style.display = link.getAttribute('href') ? '' : 'none';
+      }
+    } else if (link) {
+      link.style.display = 'none';
+    }
+  });
+} catch {
+  /* page world tanpa chrome.storage */
 }

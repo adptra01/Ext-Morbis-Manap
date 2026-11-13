@@ -371,18 +371,17 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Baca CPPT (Resep)',
       description: 'Tombol baca isian CPPT pasien di halaman detail/edit resep (rajal/ranap)',
     },
+    detailKunjungan: {
+      enabled: true,
+      allowedRoles: ['admin', 'apotek'],
+      name: 'Detail Kunjungan (Resep)',
+      description: 'Tombol Detail Kunjungan di sebelah Baca CPPT di halaman detail/edit resep',
+    },
     pindahOperasi: {
       enabled: true,
       allowedRoles: ['admin'],
       name: 'Pindah Operasi',
       description: 'Tombol pindah data operasi ke visit/kunjungan lain di halaman edit operasi',
-    },
-    hideTelaahDepoRanap: {
-      enabled: true,
-      allowedRoles: ['admin', 'apotek'],
-      name: 'Sembunyikan Telaah Resep (Depo Ranap)',
-      description:
-        'Sembunyikan section checklist telaah resep di halaman detail untuk unit DEPO RANAP',
     },
     visiteKonsul: {
       enabled: true,

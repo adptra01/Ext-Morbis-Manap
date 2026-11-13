@@ -408,7 +408,7 @@ var __morbis_feature = (() => {
     btn.textContent = "Baca CPPT";
     btn.addEventListener("click", () => void onClick(btn));
     row.appendChild(btn);
-    row.appendChild(visitLink());
+    if (isDetailKunjunganEnabled()) row.appendChild(visitLink());
     host.appendChild(row);
     return true;
   }
@@ -450,6 +450,14 @@ var __morbis_feature = (() => {
     }
     return "/admisi/detail-rawat-inap/cppt?" + p("idVisit", idVisit);
   }
+  function isDetailKunjunganEnabled() {
+    const g = window.ExtensionCore;
+    const cfg = window.currentConfig;
+    const f = cfg?.features?.detailKunjungan;
+    if (f && f.enabled === false) return false;
+    if (g?.isFeatureAllowed && !g.isFeatureAllowed("detailKunjungan")) return false;
+    return true;
+  }
   function start() {
     let attempts = 0;
     const tick = () => {
@@ -475,6 +483,25 @@ var __morbis_feature = (() => {
       const cfg = changes["extensionConfig"].newValue;
       if (decideFeatureGate("cpptReader", cfg)) start();
       else stop();
+    });
+  } catch {
+  }
+  try {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "sync" || !changes["extensionConfig"]) return;
+      const cfg = changes["extensionConfig"].newValue;
+      const on = decideFeatureGate("detailKunjungan", cfg);
+      const link = document.getElementById(LINK_ID);
+      if (on) {
+        if (!link) {
+          const bar = document.getElementById(BAR_ID);
+          if (bar) bar.appendChild(visitLink());
+        } else {
+          link.style.display = link.getAttribute("href") ? "" : "none";
+        }
+      } else if (link) {
+        link.style.display = "none";
+      }
     });
   } catch {
   }
