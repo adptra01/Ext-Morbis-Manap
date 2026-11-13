@@ -197,7 +197,11 @@ var __morbis_feature = (() => {
       })
     );
     const numR = document.getElementById(HOST_ID + "-resep");
-    if (numR) numR.textContent = String(resepTotal);
+    if (numR) {
+      numR.textContent = String(resepTotal);
+      numR.title = "Total pasien dengan resep: " + resepTotal;
+      numR.style.cursor = "help";
+    }
     const fs = document.getElementById(HOST_ID);
     if (fs) fs.title = "Pasien dengan resep di Status Kunjungan: " + resepTotal;
     const d0 = /* @__PURE__ */ new Date();

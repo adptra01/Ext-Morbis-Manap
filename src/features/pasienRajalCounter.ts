@@ -236,7 +236,11 @@ async function refresh(): Promise<void> {
 
   // Tooltip hover: tampilkan jumlah pasien dengan resep (seluruh status).
   const numR = document.getElementById(HOST_ID + '-resep');
-  if (numR) numR.textContent = String(resepTotal);
+  if (numR) {
+    numR.textContent = String(resepTotal);
+    numR.title = 'Total pasien dengan resep: ' + resepTotal;
+    numR.style.cursor = 'help';
+  }
   const fs = document.getElementById(HOST_ID);
   if (fs) fs.title = 'Pasien dengan resep di Status Kunjungan: ' + resepTotal;
 
