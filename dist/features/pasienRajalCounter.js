@@ -88,6 +88,13 @@ var __morbis_feature = (() => {
   function makeHost() {
     const td = document.querySelector("form#searchTable td");
     if (!td) return null;
+    let wrap = document.getElementById("ext-pasien-counter-wrap");
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.id = "ext-pasien-counter-wrap";
+      wrap.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;";
+      td.appendChild(wrap);
+    }
     const fs = document.createElement("fieldset");
     fs.id = HOST_ID;
     fs.className = "field-group";
@@ -110,13 +117,20 @@ var __morbis_feature = (() => {
       row.appendChild(box);
     }
     fs.appendChild(row);
-    td.appendChild(fs);
+    wrap.appendChild(fs);
     return fs;
   }
   function makeRanapHost() {
     const td = document.querySelector("form#searchTable td");
     if (!td) return null;
     if (document.getElementById(HOST_ID_RANAP)) return document.getElementById(HOST_ID_RANAP);
+    let wrap = document.getElementById("ext-pasien-counter-wrap");
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.id = "ext-pasien-counter-wrap";
+      wrap.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;";
+      td.appendChild(wrap);
+    }
     const fs = document.createElement("fieldset");
     fs.id = HOST_ID_RANAP;
     fs.className = "field-group";
@@ -139,7 +153,7 @@ var __morbis_feature = (() => {
       row.appendChild(box);
     }
     fs.appendChild(row);
-    td.appendChild(fs);
+    wrap.appendChild(fs);
     return fs;
   }
   async function computeResepHover(key, ds, de, el) {
