@@ -142,6 +142,39 @@ var __morbis_feature = (() => {
     td.appendChild(fs);
     return fs;
   }
+  async function computeResepHover(key, ds, de, el) {
+    if (el.dataset.resepLoaded === "1") return;
+    el.title = "Menghitung pasien dengan resep\u2026";
+    let count = 0;
+    try {
+      let html = "";
+      const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+      });
+      if (resp.ok) {
+        html = await resp.text();
+        count += countResepRows(html);
+        let page = 2;
+        while (hasNextRajalPage(html) && page <= 20) {
+          const r2 = await fetch(buildPelaksanaanUrl(key, ds, de) + "&page=" + page, {
+            credentials: "include",
+            cache: "no-store",
+            headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+          });
+          if (!r2.ok) break;
+          html = await r2.text();
+          count += countResepRows(html);
+          if (!hasNextRajalPage(html)) break;
+          page += 1;
+        }
+      }
+    } catch {
+    }
+    el.dataset.resepLoaded = "1";
+    el.title = "Pasien dengan resep: " + count;
+  }
   async function refresh() {
     const [ds, de] = readDateRange();
     for (const [key] of STATUS) {
@@ -151,38 +184,24 @@ var __morbis_feature = (() => {
     await Promise.all(
       STATUS.map(async ([key]) => {
         const el = document.getElementById(HOST_ID + "-" + key);
-        let resepCount = 0;
         try {
-          let html = "";
           const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
             credentials: "include",
             cache: "no-store",
             headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
           });
+          if (!el) return;
           if (!resp.ok) {
-            if (el) el.textContent = "\u2014";
+            el.textContent = "\u2014";
             return;
           }
-          html = await resp.text();
-          if (el) el.textContent = String(parseTotal(html));
-          resepCount += countResepRows(html);
-          let page = 2;
-          while (hasNextRajalPage(html) && page <= 20) {
-            const nextUrl = buildPelaksanaanUrl(key, ds, de) + "&page=" + page;
-            const r2 = await fetch(nextUrl, {
-              credentials: "include",
-              cache: "no-store",
-              headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
-            });
-            if (!r2.ok) break;
-            html = await r2.text();
-            resepCount += countResepRows(html);
-            if (!hasNextRajalPage(html)) break;
-            page += 1;
-          }
-          if (el) {
-            el.title = "Pasien dengan resep: " + resepCount;
-            el.style.cursor = "help";
+          const html = await resp.text();
+          el.textContent = String(parseTotal(html));
+          el.title = "Arahkan kursor untuk menghitung pasien dengan resep\u2026";
+          el.style.cursor = "help";
+          if (!el.dataset.resepBound) {
+            el.dataset.resepBound = "1";
+            el.addEventListener("mouseenter", () => void computeResepHover(key, ds, de, el));
           }
         } catch {
           if (el) el.textContent = "\u2014";

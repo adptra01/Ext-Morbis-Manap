@@ -18,7 +18,7 @@
 
 ### 🐛 fix
 
-- **pasienRajalCounter** — tooltip per angka (belum/selesai/bayar) tampilkan jumlah dengan resep (`46a9c43`)
+- **pasienRajalCounter** — tooltip per angka (belum/selesai/bayar) tampilkan jumlah dengan resep (`c3333c6`)
 - **pasienRajalCounter** — tooltip hover pada angka Dengan Resep (`02ea8aa`)
 - **pasienRajalCounter** — ambil total dari teks 'Jumlah Total' (bukan hitung <tr> halaman) (`6d313b9`)
 - **pasienRajalCounter** — kirim X-Requested-With agar endpoint admisi mengembalikan data untuk role apotek (`3738f7d`)
@@ -2062,4 +2062,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 46a9c434a925a686e1a238434da99ac2703cbded -->
+<!-- changelog-upto: c3333c6adc08ffdb65f43c021b614973b85dbae9 -->
