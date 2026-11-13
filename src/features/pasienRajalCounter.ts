@@ -115,18 +115,9 @@ function makeHost(): HTMLElement | null {
   const td = document.querySelector('form#searchTable td');
   if (!td) return null;
 
-  let wrap = document.getElementById('ext-pasien-counter-wrap');
-  if (!wrap) {
-    wrap = document.createElement('div');
-    wrap.id = 'ext-pasien-counter-wrap';
-    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;align-items:stretch;';
-    td.appendChild(wrap);
-  }
-
   const fs = document.createElement('fieldset');
   fs.id = HOST_ID;
   fs.className = 'field-group';
-  fs.style.cssText = (fs.style.cssText || '') + 'flex:1 1 220px;min-width:220px;margin:0;';
   const legend = document.createElement('legend');
   legend.textContent = 'Total Pasien Rajal';
   fs.appendChild(legend);
@@ -147,7 +138,7 @@ function makeHost(): HTMLElement | null {
     row.appendChild(box);
   }
   fs.appendChild(row);
-  wrap.appendChild(fs);
+  td.appendChild(fs);
   return fs;
 }
 
@@ -157,18 +148,9 @@ function makeRanapHost(): HTMLElement | null {
   if (!td) return null;
   if (document.getElementById(HOST_ID_RANAP)) return document.getElementById(HOST_ID_RANAP);
 
-  let wrap = document.getElementById('ext-pasien-counter-wrap');
-  if (!wrap) {
-    wrap = document.createElement('div');
-    wrap.id = 'ext-pasien-counter-wrap';
-    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;align-items:stretch;';
-    td.appendChild(wrap);
-  }
-
   const fs = document.createElement('fieldset');
   fs.id = HOST_ID_RANAP;
   fs.className = 'field-group';
-  fs.style.cssText = (fs.style.cssText || '') + 'flex:1 1 220px;min-width:220px;margin:0;';
   const legend = document.createElement('legend');
   legend.textContent = 'Total Pasien Ranap';
   fs.appendChild(legend);
@@ -189,7 +171,7 @@ function makeRanapHost(): HTMLElement | null {
     row.appendChild(box);
   }
   fs.appendChild(row);
-  wrap.appendChild(fs);
+  td.appendChild(fs);
   return fs;
 }
 
