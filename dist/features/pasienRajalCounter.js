@@ -22,7 +22,9 @@ var __morbis_feature = (() => {
   var pasienRajalCounter_exports = {};
   __export(pasienRajalCounter_exports, {
     buildPelaksanaanUrl: () => buildPelaksanaanUrl,
+    buildRanapUrl: () => buildRanapUrl,
     countDataRows: () => countDataRows,
+    parseRanapTotal: () => parseRanapTotal,
     parseTotal: () => parseTotal
   });
 
@@ -34,10 +36,15 @@ var __morbis_feature = (() => {
   // src/features/pasienRajalCounter.ts
   var g = getMorbisGlobals();
   var HOST_ID = "ext-pasien-rajal-counter";
+  var HOST_ID_RANAP = "ext-pasien-ranap-counter";
   var STATUS = [
     ["belum", "Belum Diperiksa"],
     ["selesai", "Sudah Diperiksa"],
     ["bayar", "Sudah Bayar"]
+  ];
+  var STATUS_RANAP = [
+    ["belum", "Belum Discharge"],
+    ["selesai", "Sudah Discharge"]
   ];
   function buildPelaksanaanUrl(status, dateStart, dateEnd) {
     return "/admisi/pelaksanaan_pelayanan/table?search[date_start]=" + dateStart + "&status_periksa=" + status + "&search[date_end]=" + dateEnd + "&search[no_rm]=&search[dokter]=&search[jam_awal]=&search[jam_akhir]=&search[shift]=&search[noreg]=&search[cari_dokter]=&search[id_unit]=";
@@ -50,6 +57,14 @@ var __morbis_feature = (() => {
     const m = /Jumlah\s+Totals?\s*:\s*(\d+)/i.exec(html);
     if (m) return parseInt(m[1], 10);
     return countDataRows(html);
+  }
+  function buildRanapUrl(tipe, tgl1, tgl2) {
+    return "/admisi/detail-rawat-inap?section=tabel&search[no_rm]=&search[no_reg]=&search[pasien]=&search[id_unit]=&search[dokter]=&search[status_kunjungan]=&tgl1=" + encodeURIComponent(tgl1) + "&tgl2=" + encodeURIComponent(tgl2) + "&tipe=" + encodeURIComponent(tipe) + "&id_jenis_asuransi=";
+  }
+  function parseRanapTotal(html) {
+    const m = /Jumlah\s+Total\s+Pasien\s*:\s*(\d+)/i.exec(html);
+    if (m) return parseInt(m[1], 10);
+    return 0;
   }
   function log(...args) {
     console.log("[MORBIS Ext]", ...args);
@@ -89,6 +104,35 @@ var __morbis_feature = (() => {
     td.appendChild(fs);
     return fs;
   }
+  function makeRanapHost() {
+    const td = document.querySelector("form#searchTable td");
+    if (!td) return null;
+    if (document.getElementById(HOST_ID_RANAP)) return document.getElementById(HOST_ID_RANAP);
+    const fs = document.createElement("fieldset");
+    fs.id = HOST_ID_RANAP;
+    fs.className = "field-group";
+    const legend = document.createElement("legend");
+    legend.textContent = "Total Pasien Ranap";
+    fs.appendChild(legend);
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:18px;flex-wrap:wrap;";
+    for (const [key, label] of STATUS_RANAP) {
+      const box = document.createElement("div");
+      const num = document.createElement("div");
+      num.id = HOST_ID_RANAP + "-" + key;
+      num.style.cssText = "font-size:20px;font-weight:700;line-height:1.1;";
+      num.textContent = "\u2026";
+      const cap = document.createElement("div");
+      cap.style.cssText = "font-size:11px;color:#667085;";
+      cap.textContent = label;
+      box.appendChild(num);
+      box.appendChild(cap);
+      row.appendChild(box);
+    }
+    fs.appendChild(row);
+    td.appendChild(fs);
+    return fs;
+  }
   async function refresh() {
     const [ds, de] = readDateRange();
     for (const [key] of STATUS) {
@@ -111,6 +155,27 @@ var __morbis_feature = (() => {
         }
       })
     );
+    const d0 = /* @__PURE__ */ new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const tgl2 = `${pad(d0.getDate())}/${pad(d0.getMonth() + 1)}/${d0.getFullYear()}`;
+    const d1 = new Date(d0.getTime() - 30 * 24 * 60 * 60 * 1e3);
+    const tgl1 = `${pad(d1.getDate())}/${pad(d1.getMonth() + 1)}/${d1.getFullYear()}`;
+    await Promise.all(
+      STATUS_RANAP.map(async ([key]) => {
+        const el = document.getElementById(HOST_ID_RANAP + "-" + key);
+        try {
+          const resp = await fetch(buildRanapUrl(key, tgl1, tgl2), {
+            credentials: "include",
+            cache: "no-store",
+            headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+          });
+          if (!el) return;
+          el.textContent = resp.ok ? String(parseRanapTotal(await resp.text())) : "\u2014";
+        } catch {
+          if (el) el.textContent = "\u2014";
+        }
+      })
+    );
   }
   function run() {
     if (!g.currentConfig?.extensionEnabled || !g.currentConfig?.features?.pasienRajalCounter?.enabled || !g.ExtensionCore.isFeatureAllowed("pasienRajalCounter"))
@@ -122,12 +187,13 @@ var __morbis_feature = (() => {
         if (attempts < 10) window.setTimeout(tick, 300);
         return;
       }
+      makeRanapHost();
       const btn = document.getElementById("search");
       if (btn && !btn.dataset.extPrcBound) {
         btn.dataset.extPrcBound = "1";
         btn.addEventListener("click", () => void refresh());
       }
-      log("Pasien Rajal Counter: mounted");
+      log("Pasien Rajal/Ranap Counter: mounted");
       void refresh();
     };
     tick();

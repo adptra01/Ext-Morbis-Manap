@@ -16,11 +16,17 @@ import { getMorbisGlobals } from './shared/types.js';
 const g = getMorbisGlobals();
 
 const HOST_ID = 'ext-pasien-rajal-counter';
+const HOST_ID_RANAP = 'ext-pasien-ranap-counter';
 
 const STATUS: ReadonlyArray<readonly [string, string]> = [
   ['belum', 'Belum Diperiksa'],
   ['selesai', 'Sudah Diperiksa'],
   ['bayar', 'Sudah Bayar'],
+];
+
+const STATUS_RANAP: ReadonlyArray<readonly [string, string]> = [
+  ['belum', 'Belum Discharge'],
+  ['selesai', 'Sudah Discharge'],
 ];
 
 /** URL tabel pelaksanaan pelayanan — persis pola loadTable MORBIS. */
@@ -50,6 +56,33 @@ export function parseTotal(html: string): number {
   const m = /Jumlah\s+Totals?\s*:\s*(\d+)/i.exec(html);
   if (m) return parseInt(m[1], 10);
   return countDataRows(html);
+}
+
+/** URL tabel detail rawat inap. tipe: 'belum' (belum discharge) / 'selesai'. */
+export function buildRanapUrl(tipe: string, tgl1: string, tgl2: string): string {
+  return (
+    '/admisi/detail-rawat-inap?section=tabel' +
+    '&search[no_rm]=' +
+    '&search[no_reg]=' +
+    '&search[pasien]=' +
+    '&search[id_unit]=' +
+    '&search[dokter]=' +
+    '&search[status_kunjungan]=' +
+    '&tgl1=' +
+    encodeURIComponent(tgl1) +
+    '&tgl2=' +
+    encodeURIComponent(tgl2) +
+    '&tipe=' +
+    encodeURIComponent(tipe) +
+    '&id_jenis_asuransi='
+  );
+}
+
+/** Total pasien ranap dari teks "Jumlah Total Pasien : N". */
+export function parseRanapTotal(html: string): number {
+  const m = /Jumlah\s+Total\s+Pasien\s*:\s*(\d+)/i.exec(html);
+  if (m) return parseInt(m[1], 10);
+  return 0;
 }
 
 function log(...args: unknown[]): void {
@@ -98,6 +131,39 @@ function makeHost(): HTMLElement | null {
   return fs;
 }
 
+/** Pasang kotak ringkasan ranap di ujung td pertama form#searchTable (bawah rajal). */
+function makeRanapHost(): HTMLElement | null {
+  const td = document.querySelector('form#searchTable td');
+  if (!td) return null;
+  if (document.getElementById(HOST_ID_RANAP)) return document.getElementById(HOST_ID_RANAP);
+
+  const fs = document.createElement('fieldset');
+  fs.id = HOST_ID_RANAP;
+  fs.className = 'field-group';
+  const legend = document.createElement('legend');
+  legend.textContent = 'Total Pasien Ranap';
+  fs.appendChild(legend);
+
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:18px;flex-wrap:wrap;';
+  for (const [key, label] of STATUS_RANAP) {
+    const box = document.createElement('div');
+    const num = document.createElement('div');
+    num.id = HOST_ID_RANAP + '-' + key;
+    num.style.cssText = 'font-size:20px;font-weight:700;line-height:1.1;';
+    num.textContent = '…';
+    const cap = document.createElement('div');
+    cap.style.cssText = 'font-size:11px;color:#667085;';
+    cap.textContent = label;
+    box.appendChild(num);
+    box.appendChild(cap);
+    row.appendChild(box);
+  }
+  fs.appendChild(row);
+  td.appendChild(fs);
+  return fs;
+}
+
 async function refresh(): Promise<void> {
   const [ds, de] = readDateRange();
   for (const [key] of STATUS) {
@@ -120,6 +186,29 @@ async function refresh(): Promise<void> {
       }
     }),
   );
+
+  // Ranap: 30 hari ke belakang s.d. hari ini (mirror default halaman ranap).
+  const d0 = new Date();
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  const tgl2 = `${pad(d0.getDate())}/${pad(d0.getMonth() + 1)}/${d0.getFullYear()}`;
+  const d1 = new Date(d0.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const tgl1 = `${pad(d1.getDate())}/${pad(d1.getMonth() + 1)}/${d1.getFullYear()}`;
+  await Promise.all(
+    STATUS_RANAP.map(async ([key]) => {
+      const el = document.getElementById(HOST_ID_RANAP + '-' + key);
+      try {
+        const resp = await fetch(buildRanapUrl(key, tgl1, tgl2), {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
+        });
+        if (!el) return;
+        el.textContent = resp.ok ? String(parseRanapTotal(await resp.text())) : '—';
+      } catch {
+        if (el) el.textContent = '—';
+      }
+    }),
+  );
 }
 
 function run(): void {
@@ -137,12 +226,13 @@ function run(): void {
       if (attempts < 10) window.setTimeout(tick, 300);
       return;
     }
+    makeRanapHost();
     const btn = document.getElementById('search') as HTMLElement | null;
     if (btn && !btn.dataset.extPrcBound) {
       btn.dataset.extPrcBound = '1';
       btn.addEventListener('click', () => void refresh());
     }
-    log('Pasien Rajal Counter: mounted');
+    log('Pasien Rajal/Ranap Counter: mounted');
     void refresh();
   };
   tick();

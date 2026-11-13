@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { buildPelaksanaanUrl, countDataRows } from '../../src/features/pasienRajalCounter.js';
+import {
+  buildPelaksanaanUrl,
+  buildRanapUrl,
+  countDataRows,
+  parseRanapTotal,
+} from '../../src/features/pasienRajalCounter.js';
 
 // URL persis pola loadTable MORBIS di /admisi/pelaksanaan_pelayanan
 // (diverifikasi live 2026-11-13 lewat network log halaman asli).
@@ -39,5 +44,23 @@ describe('countDataRows', () => {
   it('respons kosong / tanpa tabel → 0', () => {
     expect(countDataRows('')).toBe(0);
     expect(countDataRows('<div>tidak ada tabel</div>')).toBe(0);
+  });
+});
+
+describe('buildRanapUrl (total pasien ranap)', () => {
+  it('tipe belum/selesai → path + param benar', () => {
+    const u = buildRanapUrl('belum', '13/10/2026', '13/11/2026');
+    expect(u).toContain('/admisi/detail-rawat-inap?section=tabel');
+    expect(u).toContain('tipe=belum');
+    expect(u).toContain('tgl1=13%2F10%2F2026');
+    expect(u).toContain('tgl2=13%2F11%2F2026');
+    expect(buildRanapUrl('selesai', '13/10/2026', '13/11/2026')).toContain('tipe=selesai');
+  });
+});
+
+describe('parseRanapTotal', () => {
+  it('ambil angka dari "Jumlah Total Pasien : N"', () => {
+    expect(parseRanapTotal('<p>Jumlah Total Pasien : 77</p>')).toBe(77);
+    expect(parseRanapTotal('tanpa total')).toBe(0);
   });
 });
