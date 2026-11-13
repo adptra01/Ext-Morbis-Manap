@@ -24,6 +24,8 @@ var __morbis_feature = (() => {
     buildPelaksanaanUrl: () => buildPelaksanaanUrl,
     buildRanapUrl: () => buildRanapUrl,
     countDataRows: () => countDataRows,
+    countResepRows: () => countResepRows,
+    hasNextRajalPage: () => hasNextRajalPage,
     parseRanapTotal: () => parseRanapTotal,
     parseTotal: () => parseTotal
   });
@@ -57,6 +59,13 @@ var __morbis_feature = (() => {
     const m = /Jumlah\s+Totals?\s*:\s*(\d+)/i.exec(html);
     if (m) return parseInt(m[1], 10);
     return countDataRows(html);
+  }
+  function hasNextRajalPage(html) {
+    return /class\s*=\s*["']?[^"'>]*page-next/i.test(html);
+  }
+  function countResepRows(html) {
+    const rows = html.match(/<tr[\s>][\s\S]*?<\/tr>/gi) ?? [];
+    return rows.filter((r) => /<td[\s>]/i.test(r) && !/colspan/i.test(r) && /RESEP/i.test(r)).length;
   }
   function buildRanapUrl(tipe, tgl1, tgl2) {
     return "/admisi/detail-rawat-inap?section=tabel&search[no_rm]=&search[no_reg]=&search[pasien]=&search[id_unit]=&search[dokter]=&search[status_kunjungan]=&tgl1=" + encodeURIComponent(tgl1) + "&tgl2=" + encodeURIComponent(tgl2) + "&tipe=" + encodeURIComponent(tipe) + "&id_jenis_asuransi=";
@@ -100,6 +109,17 @@ var __morbis_feature = (() => {
       box.appendChild(cap);
       row.appendChild(box);
     }
+    const boxR = document.createElement("div");
+    const numR = document.createElement("div");
+    numR.id = HOST_ID + "-resep";
+    numR.style.cssText = "font-size:20px;font-weight:700;line-height:1.1;";
+    numR.textContent = "\u2026";
+    const capR = document.createElement("div");
+    capR.style.cssText = "font-size:11px;color:#667085;";
+    capR.textContent = "Dengan Resep";
+    boxR.appendChild(numR);
+    boxR.appendChild(capR);
+    row.appendChild(boxR);
     fs.appendChild(row);
     td.appendChild(fs);
     return fs;
@@ -139,22 +159,47 @@ var __morbis_feature = (() => {
       const el = document.getElementById(HOST_ID + "-" + key);
       if (el) el.textContent = "\u2026";
     }
+    let resepTotal = 0;
     await Promise.all(
       STATUS.map(async ([key]) => {
         const el = document.getElementById(HOST_ID + "-" + key);
         try {
+          let html = "";
           const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
             credentials: "include",
             cache: "no-store",
             headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
           });
-          if (!el) return;
-          el.textContent = resp.ok ? String(parseTotal(await resp.text())) : "\u2014";
+          if (!resp.ok) {
+            if (el) el.textContent = "\u2014";
+            return;
+          }
+          html = await resp.text();
+          if (el) el.textContent = String(parseTotal(html));
+          resepTotal += countResepRows(html);
+          let page = 2;
+          while (hasNextRajalPage(html) && page <= 20) {
+            const nextUrl = buildPelaksanaanUrl(key, ds, de) + "&page=" + page;
+            const r2 = await fetch(nextUrl, {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+            });
+            if (!r2.ok) break;
+            html = await r2.text();
+            resepTotal += countResepRows(html);
+            if (!hasNextRajalPage(html)) break;
+            page += 1;
+          }
         } catch {
           if (el) el.textContent = "\u2014";
         }
       })
     );
+    const numR = document.getElementById(HOST_ID + "-resep");
+    if (numR) numR.textContent = String(resepTotal);
+    const fs = document.getElementById(HOST_ID);
+    if (fs) fs.title = "Pasien dengan resep di Status Kunjungan: " + resepTotal;
     const d0 = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const tgl2 = `${pad(d0.getDate())}/${pad(d0.getMonth() + 1)}/${d0.getFullYear()}`;

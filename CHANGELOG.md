@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **pasienRajalCounter** — tambah box 'Dengan Resep' (hitung semua halaman paginate) (`80d5c17`)
+- **pasienRajalCounter** — tambah total pasien ranap (belum/sudah discharge) (`ffef4bf`)
 - cpptReader tampilkan riwayat kunjungan + tambah pasienRajalCounter di penerimaan (`4a18ec1`)
 - **cpptReader** — tombol Detail Kunjungan di sebelah Baca CPPT (`3844ed7`)
 
@@ -2058,4 +2060,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6d313b931ccf180612df534d7fa8b1971b761cda -->
+<!-- changelog-upto: 80d5c17d8fe9a0c0ad6f7861a0c84bfdd41f393e -->

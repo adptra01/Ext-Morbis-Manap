@@ -58,6 +58,17 @@ export function parseTotal(html: string): number {
   return countDataRows(html);
 }
 
+/** Ada halaman berikutnya di tabel admisi? (tombol .page-next). */
+export function hasNextRajalPage(html: string): boolean {
+  return /class\s*=\s*["']?[^"'>]*page-next/i.test(html);
+}
+
+/** Hitung baris pasien yang kolom Status Kunjungan memuat badge "RESEP". */
+export function countResepRows(html: string): number {
+  const rows = html.match(/<tr[\s>][\s\S]*?<\/tr>/gi) ?? [];
+  return rows.filter((r) => /<td[\s>]/i.test(r) && !/colspan/i.test(r) && /RESEP/i.test(r)).length;
+}
+
 /** URL tabel detail rawat inap. tipe: 'belum' (belum discharge) / 'selesai'. */
 export function buildRanapUrl(tipe: string, tgl1: string, tgl2: string): string {
   return (
@@ -126,6 +137,18 @@ function makeHost(): HTMLElement | null {
     box.appendChild(cap);
     row.appendChild(box);
   }
+  // Box tambahan: pasien dengan resep (kolom Status Kunjungan memuat RESEP).
+  const boxR = document.createElement('div');
+  const numR = document.createElement('div');
+  numR.id = HOST_ID + '-resep';
+  numR.style.cssText = 'font-size:20px;font-weight:700;line-height:1.1;';
+  numR.textContent = '…';
+  const capR = document.createElement('div');
+  capR.style.cssText = 'font-size:11px;color:#667085;';
+  capR.textContent = 'Dengan Resep';
+  boxR.appendChild(numR);
+  boxR.appendChild(capR);
+  row.appendChild(boxR);
   fs.appendChild(row);
   td.appendChild(fs);
   return fs;
@@ -170,22 +193,52 @@ async function refresh(): Promise<void> {
     const el = document.getElementById(HOST_ID + '-' + key);
     if (el) el.textContent = '…';
   }
+  let resepTotal = 0;
   await Promise.all(
     STATUS.map(async ([key]) => {
       const el = document.getElementById(HOST_ID + '-' + key);
       try {
+        // Halaman 1 → total + hitung resep.
+        let html = '';
         const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
           credentials: 'include',
           cache: 'no-store',
           headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
         });
-        if (!el) return;
-        el.textContent = resp.ok ? String(parseTotal(await resp.text())) : '—';
+        if (!resp.ok) {
+          if (el) el.textContent = '—';
+          return;
+        }
+        html = await resp.text();
+        if (el) el.textContent = String(parseTotal(html));
+        resepTotal += countResepRows(html);
+
+        // Lanjut halaman berikutnya untuk menghitung resep di semua halaman.
+        let page = 2;
+        while (hasNextRajalPage(html) && page <= 20) {
+          const nextUrl = buildPelaksanaanUrl(key, ds, de) + '&page=' + page;
+          const r2 = await fetch(nextUrl, {
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
+          });
+          if (!r2.ok) break;
+          html = await r2.text();
+          resepTotal += countResepRows(html);
+          if (!hasNextRajalPage(html)) break;
+          page += 1;
+        }
       } catch {
         if (el) el.textContent = '—';
       }
     }),
   );
+
+  // Tooltip hover: tampilkan jumlah pasien dengan resep (seluruh status).
+  const numR = document.getElementById(HOST_ID + '-resep');
+  if (numR) numR.textContent = String(resepTotal);
+  const fs = document.getElementById(HOST_ID);
+  if (fs) fs.title = 'Pasien dengan resep di Status Kunjungan: ' + resepTotal;
 
   // Ranap: 30 hari ke belakang s.d. hari ini (mirror default halaman ranap).
   const d0 = new Date();
