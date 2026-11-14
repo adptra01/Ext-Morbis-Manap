@@ -12,6 +12,7 @@
  * fallback hari ini. Diperbarui saat #search diklik — listener, tanpa polling.
  */
 import { getMorbisGlobals } from './shared/types.js';
+import { farmasiAppBase } from './shared/farmasiQueueSync.js';
 
 const g = getMorbisGlobals();
 
@@ -48,6 +49,11 @@ export function buildPelaksanaanUrl(status: string, dateStart: string, dateEnd: 
     '&search[no_rm]=&search[dokter]=&search[jam_awal]=&search[jam_akhir]=&search[shift]=' +
     '&search[noreg]=&search[cari_dokter]=&search[id_unit]='
   );
+}
+
+/** URL endpoint publik Reports SIMRS untuk total pasien rajal (JSON). */
+export function buildRajalTotalsUrl(tanggal: string): string {
+  return farmasiAppBase() + '/rekap-pasien-rajal?tanggal=' + encodeURIComponent(tanggal);
 }
 
 /** Jumlah baris data tabel: buang baris header (<th>) dan baris placeholder
@@ -448,33 +454,42 @@ async function refresh(): Promise<void> {
     const el = document.getElementById(HOST_ID + '-' + key);
     if (el) el.textContent = '…';
   }
-  await Promise.all(
-    STATUS.map(async ([key]) => {
+  // Total pasien rajal (unit-scoped di MORBIS). Untuk apotek, kotak rajal
+  // tidak dirender (tidak relevan & endpoint restricted) — hanya resep.
+  const isApotek = g.currentConfig?.currentRole === 'apotek';
+  if (!isApotek) {
+    for (const [key] of STATUS) {
       const el = document.getElementById(HOST_ID + '-' + key);
-      try {
-        const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
-          credentials: 'include',
-          cache: 'no-store',
-          headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
-        });
-        if (!el) return;
-        if (!resp.ok) {
-          el.textContent = '—';
-          return;
+      if (el) el.textContent = '…';
+    }
+    await Promise.all(
+      STATUS.map(async ([key]) => {
+        const el = document.getElementById(HOST_ID + '-' + key);
+        try {
+          const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
+          });
+          if (!el) return;
+          if (!resp.ok) {
+            el.textContent = '—';
+            return;
+          }
+          const html = await resp.text();
+          el.textContent = String(parseTotal(html));
+          el.title = 'Arahkan kursor untuk menghitung pasien dengan resep…';
+          el.style.cursor = 'help';
+          if (!el.dataset.resepBound) {
+            el.dataset.resepBound = '1';
+            el.addEventListener('mouseenter', () => void computeResepHover(key, ds, de, el));
+          }
+        } catch {
+          if (el) el.textContent = '—';
         }
-        const html = await resp.text();
-        el.textContent = String(parseTotal(html));
-        el.title = 'Arahkan kursor untuk menghitung pasien dengan resep…';
-        el.style.cursor = 'help';
-        if (!el.dataset.resepBound) {
-          el.dataset.resepBound = '1';
-          el.addEventListener('mouseenter', () => void computeResepHover(key, ds, de, el));
-        }
-      } catch {
-        if (el) el.textContent = '—';
-      }
-    }),
-  );
+      }),
+    );
+  }
 
   // Ranap: 30 hari ke belakang s.d. hari ini (mirror default halaman ranap).
   const d0 = new Date();
@@ -540,11 +555,12 @@ function run(): void {
   let attempts = 0;
   const tick = (): void => {
     attempts += 1;
-    if (!document.getElementById(HOST_ID) && !makeHost()) {
+    const isApotek = g.currentConfig?.currentRole === 'apotek';
+    if (!isApotek && !document.getElementById(HOST_ID) && !makeHost()) {
       if (attempts < 10) window.setTimeout(tick, 300);
       return;
     }
-    makeRanapHost();
+    if (!isApotek) makeRanapHost();
     makeResepHost();
     const btn = document.getElementById('search') as HTMLElement | null;
     if (btn && !btn.dataset.extPrcBound) {

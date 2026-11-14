@@ -23,6 +23,7 @@ var __morbis_feature = (() => {
   __export(pasienRajalCounter_exports, {
     buildPelaksanaanUrl: () => buildPelaksanaanUrl,
     buildPenerimaanUrl: () => buildPenerimaanUrl,
+    buildRajalTotalsUrl: () => buildRajalTotalsUrl,
     buildRanapUrl: () => buildRanapUrl,
     countDataRows: () => countDataRows,
     countResepRows: () => countResepRows,
@@ -37,6 +38,166 @@ var __morbis_feature = (() => {
   function getMorbisGlobals() {
     return window;
   }
+
+  // src/shared/messaging.ts
+  function sendMessage(message) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(response);
+        }
+      });
+    });
+  }
+
+  // src/features/shared/farmasiQueueSync.ts
+  var FARMASI_APP_BASE = "http://dev.rsudkotajambi.id/rs";
+  var cachedBase = null;
+  var basePromise = null;
+  async function storedBaseCandidates() {
+    try {
+      const result = await chrome.storage.sync.get("extensionCustomUrls");
+      const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
+      return urls.map((u) => u.url.replace(/\/+$/, "") + "/rs");
+    } catch {
+      return [];
+    }
+  }
+  var FALLBACK_CANDIDATES = ["http://dev.rsudkotajambi.id/rs", "http://103.147.236.138/rs"];
+  var FARMASI_ALLOWED_HOSTS = ["dev.rsudkotajambi.id", "103.147.236.138", "localhost", "127.0.0.1"];
+  var FARMASI_ALLOWED_SUFFIXES = [".rsudkotajambi.id", ".ddev.site"];
+  function isAllowedFarmasiBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+      const h = u.hostname.toLowerCase();
+      if (FARMASI_ALLOWED_HOSTS.includes(h)) return true;
+      return FARMASI_ALLOWED_SUFFIXES.some((s) => h.endsWith(s));
+    } catch {
+      return false;
+    }
+  }
+  async function queueApiFetch(url, method, body) {
+    return sendMessage({ type: "QUEUE_API", url, method, body });
+  }
+  function withTimeout(p, ms) {
+    return new Promise((resolve, reject) => {
+      const tid = setTimeout(() => reject(new Error("timeout")), ms);
+      p.then((v) => {
+        clearTimeout(tid);
+        resolve(v);
+      }).catch((e) => {
+        clearTimeout(tid);
+        reject(e);
+      });
+    });
+  }
+  function farmasiAppBase() {
+    try {
+      const ov = localStorage.getItem("ext-farmasi-app-base");
+      if (ov && isAllowedFarmasiBase(ov)) {
+        const b = ov.replace(/\/+$/, "");
+        if (cachedBase !== b) {
+          cachedBase = b;
+          basePromise = null;
+        }
+        return b;
+      }
+    } catch {
+    }
+    if (cachedBase) return cachedBase;
+    return FARMASI_APP_BASE;
+  }
+  function probeFarmasiAppBase() {
+    if (basePromise) return basePromise;
+    basePromise = (async () => {
+      try {
+        const ov = localStorage.getItem("ext-farmasi-app-base");
+        if (ov && isAllowedFarmasiBase(ov)) return ov.replace(/\/+$/, "");
+      } catch {
+      }
+      const stored = await storedBaseCandidates();
+      const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];
+      for (const base of candidates) {
+        try {
+          const r = await withTimeout(
+            queueApiFetch(base + "/api/queue/lookup?resep_id=probe", "GET"),
+            2500
+          );
+          const ct = r.contentType || "";
+          if ((r.status === 200 || r.status === 422) && ct.includes("application/json")) {
+            cachedBase = base;
+            return base;
+          }
+        } catch {
+        }
+      }
+      return FARMASI_APP_BASE;
+    })();
+    return basePromise;
+  }
+  var RETRY_KEY = "ext-queue-retry-queue";
+  async function getRetryQueue() {
+    try {
+      return (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+    } catch {
+      return [];
+    }
+  }
+  async function removeFromRetryQueue(eventId) {
+    try {
+      const existing = (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+      const filtered = existing.filter((item) => item.event_id !== eventId);
+      await chrome.storage.local.set({ [RETRY_KEY]: filtered });
+    } catch {
+    }
+  }
+  async function flushRetryQueue() {
+    const pending = await getRetryQueue();
+    if (!pending.length) return;
+    for (const item of [...pending]) {
+      try {
+        const result = await pushQueueEventDirect(item);
+        if (result.ok) {
+          await removeFromRetryQueue(item.event_id);
+          console.log("[MORBIS Ext] retry queue sukses:", item.event, item.queue_number ?? "");
+        }
+      } catch (e) {
+        const msg = e.message ?? "";
+        if (msg.includes("HTTP 404") || msg.includes("HTTP 422")) {
+          await removeFromRetryQueue(item.event_id);
+          console.log(
+            "[MORBIS Ext] retry queue buang (stale):",
+            item.event,
+            item.queue_number ?? "",
+            msg
+          );
+        }
+      }
+    }
+  }
+  async function pushQueueEventDirect(p) {
+    const body = { ...p };
+    if (p.event === "ENQUEUE") delete body.queue_number;
+    const base = await probeFarmasiAppBase();
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8e3);
+    const res = await fetch(base + "/api/queue/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+      credentials: "omit",
+      signal: ctrl.signal
+    });
+    clearTimeout(t);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
+    return { ok: !!j.ok, queue_number: j.queue?.queue_number };
+  }
+  setInterval(() => void flushRetryQueue(), 1e4);
 
   // src/features/pasienRajalCounter.ts
   var g = getMorbisGlobals();
@@ -58,6 +219,9 @@ var __morbis_feature = (() => {
   ];
   function buildPelaksanaanUrl(status, dateStart, dateEnd) {
     return "/admisi/pelaksanaan_pelayanan/table?search[date_start]=" + dateStart + "&status_periksa=" + status + "&search[date_end]=" + dateEnd + "&search[no_rm]=&search[dokter]=&search[jam_awal]=&search[jam_akhir]=&search[shift]=&search[noreg]=&search[cari_dokter]=&search[id_unit]=";
+  }
+  function buildRajalTotalsUrl(tanggal) {
+    return farmasiAppBase() + "/rekap-pasien-rajal?tanggal=" + encodeURIComponent(tanggal);
   }
   function countDataRows(html) {
     const rows = html.match(/<tr[\s>][\s\S]*?<\/tr>/gi) ?? [];
@@ -355,33 +519,40 @@ var __morbis_feature = (() => {
       const el = document.getElementById(HOST_ID + "-" + key);
       if (el) el.textContent = "\u2026";
     }
-    await Promise.all(
-      STATUS.map(async ([key]) => {
+    const isApotek = g.currentConfig?.currentRole === "apotek";
+    if (!isApotek) {
+      for (const [key] of STATUS) {
         const el = document.getElementById(HOST_ID + "-" + key);
-        try {
-          const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
-            credentials: "include",
-            cache: "no-store",
-            headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
-          });
-          if (!el) return;
-          if (!resp.ok) {
-            el.textContent = "\u2014";
-            return;
+        if (el) el.textContent = "\u2026";
+      }
+      await Promise.all(
+        STATUS.map(async ([key]) => {
+          const el = document.getElementById(HOST_ID + "-" + key);
+          try {
+            const resp = await fetch(buildPelaksanaanUrl(key, ds, de), {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+            });
+            if (!el) return;
+            if (!resp.ok) {
+              el.textContent = "\u2014";
+              return;
+            }
+            const html = await resp.text();
+            el.textContent = String(parseTotal(html));
+            el.title = "Arahkan kursor untuk menghitung pasien dengan resep\u2026";
+            el.style.cursor = "help";
+            if (!el.dataset.resepBound) {
+              el.dataset.resepBound = "1";
+              el.addEventListener("mouseenter", () => void computeResepHover(key, ds, de, el));
+            }
+          } catch {
+            if (el) el.textContent = "\u2014";
           }
-          const html = await resp.text();
-          el.textContent = String(parseTotal(html));
-          el.title = "Arahkan kursor untuk menghitung pasien dengan resep\u2026";
-          el.style.cursor = "help";
-          if (!el.dataset.resepBound) {
-            el.dataset.resepBound = "1";
-            el.addEventListener("mouseenter", () => void computeResepHover(key, ds, de, el));
-          }
-        } catch {
-          if (el) el.textContent = "\u2014";
-        }
-      })
-    );
+        })
+      );
+    }
     const d0 = /* @__PURE__ */ new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const tgl2 = `${pad(d0.getDate())}/${pad(d0.getMonth() + 1)}/${d0.getFullYear()}`;
@@ -437,11 +608,12 @@ var __morbis_feature = (() => {
     let attempts = 0;
     const tick = () => {
       attempts += 1;
-      if (!document.getElementById(HOST_ID) && !makeHost()) {
+      const isApotek = g.currentConfig?.currentRole === "apotek";
+      if (!isApotek && !document.getElementById(HOST_ID) && !makeHost()) {
         if (attempts < 10) window.setTimeout(tick, 300);
         return;
       }
-      makeRanapHost();
+      if (!isApotek) makeRanapHost();
       makeResepHost();
       const btn = document.getElementById("search");
       if (btn && !btn.dataset.extPrcBound) {

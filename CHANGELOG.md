@@ -7,10 +7,17 @@
 
 ---
 
+## 2026-11-14
+
+### ✨ feat
+
+- **pasienRajalCounter** — counter Total Resep (Sudah/Belum Diterima) + modal daftar pasien (`11f1ce2`)
+
 ## 2026-11-13
 
 ### ✨ feat
 
+- toggle Detail Kunjungan terpisah + hapus fitur Sembunyikan Telaah Resep (Depo Ranap) (`d9ec18e`)
 - **pasienRajalCounter** — tambah box 'Dengan Resep' (hitung semua halaman paginate) (`9b68007`)
 - **pasienRajalCounter** — tambah total pasien ranap (belum/sudah discharge) (`ffef4bf`)
 - cpptReader tampilkan riwayat kunjungan + tambah pasienRajalCounter di penerimaan (`4a18ec1`)
@@ -2072,4 +2079,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f0308bb10146e1869bc5721c69ccb25e02b4489a -->
+<!-- changelog-upto: 11f1ce2064a2387652977fd498a0fd94db542970 -->
