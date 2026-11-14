@@ -367,4 +367,3 @@ var __morbis_feature = (() => {
     console.warn("[OpenDetail] featureModules not defined, module registration skipped");
   }
 })();
-//# sourceMappingURL=openDetail.js.map

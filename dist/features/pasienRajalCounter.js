@@ -22,12 +22,15 @@ var __morbis_feature = (() => {
   var pasienRajalCounter_exports = {};
   __export(pasienRajalCounter_exports, {
     buildPelaksanaanUrl: () => buildPelaksanaanUrl,
+    buildPenerimaanUrl: () => buildPenerimaanUrl,
     buildRanapUrl: () => buildRanapUrl,
     countDataRows: () => countDataRows,
     countResepRows: () => countResepRows,
     hasNextRajalPage: () => hasNextRajalPage,
+    parsePenerimaanRows: () => parsePenerimaanRows,
     parseRanapTotal: () => parseRanapTotal,
-    parseTotal: () => parseTotal
+    parseTotal: () => parseTotal,
+    readPenerimaanSearch: () => readPenerimaanSearch
   });
 
   // src/features/shared/types.ts
@@ -39,6 +42,7 @@ var __morbis_feature = (() => {
   var g = getMorbisGlobals();
   var HOST_ID = "ext-pasien-rajal-counter";
   var HOST_ID_RANAP = "ext-pasien-ranap-counter";
+  var HOST_ID_RESEP = "ext-resep-penerimaan-counter";
   var STATUS = [
     ["belum", "Belum Diperiksa"],
     ["selesai", "Sudah Diperiksa"],
@@ -47,6 +51,10 @@ var __morbis_feature = (() => {
   var STATUS_RANAP = [
     ["belum", "Belum Discharge"],
     ["selesai", "Sudah Discharge"]
+  ];
+  var TIPE_RESEP = [
+    ["selesai", "Sudah Diterima"],
+    ["masuk", "Belum Diterima"]
   ];
   function buildPelaksanaanUrl(status, dateStart, dateEnd) {
     return "/admisi/pelaksanaan_pelayanan/table?search[date_start]=" + dateStart + "&status_periksa=" + status + "&search[date_end]=" + dateEnd + "&search[no_rm]=&search[dokter]=&search[jam_awal]=&search[jam_akhir]=&search[shift]=&search[noreg]=&search[cari_dokter]=&search[id_unit]=";
@@ -129,6 +137,172 @@ var __morbis_feature = (() => {
       const box = document.createElement("div");
       const num = document.createElement("div");
       num.id = HOST_ID_RANAP + "-" + key;
+      num.style.cssText = "font-size:20px;font-weight:700;line-height:1.1;";
+      num.textContent = "\u2026";
+      const cap = document.createElement("div");
+      cap.style.cssText = "font-size:11px;color:#667085;";
+      cap.textContent = label;
+      box.appendChild(num);
+      box.appendChild(cap);
+      row.appendChild(box);
+    }
+    fs.appendChild(row);
+    td.appendChild(fs);
+    return fs;
+  }
+  var PENERIMAAN_FIELDS = [
+    ["date-start-kj", "date_start_kj"],
+    ["date-end-kj", "date_end_kj"],
+    ["date-start", "date_start"],
+    ["date-end", "date_end"],
+    ["norm", "no_rm"],
+    ["no_registrasi", "no_registrasi"],
+    ["status_pasien", "status_pasien"],
+    ["idUnit", "id_unit_asal"],
+    ["unit_tujuan", "id_unit_tujuan"],
+    ["pasien", "pasien"],
+    ["no_resep", "no_resep"],
+    ["jenis_kategori_pengajuan_resep", "kategori_resep"]
+  ];
+  function readPenerimaanSearch() {
+    const s = {};
+    for (const [id, param] of PENERIMAAN_FIELDS) {
+      s[param] = document.getElementById(id)?.value?.trim() ?? "";
+    }
+    return s;
+  }
+  function buildPenerimaanUrl(tipe, s) {
+    let q = "/inventory/resep/penerimaan/table?tipe=" + encodeURIComponent(tipe);
+    for (const [, param] of PENERIMAAN_FIELDS) {
+      q += "&search[" + param + "]=" + encodeURIComponent(s[param] ?? "");
+    }
+    return q;
+  }
+  function parsePenerimaanRows(html) {
+    const strip = (s) => s.replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/\s+/g, " ").trim();
+    const ths = (html.match(/<th[^>]*>[\s\S]*?<\/th>/gi) ?? []).map(strip);
+    const iRm = ths.indexOf("No RM");
+    const iNama = ths.indexOf("Pasien");
+    const iPoli = ths.indexOf("Unit Sekarang");
+    if (iRm < 0 || iNama < 0) return [];
+    const out = [];
+    for (const tr of html.match(/<tr[^>]*\bid="\d+"[^>]*>[\s\S]*?<\/tr>/gi) ?? []) {
+      const tds = (tr.match(/<td[^>]*>[\s\S]*?<\/td>/gi) ?? []).map(strip);
+      const off = ths.length - tds.length;
+      const at = (i) => i >= 0 ? tds[i - off] ?? "" : "";
+      const nama = at(iNama);
+      if (!nama) continue;
+      out.push({ nama, rm: at(iRm), poli: at(iPoli) });
+    }
+    return out;
+  }
+  function openRowsModal(title, rows) {
+    document.getElementById("ext-resep-modal")?.remove();
+    const ov = document.createElement("div");
+    ov.id = "ext-resep-modal";
+    ov.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;";
+    const box = document.createElement("div");
+    box.style.cssText = 'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:820px;max-width:95vw;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-family:Roboto,"Segoe UI",system-ui,sans-serif;';
+    const head = document.createElement("div");
+    head.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #e4e7ec;";
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:16px;font-weight:700;color:#1c2530;";
+    h.textContent = rows ? `${title} (${rows.length})` : title;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "\xD7";
+    btn.style.cssText = "border:none;background:#f2f4f7;color:#344054;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px;line-height:1;";
+    const onKey = (ev) => {
+      if (ev.key === "Escape") close();
+    };
+    const close = () => {
+      document.removeEventListener("keydown", onKey);
+      ov.remove();
+    };
+    btn.addEventListener("click", close);
+    head.appendChild(h);
+    head.appendChild(btn);
+    const body = document.createElement("div");
+    body.style.cssText = "overflow:auto;padding:0 18px 18px;flex:1 1 auto;";
+    if (!rows) {
+      const wait = document.createElement("div");
+      wait.style.cssText = "padding:24px 0;color:#667085;font-size:14px;";
+      wait.textContent = "Memuat data pasien\u2026";
+      body.appendChild(wait);
+    } else if (!rows.length) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:24px 0;color:#667085;font-size:14px;";
+      empty.textContent = "Tidak ada data.";
+      body.appendChild(empty);
+    } else {
+      const table = document.createElement("table");
+      table.style.cssText = "width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;";
+      table.innerHTML = '<thead><tr style="position:sticky;top:0;background:#f9fafb;"><th style="text-align:left;padding:8px;border-bottom:1px solid #e4e7ec;">Nama Pasien (RM)</th><th style="text-align:left;padding:8px;border-bottom:1px solid #e4e7ec;">Poli</th></tr></thead><tbody></tbody>';
+      const tb = table.querySelector("tbody");
+      for (const r of rows) {
+        const tr = document.createElement("tr");
+        const td1 = document.createElement("td");
+        td1.style.cssText = "padding:8px;border-bottom:1px solid #f2f4f7;";
+        td1.textContent = r.rm ? `${r.nama} (${r.rm})` : r.nama;
+        const td2 = document.createElement("td");
+        td2.style.cssText = "padding:8px;border-bottom:1px solid #f2f4f7;color:#475467;";
+        td2.textContent = r.poli || "\u2014";
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tb.appendChild(tr);
+      }
+      body.appendChild(table);
+    }
+    box.appendChild(head);
+    box.appendChild(body);
+    ov.appendChild(box);
+    ov.addEventListener("click", (e) => {
+      if (e.target === ov) close();
+    });
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(ov);
+  }
+  async function showPenerimaanRows(tipe, label) {
+    const s = readPenerimaanSearch();
+    openRowsModal(`Resep ${label}`, null);
+    const rows = [];
+    let total = 0;
+    for (let page = 1; page <= 50; page++) {
+      try {
+        const resp = await fetch(buildPenerimaanUrl(tipe, s) + (page > 1 ? "&page=" + page : ""), {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+        });
+        if (!resp.ok) break;
+        const html = await resp.text();
+        if (page === 1) total = parseTotal(html);
+        const got = parsePenerimaanRows(html);
+        if (!got.length) break;
+        rows.push(...got);
+        if (rows.length >= total) break;
+      } catch {
+        break;
+      }
+    }
+    openRowsModal(`Resep ${label}`, rows);
+  }
+  function makeResepHost() {
+    const td = document.querySelector("form#searchTable td");
+    if (!td) return null;
+    if (document.getElementById(HOST_ID_RESEP)) return document.getElementById(HOST_ID_RESEP);
+    const fs = document.createElement("fieldset");
+    fs.id = HOST_ID_RESEP;
+    fs.className = "field-group";
+    const legend = document.createElement("legend");
+    legend.textContent = "Total Resep (Penerimaan)";
+    fs.appendChild(legend);
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:18px;flex-wrap:wrap;";
+    for (const [tipe, label] of TIPE_RESEP) {
+      const box = document.createElement("div");
+      const num = document.createElement("div");
+      num.id = HOST_ID_RESEP + "-" + tipe;
       num.style.cssText = "font-size:20px;font-weight:700;line-height:1.1;";
       num.textContent = "\u2026";
       const cap = document.createElement("div");
@@ -229,6 +403,33 @@ var __morbis_feature = (() => {
         }
       })
     );
+    const ps = readPenerimaanSearch();
+    for (const [tipe] of TIPE_RESEP) {
+      const e = document.getElementById(HOST_ID_RESEP + "-" + tipe);
+      if (e) e.textContent = "\u2026";
+    }
+    await Promise.all(
+      TIPE_RESEP.map(async ([tipe, label]) => {
+        const el = document.getElementById(HOST_ID_RESEP + "-" + tipe);
+        try {
+          const resp = await fetch(buildPenerimaanUrl(tipe, ps), {
+            credentials: "include",
+            cache: "no-store",
+            headers: { "X-Requested-With": "XMLHttpRequest", Accept: "text/html" }
+          });
+          if (!el) return;
+          el.textContent = resp.ok ? String(parseTotal(await resp.text())) : "\u2014";
+          el.title = "Klik untuk melihat daftar pasien";
+          el.style.cursor = "pointer";
+          if (!el.dataset.rowsBound) {
+            el.dataset.rowsBound = "1";
+            el.addEventListener("click", () => void showPenerimaanRows(tipe, label));
+          }
+        } catch {
+          if (el) el.textContent = "\u2014";
+        }
+      })
+    );
   }
   function run() {
     if (!g.currentConfig?.extensionEnabled || !g.currentConfig?.features?.pasienRajalCounter?.enabled || !g.ExtensionCore.isFeatureAllowed("pasienRajalCounter"))
@@ -241,6 +442,7 @@ var __morbis_feature = (() => {
         return;
       }
       makeRanapHost();
+      makeResepHost();
       const btn = document.getElementById("search");
       if (btn && !btn.dataset.extPrcBound) {
         btn.dataset.extPrcBound = "1";
@@ -264,4 +466,3 @@ var __morbis_feature = (() => {
   }
   return __toCommonJS(pasienRajalCounter_exports);
 })();
-//# sourceMappingURL=pasienRajalCounter.js.map

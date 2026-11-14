@@ -15,6 +15,9 @@ const featuresDestDir = join(distDir, 'features');
 
 const isWatch = process.argv.includes('--watch');
 const isProduction = process.argv.includes('--production') || process.env.NODE_ENV === 'production';
+// Sourcemap opt-in (SOURCEMAP=1): esbuild 0.28.2 segfault saat menulis
+// sourcemap di mesin build saat ini. Default mati → dist tanpa .map.
+const sourcemapOn = !!process.env.SOURCEMAP;
 
 async function ensureDir(dir) {
   if (!existsSync(dir)) {
@@ -139,7 +142,7 @@ async function compileFeatureFiles() {
         outfile: jsOutputPath,
         bundle: true,
         minify: isProduction,
-        sourcemap: !isProduction,
+        sourcemap: sourcemapOn && !isProduction,
         target: 'es2020',
         format: 'iife',
         platform: 'browser',
@@ -227,7 +230,7 @@ async function buildTailwindCSS() {
 const commonOptions = {
   bundle: true,
   minify: isProduction,
-  sourcemap: !isProduction,
+  sourcemap: sourcemapOn && !isProduction,
   target: 'es2020',
   format: 'iife',
   platform: 'browser',

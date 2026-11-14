@@ -868,4 +868,3 @@ var __morbis_feature = (() => {
     console.warn(LOG_PREFIX, "featureModules not defined, registration skipped");
   }
 })();
-//# sourceMappingURL=visiteKonsul.js.map

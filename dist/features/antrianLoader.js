@@ -98,4 +98,3 @@ var __morbis_feature = (() => {
     monitor();
   });
 })();
-//# sourceMappingURL=antrianLoader.js.map

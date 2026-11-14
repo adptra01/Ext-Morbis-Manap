@@ -1418,4 +1418,3 @@ var __morbis_feature = (() => {
   }
   scheduleToolbar();
 })();
-//# sourceMappingURL=toolbar.js.map

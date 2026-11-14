@@ -17,6 +17,7 @@ const g = getMorbisGlobals();
 
 const HOST_ID = 'ext-pasien-rajal-counter';
 const HOST_ID_RANAP = 'ext-pasien-ranap-counter';
+const HOST_ID_RESEP = 'ext-resep-penerimaan-counter';
 
 const STATUS: ReadonlyArray<readonly [string, string]> = [
   ['belum', 'Belum Diperiksa'],
@@ -27,6 +28,12 @@ const STATUS: ReadonlyArray<readonly [string, string]> = [
 const STATUS_RANAP: ReadonlyArray<readonly [string, string]> = [
   ['belum', 'Belum Discharge'],
   ['selesai', 'Sudah Discharge'],
+];
+
+/** Tab tabel penerimaan → label counter. */
+const TIPE_RESEP: ReadonlyArray<readonly [string, string]> = [
+  ['selesai', 'Sudah Diterima'],
+  ['masuk', 'Belum Diterima'],
 ];
 
 /** URL tabel pelaksanaan pelayanan — persis pola loadTable MORBIS. */
@@ -175,6 +182,225 @@ function makeRanapHost(): HTMLElement | null {
   return fs;
 }
 
+/** Nilai filter form halaman penerimaan (dibaca dari id input). */
+export type PenerimaanSearch = Record<string, string>;
+
+/** Field form penerimaan: id elemen → nama param `search[...]`. */
+const PENERIMAAN_FIELDS: ReadonlyArray<readonly [string, string]> = [
+  ['date-start-kj', 'date_start_kj'],
+  ['date-end-kj', 'date_end_kj'],
+  ['date-start', 'date_start'],
+  ['date-end', 'date_end'],
+  ['norm', 'no_rm'],
+  ['no_registrasi', 'no_registrasi'],
+  ['status_pasien', 'status_pasien'],
+  ['idUnit', 'id_unit_asal'],
+  ['unit_tujuan', 'id_unit_tujuan'],
+  ['pasien', 'pasien'],
+  ['no_resep', 'no_resep'],
+  ['jenis_kategori_pengajuan_resep', 'kategori_resep'],
+];
+
+/** Baca filter dari form #searchTable (id elemen MORBIS). */
+export function readPenerimaanSearch(): PenerimaanSearch {
+  const s: PenerimaanSearch = {};
+  for (const [id, param] of PENERIMAAN_FIELDS) {
+    s[param] =
+      (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null)?.value?.trim() ??
+      '';
+  }
+  return s;
+}
+
+/** URL tabel penerimaan — mirror loadTableData() halaman asli. */
+export function buildPenerimaanUrl(tipe: string, s: PenerimaanSearch): string {
+  let q = '/inventory/resep/penerimaan/table?tipe=' + encodeURIComponent(tipe);
+  for (const [, param] of PENERIMAAN_FIELDS) {
+    q += '&search[' + param + ']=' + encodeURIComponent(s[param] ?? '');
+  }
+  return q;
+}
+
+/** Baris pasien dari tabel penerimaan: nama, no RM, poli (Unit Sekarang). */
+export interface ResepRow {
+  nama: string;
+  rm: string;
+  poli: string;
+}
+
+/** Parse baris tabel penerimaan (header-driven; jumlah <td> bisa < <th>
+ *  karena kolom Aksi/No Antrian kadang digabung/tidak ada). */
+export function parsePenerimaanRows(html: string): ResepRow[] {
+  const strip = (s: string): string =>
+    s
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const ths = (html.match(/<th[^>]*>[\s\S]*?<\/th>/gi) ?? []).map(strip);
+  const iRm = ths.indexOf('No RM');
+  const iNama = ths.indexOf('Pasien');
+  const iPoli = ths.indexOf('Unit Sekarang');
+  if (iRm < 0 || iNama < 0) return [];
+
+  const out: ResepRow[] = [];
+  for (const tr of html.match(/<tr[^>]*\bid="\d+"[^>]*>[\s\S]*?<\/tr>/gi) ?? []) {
+    const tds = (tr.match(/<td[^>]*>[\s\S]*?<\/td>/gi) ?? []).map(strip);
+    const off = ths.length - tds.length; // sel yang hilang di depan baris
+    const at = (i: number): string => (i >= 0 ? (tds[i - off] ?? '') : '');
+    const nama = at(iNama);
+    if (!nama) continue;
+    out.push({ nama, rm: at(iRm), poli: at(iPoli) });
+  }
+  return out;
+}
+
+/** Modal daftar pasien (nama (RM) — poli), scroll di dalam kotak. */
+function openRowsModal(title: string, rows: ResepRow[] | null): void {
+  document.getElementById('ext-resep-modal')?.remove();
+  const ov = document.createElement('div');
+  ov.id = 'ext-resep-modal';
+  ov.style.cssText =
+    'position:fixed;inset:0;z-index:2147483647;background:rgba(15,23,42,.55);' +
+    'display:flex;align-items:center;justify-content:center;padding:24px;';
+  const box = document.createElement('div');
+  box.style.cssText =
+    'background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35);' +
+    'width:820px;max-width:95vw;max-height:82vh;display:flex;flex-direction:column;' +
+    'overflow:hidden;font-family:Roboto,"Segoe UI",system-ui,sans-serif;';
+  const head = document.createElement('div');
+  head.style.cssText =
+    'display:flex;align-items:center;justify-content:space-between;gap:12px;' +
+    'padding:14px 18px;border-bottom:1px solid #e4e7ec;';
+  const h = document.createElement('div');
+  h.style.cssText = 'font-size:16px;font-weight:700;color:#1c2530;';
+  h.textContent = rows ? `${title} (${rows.length})` : title;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '×';
+  btn.style.cssText =
+    'border:none;background:#f2f4f7;color:#344054;border-radius:8px;width:32px;height:32px;' +
+    'cursor:pointer;font-size:18px;line-height:1;';
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === 'Escape') close();
+  };
+  const close = (): void => {
+    document.removeEventListener('keydown', onKey);
+    ov.remove();
+  };
+  btn.addEventListener('click', close);
+  head.appendChild(h);
+  head.appendChild(btn);
+
+  const body = document.createElement('div');
+  body.style.cssText = 'overflow:auto;padding:0 18px 18px;flex:1 1 auto;';
+  if (!rows) {
+    const wait = document.createElement('div');
+    wait.style.cssText = 'padding:24px 0;color:#667085;font-size:14px;';
+    wait.textContent = 'Memuat data pasien…';
+    body.appendChild(wait);
+  } else if (!rows.length) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding:24px 0;color:#667085;font-size:14px;';
+    empty.textContent = 'Tidak ada data.';
+    body.appendChild(empty);
+  } else {
+    const table = document.createElement('table');
+    table.style.cssText = 'width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;';
+    table.innerHTML =
+      '<thead><tr style="position:sticky;top:0;background:#f9fafb;">' +
+      '<th style="text-align:left;padding:8px;border-bottom:1px solid #e4e7ec;">Nama Pasien (RM)</th>' +
+      '<th style="text-align:left;padding:8px;border-bottom:1px solid #e4e7ec;">Poli</th>' +
+      '</tr></thead><tbody></tbody>';
+    const tb = table.querySelector('tbody') as HTMLTableSectionElement;
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td');
+      td1.style.cssText = 'padding:8px;border-bottom:1px solid #f2f4f7;';
+      td1.textContent = r.rm ? `${r.nama} (${r.rm})` : r.nama;
+      const td2 = document.createElement('td');
+      td2.style.cssText = 'padding:8px;border-bottom:1px solid #f2f4f7;color:#475467;';
+      td2.textContent = r.poli || '—';
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      tb.appendChild(tr);
+    }
+    body.appendChild(table);
+  }
+
+  box.appendChild(head);
+  box.appendChild(body);
+  ov.appendChild(box);
+  ov.addEventListener('click', (e) => {
+    if (e.target === ov) close();
+  });
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(ov);
+}
+
+/** Klik angka → ambil semua halaman → tampilkan modal daftar pasien. */
+async function showPenerimaanRows(tipe: string, label: string): Promise<void> {
+  const s = readPenerimaanSearch();
+  openRowsModal(`Resep ${label}`, null);
+  const rows: ResepRow[] = [];
+  let total = 0;
+  // Halaman penerimaan tidak punya `.page-next` (pager-nya `class='block'`),
+  // jadi patokan berhenti = "Jumlah Total" dari halaman pertama.
+  for (let page = 1; page <= 50; page++) {
+    try {
+      const resp = await fetch(buildPenerimaanUrl(tipe, s) + (page > 1 ? '&page=' + page : ''), {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
+      });
+      if (!resp.ok) break;
+      const html = await resp.text();
+      if (page === 1) total = parseTotal(html);
+      const got = parsePenerimaanRows(html);
+      if (!got.length) break;
+      rows.push(...got);
+      if (rows.length >= total) break;
+    } catch {
+      break;
+    }
+  }
+  openRowsModal(`Resep ${label}`, rows);
+}
+
+/** Pasang kotak total resep (sudah/belum diterima) di bawah kotak ranap. */
+function makeResepHost(): HTMLElement | null {
+  const td = document.querySelector('form#searchTable td');
+  if (!td) return null;
+  if (document.getElementById(HOST_ID_RESEP)) return document.getElementById(HOST_ID_RESEP);
+
+  const fs = document.createElement('fieldset');
+  fs.id = HOST_ID_RESEP;
+  fs.className = 'field-group';
+  const legend = document.createElement('legend');
+  legend.textContent = 'Total Resep (Penerimaan)';
+  fs.appendChild(legend);
+
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:18px;flex-wrap:wrap;';
+  for (const [tipe, label] of TIPE_RESEP) {
+    const box = document.createElement('div');
+    const num = document.createElement('div');
+    num.id = HOST_ID_RESEP + '-' + tipe;
+    num.style.cssText = 'font-size:20px;font-weight:700;line-height:1.1;';
+    num.textContent = '…';
+    const cap = document.createElement('div');
+    cap.style.cssText = 'font-size:11px;color:#667085;';
+    cap.textContent = label;
+    box.appendChild(num);
+    box.appendChild(cap);
+    row.appendChild(box);
+  }
+  fs.appendChild(row);
+  td.appendChild(fs);
+  return fs;
+}
+
 /** Hitung (lazy, saat hover) jumlah pasien dengan resep untuk satu status. */
 async function computeResepHover(
   key: string,
@@ -272,6 +498,35 @@ async function refresh(): Promise<void> {
       }
     }),
   );
+
+  // Total resep sudah/belum diterima (tab tabel penerimaan).
+  const ps = readPenerimaanSearch();
+  for (const [tipe] of TIPE_RESEP) {
+    const e = document.getElementById(HOST_ID_RESEP + '-' + tipe);
+    if (e) e.textContent = '…';
+  }
+  await Promise.all(
+    TIPE_RESEP.map(async ([tipe, label]) => {
+      const el = document.getElementById(HOST_ID_RESEP + '-' + tipe);
+      try {
+        const resp = await fetch(buildPenerimaanUrl(tipe, ps), {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'text/html' },
+        });
+        if (!el) return;
+        el.textContent = resp.ok ? String(parseTotal(await resp.text())) : '—';
+        el.title = 'Klik untuk melihat daftar pasien';
+        el.style.cursor = 'pointer';
+        if (!el.dataset.rowsBound) {
+          el.dataset.rowsBound = '1';
+          el.addEventListener('click', () => void showPenerimaanRows(tipe, label));
+        }
+      } catch {
+        if (el) el.textContent = '—';
+      }
+    }),
+  );
 }
 
 function run(): void {
@@ -290,6 +545,7 @@ function run(): void {
       return;
     }
     makeRanapHost();
+    makeResepHost();
     const btn = document.getElementById('search') as HTMLElement | null;
     if (btn && !btn.dataset.extPrcBound) {
       btn.dataset.extPrcBound = '1';

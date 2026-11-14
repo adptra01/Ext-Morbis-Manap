@@ -877,4 +877,3 @@ var __morbis_bg = (() => {
   });
   log.log("Service worker started");
 })();
-//# sourceMappingURL=background.js.map

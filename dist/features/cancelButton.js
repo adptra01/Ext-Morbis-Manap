@@ -446,7 +446,14 @@ var __morbis_feature = (() => {
       this.dispatchEvent(new CustomEvent("ext-ok"));
     }
   };
-  if (!customElements.get("ext-modal")) customElements.define("ext-modal", ExtModal);
+  var ce2 = typeof window !== "undefined" ? window.customElements : null;
+  if (ce2) {
+    try {
+      if (!ce2.get("ext-modal")) ce2.define("ext-modal", ExtModal);
+    } catch (e) {
+      console.warn("[MORBIS Ext] gagal registrasi ext-modal:", e);
+    }
+  }
 
   // src/ui/web/ext-input.ts
   var STYLE5 = `
@@ -522,10 +529,10 @@ var __morbis_feature = (() => {
       this.input.focus();
     }
   };
-  var ce2 = typeof window !== "undefined" ? window.customElements : null;
-  if (ce2) {
+  var ce22 = typeof window !== "undefined" ? window.customElements : null;
+  if (ce22) {
     try {
-      if (!ce2.get("ext-input")) ce2.define("ext-input", ExtInput);
+      if (!ce22.get("ext-input")) ce22.define("ext-input", ExtInput);
     } catch (e) {
       console.warn("[MORBIS Ext] gagal registrasi ext-input:", e);
     }
@@ -861,4 +868,3 @@ var __morbis_feature = (() => {
     });
   });
 })();
-//# sourceMappingURL=cancelButton.js.map
