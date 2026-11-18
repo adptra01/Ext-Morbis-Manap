@@ -11,6 +11,8 @@
 
 ### 🐛 fix
 
+- **paLabPrint** — penanda Romawi di left:0 padding box (sebelum -2ch bikin dobel offset) (`7d14c23`)
+- **paLabPrint** — kurangi offset penanda Romawi (3ch -> 2ch) agar tidak keluar jalur (`965ee79`)
 - **paLabPrint** — sejajarkan teks setelah penomoran dengan teks tanpa penomoran (Makroskopik) (`df5d796`)
 - **paLabPrint** — kurangi lebar indent penanda Romawi (4ch -> 3ch) (`741f542`)
 - **paLabPrint** — indent penanda Romawi tetap (posisi absolut) agar teks paragraf sejajar (`f560259`)
@@ -2097,4 +2099,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: df5d796aebfcb88e4c84f947172ecae05a32b795 -->
+<!-- changelog-upto: 7d14c2390cd4218bca610c165480d80bdb2225f6 -->

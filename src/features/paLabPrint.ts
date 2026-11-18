@@ -862,6 +862,15 @@ whenFeatureEnabled('paLabPrint', function () {
             .map((it, i) => {
               const paraCls = s.para.includes(i) ? ' item-para' : '';
               const mk = splitListMarker(it);
+              // Baris pengantar yang dipisah baris kosong dari item
+              // bernomor berikutnya → rata kiri (tidak ikut indent).
+              // Bila tanpa baris kosong, tetap mengikuti indent item.
+              const isIntro =
+                !mk &&
+                /:\s*$/.test(it) &&
+                i + 1 < s.items.length &&
+                !!splitListMarker(s.items[i + 1]) &&
+                s.para.includes(i + 1);
               // Section 1 baris ber-dash → tampil polos tanpa "-"
               // (permintaan user 2026-11-06).
               if (mk && !(s.items.length === 1 && /^[-•–—*]$/.test(mk[0]))) {
@@ -879,6 +888,7 @@ whenFeatureEnabled('paLabPrint', function () {
               return (
                 '<div class="item-list' +
                 paraCls +
+                (isIntro ? ' item-intro' : '') +
                 '">' +
                 (boldAll ? '<strong>' + esc(it) + '</strong>' : fmtItem(it)) +
                 '</div>'
@@ -1391,6 +1401,11 @@ whenFeatureEnabled('paLabPrint', function () {
            agar sejajar dengan teks setelah Romawi. */
         .section-isi:has(.item-list.has-marker) .item-list:not(.has-marker) {
             padding-left: 2ch;
+        }
+
+        /* Baris pengantar yang dipisah baris kosong → rata kiri. */
+        .section-isi:has(.item-list.has-marker) .item-list.item-intro {
+            padding-left: 0;
         }
 
         .item-list {

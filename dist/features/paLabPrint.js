@@ -614,11 +614,12 @@ var __morbis_feature = (() => {
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
           const mk = splitListMarker(it);
+          const isIntro = !mk && /:\s*$/.test(it) && i + 1 < s.items.length && !!splitListMarker(s.items[i + 1]) && s.para.includes(i + 1);
           if (mk && !(s.items.length === 1 && /^[-•–—*]$/.test(mk[0]))) {
             const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
             return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
           }
-          return '<div class="item-list' + paraCls + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
+          return '<div class="item-list' + paraCls + (isIntro ? " item-intro" : "") + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
         const nt = normTitle(s.title);
@@ -1020,6 +1021,11 @@ var __morbis_feature = (() => {
            agar sejajar dengan teks setelah Romawi. */
         .section-isi:has(.item-list.has-marker) .item-list:not(.has-marker) {
             padding-left: 2ch;
+        }
+
+        /* Baris pengantar yang dipisah baris kosong \u2192 rata kiri. */
+        .section-isi:has(.item-list.has-marker) .item-list.item-intro {
+            padding-left: 0;
         }
 
         .item-list {
