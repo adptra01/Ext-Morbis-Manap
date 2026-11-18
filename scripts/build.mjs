@@ -80,7 +80,6 @@ async function compileFeatureFiles() {
     'farmasiRecallDeleg.ts',
     'penerimaanAntrolCetak.ts',
     'penerimaanExport.ts',
-    'pasienRajalCounter.ts',
     'cancelButton.ts',
     'penjualanResepAntrian.ts',
     'telaahResepPrint.ts',

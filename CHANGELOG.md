@@ -13,6 +13,10 @@
 
 - **pasienRajalCounter** — counter Total Resep (Sudah/Belum Diterima) + modal daftar pasien (`11f1ce2`)
 
+### 🐛 fix
+
+- **pasienRajalCounter** — sembunyikan kotak Rajal/Ranap untuk role apotek (gate per role) (`ecae14c`)
+
 ## 2026-11-13
 
 ### ✨ feat
@@ -2079,4 +2083,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 11f1ce2064a2387652977fd498a0fd94db542970 -->
+<!-- changelog-upto: d9218261912ed2f6389e0a971060381b68d78166 -->

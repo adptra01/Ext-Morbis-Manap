@@ -490,7 +490,6 @@
       ],
       "js": [
         "core.js",
-        "features/pasienRajalCounter.js",
         "init.js"
       ],
       "run_at": "document_end",
