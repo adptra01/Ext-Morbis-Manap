@@ -584,7 +584,7 @@ var __morbis_feature = (() => {
             const plain = dashOnly ? stripBullet(it) || mk[1] : it;
             const body = boldAll ? "<b>" + esc(plain) + "</b>" : fmtItem(plain);
             const hang = mk && !dashOnly ? "margin-left:18pt;text-indent:-18pt;" : "";
-            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "14pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
+            hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "4pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
         const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + esc(judul) + '</title></head><body style="font-family:Arial,sans-serif;font-size:' + r.isi.fs + "pt;line-height:" + r.isi.lh + ';"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="' + logo + '" width="90"></td><td align="center">' + kopLines.slice(0, 3).map((l) => '<b style="font-size:' + r.kop.fs + 'pt;">' + esc(l) + "</b>").join("<br>") + '<br><span style="font-size:' + r.alamatFs + 'pt;">' + addrLines.map((l) => esc(l)).join("<br>") + '</span></td></tr></table><hr><p align="center" style="font-size:' + r.judulLapFs + 'pt;"><b><u>' + esc(judul.toUpperCase()) + '</u></b></p><table border="0" cellspacing="0" cellpadding="2" style="font-size:' + r.pasien.fs + "pt;line-height:" + r.pasien.lh + ';">' + infoTbl + "</table>" + hasilDoc + '<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size:' + r.ttd.fs + "pt;line-height:" + r.ttd.lh + ';"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">' + esc(thanks) + '</p><p style="margin:0 0 6pt 0;">' + esc(dateLine) + "</p>" + (qr ? '<p style="margin:0 0 6pt 0;"><img src="' + qr + '" width="80" height="80"></p>' : "") + '<p style="margin:0 0 6pt 0;"><b>' + esc(docName) + '</b></p><p style="margin:0 0 6pt 0;">' + esc(nip) + "</p></td></tr></table></body></html>";
@@ -1032,9 +1032,9 @@ var __morbis_feature = (() => {
             margin-bottom: 6px;
         }
 
-        /* Awal paragraf baru (baris kosong di input): gap ekstra. */
+        /* Awal paragraf baru (baris kosong di input): gap rapat. */
         .item-list.item-para {
-            margin-top: 14px;
+            margin-top: 4px;
         }
 
         /* ICD-O tanpa judul (bare, id=154696): "ICD-O : \u2026" saja tanpa

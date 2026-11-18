@@ -728,7 +728,7 @@ whenFeatureEnabled('paLabPrint', function () {
           const hang = mk && !dashOnly ? 'margin-left:18pt;text-indent:-18pt;' : '';
           hasilDoc +=
             '<p style="margin:' +
-            (s.para.includes(i) ? '14pt' : '0') +
+            (s.para.includes(i) ? '4pt' : '0') +
             ' 0 6pt 0;font-size:' +
             fs +
             'pt;line-height:' +
@@ -1412,9 +1412,9 @@ whenFeatureEnabled('paLabPrint', function () {
             margin-bottom: 6px;
         }
 
-        /* Awal paragraf baru (baris kosong di input): gap ekstra. */
+        /* Awal paragraf baru (baris kosong di input): gap rapat. */
         .item-list.item-para {
-            margin-top: 14px;
+            margin-top: 4px;
         }
 
         /* ICD-O tanpa judul (bare, id=154696): "ICD-O : …" saja tanpa
