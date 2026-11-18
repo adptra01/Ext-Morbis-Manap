@@ -1381,7 +1381,7 @@ whenFeatureEnabled('paLabPrint', function () {
 
         .item-marker {
             position: absolute;
-            left: -2ch;
+            left: 0;
             top: 0;
             white-space: nowrap;
         }

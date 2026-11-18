@@ -1010,7 +1010,7 @@ var __morbis_feature = (() => {
 
         .item-marker {
             position: absolute;
-            left: -2ch;
+            left: 0;
             top: 0;
             white-space: nowrap;
         }
