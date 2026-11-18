@@ -1371,20 +1371,19 @@ whenFeatureEnabled('paLabPrint', function () {
 
         /* Hanging indent: baris bernomor/berpoin — penanda di kolom
            kiri tetap, teks lanjutan sejajar di bawah teks. */
+        /* Hanging indent: penanda (I., II., VII., ...) di kolom kiri tetap
+           (posisi absolut), teks paragraf mulai di indent tetap sehingga
+           baris lanjutan & antar item sejajar meski lebar penanda beda. */
         .item-list.has-marker {
-            display: flex;
-            gap: 6px;
+            position: relative;
+            padding-left: 4ch;
         }
 
         .item-marker {
-            flex-shrink: 0;
-        }
-
-        /* Teks setelah penomoran (span kedua) harus membungkus dan
-           baris lanjutan sejajar dengan awal isi (hanging indent). */
-        .item-list.has-marker > span:last-child {
-            flex: 1 1 0%;
-            min-width: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            white-space: nowrap;
         }
 
         .item-list {
