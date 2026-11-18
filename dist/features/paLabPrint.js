@@ -335,9 +335,6 @@ var __morbis_feature = (() => {
           for (let k = 0; k < paraIdx.length; k++) paraIdx[k] -= 1;
           while (paraIdx.length && paraIdx[0] <= 0) paraIdx.shift();
         }
-        if (finalItems.length > 1 && !/^[IVXLC]+\.\s/.test(finalItems[0]) && finalItems.slice(1).some((it) => /^II\.\s/.test(it))) {
-          finalItems[0] = "I. " + finalItems[0];
-        }
         if (title) sections.push({ title, items: finalItems, para: paraIdx });
       });
       const MARK_CATATAN = /^catatan\s*:?/i;
@@ -1007,6 +1004,13 @@ var __morbis_feature = (() => {
 
         .item-marker {
             flex-shrink: 0;
+        }
+
+        /* Teks setelah penomoran (span kedua) harus membungkus dan
+           baris lanjutan sejajar dengan awal isi (hanging indent). */
+        .item-list.has-marker > span:last-child {
+            flex: 1 1 0%;
+            min-width: 0;
         }
 
         .item-list {

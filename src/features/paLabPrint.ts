@@ -300,16 +300,8 @@ whenFeatureEnabled('paLabPrint', function () {
         for (let k = 0; k < paraIdx.length; k++) paraIdx[k] -= 1;
         while (paraIdx.length && paraIdx[0] <= 0) paraIdx.shift();
       }
-      // Server cetak menghilangkan "I." di awal section multi-spesimen
-      // (input "I. … II. …" → cetak "… II. …"). Pulihkan: bila item pertama
-      // tanpa penomoran romawi tapi item berikut ada "II.", tambahkan "I. ".
-      if (
-        finalItems.length > 1 &&
-        !/^[IVXLC]+\.\s/.test(finalItems[0]) &&
-        finalItems.slice(1).some((it) => /^II\.\s/.test(it))
-      ) {
-        finalItems[0] = 'I. ' + finalItems[0];
-      }
+      // Penomoran Romawi mengikuti isian user: jangan tambahkan/hilangkan
+      // "I." secara otomatis (permintaan user).
       if (title) sections.push({ title, items: finalItems, para: paraIdx });
     });
 
@@ -1375,6 +1367,13 @@ whenFeatureEnabled('paLabPrint', function () {
 
         .item-marker {
             flex-shrink: 0;
+        }
+
+        /* Teks setelah penomoran (span kedua) harus membungkus dan
+           baris lanjutan sejajar dengan awal isi (hanging indent). */
+        .item-list.has-marker > span:last-child {
+            flex: 1 1 0%;
+            min-width: 0;
         }
 
         .item-list {
