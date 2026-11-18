@@ -300,8 +300,19 @@ whenFeatureEnabled('paLabPrint', function () {
         for (let k = 0; k < paraIdx.length; k++) paraIdx[k] -= 1;
         while (paraIdx.length && paraIdx[0] <= 0) paraIdx.shift();
       }
-      // Penomoran Romawi mengikuti isian user: jangan tambahkan/hilangkan
-      // "I." secara otomatis (permintaan user).
+      // Pulihkan "I." yang dihilangkan server pada item pertama section
+      // multi-spesimen (input "I. … II. …" → cetak "… II. …"), TAPI
+      // jangan sentuh baris pengantar yang berakhir ":" (mis. "Diterima
+      // 2 botol jaringan dengan keterangan etiket sebagai berikut:") agar
+      // tidak mendapat penomoran palsu (permintaan user).
+      if (
+        finalItems.length > 1 &&
+        !/^[IVXLC]+\.\s/.test(finalItems[0]) &&
+        !/:\s*$/.test(finalItems[0]) &&
+        finalItems.slice(1).some((it) => /^II\.\s/.test(it))
+      ) {
+        finalItems[0] = 'I. ' + finalItems[0];
+      }
       if (title) sections.push({ title, items: finalItems, para: paraIdx });
     });
 

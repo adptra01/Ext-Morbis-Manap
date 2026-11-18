@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-11-18
+
+### 🐛 fix
+
+- **paLabPrint** — jangan auto-tambah 'I.' + hanging indent konsisten (Makroskopik/Mikroskopik) (`9c9d17b`)
+
+### 🧹 chore
+
+- hapus fitur Total Pasien Rajal (file, config, manifest, build, test) (`80087a3`)
+
 ## 2026-11-14
 
 ### ✨ feat
@@ -2083,4 +2093,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d9218261912ed2f6389e0a971060381b68d78166 -->
+<!-- changelog-upto: 9c9d17b9d7281e498d61b250516dd3d1205087db -->
