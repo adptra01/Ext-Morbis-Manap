@@ -1005,7 +1005,7 @@ var __morbis_feature = (() => {
            baris lanjutan & antar item sejajar meski lebar penanda beda. */
         .item-list.has-marker {
             position: relative;
-            padding-left: 4ch;
+            padding-left: 3ch;
         }
 
         .item-marker {

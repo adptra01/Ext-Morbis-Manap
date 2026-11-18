@@ -11,6 +11,8 @@
 
 ### 🐛 fix
 
+- **paLabPrint** — indent penanda Romawi tetap (posisi absolut) agar teks paragraf sejajar (`f560259`)
+- **paLabPrint** — pulihkan 'I.' yang dihilangkan server pada Mikroskopik, tetap jaga baris pengantar ':' (Makroskopik) (`11af549`)
 - **paLabPrint** — jangan auto-tambah 'I.' + hanging indent konsisten (Makroskopik/Mikroskopik) (`9c9d17b`)
 
 ### 🧹 chore
@@ -2093,4 +2095,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9c9d17b9d7281e498d61b250516dd3d1205087db -->
+<!-- changelog-upto: f560259c6371cf7aeb09fbe3a3885b32774b99af -->
