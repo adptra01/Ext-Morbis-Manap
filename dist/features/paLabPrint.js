@@ -1010,9 +1010,16 @@ var __morbis_feature = (() => {
 
         .item-marker {
             position: absolute;
-            left: 0;
+            left: -3ch;
             top: 0;
             white-space: nowrap;
+        }
+
+        /* Item tanpa penomoran dalam section yang punya penomoran (mis.
+           "Diterima 2 buah jaringan..." di Makroskopik) ikut terindent
+           agar sejajar dengan teks setelah Romawi. */
+        .section-isi:has(.item-list.has-marker) .item-list:not(.has-marker) {
+            padding-left: 3ch;
         }
 
         .item-list {
