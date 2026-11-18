@@ -1376,12 +1376,12 @@ whenFeatureEnabled('paLabPrint', function () {
            baris lanjutan & antar item sejajar meski lebar penanda beda. */
         .item-list.has-marker {
             position: relative;
-            padding-left: 3ch;
+            padding-left: 2ch;
         }
 
         .item-marker {
             position: absolute;
-            left: -3ch;
+            left: -2ch;
             top: 0;
             white-space: nowrap;
         }
@@ -1390,7 +1390,7 @@ whenFeatureEnabled('paLabPrint', function () {
            "Diterima 2 buah jaringan..." di Makroskopik) ikut terindent
            agar sejajar dengan teks setelah Romawi. */
         .section-isi:has(.item-list.has-marker) .item-list:not(.has-marker) {
-            padding-left: 3ch;
+            padding-left: 2ch;
         }
 
         .item-list {
