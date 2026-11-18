@@ -617,7 +617,7 @@ var __morbis_feature = (() => {
           const isIntro = !mk && /:\s*$/.test(it) && i + 1 < s.items.length && !!splitListMarker(s.items[i + 1]) && s.para.includes(i + 1);
           if (mk && !(s.items.length === 1 && /^[-•–—*]$/.test(mk[0]))) {
             const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
-            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + esc(mk[0]) + "</span><span>" + rest + "</span></div>";
+            return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + (boldAll ? "<strong>" + esc(mk[0]) + "</strong>" : esc(mk[0])) + "</span><span>" + rest + "</span></div>";
           }
           return '<div class="item-list' + paraCls + (isIntro ? " item-intro" : "") + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
         }).join("") + "</div>";

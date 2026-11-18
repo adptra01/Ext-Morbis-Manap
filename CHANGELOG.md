@@ -11,6 +11,8 @@
 
 ### 🐛 fix
 
+- **paLabPrint** — rapatkan jarak paragraf baris kosong (14px/14pt -> 4px/4pt) (`c5e8e5b`)
+- **paLabPrint** — baris pengantar (diikuti enter) rata kiri, tanpa enter tetap mengikuti indent (`0321f91`)
 - **paLabPrint** — penanda Romawi di left:0 padding box (sebelum -2ch bikin dobel offset) (`7d14c23`)
 - **paLabPrint** — kurangi offset penanda Romawi (3ch -> 2ch) agar tidak keluar jalur (`965ee79`)
 - **paLabPrint** — sejajarkan teks setelah penomoran dengan teks tanpa penomoran (Makroskopik) (`df5d796`)
@@ -2099,4 +2101,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 7d14c2390cd4218bca610c165480d80bdb2225f6 -->
+<!-- changelog-upto: c5e8e5bdacca8c7f14a487e4adb09b7f283dedc5 -->

@@ -879,7 +879,7 @@ whenFeatureEnabled('paLabPrint', function () {
                   '<div class="item-list has-marker' +
                   paraCls +
                   '"><span class="item-marker">' +
-                  esc(mk[0]) +
+                  (boldAll ? '<strong>' + esc(mk[0]) + '</strong>' : esc(mk[0])) +
                   '</span><span>' +
                   rest +
                   '</span></div>'
