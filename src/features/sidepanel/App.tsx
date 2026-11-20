@@ -187,6 +187,24 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'admin'],
   },
   {
+    key: 'laborMarker',
+    name: 'Labor Marker',
+    desc: 'Tandai pasien Labor di list + footer detail klaim, sinkron lintas-PC',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'radiologiMarker',
+    name: 'Radiologi Marker',
+    desc: 'Tandai pasien Radiologi di list + footer detail klaim, sinkron lintas-PC',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'batalBerobatMarker',
+    name: 'Batal Berobat',
+    desc: 'Tandai pasien Batal Berobat di list + footer detail klaim, sinkron lintas-PC',
+    roles: ['casemix', 'admin'],
+  },
+  {
     key: 'telaahResep',
     name: 'UI Telaah Resep (Cetak)',
     desc: 'Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, info pasien/dokter)',

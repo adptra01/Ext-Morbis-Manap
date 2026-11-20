@@ -337,6 +337,24 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Pasien Partial (M-KLAIM)',
       description: 'Tandai Pasien Partial di list + footer detail klaim, sinkron lintas-PC',
     },
+    laborMarker: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Labor Marker (M-KLAIM)',
+      description: 'Tandai pasien Labor di list + footer detail klaim, sinkron lintas-PC',
+    },
+    radiologiMarker: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Radiologi Marker (M-KLAIM)',
+      description: 'Tandai pasien Radiologi di list + footer detail klaim, sinkron lintas-PC',
+    },
+    batalBerobatMarker: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Batal Berobat (M-KLAIM)',
+      description: 'Tandai pasien Batal Berobat di list + footer detail klaim, sinkron lintas-PC',
+    },
     mKlaimVerifLog: {
       enabled: true,
       allowedRoles: ['casemix', 'admin'],
