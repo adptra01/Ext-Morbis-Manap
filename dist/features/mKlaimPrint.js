@@ -90,7 +90,33 @@ var __morbis_feature = (() => {
       return false;
     }
   }
-  function clean(section) {
+  function addVerColumns(root) {
+    root.querySelectorAll("table").forEach((table) => {
+      if (table.parentElement?.closest("table")) return;
+      const rows = Array.from(table.rows);
+      const cols = rows[0]?.cells.length || 0;
+      if (rows.length < 6 || cols < 4 || table.querySelector(".vcol")) return;
+      rows.forEach((tr, idx) => {
+        const cells = Array.from(tr.cells);
+        if (!cells.length || cells.some((c) => c.colSpan >= 3)) return;
+        if (idx === 0) {
+          const th = document.createElement("th");
+          th.className = "vcol";
+          th.textContent = "Ver";
+          tr.appendChild(th);
+        } else {
+          const td = document.createElement("td");
+          td.className = "vcol";
+          const box = document.createElement("span");
+          box.className = "box";
+          td.appendChild(box);
+          tr.appendChild(td);
+        }
+      });
+    });
+  }
+  var VER_DOCS = /Rincian Biaya|Resume|Telaah|Laboratorium|Radiologi|SPRI|SBPK/i;
+  function clean(section, withVer = false) {
     const c = section.cloneNode(true);
     const sourceCanvas = Array.from(section.querySelectorAll("canvas"));
     const cloneCanvas = Array.from(c.querySelectorAll("canvas"));
@@ -138,6 +164,7 @@ var __morbis_feature = (() => {
     c.querySelectorAll("div").forEach((el) => {
       if (!el.children.length && !(el.textContent || "").trim()) el.remove();
     });
+    if (withVer) addVerColumns(c);
     return c.innerHTML.trim();
   }
   function titleOf(section, i) {
@@ -155,7 +182,7 @@ var __morbis_feature = (() => {
       const title = titleOf(node, i);
       if (seen.has(title)) return;
       seen.add(title);
-      const html = clean(node);
+      const html = clean(node, VER_DOCS.test(title));
       if (html.length < 20) {
         inventory.push({ title, docNo: null });
         return;
@@ -177,6 +204,91 @@ var __morbis_feature = (() => {
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
   );
+  var plainText = (html) => (new DOMParser().parseFromString(html.replace(/src="data:[^"]*"/g, ""), "text/html").body.textContent || "").replace(/\s+/g, " ").trim();
+  var isoDate = (raw) => {
+    const p = raw.split(/[-/]/).map((x) => x.trim());
+    if (p.length !== 3) return raw;
+    const [a, b, c] = p;
+    return a.length === 4 ? `${a}-${b.padStart(2, "0")}-${c.padStart(2, "0")}` : `${c}-${b.padStart(2, "0")}-${a.padStart(2, "0")}`;
+  };
+  var RE_MASUK = /(?:Tgl|Tanggal)\.?\s*Masuk(?:\s*RS)?\s*[:.]?\s*(\d{1,4}[-/]\d{1,2}[-/]\d{1,4})/gi;
+  var RE_KELUAR = /(?:Tgl|Tanggal)\.?\s*(?:Keluar|Pulang)(?:\s*RS)?\s*[:.]?\s*(\d{1,4}[-/]\d{1,2}[-/]\d{1,4})/gi;
+  var RE_SEPNO = /No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]{8,})/gi;
+  function runChecks(sections, inventory) {
+    const out = [];
+    const texts = sections.map((s) => ({ t: s.title, x: plainText(s.html) }));
+    const find = (re) => {
+      const hits = [];
+      const seen = /* @__PURE__ */ new Set();
+      texts.forEach((s) => {
+        const rx = new RegExp(re.source, re.flags);
+        let m;
+        while (m = rx.exec(s.x)) {
+          const key = s.t + "|" + m[1];
+          if (seen.has(key)) continue;
+          seen.add(key);
+          hits.push({ t: s.t, d: re === RE_SEPNO ? m[1] : isoDate(m[1]) });
+        }
+      });
+      return hits;
+    };
+    const masuk = find(RE_MASUK);
+    if (new Set(masuk.map((m) => m.d)).size > 1) {
+      out.push({
+        level: "warn",
+        title: "Tanggal masuk berbeda antar berkas",
+        detail: masuk.map((m) => `${m.t} ${m.d}`).join(" \xB7 ") + " \u2014 samakan sebelum berkas dikirim ke verifikator."
+      });
+    }
+    const keluar = find(RE_KELUAR);
+    if (masuk.length && keluar.length) {
+      const first = masuk.map((m) => m.d).sort()[0];
+      const last = keluar.map((k) => k.d).sort().pop();
+      if (last < first) {
+        out.push({
+          level: "warn",
+          title: "Tanggal keluar lebih awal dari tanggal masuk",
+          detail: `Masuk ${first} \xB7 Keluar ${last}.`
+        });
+      }
+    }
+    const seps = find(RE_SEPNO);
+    if (new Set(seps.map((s) => s.d)).size > 1) {
+      out.push({
+        level: "warn",
+        title: "Nomor SEP berbeda antar lembar",
+        detail: seps.map((s) => `${s.t} ${s.d}`).join(" \xB7 ")
+      });
+    }
+    const core = [/^SEP$/i, /SBPK/i, /Resume/i, /Rincian Biaya/i];
+    const missing = inventory.filter((r) => r.docNo === null && core.some((re) => re.test(r.title)));
+    if (missing.length) {
+      out.push({
+        level: "warn",
+        title: "Berkas inti belum terisi",
+        detail: missing.map((m) => m.title).join(", ") + "."
+      });
+    }
+    const billing = texts.find((s) => /Rincian Biaya/i.test(s.t));
+    if (billing && !/Total\s+(Biaya|Transaksi|Resep|Jasa)/i.test(billing.x)) {
+      out.push({
+        level: "warn",
+        title: "Rincian biaya tanpa baris total",
+        detail: "Tidak ditemukan Total Biaya/Transaksi/Resep pada lembar Rincian Biaya."
+      });
+    }
+    ["Laboratorium", "Radiologi"].forEach((name) => {
+      const s = texts.find((t) => new RegExp(name, "i").test(t.t));
+      if (s && s.x.length < 60) {
+        out.push({
+          level: "info",
+          title: `Lembar ${name} hanya lampiran gambar`,
+          detail: "Tidak ada teks hasil yang bisa dicocokkan otomatis \u2014 cocokkan manual dengan Resume dan Rincian Biaya."
+        });
+      }
+    });
+    return out;
+  }
   function buildHtml(sections, inventory) {
     const logo = "/assets/images/logo/Kota Jambi.png";
     const row = (label, value) => `<div class="meta-item"><span class="meta-label">${esc(label)}</span><span class="meta-value">${esc(value || "\u2014")}</span></div>`;
@@ -190,6 +302,13 @@ var __morbis_feature = (() => {
         <td class="c-ver"><span class="box"></span></td>
       </tr>`;
     }).join("");
+    const checks = runChecks(sections, inventory);
+    const checksHtml = checks.length ? `<section class="checks">
+  <h2>Catatan Pemeriksaan Otomatis</h2>
+  <ul>${checks.map(
+      (c) => `<li class="check ${c.level}"><span class="mark">${c.level === "warn" ? "\u25B2" : "\u2022"}</span><span><b>${esc(c.title)}</b> \u2014 ${esc(c.detail)}</span></li>`
+    ).join("")}</ul>
+</section>` : "";
     const docs = sections.map(
       (s, i) => `
       <section class="doc">
@@ -260,6 +379,23 @@ body{
 .st-empty{color:var(--muted);font-style:italic;}
 .box{display:inline-block;width:11px;height:11px;border:1px solid var(--ink);vertical-align:-2px;}
 .ctl-sum{margin:6px 0 0;font-size:9px;color:var(--muted);}
+/* Catatan pemeriksaan otomatis */
+.checks{margin:14px 0 0;}
+.checks h2{font-family:var(--serif);font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em;}
+.checks ul{list-style:none;margin:0;padding:0;}
+.check{display:flex;gap:7px;padding:4px 0;border-bottom:1px solid var(--rule);font-size:9.5px;line-height:1.45;}
+.check .mark{flex:0 0 10px;font-weight:700;}
+.check.warn .mark{color:#8a1c1c;}
+.check.info .mark{color:var(--muted);}
+/* Kolom Verifikasi pada tabel */
+.doc-body .vcol{width:18px!important;padding:4px 2px!important;text-align:center!important;}
+.img-wrap{display:inline-block;max-width:100%;}
+.img-tools{display:flex;gap:6px;justify-content:flex-end;margin:0 0 5px;}
+.img-tools button{
+  font:inherit;font-size:10px;padding:3px 9px;border:1px solid var(--rule);
+  background:#fff;border-radius:4px;cursor:pointer;color:var(--muted);
+}
+.img-tools button:hover{border-color:var(--accent);color:var(--accent);}
 .doc{margin:0 0 24px;break-inside:avoid-page;}
 .doc-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;border-bottom:1px solid var(--ink);padding-bottom:5px;}
 .doc-num{
@@ -294,9 +430,9 @@ body{
 .sign-box{width:230px;text-align:center;font-size:10px;color:var(--muted);}
 .sign-space{height:52px;}
 @media print{
-  .screen-bar{display:none!important;}
+  .screen-bar,.img-tools{display:none!important;}
   body{padding:0;background:#fff;font-size:10px;}
-  .control{break-after:page;}
+  main{break-before:page;}
   .doc{break-after:page;}
   .doc:last-child{break-after:auto;}
   /* Header tabel diulang tiap halaman + baris tidak terpotong di batas kertas */
@@ -341,6 +477,7 @@ body{
   </table>
   <p class="ctl-sum">${inventory.length} berkas terdaftar &middot; ${ada} berisi &middot; ${inventory.length - ada} tidak terisi</p>
 </section>
+${checksHtml}
 <main>${docs}</main>
 <div class="sign"><div class="sign-box">
   <div>Petugas Verifikasi</div><div class="sign-space"></div>
@@ -348,6 +485,57 @@ body{
 </div></div>
 </body>
 </html>`;
+  }
+  function installImageTools(win) {
+    const doc = win.document;
+    const setup = (img) => {
+      if (img.dataset.tools || !img.naturalWidth || img.naturalWidth < 260) return;
+      if (img.closest("table")) return;
+      img.dataset.tools = "1";
+      const wrap = doc.createElement("span");
+      wrap.className = "img-wrap";
+      img.parentNode?.insertBefore(wrap, img);
+      wrap.appendChild(img);
+      const tools = doc.createElement("span");
+      tools.className = "img-tools";
+      const mk = (label, act) => {
+        const b = doc.createElement("button");
+        b.type = "button";
+        b.dataset.act = act;
+        b.textContent = label;
+        return b;
+      };
+      tools.appendChild(mk("\u21BB Rotasi 90\xB0", "rot"));
+      tools.appendChild(mk("Hapus", "del"));
+      wrap.insertBefore(tools, img);
+      tools.addEventListener("click", (ev) => {
+        const act = ev.target.closest("button")?.dataset.act;
+        if (act === "del") {
+          wrap.remove();
+          return;
+        }
+        if (act !== "rot") return;
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        if (!w || !h) return;
+        const c = doc.createElement("canvas");
+        c.width = h;
+        c.height = w;
+        const ctx = c.getContext("2d");
+        if (!ctx) return;
+        ctx.translate(h / 2, w / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(img, -w / 2, -h / 2);
+        try {
+          img.src = c.toDataURL("image/png");
+        } catch {
+        }
+      });
+    };
+    doc.querySelectorAll(".doc-body img").forEach((img) => {
+      if (img.complete) setup(img);
+      else img.addEventListener("load", () => setup(img), { once: true });
+    });
   }
   function handleMklaimPrint() {
     const { sections, inventory } = collectSections();
@@ -363,6 +551,7 @@ body{
     win.document.open();
     win.document.write(buildHtml(sections, inventory));
     win.document.close();
+    installImageTools(win);
     const doPrint = () => {
       try {
         win.focus();

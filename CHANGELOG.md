@@ -11,11 +11,13 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — lembar kendali berkas (halaman 1) + filter canvas kosong/hitam + header tabel berulang (`5a7e6e9`)
 - **mKlaimPrint** — dossier cetak A4 semua section + tombol di action bar + dialog tutup (`fee3727`)
 - **mKlaimMarks** — mark Labor/Radiologi/Batal Berobat (tombol+badge, sinkron pusat generik) (`f408ac3`)
 
 ### 🐛 fix
 
+- **mKlaimPrint** — hilangkan inline script (CSP), pasang handler dari opener (`99f5ce7`)
 - **config** — pindah storage.sync -> local (quota 8KB/item) + migrasi sekali dari sync (`74dad0a`)
 - **mKlaimPrint** — pindahkan tombol cetak ke paling akhir action bar bawah (`5917756`)
 - **mKlaimPrint** — rapikan nilai radio/checkbox & buang kolom kosong tabel Rincian Biaya (`f6eacef`)
@@ -2120,4 +2122,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a4eb573fb94ebef4f1ce799d6bcd6ca36df57714 -->
+<!-- changelog-upto: 5a7e6e95fbd01a22d1c33b5fe99822f9f9408a07 -->
