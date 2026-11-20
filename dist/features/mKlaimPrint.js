@@ -43,8 +43,17 @@ var __morbis_feature = (() => {
         return;
       }
       if (type === "radio" || type === "checkbox") {
-        if (el.checked && el.value) el.replaceWith(span("\u2713 " + el.value));
-        else el.remove();
+        if (!el.checked) {
+          el.remove();
+          return;
+        }
+        if (type === "radio") {
+          el.replaceWith(span("\u2713"));
+          return;
+        }
+        const v2 = (el.value || "").trim();
+        const human = v2.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
+        el.replaceWith(span(human ? "\u2713 " + human : "\u2713"));
         return;
       }
       const v = (el.value || "").trim();
@@ -84,6 +93,15 @@ var __morbis_feature = (() => {
     });
     flattenControls(c);
     REMOVE.forEach((sel) => c.querySelectorAll(sel).forEach((el) => el.remove()));
+    c.querySelectorAll("tr").forEach((tr) => {
+      const cells = Array.from(tr.cells);
+      for (let i = cells.length - 1; i >= 0; i--) {
+        const cell = cells[i];
+        const empty = !(cell.textContent || "").trim() && !cell.querySelector("img,table,input");
+        if (!empty) break;
+        cell.remove();
+      }
+    });
     c.querySelectorAll("[style]").forEach((el) => {
       const s = el.getAttribute("style") || "";
       const keep = (s.match(/(?:text-align|width|vertical-align|white-space)\s*:[^;]+/gi) || []).join(

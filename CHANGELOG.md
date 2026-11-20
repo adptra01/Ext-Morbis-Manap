@@ -11,7 +11,12 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — dossier cetak A4 semua section + tombol di action bar + dialog tutup (`fee3727`)
 - **mKlaimMarks** — mark Labor/Radiologi/Batal Berobat (tombol+badge, sinkron pusat generik) (`f408ac3`)
+
+### 🐛 fix
+
+- **mKlaimPrint** — amankan data input/textarea + PDF canvas & perbaiki dedup section (`d143d88`)
 
 ## 2026-11-18
 
@@ -2108,4 +2113,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f408ac35c764c47a3677ac10e310daa767b0b71a -->
+<!-- changelog-upto: d143d88c57b4bf75346bd4e3d61dc1b176d54ebd -->

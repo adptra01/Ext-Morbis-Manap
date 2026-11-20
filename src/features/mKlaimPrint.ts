@@ -58,8 +58,23 @@ function flattenControls(root: HTMLElement): void {
       return;
     }
     if (type === 'radio' || type === 'checkbox') {
-      if (el.checked && el.value) el.replaceWith(span('✓ ' + el.value));
-      else el.remove();
+      if (!el.checked) {
+        el.remove();
+        return;
+      }
+      // Radio: label di depannya sudah memuat teks pilihan → cukup centang
+      // (mengeluarkan value radio duplikat seperti "Non Rujukan ✓ Non Rujukan").
+      if (type === 'radio') {
+        el.replaceWith(span('✓'));
+        return;
+      }
+      const v = (el.value || '').trim();
+      const human = v
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      el.replaceWith(span(human ? '✓ ' + human : '✓'));
       return;
     }
     const v = (el.value || '').trim();
@@ -102,6 +117,18 @@ function clean(section: HTMLElement): string {
   });
   flattenControls(c);
   REMOVE.forEach((sel) => c.querySelectorAll(sel).forEach((el) => el.remove()));
+  // Buang sel kosong di AKHIR baris tabel (colspan kosong dari markup asli
+  // yang bikin tabel Rincian Biaya punya kolom kanan lebar dan kosong).
+  // Sel tengah tidak disentuh agar tidak menggeser kolom data.
+  c.querySelectorAll('tr').forEach((tr) => {
+    const cells = Array.from(tr.cells);
+    for (let i = cells.length - 1; i >= 0; i--) {
+      const cell = cells[i];
+      const empty = !(cell.textContent || '').trim() && !cell.querySelector('img,table,input');
+      if (!empty) break;
+      cell.remove();
+    }
+  });
   c.querySelectorAll('[style]').forEach((el) => {
     // Buang style inline lama (font Consolas, lebar paksa, dll.) — tapi
     // pertahankan atribut layout jinak yang dipakai tabel medis.
