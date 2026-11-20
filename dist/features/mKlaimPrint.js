@@ -505,22 +505,24 @@ var __morbis_feature = (() => {
 <table class="rm-grid-table"><thead><tr><th style="width:32px">NO</th><th style="width:180px">JENIS KETIDAKSESUAIAN</th><th>URAIAN TEMUAN VERIFIKASI</th></tr></thead><tbody>${checks.map(
       (c, i) => `<tr><td class="center">${i + 1}</td><td><strong>${esc(c.title)}</strong></td><td>${esc(c.detail)}</td></tr>`
     ).join("")}</tbody></table>` : "";
+    const masukKeluar = [val("tanggalAwal"), val("tanggalAkhir")].filter(Boolean).join(" s/d ") || "-";
     const cover = `<section class="rm-page" id="doc-0">
 ${KOP}
-<div class="rm-form-title">Lembar Kendali Kelengkapan &amp; Verifikasi Berkas Klaim JKN</div>
+<div class="rm-form-title">LEMBAR KENDALI KELENGKAPAN &amp; VERIFIKASI BERKAS KLAIM JKN</div>
 ${idBox([
-      ["a", val("nama"), "0", "NAMA PASIEN"],
-      ["b", val("norm"), "0", "NO. REKAM MEDIS"],
-      ["c", val("tgl_lahir") || val("tglLahir"), "0", "TGL. LAHIR / UMUR"],
-      ["d", val("jenis_kelamin") || val("jk"), "0", "JENIS KELAMIN"],
-      ["e", val("alamat"), "0", "ALAMAT"],
-      ["f", val("no_kartu") || val("noka"), "1", "NO. KARTU BPJS"],
-      ["g", val("no_sep") || val("sep"), "1", "NO. SEP"],
-      ["h", val("tanggalAwal"), "1", "TGL. MASUK"],
-      ["i", val("tanggalAkhir"), "1", "TGL. KELUAR"],
-      ["j", val("id_visit"), "1", "ID VISIT"]
+      ["a", val("nama") || "-", "0", "NAMA PASIEN"],
+      ["b", val("norm") || "-", "0", "NO. REKAM MEDIS"],
+      ["c", val("tgl_lahir") || val("tglLahir") || "-", "0", "TGL. LAHIR / UMUR"],
+      ["d", val("jenis_kelamin") || val("jk") || "-", "0", "JENIS KELAMIN"],
+      ["e", val("alamat") || "-", "0", "ALAMAT"],
+      ["f", val("no_kartu") || val("noka") || "-", "1", "NO. KARTU BPJS"],
+      ["g", val("no_sep") || val("sep") || "-", "1", "NO. SEP"],
+      ["h", masukKeluar, "1", "TGL. MASUK / KELUAR"],
+      ["i", val("ruang") || val("kelas") || "-", "1", "RUANG / KELAS"],
+      ["j", val("dokter") || val("dpjp") || "-", "1", "DPJP UTAMA"]
     ])}
-<div class="sub-heading-rm">Matriks Kelengkapan Berkas (${inventory.length} berkas \xB7 ${ada} berisi \xB7 ${inventory.length - ada} tidak terisi)</div>
+<table class="rm-grid-table"><thead><tr><th style="width:110px">KODE INA-CBG</th><th>DESKRIPSI GROUPING INA-CBG</th><th class="num" style="width:120px">TARIF INA-CBG</th><th class="num" style="width:120px">TARIF RIIL RS</th><th class="num" style="width:115px">SELISIH</th></tr></thead><tbody><tr><td class="center"><strong>${esc(val("ina_cbg_code") || "-")}</strong></td><td>${esc(val("ina_cbg_desc") || "-")}</td><td class="num"><strong>${esc(val("tarif_ina_cbg") || "-")}</strong></td><td class="num">${esc(val("tarif_riil_rs") || "-")}</td><td class="num">${esc(val("selisih") || "-")}</td></tr></tbody></table>
+<div class="sub-heading-rm">MATRIKS KELENGKAPAN BERKAS (${inventory.length} berkas \xB7 ${ada} berisi \xB7 ${inventory.length - ada} tidak terisi)</div>
 <table class="rm-grid-table"><thead><tr><th style="width:32px">NO</th><th style="width:70px">KODE RM</th><th>JENIS BERKAS / DOKUMEN KLAIM</th><th style="width:120px">STATUS BERKAS</th><th style="width:60px">TANDA (&#10003;)</th></tr></thead><tbody>${ctlRows}</tbody></table>
 ${checksHtml}
 <div class="rm-signature-block">
