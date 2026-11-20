@@ -7,10 +7,17 @@
 
 ---
 
+## 2026-11-20
+
+### ✨ feat
+
+- **mKlaimMarks** — mark Labor/Radiologi/Batal Berobat (tombol+badge, sinkron pusat generik) (`f408ac3`)
+
 ## 2026-11-18
 
 ### 🐛 fix
 
+- **paLabPrint** — penanda Romawi ikut bold pada section bold (Kesimpulan) (`ad1b2e4`)
 - **paLabPrint** — rapatkan jarak paragraf baris kosong (14px/14pt -> 4px/4pt) (`c5e8e5b`)
 - **paLabPrint** — baris pengantar (diikuti enter) rata kiri, tanpa enter tetap mengikuti indent (`0321f91`)
 - **paLabPrint** — penanda Romawi di left:0 padding box (sebelum -2ch bikin dobel offset) (`7d14c23`)
@@ -2101,4 +2108,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c5e8e5bdacca8c7f14a487e4adb09b7f283dedc5 -->
+<!-- changelog-upto: f408ac35c764c47a3677ac10e310daa767b0b71a -->

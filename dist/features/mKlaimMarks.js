@@ -658,7 +658,7 @@ var __morbis_feature = (() => {
     saveMarkMap(mark, map, s);
   }
   function removeMark(mark, idVisit, s = store()) {
-    let map = {};
+    const map = {};
     try {
       const raw = s?.getItem(key(mark));
       if (raw) {
@@ -2911,9 +2911,33 @@ var __morbis_feature = (() => {
   // src/features/mKlaimMarks.ts
   var g3 = getMorbisGlobals();
   var CONFIGS = [
-    { key: "laborMarker", mark: "labor", label: "Labor", badge: "LABOR", color: "#15803d", border: "#86efac", bg: "#dcfce7" },
-    { key: "radiologiMarker", mark: "radiologi", label: "Radiologi", badge: "RADIOLOGI", color: "#0f766e", border: "#5eead4", bg: "#ccfbf1" },
-    { key: "batalBerobatMarker", mark: "batal-berobat", label: "Batal Berobat", badge: "BATAL BEROBAT", color: "#b91c1c", border: "#fca5a5", bg: "#fee2e2" }
+    {
+      key: "laborMarker",
+      mark: "labor",
+      label: "Labor",
+      badge: "LABOR",
+      color: "#15803d",
+      border: "#86efac",
+      bg: "#dcfce7"
+    },
+    {
+      key: "radiologiMarker",
+      mark: "radiologi",
+      label: "Radiologi",
+      badge: "RADIOLOGI",
+      color: "#0f766e",
+      border: "#5eead4",
+      bg: "#ccfbf1"
+    },
+    {
+      key: "batalBerobatMarker",
+      mark: "batal-berobat",
+      label: "Batal Berobat",
+      badge: "BATAL BEROBAT",
+      color: "#b91c1c",
+      border: "#fca5a5",
+      bg: "#fee2e2"
+    }
   ];
   var cssInjected = false;
   function ensureCss() {
@@ -3105,7 +3129,9 @@ var __morbis_feature = (() => {
     btn.id = domId;
     btn.setAttribute("data-ext-mk", rt.cfg.mark);
     const last = Array.from(
-      footer.querySelectorAll('button, a.btn, input[type="button"], input[type="submit"]')
+      footer.querySelectorAll(
+        'button, a.btn, input[type="button"], input[type="submit"]'
+      )
     ).pop();
     if (last?.parentNode === footer) footer.insertBefore(btn, last.nextSibling);
     else footer.appendChild(btn);
@@ -3114,8 +3140,10 @@ var __morbis_feature = (() => {
       if (!marks) return;
       rt.central = marks;
       rt.centralAt = Date.now();
-      if (marks[id] && !(id in loadMarkMap(rt.cfg.mark))) setMark(rt.cfg.mark, id, void 0, Date.now(), true);
-      if (!rt.pending.has(id)) paintButton(rt, btn, effective(rt, id, loadMarkMap(rt.cfg.mark)), false);
+      if (marks[id] && !(id in loadMarkMap(rt.cfg.mark)))
+        setMark(rt.cfg.mark, id, void 0, Date.now(), true);
+      if (!rt.pending.has(id))
+        paintButton(rt, btn, effective(rt, id, loadMarkMap(rt.cfg.mark)), false);
     });
     btn.addEventListener("click", () => {
       const info = parseDetailPairs(collectDetailPairs(document));
