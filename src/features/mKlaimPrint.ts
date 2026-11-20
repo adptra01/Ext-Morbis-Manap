@@ -18,6 +18,14 @@ interface Section {
   html: string;
 }
 
+/** Satu baris Lembar Kendali: semua section yang ada di halaman, termasuk
+ *  yang kosong (docNo = null) supaya verifikator tahu berkas mana yang
+ *  memang tidak terisi, bukan sekadar hilang dari dossier. */
+interface InventoryRow {
+  title: string;
+  docNo: number | null;
+}
+
 const REMOVE = [
   'script',
   'style',
@@ -94,6 +102,26 @@ function flattenControls(root: HTMLElement): void {
   });
 }
 
+/** Canvas gelap total / putih total = gagal render, bukan berkas asli. */
+function isBlankCanvas(cv: HTMLCanvasElement): boolean {
+  try {
+    const ctx = cv.getContext('2d');
+    if (!ctx || !cv.width || !cv.height) return true;
+    const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+    const step = 4 * 97; // sampel jarang — cukup untuk rata-rata kasar
+    let sum = 0;
+    let n = 0;
+    for (let i = 0; i < d.length; i += step) {
+      sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
+      n++;
+    }
+    const avg = sum / Math.max(n, 1);
+    return avg < 8 || avg > 250;
+  } catch {
+    return false; // getImageData gagal (tainted) → biarkan, toDataURL juga akan gagal
+  }
+}
+
 function clean(section: HTMLElement): string {
   const c = section.cloneNode(true) as HTMLElement;
   // Canvas PDF (pdf.js) tidak ikut tersalin oleh cloneNode → ubah jadi img
@@ -103,6 +131,12 @@ function clean(section: HTMLElement): string {
   sourceCanvas.forEach((cv, i) => {
     const target = cloneCanvas[i];
     if (!target) return;
+    // Canvas pdf.js yang belum ter-render tampil hitam pekat → jangan
+    // dicetak sebagai halaman hitam kosong. Ambil sampel luminansi.
+    if (isBlankCanvas(cv)) {
+      target.remove();
+      return;
+    }
     try {
       const img = document.createElement('img');
       img.src = cv.toDataURL('image/png');
@@ -156,26 +190,35 @@ function titleOf(section: HTMLElement, i: number): string {
   return t || `Berkas ${String(i + 1).padStart(2, '0')}`;
 }
 
-function collectSections(): Section[] {
+function collectSections(): { sections: Section[]; inventory: InventoryRow[] } {
   const nodes = Array.from(document.querySelectorAll<HTMLElement>('.isidalam'));
   const seen = new Set<string>();
-  const out: Section[] = [];
+  const sections: Section[] = [];
+  const inventory: InventoryRow[] = [];
   nodes.forEach((node, i) => {
-    const html = clean(node);
-    if (html.length < 20) return;
     const title = titleOf(node, i);
     // Dedup oleh JUDUL (unique per berkas). Dedup by potongan HTML salah
     // kaprah: beberapa dokumen punya pembuka <div width:100%> yang sama
     // persis → section besar (mis. Pengkajian IGD) ikut terbuang.
     if (seen.has(title)) return;
     seen.add(title);
-    out.push({ title, html });
+    const html = clean(node);
+    if (html.length < 20) {
+      inventory.push({ title, docNo: null });
+      return;
+    }
+    sections.push({ title, html });
+    inventory.push({ title, docNo: sections.length });
   });
-  if (!out.length) {
+  if (!sections.length) {
     const fallback = document.querySelector<HTMLElement>('#section-to-print');
-    if (fallback) out.push({ title: 'Detail Klaim', html: clean(fallback) });
+    if (fallback) {
+      const title = 'Detail Klaim';
+      sections.push({ title, html: clean(fallback) });
+      inventory.push({ title, docNo: 1 });
+    }
   }
-  return out;
+  return { sections, inventory };
 }
 
 const esc = (s: string): string =>
@@ -184,16 +227,22 @@ const esc = (s: string): string =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
   );
 
-function buildHtml(sections: Section[]): string {
+function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   // PNG resolusi penuh — logo.svg aslinya cuma 28x33 & pucat di kertas putih.
   const logo = '/assets/images/logo/Kota Jambi.png';
   const row = (label: string, value: string): string =>
     `<div class="meta-item"><span class="meta-label">${esc(label)}</span><span class="meta-value">${esc(value || '—')}</span></div>`;
-  const toc = sections
-    .map(
-      (s, i) =>
-        `<span class="toc-chip"><b>${String(i + 1).padStart(2, '0')}</b> ${esc(s.title)}</span>`,
-    )
+  const ada = inventory.filter((r) => r.docNo !== null).length;
+  const ctlRows = inventory
+    .map((r) => {
+      const filled = r.docNo !== null;
+      return `<tr>
+        <td class="c-no">${filled ? String(r.docNo).padStart(2, '0') : '—'}</td>
+        <td>${esc(r.title)}</td>
+        <td class="c-stat">${filled ? 'Ada' : '<span class="st-empty">Tidak terisi</span>'}</td>
+        <td class="c-ver"><span class="box"></span></td>
+      </tr>`;
+    })
     .join('');
   const docs = sections
     .map(
@@ -248,12 +297,26 @@ body{
 .meta-item{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .meta-label{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;}
 .meta-value{font-weight:600;font-size:11px;overflow-wrap:anywhere;}
-.toc{
-  display:flex;flex-wrap:wrap;gap:2px 0;padding:0 0 10px;border-bottom:1px solid var(--rule);margin-bottom:18px;
+/* Lembar Kendali — inventaris berkas (halaman 1) */
+.control{margin:0 0 10px;}
+.control h2{
+  font-family:var(--serif);font-size:13px;margin:0 0 2px;text-transform:uppercase;
+  letter-spacing:.06em;
 }
-.toc-chip{font-size:9px;color:var(--muted);padding:0;}
-.toc-chip:not(:last-child)::after{content:' ·';color:var(--rule);margin-left:6px;}
-.toc-chip b{color:var(--accent);font-weight:700;margin-right:3px;}
+.control .note{font-size:9px;color:var(--muted);margin:0 0 8px;}
+.ctl{width:100%;border-collapse:collapse;font-size:9.5px;}
+.ctl th{
+  border-bottom:1px solid var(--ink);text-align:left;padding:3px 6px;
+  font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;
+}
+.ctl td{border-bottom:1px solid var(--rule);padding:3px 6px;vertical-align:middle;}
+.ctl tr:last-child td{border-bottom:1px solid var(--ink);}
+.ctl .c-no{width:26px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.ctl .c-stat{width:92px;}
+.ctl .c-ver{width:74px;text-align:center;}
+.st-empty{color:var(--muted);font-style:italic;}
+.box{display:inline-block;width:11px;height:11px;border:1px solid var(--ink);vertical-align:-2px;}
+.ctl-sum{margin:6px 0 0;font-size:9px;color:var(--muted);}
 .doc{margin:0 0 24px;break-inside:avoid-page;}
 .doc-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;border-bottom:1px solid var(--ink);padding-bottom:5px;}
 .doc-num{
@@ -290,9 +353,13 @@ body{
 @media print{
   .screen-bar{display:none!important;}
   body{padding:0;background:#fff;font-size:10px;}
+  .control{break-after:page;}
   .doc{break-after:page;}
   .doc:last-child{break-after:auto;}
-  .meta,.toc,.doc-body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  /* Header tabel diulang tiap halaman + baris tidak terpotong di batas kertas */
+  .doc-body thead{display:table-header-group;}
+  .doc-body tr,.sign-box{break-inside:avoid;page-break-inside:avoid;}
+  .meta,.doc-body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 @media screen and (max-width:900px){
   .meta{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -322,7 +389,15 @@ body{
   ${row('Status', val('status'))}
   ${row('Billing', val('billing'))}
 </div>
-<div class="toc">${toc}</div>
+<section class="control">
+  <h2>Lembar Kendali Berkas Klaim</h2>
+  <p class="note">Nomor mengacu pada nomor berkas di dossier. Centang kolom Verifikasi setelah berkas diperiksa.</p>
+  <table class="ctl">
+    <thead><tr><th class="c-no">No</th><th>Nama Berkas</th><th class="c-stat">Status</th><th class="c-ver">Verifikasi</th></tr></thead>
+    <tbody>${ctlRows}</tbody>
+  </table>
+  <p class="ctl-sum">${inventory.length} berkas terdaftar &middot; ${ada} berisi &middot; ${inventory.length - ada} tidak terisi</p>
+</section>
 <main>${docs}</main>
 <div class="sign"><div class="sign-box">
   <div>Petugas Verifikasi</div><div class="sign-space"></div>
@@ -333,7 +408,7 @@ body{
 }
 
 function handleMklaimPrint(): void {
-  const sections = collectSections();
+  const { sections, inventory } = collectSections();
   if (!sections.length) {
     window.alert('Tidak ada section berkas yang bisa dicetak.');
     return;
@@ -344,7 +419,7 @@ function handleMklaimPrint(): void {
     return;
   }
   win.document.open();
-  win.document.write(buildHtml(sections));
+  win.document.write(buildHtml(sections, inventory));
   win.document.close();
 
   // Pasang handler DARI halaman asal (bukan <script> inline di tab baru).
