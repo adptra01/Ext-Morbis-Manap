@@ -328,19 +328,6 @@ body{
   <div>Petugas Verifikasi</div><div class="sign-space"></div>
   <div><strong>( .................................... )</strong></div>
 </div></div>
-<script>
-(function(){
-  function doPrint(){ window.focus(); window.print(); }
-  document.getElementById('print-view').addEventListener('click', doPrint);
-  document.getElementById('close-view').addEventListener('click', function(){
-    if (window.confirm('Tutup halaman cetak ini?')) window.close();
-  });
-  window.addEventListener('load', function(){ setTimeout(doPrint, 500); });
-  window.addEventListener('afterprint', function(){
-    if (window.confirm('Apakah menu print ini akan ditutup?')) window.close();
-  });
-})();
-</script>
 </body>
 </html>`;
 }
@@ -359,6 +346,26 @@ function handleMklaimPrint(): void {
   win.document.open();
   win.document.write(buildHtml(sections));
   win.document.close();
+
+  // Pasang handler DARI halaman asal (bukan <script> inline di tab baru).
+  // Tab about:blank mewarisi CSP MORBIS (script-src 'self') sehingga inline
+  // script diblokir — addEventListener dari opener tidak kena CSP itu.
+  const doPrint = (): void => {
+    try {
+      win.focus();
+      win.print();
+    } catch {
+      /* abaikan */
+    }
+  };
+  win.document.getElementById('print-view')?.addEventListener('click', doPrint);
+  win.document.getElementById('close-view')?.addEventListener('click', () => {
+    if (win.confirm('Tutup halaman cetak ini?')) win.close();
+  });
+  win.addEventListener('afterprint', () => {
+    if (win.confirm('Apakah menu print ini akan ditutup?')) win.close();
+  });
+  win.setTimeout(doPrint, 600);
 }
 
 function anchorForButton(): HTMLElement | null {

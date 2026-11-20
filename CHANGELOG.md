@@ -16,9 +16,14 @@
 
 ### 🐛 fix
 
+- **config** — pindah storage.sync -> local (quota 8KB/item) + migrasi sekali dari sync (`74dad0a`)
 - **mKlaimPrint** — pindahkan tombol cetak ke paling akhir action bar bawah (`5917756`)
 - **mKlaimPrint** — rapikan nilai radio/checkbox & buang kolom kosong tabel Rincian Biaya (`f6eacef`)
 - **mKlaimPrint** — amankan data input/textarea + PDF canvas & perbaiki dedup section (`d143d88`)
+
+### 🎨 style
+
+- **mKlaimPrint** — format formal RS — hilangkan card/border kotak, garis heading + baris saja (`a4eb573`)
 
 ## 2026-11-18
 
@@ -2115,4 +2120,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 5917756d4f55fd005261587597a73f7eb545f5ff -->
+<!-- changelog-upto: a4eb573fb94ebef4f1ce799d6bcd6ca36df57714 -->
