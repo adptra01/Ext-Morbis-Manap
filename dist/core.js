@@ -59,7 +59,7 @@ var __morbis_core = (() => {
     } catch {
     }
     try {
-      const result = await chrome.storage.sync.get("extensionConfig");
+      const result = await chrome.storage.local.get("extensionConfig");
       currentConfig = result.extensionConfig ?? null;
       if (!currentConfig) {
         currentConfig = { extensionEnabled: true, currentRole: "admin", features: {} };
@@ -76,7 +76,7 @@ var __morbis_core = (() => {
   }
   async function loadCustomUrls() {
     try {
-      const result = await chrome.storage.sync.get("extensionCustomUrls");
+      const result = await chrome.storage.local.get("extensionCustomUrls");
       const saved = result.extensionCustomUrls;
       const defaults = [
         { id: "default-1", url: "http://192.168.8.4", enabled: true, isDefault: true },
@@ -115,7 +115,7 @@ var __morbis_core = (() => {
       await chrome.runtime.sendMessage({ type: "SET_ROLE", role });
     } catch {
       if (currentConfig) {
-        await chrome.storage.sync.set({ extensionConfig: { ...currentConfig, currentRole: role } });
+        await chrome.storage.local.set({ extensionConfig: { ...currentConfig, currentRole: role } });
       }
     }
     if (currentConfig) {
@@ -144,7 +144,7 @@ var __morbis_core = (() => {
     window.location.reload();
   }
   chrome.storage.onChanged.addListener(function(changes, area) {
-    if (area === "sync" && changes["extensionConfig"]) reloadForConfigChange("storage");
+    if (area === "local" && changes["extensionConfig"]) reloadForConfigChange("storage");
   });
   chrome.runtime.onMessage.addListener(function(message) {
     if (message.type === "CONFIG_CHANGED") reloadForConfigChange("message");

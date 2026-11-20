@@ -14,7 +14,7 @@ var __morbis_feature = (() => {
   }
   async function isFeatureEnabled(key) {
     try {
-      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const store = await chrome.storage.local.get(STORAGE_KEY);
       const cfg = store?.[STORAGE_KEY] ?? null;
       return decideFeatureGate(key, cfg);
     } catch {
@@ -65,7 +65,7 @@ var __morbis_feature = (() => {
   // src/shared/storage.ts
   var STORAGE_KEY2 = "extensionConfig";
   async function getConfig() {
-    const result = await chrome.storage.sync.get(STORAGE_KEY2);
+    const result = await chrome.storage.local.get(STORAGE_KEY2);
     return result[STORAGE_KEY2] ?? null;
   }
 

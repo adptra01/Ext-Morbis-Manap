@@ -322,7 +322,7 @@ var __morbis_feature = (() => {
   }
   async function isFeatureEnabled(key2) {
     try {
-      const store2 = await chrome.storage.sync.get(STORAGE_KEY);
+      const store2 = await chrome.storage.local.get(STORAGE_KEY);
       const cfg = store2?.[STORAGE_KEY] ?? null;
       return decideFeatureGate(key2, cfg);
     } catch {

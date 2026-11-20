@@ -40,7 +40,7 @@ let basePromise: Promise<string> | null = null;
  *  konstanta PROD hanya fallback terakhir. */
 async function storedBaseCandidates(): Promise<string[]> {
   try {
-    const result = (await chrome.storage.sync.get('extensionCustomUrls')) as {
+    const result = (await chrome.storage.local.get('extensionCustomUrls')) as {
       extensionCustomUrls?: { url?: string; enabled?: boolean }[];
     };
     const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);

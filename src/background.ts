@@ -475,13 +475,24 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
 
 async function loadConfig(): Promise<ExtensionConfig> {
   try {
-    const result = (await chrome.storage.sync.get(STORAGE_KEY)) as Record<
+    const result = (await chrome.storage.local.get(STORAGE_KEY)) as Record<
       string,
       ExtensionConfig | undefined
     >;
     if (!result[STORAGE_KEY]) {
-      const config = structuredClone(DEFAULT_CONFIG) as ExtensionConfig;
-      await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+      // Migrasi sekali dari storage.sync (lama) ke local. Config sekarang
+      // ~8 KB — melebihi batas PER-ITEM storage.sync (8.192 byte).
+      let config = structuredClone(DEFAULT_CONFIG) as ExtensionConfig;
+      try {
+        const old = (await chrome.storage.sync.get(STORAGE_KEY)) as Record<
+          string,
+          ExtensionConfig | undefined
+        >;
+        if (old[STORAGE_KEY]) config = migrateConfig(structuredClone(old[STORAGE_KEY]));
+      } catch {
+        /* abaikan — pakai default */
+      }
+      await chrome.storage.local.set({ [STORAGE_KEY]: config });
       return config;
     }
     const config = migrateConfig(structuredClone(result[STORAGE_KEY]));
@@ -489,7 +500,7 @@ async function loadConfig(): Promise<ExtensionConfig> {
     // setiap GET_CONFIG (setiap page load) menulis ke storage.sync → content
     // script melihat storage.onChanged → reload → GET_CONFIG lagi → loop.
     if (JSON.stringify(config) !== JSON.stringify(result[STORAGE_KEY])) {
-      await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+      await chrome.storage.local.set({ [STORAGE_KEY]: config });
     }
     return config;
   } catch (e) {
@@ -500,13 +511,22 @@ async function loadConfig(): Promise<ExtensionConfig> {
 
 async function loadUrls(): Promise<CustomUrl[]> {
   try {
-    const result = (await chrome.storage.sync.get(URLS_STORAGE_KEY)) as Record<
+    const result = (await chrome.storage.local.get(URLS_STORAGE_KEY)) as Record<
       string,
       CustomUrl[] | undefined
     >;
     if (!result[URLS_STORAGE_KEY]) {
-      const urls = structuredClone(DEFAULT_CUSTOM_URLS) as CustomUrl[];
-      await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+      let urls = structuredClone(DEFAULT_CUSTOM_URLS) as CustomUrl[];
+      try {
+        const old = (await chrome.storage.sync.get(URLS_STORAGE_KEY)) as Record<
+          string,
+          CustomUrl[] | undefined
+        >;
+        if (old[URLS_STORAGE_KEY]) urls = old[URLS_STORAGE_KEY];
+      } catch {
+        /* abaikan */
+      }
+      await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
       return urls;
     }
     const saved = result[URLS_STORAGE_KEY];
@@ -571,7 +591,7 @@ chrome.runtime.onMessage.addListener(
         (async () => {
           const config = await loadConfig();
           config.currentRole = validated.role as ExtensionConfig['currentRole'];
-          await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+          await chrome.storage.local.set({ [STORAGE_KEY]: config });
           broadcastConfigChange();
           sendResponse({ success: true });
         })();
@@ -582,7 +602,7 @@ chrome.runtime.onMessage.addListener(
         (async () => {
           const config = await loadConfig();
           config.extensionEnabled = validated.enabled as boolean;
-          await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+          await chrome.storage.local.set({ [STORAGE_KEY]: config });
           broadcastConfigChange();
           sendResponse({ success: true });
         })();
@@ -594,7 +614,7 @@ chrome.runtime.onMessage.addListener(
           const config = await loadConfig();
           if (config.features[validated.key as string]) {
             config.features[validated.key as string].enabled = validated.enabled as boolean;
-            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            await chrome.storage.local.set({ [STORAGE_KEY]: config });
             broadcastConfigChange();
           }
           sendResponse({ success: true });
@@ -607,7 +627,7 @@ chrome.runtime.onMessage.addListener(
           const config = await loadConfig();
           if (config.features[validated.key as string]) {
             config.features[validated.key as string].mode = validated.mode;
-            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            await chrome.storage.local.set({ [STORAGE_KEY]: config });
           }
           sendResponse({ success: true });
         })();
@@ -616,7 +636,7 @@ chrome.runtime.onMessage.addListener(
 
       case 'RESET_CONFIG': {
         (async () => {
-          await chrome.storage.sync.set({
+          await chrome.storage.local.set({
             [STORAGE_KEY]: structuredClone(DEFAULT_CONFIG),
           });
           broadcastConfigChange();
@@ -634,7 +654,7 @@ chrome.runtime.onMessage.addListener(
             enabled: true,
             isDefault: false,
           });
-          await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+          await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
           broadcastConfigChange();
           sendResponse({ success: true });
         })();
@@ -645,7 +665,7 @@ chrome.runtime.onMessage.addListener(
         (async () => {
           let urls = await loadUrls();
           urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
-          await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+          await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
           broadcastConfigChange();
           sendResponse({ success: true });
         })();
@@ -658,7 +678,7 @@ chrome.runtime.onMessage.addListener(
           for (const u of urls) {
             if (u.id === validated.id) u.enabled = validated.enabled as boolean;
           }
-          await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+          await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
           broadcastConfigChange();
           sendResponse({ success: true });
         })();

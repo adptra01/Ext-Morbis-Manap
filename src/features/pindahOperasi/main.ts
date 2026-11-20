@@ -83,7 +83,7 @@ function pindahOperasi(): void {
 
 async function isAllowed(): Promise<boolean> {
   try {
-    const result = await chrome.storage.sync.get('extensionConfig');
+    const result = await chrome.storage.local.get('extensionConfig');
     const cfg = result.extensionConfig as
       (FeatureGateConfig & { extensionEnabled?: boolean }) | undefined;
     if (!cfg || cfg.extensionEnabled !== true) return false;

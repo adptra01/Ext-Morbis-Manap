@@ -60,7 +60,7 @@ export function decideFeatureGate(
 /** Baca config dari chrome.storage.sync (gagal baca = anggap ON). */
 export async function isFeatureEnabled(key: string): Promise<boolean> {
   try {
-    const store = await chrome.storage.sync.get(STORAGE_KEY);
+    const store = await chrome.storage.local.get(STORAGE_KEY);
     const cfg = (store?.[STORAGE_KEY] ?? null) as FeatureGateConfig | null;
     return decideFeatureGate(key, cfg);
   } catch {

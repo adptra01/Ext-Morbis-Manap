@@ -262,7 +262,7 @@ var __morbis_feature = (() => {
   var basePromise = null;
   async function storedBaseCandidates() {
     try {
-      const result = await chrome.storage.sync.get("extensionCustomUrls");
+      const result = await chrome.storage.local.get("extensionCustomUrls");
       const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
       return urls.map((u) => u.url.replace(/\/+$/, "") + "/rs");
     } catch {
@@ -488,7 +488,7 @@ var __morbis_feature = (() => {
   }
   async function isFeatureEnabled(key) {
     try {
-      const store = await chrome.storage.sync.get(STORAGE_KEY);
+      const store = await chrome.storage.local.get(STORAGE_KEY);
       const cfg = store?.[STORAGE_KEY] ?? null;
       return decideFeatureGate(key, cfg);
     } catch {

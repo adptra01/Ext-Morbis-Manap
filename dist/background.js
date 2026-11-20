@@ -480,15 +480,20 @@ var __morbis_bg = (() => {
   }
   async function loadConfig() {
     try {
-      const result = await chrome.storage.sync.get(STORAGE_KEY);
+      const result = await chrome.storage.local.get(STORAGE_KEY);
       if (!result[STORAGE_KEY]) {
-        const config2 = structuredClone(DEFAULT_CONFIG);
-        await chrome.storage.sync.set({ [STORAGE_KEY]: config2 });
+        let config2 = structuredClone(DEFAULT_CONFIG);
+        try {
+          const old = await chrome.storage.sync.get(STORAGE_KEY);
+          if (old[STORAGE_KEY]) config2 = migrateConfig(structuredClone(old[STORAGE_KEY]));
+        } catch {
+        }
+        await chrome.storage.local.set({ [STORAGE_KEY]: config2 });
         return config2;
       }
       const config = migrateConfig(structuredClone(result[STORAGE_KEY]));
       if (JSON.stringify(config) !== JSON.stringify(result[STORAGE_KEY])) {
-        await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+        await chrome.storage.local.set({ [STORAGE_KEY]: config });
       }
       return config;
     } catch (e) {
@@ -498,10 +503,15 @@ var __morbis_bg = (() => {
   }
   async function loadUrls() {
     try {
-      const result = await chrome.storage.sync.get(URLS_STORAGE_KEY);
+      const result = await chrome.storage.local.get(URLS_STORAGE_KEY);
       if (!result[URLS_STORAGE_KEY]) {
-        const urls = structuredClone(DEFAULT_CUSTOM_URLS);
-        await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+        let urls = structuredClone(DEFAULT_CUSTOM_URLS);
+        try {
+          const old = await chrome.storage.sync.get(URLS_STORAGE_KEY);
+          if (old[URLS_STORAGE_KEY]) urls = old[URLS_STORAGE_KEY];
+        } catch {
+        }
+        await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
         return urls;
       }
       const saved = result[URLS_STORAGE_KEY];
@@ -558,7 +568,7 @@ var __morbis_bg = (() => {
           (async () => {
             const config = await loadConfig();
             config.currentRole = validated.role;
-            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            await chrome.storage.local.set({ [STORAGE_KEY]: config });
             broadcastConfigChange();
             sendResponse({ success: true });
           })();
@@ -568,7 +578,7 @@ var __morbis_bg = (() => {
           (async () => {
             const config = await loadConfig();
             config.extensionEnabled = validated.enabled;
-            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            await chrome.storage.local.set({ [STORAGE_KEY]: config });
             broadcastConfigChange();
             sendResponse({ success: true });
           })();
@@ -579,7 +589,7 @@ var __morbis_bg = (() => {
             const config = await loadConfig();
             if (config.features[validated.key]) {
               config.features[validated.key].enabled = validated.enabled;
-              await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+              await chrome.storage.local.set({ [STORAGE_KEY]: config });
               broadcastConfigChange();
             }
             sendResponse({ success: true });
@@ -591,7 +601,7 @@ var __morbis_bg = (() => {
             const config = await loadConfig();
             if (config.features[validated.key]) {
               config.features[validated.key].mode = validated.mode;
-              await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+              await chrome.storage.local.set({ [STORAGE_KEY]: config });
             }
             sendResponse({ success: true });
           })();
@@ -599,7 +609,7 @@ var __morbis_bg = (() => {
         }
         case "RESET_CONFIG": {
           (async () => {
-            await chrome.storage.sync.set({
+            await chrome.storage.local.set({
               [STORAGE_KEY]: structuredClone(DEFAULT_CONFIG)
             });
             broadcastConfigChange();
@@ -616,7 +626,7 @@ var __morbis_bg = (() => {
               enabled: true,
               isDefault: false
             });
-            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+            await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
             broadcastConfigChange();
             sendResponse({ success: true });
           })();
@@ -626,7 +636,7 @@ var __morbis_bg = (() => {
           (async () => {
             let urls = await loadUrls();
             urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
-            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+            await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
             broadcastConfigChange();
             sendResponse({ success: true });
           })();
@@ -638,7 +648,7 @@ var __morbis_bg = (() => {
             for (const u of urls) {
               if (u.id === validated.id) u.enabled = validated.enabled;
             }
-            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+            await chrome.storage.local.set({ [URLS_STORAGE_KEY]: urls });
             broadcastConfigChange();
             sendResponse({ success: true });
           })();

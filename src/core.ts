@@ -40,7 +40,7 @@ async function loadConfig(): Promise<ExtensionConfig> {
     /* background tidur/unreachable → fallback baca langsung di bawah */
   }
   try {
-    const result = (await chrome.storage.sync.get('extensionConfig')) as {
+    const result = (await chrome.storage.local.get('extensionConfig')) as {
       extensionConfig?: ExtensionConfig;
     };
     currentConfig = result.extensionConfig ?? null;
@@ -60,7 +60,7 @@ async function loadConfig(): Promise<ExtensionConfig> {
 
 async function loadCustomUrls(): Promise<CustomUrl[]> {
   try {
-    const result = (await chrome.storage.sync.get('extensionCustomUrls')) as {
+    const result = (await chrome.storage.local.get('extensionCustomUrls')) as {
       extensionCustomUrls?: CustomUrl[];
     };
     const saved = result.extensionCustomUrls;
@@ -105,7 +105,7 @@ async function setCurrentRole(role: Role): Promise<Role> {
     await chrome.runtime.sendMessage({ type: 'SET_ROLE', role: role } as MessagePayload);
   } catch {
     if (currentConfig) {
-      await chrome.storage.sync.set({ extensionConfig: { ...currentConfig, currentRole: role } });
+      await chrome.storage.local.set({ extensionConfig: { ...currentConfig, currentRole: role } });
     }
   }
   if (currentConfig) {
@@ -145,7 +145,7 @@ function reloadForConfigChange(reason: string): void {
 }
 
 chrome.storage.onChanged.addListener(function (changes, area) {
-  if (area === 'sync' && changes['extensionConfig']) reloadForConfigChange('storage');
+  if (area === 'local' && changes['extensionConfig']) reloadForConfigChange('storage');
 });
 
 chrome.runtime.onMessage.addListener(function (message: MessagePayload) {

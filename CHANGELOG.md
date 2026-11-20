@@ -16,6 +16,8 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — pindahkan tombol cetak ke paling akhir action bar bawah (`5917756`)
+- **mKlaimPrint** — rapikan nilai radio/checkbox & buang kolom kosong tabel Rincian Biaya (`f6eacef`)
 - **mKlaimPrint** — amankan data input/textarea + PDF canvas & perbaiki dedup section (`d143d88`)
 
 ## 2026-11-18
@@ -2113,4 +2115,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d143d88c57b4bf75346bd4e3d61dc1b176d54ebd -->
+<!-- changelog-upto: 5917756d4f55fd005261587597a73f7eb545f5ff -->
