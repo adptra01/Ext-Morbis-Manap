@@ -29,12 +29,66 @@ var __morbis_feature = (() => {
     'a[href^="javascript:"]'
   ];
   var val = (id) => document.getElementById(id)?.value?.trim() || "";
+  function flattenControls(root) {
+    const span = (text) => {
+      const s = document.createElement("span");
+      s.className = "fv";
+      s.textContent = text;
+      return s;
+    };
+    root.querySelectorAll("input").forEach((el) => {
+      const type = (el.type || "text").toLowerCase();
+      if (type === "hidden") {
+        el.remove();
+        return;
+      }
+      if (type === "radio" || type === "checkbox") {
+        if (el.checked && el.value) el.replaceWith(span("\u2713 " + el.value));
+        else el.remove();
+        return;
+      }
+      const v = (el.value || "").trim();
+      if (v) el.replaceWith(span(v));
+      else el.remove();
+    });
+    root.querySelectorAll("textarea").forEach((el) => {
+      const v = (el.value || "").trim();
+      if (v) el.replaceWith(span(v));
+      else el.remove();
+    });
+    root.querySelectorAll("select").forEach((el) => {
+      const opt = el.options[el.selectedIndex];
+      const v = (opt?.textContent || el.value || "").trim();
+      if (v) el.replaceWith(span(v));
+      else el.remove();
+    });
+  }
   function clean(section) {
     const c = section.cloneNode(true);
+    const sourceCanvas = Array.from(section.querySelectorAll("canvas"));
+    const cloneCanvas = Array.from(c.querySelectorAll("canvas"));
+    sourceCanvas.forEach((cv, i) => {
+      const target = cloneCanvas[i];
+      if (!target) return;
+      try {
+        const img = document.createElement("img");
+        img.src = cv.toDataURL("image/png");
+        img.style.cssText = "max-width:100%;height:auto;";
+        target.replaceWith(img);
+      } catch {
+        const note = document.createElement("div");
+        note.className = "fv";
+        note.textContent = "[Berkas PDF \u2014 silakan buka di halaman asli]";
+        target.replaceWith(note);
+      }
+    });
+    flattenControls(c);
     REMOVE.forEach((sel) => c.querySelectorAll(sel).forEach((el) => el.remove()));
     c.querySelectorAll("[style]").forEach((el) => {
       const s = el.getAttribute("style") || "";
-      const keep = (s.match(/(?:text-align|width|vertical-align|white-space)\s*:[^;]+/gi) || []).join(";");
+      const keep = (s.match(/(?:text-align|width|vertical-align|white-space)\s*:[^;]+/gi) || []).join(
+        ";"
+      );
       if (keep) el.setAttribute("style", keep);
       else el.removeAttribute("style");
     });
@@ -59,10 +113,10 @@ var __morbis_feature = (() => {
     nodes.forEach((node, i) => {
       const html = clean(node);
       if (html.length < 20) return;
-      const key = html.slice(0, 160);
-      if (seen.has(key)) return;
-      seen.add(key);
-      out.push({ title: titleOf(node, i), html });
+      const title = titleOf(node, i);
+      if (seen.has(title)) return;
+      seen.add(title);
+      out.push({ title, html });
     });
     if (!out.length) {
       const fallback = document.querySelector("#section-to-print");
@@ -70,11 +124,16 @@ var __morbis_feature = (() => {
     }
     return out;
   }
-  var esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  var esc = (s) => s.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+  );
   function buildHtml(sections) {
-    const logo = document.querySelector("#logo img")?.getAttribute("src") || "/assets/images/logo.svg";
+    const logo = "/assets/images/logo/Kota Jambi.png";
     const row = (label, value) => `<div class="meta-item"><span class="meta-label">${esc(label)}</span><span class="meta-value">${esc(value || "\u2014")}</span></div>`;
-    const toc = sections.map((s, i) => `<span class="toc-chip"><b>${String(i + 1).padStart(2, "0")}</b> ${esc(s.title)}</span>`).join("");
+    const toc = sections.map(
+      (s, i) => `<span class="toc-chip"><b>${String(i + 1).padStart(2, "0")}</b> ${esc(s.title)}</span>`
+    ).join("");
     const docs = sections.map(
       (s, i) => `
       <section class="doc">
@@ -147,6 +206,8 @@ body{
 .doc-body th{background:var(--chip)!important;font-weight:600;color:var(--ink);}
 .doc-body h1,.doc-body h2,.doc-body h3{font-family:var(--serif);font-size:13px;margin:6px 0;}
 .doc-body p{margin:3px 0;}
+.doc-body label{display:inline-block;min-width:112px;font-weight:600;color:var(--muted);font-size:9px;letter-spacing:.02em;text-transform:uppercase;}
+.doc-body .fv{font-weight:500;color:var(--ink);}
 .doc-body img{max-width:100%!important;height:auto!important;}
 .doc-body .panel,.doc-body .isidalam,.doc-body .card{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;width:100%!important;}
 .screen-bar{
@@ -234,11 +295,13 @@ body{
     win.document.close();
   }
   function anchorForButton() {
-    const nativePrint = Array.from(document.querySelectorAll("button.btn-success")).find((b) => /^printDiv\s*\(/i.test(b.getAttribute("onclick") || ""));
-    if (nativePrint?.parentElement) return nativePrint.parentElement;
-    const bar = Array.from(document.querySelectorAll('div[style*="text-align:right"]')).find(
-      (d) => d.querySelector("button")
+    const nativePrint = Array.from(document.querySelectorAll("button.btn-success")).find(
+      (b) => /^printDiv\s*\(/i.test(b.getAttribute("onclick") || "")
     );
+    if (nativePrint?.parentElement) return nativePrint.parentElement;
+    const bar = Array.from(
+      document.querySelectorAll('div[style*="text-align:right"]')
+    ).find((d) => d.querySelector("button"));
     return bar || document.getElementById("SCETAK") || document.body;
   }
   function renderMklaimPrintButton() {

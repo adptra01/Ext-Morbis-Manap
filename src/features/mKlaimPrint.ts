@@ -41,8 +41,66 @@ const val = (id: string): string =>
   (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value?.trim() ||
   '';
 
+/** Ubah kontrol form menjadi teks sebelum dibersihkan — banyak section
+ *  (mis. Pengkjadian IGD) menyimpan data pasien di `value` input/textarea,
+ *  jadi menghapus input mentah membuat data hilang. */
+function flattenControls(root: HTMLElement): void {
+  const span = (text: string): HTMLSpanElement => {
+    const s = document.createElement('span');
+    s.className = 'fv';
+    s.textContent = text;
+    return s;
+  };
+  root.querySelectorAll<HTMLInputElement>('input').forEach((el) => {
+    const type = (el.type || 'text').toLowerCase();
+    if (type === 'hidden') {
+      el.remove();
+      return;
+    }
+    if (type === 'radio' || type === 'checkbox') {
+      if (el.checked && el.value) el.replaceWith(span('✓ ' + el.value));
+      else el.remove();
+      return;
+    }
+    const v = (el.value || '').trim();
+    if (v) el.replaceWith(span(v));
+    else el.remove();
+  });
+  root.querySelectorAll<HTMLTextAreaElement>('textarea').forEach((el) => {
+    const v = (el.value || '').trim();
+    if (v) el.replaceWith(span(v));
+    else el.remove();
+  });
+  root.querySelectorAll<HTMLSelectElement>('select').forEach((el) => {
+    const opt = el.options[el.selectedIndex];
+    const v = (opt?.textContent || el.value || '').trim();
+    if (v) el.replaceWith(span(v));
+    else el.remove();
+  });
+}
+
 function clean(section: HTMLElement): string {
   const c = section.cloneNode(true) as HTMLElement;
+  // Canvas PDF (pdf.js) tidak ikut tersalin oleh cloneNode → ubah jadi img
+  // data-URL dari canvas asli supaya berkas tetap tampil di dossier.
+  const sourceCanvas = Array.from(section.querySelectorAll('canvas'));
+  const cloneCanvas = Array.from(c.querySelectorAll('canvas'));
+  sourceCanvas.forEach((cv, i) => {
+    const target = cloneCanvas[i];
+    if (!target) return;
+    try {
+      const img = document.createElement('img');
+      img.src = cv.toDataURL('image/png');
+      img.style.cssText = 'max-width:100%;height:auto;';
+      target.replaceWith(img);
+    } catch {
+      const note = document.createElement('div');
+      note.className = 'fv';
+      note.textContent = '[Berkas PDF — silakan buka di halaman asli]';
+      target.replaceWith(note);
+    }
+  });
+  flattenControls(c);
   REMOVE.forEach((sel) => c.querySelectorAll(sel).forEach((el) => el.remove()));
   c.querySelectorAll('[style]').forEach((el) => {
     // Buang style inline lama (font Consolas, lebar paksa, dll.) — tapi
@@ -78,10 +136,13 @@ function collectSections(): Section[] {
   nodes.forEach((node, i) => {
     const html = clean(node);
     if (html.length < 20) return;
-    const key = html.slice(0, 160);
-    if (seen.has(key)) return; // section duplikat (render ulang) → ambil satu
-    seen.add(key);
-    out.push({ title: titleOf(node, i), html });
+    const title = titleOf(node, i);
+    // Dedup oleh JUDUL (unique per berkas). Dedup by potongan HTML salah
+    // kaprah: beberapa dokumen punya pembuka <div width:100%> yang sama
+    // persis → section besar (mis. Pengkajian IGD) ikut terbuang.
+    if (seen.has(title)) return;
+    seen.add(title);
+    out.push({ title, html });
   });
   if (!out.length) {
     const fallback = document.querySelector<HTMLElement>('#section-to-print');
@@ -97,8 +158,8 @@ const esc = (s: string): string =>
   );
 
 function buildHtml(sections: Section[]): string {
-  const logo =
-    document.querySelector('#logo img')?.getAttribute('src') || '/assets/images/logo.svg';
+  // PNG resolusi penuh — logo.svg aslinya cuma 28x33 & pucat di kertas putih.
+  const logo = '/assets/images/logo/Kota Jambi.png';
   const row = (label: string, value: string): string =>
     `<div class="meta-item"><span class="meta-label">${esc(label)}</span><span class="meta-value">${esc(value || '—')}</span></div>`;
   const toc = sections
@@ -182,6 +243,8 @@ body{
 .doc-body th{background:var(--chip)!important;font-weight:600;color:var(--ink);}
 .doc-body h1,.doc-body h2,.doc-body h3{font-family:var(--serif);font-size:13px;margin:6px 0;}
 .doc-body p{margin:3px 0;}
+.doc-body label{display:inline-block;min-width:112px;font-weight:600;color:var(--muted);font-size:9px;letter-spacing:.02em;text-transform:uppercase;}
+.doc-body .fv{font-weight:500;color:var(--ink);}
 .doc-body img{max-width:100%!important;height:auto!important;}
 .doc-body .panel,.doc-body .isidalam,.doc-body .card{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;width:100%!important;}
 .screen-bar{
