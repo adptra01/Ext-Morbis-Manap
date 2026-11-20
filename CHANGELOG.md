@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign dossier monokrom & telaah resep (`723b6c9`)
+- **mKlaimPrint** — catatan pemeriksaan lintas berkas, kolom Ver tabel, alat rotasi/hapus lampiran (`0a8a2b4`)
 - **mKlaimPrint** — lembar kendali berkas (halaman 1) + filter canvas kosong/hitam + header tabel berulang (`5a7e6e9`)
 - **mKlaimPrint** — dossier cetak A4 semua section + tombol di action bar + dialog tutup (`fee3727`)
 - **mKlaimMarks** — mark Labor/Radiologi/Batal Berobat (tombol+badge, sinkron pusat generik) (`f408ac3`)
@@ -2122,4 +2124,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 5a7e6e95fbd01a22d1c33b5fe99822f9f9408a07 -->
+<!-- changelog-upto: 723b6c91a1b6883505fbb782b2563b59bd5992fb -->

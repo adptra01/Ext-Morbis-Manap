@@ -30633,12 +30633,6 @@ var __morbis_feature = (() => {
   .sticky {
     position: sticky;
   }
-  .-inset-1 {
-    inset: calc(var(--spacing) * -1);
-  }
-  .top-1 {
-    top: var(--spacing);
-  }
   .top-1\\/2 {
     top: calc(1 / 2 * 100%);
   }
@@ -30650,9 +30644,6 @@ var __morbis_feature = (() => {
   }
   .bottom-4 {
     bottom: calc(var(--spacing) * 4);
-  }
-  .left-1 {
-    left: var(--spacing);
   }
   .left-1\\/2 {
     left: calc(1 / 2 * 100%);
@@ -30716,9 +30707,6 @@ var __morbis_feature = (() => {
   }
   .me-2 {
     margin-inline-end: calc(var(--spacing) * 2);
-  }
-  .mt-0 {
-    margin-top: 0px;
   }
   .mt-0\\.5 {
     margin-top: calc(var(--spacing) * 0.5);
@@ -30833,10 +30821,6 @@ var __morbis_feature = (() => {
   }
   .table-row-group {
     display: table-row-group;
-  }
-  .size-1 {
-    width: var(--spacing);
-    height: var(--spacing);
   }
   .size-1\\.5 {
     width: calc(var(--spacing) * 1.5);
@@ -31037,25 +31021,14 @@ var __morbis_feature = (() => {
   .shrink-0 {
     flex-shrink: 0;
   }
-  .flex-grow {
-    flex-grow: 1;
-  }
   .grow {
     flex-grow: 1;
   }
   .border-collapse {
     border-collapse: collapse;
   }
-  .-translate-x-1 {
-    --tw-translate-x: calc(var(--spacing) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
   .-translate-x-1\\/2 {
     --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
-  .-translate-y-1 {
-    --tw-translate-y: calc(var(--spacing) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .-translate-y-1\\/2 {
@@ -31155,11 +31128,6 @@ var __morbis_feature = (() => {
   }
   .gap-4 {
     gap: calc(var(--spacing) * 4);
-  }
-  :where(.space-y-0 > :not(:last-child)) {
-    --tw-space-y-reverse: 0;
-    margin-block-start: 0;
-    margin-block-end: 0;
   }
   :where(.space-y-0\\.5 > :not(:last-child)) {
     --tw-space-y-reverse: 0;
@@ -31562,9 +31530,6 @@ var __morbis_feature = (() => {
   .bg-red-100 {
     background-color: var(--color-red-100);
   }
-  .bg-red-500 {
-    background-color: var(--color-red-500);
-  }
   .bg-red-500\\/5 {
     background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 5%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -31576,9 +31541,6 @@ var __morbis_feature = (() => {
   }
   .bg-secondary {
     background-color: hsl(var(--secondary));
-  }
-  .bg-white {
-    background-color: var(--color-white);
   }
   .bg-white\\/15 {
     background-color: color-mix(in srgb, #fff 15%, transparent);
@@ -31595,10 +31557,6 @@ var __morbis_feature = (() => {
   }
   .from-muted {
     --tw-gradient-from: hsl(var(--muted));
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
-  .to-muted {
-    --tw-gradient-to: hsl(var(--muted));
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
   .to-muted\\/50 {
@@ -31618,9 +31576,6 @@ var __morbis_feature = (() => {
   .mask-repeat {
     -webkit-mask-repeat: repeat;
             mask-repeat: repeat;
-  }
-  .p-0 {
-    padding: 0px;
   }
   .p-0\\.5 {
     padding: calc(var(--spacing) * 0.5);
@@ -31720,9 +31675,6 @@ var __morbis_feature = (() => {
   }
   .pr-20 {
     padding-right: calc(var(--spacing) * 20);
-  }
-  .pb-1 {
-    padding-bottom: var(--spacing);
   }
   .pb-1\\.5 {
     padding-bottom: calc(var(--spacing) * 1.5);
@@ -33572,12 +33524,6 @@ var __morbis_feature = (() => {
   .sticky {
     position: sticky;
   }
-  .-inset-1 {
-    inset: calc(var(--spacing) * -1);
-  }
-  .top-1 {
-    top: var(--spacing);
-  }
   .top-1\\/2 {
     top: calc(1 / 2 * 100%);
   }
@@ -33589,9 +33535,6 @@ var __morbis_feature = (() => {
   }
   .bottom-4 {
     bottom: calc(var(--spacing) * 4);
-  }
-  .left-1 {
-    left: var(--spacing);
   }
   .left-1\\/2 {
     left: calc(1 / 2 * 100%);
@@ -33655,9 +33598,6 @@ var __morbis_feature = (() => {
   }
   .me-2 {
     margin-inline-end: calc(var(--spacing) * 2);
-  }
-  .mt-0 {
-    margin-top: 0px;
   }
   .mt-0\\.5 {
     margin-top: calc(var(--spacing) * 0.5);
@@ -33772,10 +33712,6 @@ var __morbis_feature = (() => {
   }
   .table-row-group {
     display: table-row-group;
-  }
-  .size-1 {
-    width: var(--spacing);
-    height: var(--spacing);
   }
   .size-1\\.5 {
     width: calc(var(--spacing) * 1.5);
@@ -33976,25 +33912,14 @@ var __morbis_feature = (() => {
   .shrink-0 {
     flex-shrink: 0;
   }
-  .flex-grow {
-    flex-grow: 1;
-  }
   .grow {
     flex-grow: 1;
   }
   .border-collapse {
     border-collapse: collapse;
   }
-  .-translate-x-1 {
-    --tw-translate-x: calc(var(--spacing) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
   .-translate-x-1\\/2 {
     --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
-  }
-  .-translate-y-1 {
-    --tw-translate-y: calc(var(--spacing) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .-translate-y-1\\/2 {
@@ -34094,11 +34019,6 @@ var __morbis_feature = (() => {
   }
   .gap-4 {
     gap: calc(var(--spacing) * 4);
-  }
-  :where(.space-y-0 > :not(:last-child)) {
-    --tw-space-y-reverse: 0;
-    margin-block-start: 0;
-    margin-block-end: 0;
   }
   :where(.space-y-0\\.5 > :not(:last-child)) {
     --tw-space-y-reverse: 0;
@@ -34501,9 +34421,6 @@ var __morbis_feature = (() => {
   .bg-red-100 {
     background-color: var(--color-red-100);
   }
-  .bg-red-500 {
-    background-color: var(--color-red-500);
-  }
   .bg-red-500\\/5 {
     background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 5%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -34515,9 +34432,6 @@ var __morbis_feature = (() => {
   }
   .bg-secondary {
     background-color: hsl(var(--secondary));
-  }
-  .bg-white {
-    background-color: var(--color-white);
   }
   .bg-white\\/15 {
     background-color: color-mix(in srgb, #fff 15%, transparent);
@@ -34534,10 +34448,6 @@ var __morbis_feature = (() => {
   }
   .from-muted {
     --tw-gradient-from: hsl(var(--muted));
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
-  .to-muted {
-    --tw-gradient-to: hsl(var(--muted));
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
   .to-muted\\/50 {
@@ -34557,9 +34467,6 @@ var __morbis_feature = (() => {
   .mask-repeat {
     -webkit-mask-repeat: repeat;
             mask-repeat: repeat;
-  }
-  .p-0 {
-    padding: 0px;
   }
   .p-0\\.5 {
     padding: calc(var(--spacing) * 0.5);
@@ -34659,9 +34566,6 @@ var __morbis_feature = (() => {
   }
   .pr-20 {
     padding-right: calc(var(--spacing) * 20);
-  }
-  .pb-1 {
-    padding-bottom: var(--spacing);
   }
   .pb-1\\.5 {
     padding-bottom: calc(var(--spacing) * 1.5);

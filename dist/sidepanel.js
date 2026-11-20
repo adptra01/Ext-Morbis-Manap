@@ -1,4 +1,4 @@
-import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-BT3e5O6J.js";
+import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-BiDPHDbn.js";
 // node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
@@ -1578,6 +1578,24 @@ var FALLBACK_FEATURES = [
 		roles: ["casemix", "admin"]
 	},
 	{
+		key: "laborMarker",
+		name: "Labor Marker",
+		desc: "Tandai pasien Labor di list + footer detail klaim, sinkron lintas-PC",
+		roles: ["casemix", "admin"]
+	},
+	{
+		key: "radiologiMarker",
+		name: "Radiologi Marker",
+		desc: "Tandai pasien Radiologi di list + footer detail klaim, sinkron lintas-PC",
+		roles: ["casemix", "admin"]
+	},
+	{
+		key: "batalBerobatMarker",
+		name: "Batal Berobat",
+		desc: "Tandai pasien Batal Berobat di list + footer detail klaim, sinkron lintas-PC",
+		roles: ["casemix", "admin"]
+	},
+	{
 		key: "telaahResep",
 		name: "UI Telaah Resep (Cetak)",
 		desc: "Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, info pasien/dokter)",
@@ -1612,16 +1630,6 @@ var FALLBACK_FEATURES = [
 		name: "Detail Kunjungan (Resep)",
 		desc: "Tombol Detail Kunjungan di sebelah Baca CPPT di detail/edit resep",
 		roles: ["admin", "apotek"]
-	},
-	{
-		key: "pasienRajalCounter",
-		name: "Total Pasien Rajal",
-		desc: "Ringkasan jumlah pasien rajal hari itu di halaman penerimaan resep",
-		roles: [
-			"admin",
-			"apotek",
-			"pendaftaran"
-		]
 	},
 	{
 		key: "ttsServer",

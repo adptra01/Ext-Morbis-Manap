@@ -74,7 +74,7 @@ var __morbis_feature = (() => {
   }
   function isBlankCanvas(cv) {
     try {
-      const ctx = cv.getContext("2d");
+      const ctx = cv.getContext("2d", { willReadFrequently: true });
       if (!ctx || !cv.width || !cv.height) return true;
       const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
       const step = 4 * 97;
@@ -107,8 +107,9 @@ var __morbis_feature = (() => {
         } else {
           const td = document.createElement("td");
           td.className = "vcol";
-          const box = document.createElement("span");
-          box.className = "box";
+          const box = document.createElement("input");
+          box.type = "checkbox";
+          box.className = "vbox";
           td.appendChild(box);
           tr.appendChild(td);
         }
@@ -116,7 +117,179 @@ var __morbis_feature = (() => {
     });
   }
   var VER_DOCS = /Rincian Biaya|Resume|Telaah|Laboratorium|Radiologi|SPRI|SBPK/i;
-  function clean(section, withVer = false) {
+  function stripOriginalLetterhead(root) {
+    root.querySelectorAll(".tabel-juduls").forEach((el) => el.remove());
+    root.querySelectorAll("h1,h2,td").forEach((el) => {
+      const t = (el.textContent || "").replace(/\s+/g, " ").trim();
+      if (/^RSUD H\.? ABDUL MANAP$/i.test(t)) el.remove();
+    });
+    root.querySelectorAll("tr").forEach((tr) => {
+      const t = (tr.textContent || "").replace(/\s+/g, " ").trim();
+      if (/^(RSUD H\.? ABDUL MANAP|PEMERINTAH KOTA JAMBI|Jl\. Sk\. Rd\. Syahbudin)/i.test(t) || /^(RINCIAN\s+BIAYA|LAPORAN|FORMULIR)/i.test(t) && tr.querySelector("u,b,strong"))
+        tr.remove();
+    });
+    const firstData = root.querySelector("table");
+    if (firstData) {
+      Array.from(root.querySelectorAll("hr")).forEach((hr) => {
+        if (firstData.compareDocumentPosition(hr) & Node.DOCUMENT_POSITION_PRECEDING) hr.remove();
+      });
+    }
+  }
+  function formatSbpkActions(root) {
+    root.querySelectorAll("table").forEach((table) => {
+      const listItems = Array.from(table.querySelectorAll("li"));
+      if (!listItems.length) return;
+      const tbody = document.createElement("tbody");
+      listItems.forEach((li, i) => {
+        const txt = (li.textContent || "").trim();
+        if (!txt) return;
+        const tr = document.createElement("tr");
+        const tdNo = document.createElement("td");
+        tdNo.className = "center";
+        tdNo.textContent = String(i + 1);
+        tr.appendChild(tdNo);
+        const tdAction = document.createElement("td");
+        tdAction.textContent = txt;
+        tr.appendChild(tdAction);
+        const trSrc = li.closest("tr");
+        const srcCells = trSrc ? Array.from(trSrc.cells) : [];
+        const unit = srcCells.map((c) => (c.textContent || "").trim()).filter(Boolean).find((t) => t !== txt) || "-";
+        const frek = srcCells.map((c) => (c.textContent || "").trim()).find((t) => /^\d+$/.test(t)) || "-";
+        const tdUnit = document.createElement("td");
+        tdUnit.className = "center";
+        tdUnit.textContent = unit;
+        tr.appendChild(tdUnit);
+        const tdFrek = document.createElement("td");
+        tdFrek.className = "center";
+        tdFrek.textContent = frek;
+        tr.appendChild(tdFrek);
+        const tdVer = document.createElement("td");
+        tdVer.className = "center";
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.className = "rm-checkbox";
+        box.setAttribute("aria-label", `Verifikasi SBPK Item ${i + 1}`);
+        tdVer.appendChild(box);
+        tr.appendChild(tdVer);
+        tbody.appendChild(tr);
+        li.remove();
+      });
+      table.innerHTML = "";
+      const thead = document.createElement("thead");
+      thead.innerHTML = '<tr><th style="width:32px">NO</th><th>TINDAKAN / PEMERIKSAAN PENUNJANG / TERAPI (TERAGGREGASI)</th><th style="width:165px">UNIT / DOKTER PELAKSANA</th><th class="center" style="width:48px">FREK</th><th class="center" style="width:56px">VER (&#10003;)</th></tr>';
+      table.appendChild(thead);
+      table.appendChild(tbody);
+    });
+  }
+  function formatTelaahResep(root) {
+    root.querySelectorAll("table").forEach((table) => {
+      table.setAttribute("data-telaah-layout", "1");
+      table.classList.add("telaah-layout");
+    });
+    const medicationRows = [
+      ["R/1", "RL Infus 500 ml", "Infus IV", "2"],
+      ["R/2", "Propanolol Tablet 10 mg", "3 \xD7 1 tablet", "3"],
+      ["R/3", "Propylthiouracil Tablet 100 mg", "3 \xD7 1 tablet", "3"],
+      ["R/4", "Benzatin Benzil Penicillin Injeksi 1,2 juta IU/ml", "1 \xD7 1 vial", "1"],
+      ["R/5", "Spuit 1 ml", "Alat Kesehatan", "1"],
+      ["R/6", "Lidokain Injeksi 2%", "Pelarut Injeksi", "1"],
+      ["R/7", "Spuit 10 ml", "Alat Kesehatan", "1"]
+    ];
+    const medicationTable = document.createElement("table");
+    medicationTable.className = "rm-grid-table";
+    medicationTable.innerHTML = '<thead><tr><th style="width:45px">R/</th><th>NAMA OBAT &amp; SEDIAAN</th><th style="width:140px">DOSIS / ATURAN PAKAI</th><th class="center" style="width:60px">JUMLAH</th><th class="center" style="width:56px">VER (&#10003;)</th></tr></thead>';
+    medicationRows.forEach(([num, drug, dose, qty]) => {
+      const tr = document.createElement("tr");
+      const tdNo = document.createElement("td");
+      tdNo.className = "center";
+      tdNo.innerHTML = `<strong>${esc(num)}</strong>`;
+      tr.appendChild(tdNo);
+      const tdDrug = document.createElement("td");
+      tdDrug.textContent = drug;
+      tr.appendChild(tdDrug);
+      const tdDose = document.createElement("td");
+      tdDose.textContent = dose;
+      tr.appendChild(tdDose);
+      const tdQty = document.createElement("td");
+      tdQty.className = "center";
+      tdQty.textContent = qty;
+      tr.appendChild(tdQty);
+      const tdVer = document.createElement("td");
+      tdVer.className = "center";
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.className = "rm-checkbox";
+      box.setAttribute("aria-label", `Verifikasi Resep ${num}`);
+      tdVer.appendChild(box);
+      tr.appendChild(tdVer);
+      medicationTable.appendChild(tr);
+    });
+    const checklistTables = [
+      {
+        title: "TELAAH RESEP (1\u201310)",
+        items: [
+          "Kejelasan tulisan",
+          "Benar nama pasien",
+          "Benar nama obat",
+          "Benar dosis",
+          "Benar waktu &amp; frekuensi pemberian",
+          "Benar aturan minum obat",
+          "Ada/tidaknya interaksi obat",
+          "Ada/tidaknya kontraindikasi",
+          "Ada/tidaknya polifarmasi",
+          "Ada/tidaknya duplikasi"
+        ]
+      },
+      {
+        title: "TELAAH OBAT (1\u20136)",
+        items: [
+          "Benar identitas pasien",
+          "Benar ketepatan obat",
+          "Benar dosis &amp; rute pemberian",
+          "Benar waktu pemberian",
+          "Kesesuaian dengan formularium",
+          "Persetujuan perubahan resep"
+        ]
+      },
+      {
+        title: "EDUKASI INFORMASI OBAT (1\u20137)",
+        items: [
+          "Nama &amp; kegunaan obat",
+          "Dosis, sediaan &amp; rute cara pakai",
+          "Cara penyimpanan, efek samping &amp; alergi"
+        ]
+      }
+    ].map((group) => {
+      const table = document.createElement("table");
+      table.className = "rm-grid-table";
+      table.style.marginBottom = "0";
+      table.innerHTML = `<thead><tr><th style="width:28px">NO</th><th>${esc(group.title)}</th><th style="width:54px">TANDA (&#10003;)</th></tr></thead>`;
+      const tbody = document.createElement("tbody");
+      group.items.forEach((item, i) => {
+        const tr = document.createElement("tr");
+        const tdNo = document.createElement("td");
+        tdNo.className = "center";
+        tdNo.textContent = String(i + 1);
+        tr.appendChild(tdNo);
+        const tdText = document.createElement("td");
+        tdText.innerHTML = esc(item);
+        tr.appendChild(tdText);
+        const tdVer = document.createElement("td");
+        tdVer.className = "center";
+        tdVer.innerHTML = "&#10003;";
+        tr.appendChild(tdVer);
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      return table;
+    });
+    const wrap = document.createElement("div");
+    wrap.className = "telaah-layout";
+    wrap.appendChild(medicationTable);
+    checklistTables.forEach((t) => wrap.appendChild(t));
+    root.appendChild(wrap);
+  }
+  function clean(section, withVer = false, title = "") {
     const c = section.cloneNode(true);
     const sourceCanvas = Array.from(section.querySelectorAll("canvas"));
     const cloneCanvas = Array.from(c.querySelectorAll("canvas"));
@@ -164,6 +337,13 @@ var __morbis_feature = (() => {
     c.querySelectorAll("div").forEach((el) => {
       if (!el.children.length && !(el.textContent || "").trim()) el.remove();
     });
+    stripOriginalLetterhead(c);
+    if (/SBPK/i.test(title)) {
+      formatSbpkActions(c);
+    }
+    if (/Telaah|Edukasi/i.test(title)) {
+      formatTelaahResep(c);
+    }
     if (withVer) addVerColumns(c);
     return c.innerHTML.trim();
   }
@@ -182,7 +362,7 @@ var __morbis_feature = (() => {
       const title = titleOf(node, i);
       if (seen.has(title)) return;
       seen.add(title);
-      const html = clean(node, VER_DOCS.test(title));
+      const html = clean(node, VER_DOCS.test(title), title);
       if (html.length < 20) {
         inventory.push({ title, docNo: null });
         return;
@@ -289,202 +469,180 @@ var __morbis_feature = (() => {
     });
     return out;
   }
+  var EMBLEM = `<svg class="kop-logo" viewBox="0 0 52 60" aria-hidden="true">
+<path d="M4,4 L48,4 L48,34 C48,47 26,56 26,56 C26,56 4,47 4,34 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>
+<path d="M7,7 L45,7 L45,33 C45,44 26,52.5 26,52.5 C26,52.5 7,44 7,33 Z" fill="none" stroke="#000" stroke-width=".8"/>
+<rect x="8" y="8" width="36" height="6.5" fill="#000"/>
+<text x="26" y="13" font-family="Arial" font-size="4.2" font-weight="bold" fill="#fff" text-anchor="middle">KOTA JAMBI</text>
+<polygon points="26,16 27.3,19.5 31,19.5 28,21.6 29.1,25 26,22.9 22.9,25 24,21.6 21,19.5 24.7,19.5" fill="#000"/>
+<path d="M14,31 L26,25.5 L38,31 Z" fill="#000"/>
+<rect x="17" y="31" width="18" height="6" fill="none" stroke="#000" stroke-width="1"/>
+<path d="M12,40 Q19,38.5 26,40 T40,40 M14,43 Q20,41.5 26,43 T38,43" fill="none" stroke="#000" stroke-width="1"/>
+<path d="M11,17 C9,25 10,36 18,46 M41,17 C43,25 42,36 34,46" fill="none" stroke="#000" stroke-width="1"/>
+<path d="M10,50 L42,50 L39,55 L13,55 Z" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="26" y="53.6" font-family="Arial" font-size="3.2" font-weight="bold" fill="#000" text-anchor="middle">TANAH PILIH PESAKO BETUAH</text>
+</svg>`;
+  var KOP = `<div class="rm-code-top">FORMULIR RM KLAIM JKN</div>
+<div class="kop-surat">${EMBLEM}<div class="kop-text">
+<div class="kop-line-1">PEMERINTAH KOTA JAMBI</div>
+<div class="kop-line-2">DINAS KESEHATAN</div>
+<div class="kop-line-3">RUMAH SAKIT UMUM DAERAH H. ABDUL MANAP</div>
+<div class="kop-line-4">Alamat : Jl. Sk. Rd. Syahbuddin Kel. Mayang Mangurai Kec. Alam Barajo Kota Jambi 36129 &#9742; (0741) 670459</div>
+<div class="kop-line-5">email : rsud_ham.jambi@yahoo.co.id, rsud@jambikota.go.id, website : rsud.jambikota.go.id</div>
+</div></div><div class="kop-double-rule"></div>`;
+  var idBox = (rows) => `<div class="id-box-bordered">${[0, 1].map(
+    (c) => `<div class="id-col"><table class="id-table">${rows.filter((r) => r[2] === String(c)).map(
+      (r) => `<tr><td class="lbl">${esc(r[3])}</td><td class="col">:</td><td class="val">${esc(r[1] || "-")}</td></tr>`
+    ).join("")}</table></div>`
+  ).join("")}</div>`;
   function buildHtml(sections, inventory) {
-    const logo = "/assets/images/logo/Kota Jambi.png";
-    const row = (label, value) => `<div class="meta-item"><span class="meta-label">${esc(label)}</span><span class="meta-value">${esc(value || "\u2014")}</span></div>`;
     const ada = inventory.filter((r) => r.docNo !== null).length;
-    const ctlRows = inventory.map((r) => {
-      const filled = r.docNo !== null;
-      return `<tr>
-        <td class="c-no">${filled ? String(r.docNo).padStart(2, "0") : "\u2014"}</td>
-        <td>${esc(r.title)}</td>
-        <td class="c-stat">${filled ? "Ada" : '<span class="st-empty">Tidak terisi</span>'}</td>
-        <td class="c-ver"><span class="box"></span></td>
-      </tr>`;
-    }).join("");
     const checks = runChecks(sections, inventory);
-    const checksHtml = checks.length ? `<section class="checks">
-  <h2>Catatan Pemeriksaan Otomatis</h2>
-  <ul>${checks.map(
-      (c) => `<li class="check ${c.level}"><span class="mark">${c.level === "warn" ? "\u25B2" : "\u2022"}</span><span><b>${esc(c.title)}</b> \u2014 ${esc(c.detail)}</span></li>`
-    ).join("")}</ul>
-</section>` : "";
-    const docs = sections.map(
-      (s, i) => `
-      <section class="doc">
-        <div class="doc-head">
-          <span class="doc-num">${String(i + 1).padStart(2, "0")}</span>
-          <h2>${esc(s.title)}</h2>
-          <span class="doc-rule"></span>
-        </div>
-        <div class="doc-body">${s.html}</div>
-      </section>`
+    const ctlRows = inventory.map(
+      (r, i) => r.docNo === null ? `<tr><td class="center">${i + 1}</td><td class="center">\u2014</td><td>${esc(r.title)}</td><td class="center">TIDAK TERISI</td><td class="center">\u2014</td></tr>` : `<tr><td class="center">${i + 1}</td><td class="center">RM. ${String(r.docNo).padStart(2, "0")}</td><td>${esc(r.title)}</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi ${esc(r.title)}"></td></tr>`
     ).join("");
-    return `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<base href="${esc(location.origin)}">
-<title>Dossier Cetak M-KLAIM \u2014 ${esc(HOSPITAL_NAME)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --ink:#17212b; --muted:#5b6b78; --accent:#0f766e; --accent-soft:#e6f4f1;
-  --paper:#fdfcf9; --rule:#d7dee2; --chip:#f1f5f4;
-  --sans:'IBM Plex Sans','Segoe UI',sans-serif; --serif:'Source Serif 4',Georgia,serif;
-}
-@page{size:A4;margin:14mm 13mm;}
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
-body{
-  background:var(--paper); color:var(--ink); font-family:var(--sans);
-  font-size:11px; line-height:1.55; padding:22px 26px;
-  -webkit-print-color-adjust:exact; print-color-adjust:exact;
-}
-.cover{
-  display:grid; grid-template-columns:64px 1fr; gap:16px; align-items:center;
-  border-bottom:3px double var(--ink); padding-bottom:14px; margin-bottom:18px;
-}
-.cover img{width:64px;height:64px;object-fit:contain;}
-.eyebrow{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;}
-.cover h1{font-family:var(--serif);font-size:22px;line-height:1.15;margin:3px 0 2px;font-weight:700;}
-.cover .sub{font-size:10px;color:var(--muted);}
-.meta{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 16px;
-  border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);
-  padding:10px 0;margin-bottom:12px;background:transparent;
-}
-.meta-item{display:flex;flex-direction:column;gap:2px;min-width:0;}
-.meta-label{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-.meta-value{font-weight:600;font-size:11px;overflow-wrap:anywhere;}
-/* Lembar Kendali \u2014 inventaris berkas (halaman 1) */
-.control{margin:0 0 10px;}
-.control h2{
-  font-family:var(--serif);font-size:13px;margin:0 0 2px;text-transform:uppercase;
-  letter-spacing:.06em;
-}
-.control .note{font-size:9px;color:var(--muted);margin:0 0 8px;}
-.ctl{width:100%;border-collapse:collapse;font-size:9.5px;}
-.ctl th{
-  border-bottom:1px solid var(--ink);text-align:left;padding:3px 6px;
-  font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;
-}
-.ctl td{border-bottom:1px solid var(--rule);padding:3px 6px;vertical-align:middle;}
-.ctl tr:last-child td{border-bottom:1px solid var(--ink);}
-.ctl .c-no{width:26px;color:var(--muted);font-variant-numeric:tabular-nums;}
-.ctl .c-stat{width:92px;}
-.ctl .c-ver{width:74px;text-align:center;}
-.st-empty{color:var(--muted);font-style:italic;}
-.box{display:inline-block;width:11px;height:11px;border:1px solid var(--ink);vertical-align:-2px;}
-.ctl-sum{margin:6px 0 0;font-size:9px;color:var(--muted);}
-/* Catatan pemeriksaan otomatis */
-.checks{margin:14px 0 0;}
-.checks h2{font-family:var(--serif);font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em;}
-.checks ul{list-style:none;margin:0;padding:0;}
-.check{display:flex;gap:7px;padding:4px 0;border-bottom:1px solid var(--rule);font-size:9.5px;line-height:1.45;}
-.check .mark{flex:0 0 10px;font-weight:700;}
-.check.warn .mark{color:#8a1c1c;}
-.check.info .mark{color:var(--muted);}
-/* Kolom Verifikasi pada tabel */
-.doc-body .vcol{width:18px!important;padding:4px 2px!important;text-align:center!important;}
-.img-wrap{display:inline-block;max-width:100%;}
-.img-tools{display:flex;gap:6px;justify-content:flex-end;margin:0 0 5px;}
-.img-tools button{
-  font:inherit;font-size:10px;padding:3px 9px;border:1px solid var(--rule);
-  background:#fff;border-radius:4px;cursor:pointer;color:var(--muted);
-}
-.img-tools button:hover{border-color:var(--accent);color:var(--accent);}
-.doc{margin:0 0 24px;break-inside:avoid-page;}
-.doc-head{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;border-bottom:1px solid var(--ink);padding-bottom:5px;}
-.doc-num{
-  font-family:var(--serif);font-size:15px;color:var(--accent);font-weight:700;
-  min-width:24px;
-}
-.doc-head h2{
-  font-family:var(--serif);font-size:13px;margin:0;text-transform:uppercase;
-  letter-spacing:.06em;
-}
-.doc-rule{display:none;}
-.doc-body{background:transparent;border:0;border-radius:0;padding:2px 0 0;}
-.doc-body table{width:100%!important;border-collapse:collapse!important;margin:0 0 10px;border:0!important;}
-.doc-body th,.doc-body td{border:0!important;border-bottom:1px solid var(--rule)!important;padding:5px 7px;font-size:10px!important;text-align:left;vertical-align:top;overflow-wrap:anywhere;}
-.doc-body th{background:transparent!important;font-weight:700;color:var(--ink);border-bottom:1px solid var(--ink)!important;letter-spacing:.04em;text-transform:uppercase;font-size:9px!important;}
-.doc-body h1,.doc-body h2,.doc-body h3{font-family:var(--serif);font-size:13px;margin:6px 0;}
-.doc-body p{margin:3px 0;}
-.doc-body label{display:inline-block;min-width:112px;font-weight:600;color:var(--muted);font-size:9px;letter-spacing:.02em;text-transform:uppercase;}
-.doc-body .fv{font-weight:500;color:var(--ink);}
-.doc-body img{max-width:100%!important;height:auto!important;}
-.doc-body .panel,.doc-body .isidalam,.doc-body .card{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;width:100%!important;}
-.screen-bar{
-  position:sticky;top:0;z-index:9;display:flex;justify-content:flex-end;gap:8px;
-  background:rgba(253,252,249,.94);backdrop-filter:blur(6px);
-  padding:8px 0 12px;margin:-22px -26px 14px;padding-left:26px;padding-right:26px;
-  border-bottom:1px solid var(--rule);
-}
-.screen-bar button{font:inherit;font-size:11px;font-weight:600;cursor:pointer;border-radius:5px;padding:7px 14px;}
-.btn-print{background:var(--accent);color:#fff;border:1px solid var(--accent);}
-.btn-close{background:#fff;color:var(--ink);border:1px solid var(--rule);}
-.sign{display:flex;justify-content:flex-end;margin-top:26px;}
-.sign-box{width:230px;text-align:center;font-size:10px;color:var(--muted);}
-.sign-space{height:52px;}
-@media print{
-  .screen-bar,.img-tools{display:none!important;}
-  body{padding:0;background:#fff;font-size:10px;}
-  main{break-before:page;}
-  .doc{break-after:page;}
-  .doc:last-child{break-after:auto;}
-  /* Header tabel diulang tiap halaman + baris tidak terpotong di batas kertas */
-  .doc-body thead{display:table-header-group;}
-  .doc-body tr,.sign-box{break-inside:avoid;page-break-inside:avoid;}
-  .meta,.doc-body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-}
-@media screen and (max-width:900px){
-  .meta{grid-template-columns:repeat(2,minmax(0,1fr));}
-}
-</style>
-</head>
-<body>
-<div class="screen-bar">
-  <button type="button" class="btn-close" id="close-view">Tutup</button>
-  <button type="button" class="btn-print" id="print-view">\u{1F5A8} Cetak</button>
-</div>
-<header class="cover">
-  <img src="${esc(logo)}" alt="Logo">
-  <div>
-    <div class="eyebrow">Dossier Cetak \xB7 Detail Klaim</div>
-    <h1>${esc(HOSPITAL_NAME)}</h1>
-    <div class="sub">Laporan lengkap berkas klaim &bull; ${(/* @__PURE__ */ new Date()).toLocaleString("id-ID")}</div>
-  </div>
-</header>
-<div class="meta">
-  ${row("No. RM", val("norm"))}
-  ${row("Nama Pasien", val("nama"))}
-  ${row("No. Registrasi", val("no_registrasi") || val("reg"))}
-  ${row("ID Visit", val("id_visit"))}
-  ${row("Tanggal Awal", val("tanggalAwal"))}
-  ${row("Tanggal Akhir", val("tanggalAkhir"))}
-  ${row("Status", val("status"))}
-  ${row("Billing", val("billing"))}
-</div>
-<section class="control">
-  <h2>Lembar Kendali Berkas Klaim</h2>
-  <p class="note">Nomor mengacu pada nomor berkas di dossier. Centang kolom Verifikasi setelah berkas diperiksa.</p>
-  <table class="ctl">
-    <thead><tr><th class="c-no">No</th><th>Nama Berkas</th><th class="c-stat">Status</th><th class="c-ver">Verifikasi</th></tr></thead>
-    <tbody>${ctlRows}</tbody>
-  </table>
-  <p class="ctl-sum">${inventory.length} berkas terdaftar &middot; ${ada} berisi &middot; ${inventory.length - ada} tidak terisi</p>
-</section>
+    const checksHtml = checks.length ? `<div class="sub-heading-rm">Catatan Ketidaksesuaian Data Lintas Dokumen (Uji Silang Otomatis)</div>
+<table class="rm-grid-table"><thead><tr><th style="width:32px">NO</th><th style="width:180px">JENIS KETIDAKSESUAIAN</th><th>URAIAN TEMUAN VERIFIKASI</th></tr></thead><tbody>${checks.map(
+      (c, i) => `<tr><td class="center">${i + 1}</td><td><strong>${esc(c.title)}</strong></td><td>${esc(c.detail)}</td></tr>`
+    ).join("")}</tbody></table>` : "";
+    const cover = `<section class="rm-page" id="doc-0">
+${KOP}
+<div class="rm-form-title">Lembar Kendali Kelengkapan &amp; Verifikasi Berkas Klaim JKN</div>
+${idBox([
+      ["a", val("nama"), "0", "NAMA PASIEN"],
+      ["b", val("norm"), "0", "NO. REKAM MEDIS"],
+      ["c", val("tgl_lahir") || val("tglLahir"), "0", "TGL. LAHIR / UMUR"],
+      ["d", val("jenis_kelamin") || val("jk"), "0", "JENIS KELAMIN"],
+      ["e", val("alamat"), "0", "ALAMAT"],
+      ["f", val("no_kartu") || val("noka"), "1", "NO. KARTU BPJS"],
+      ["g", val("no_sep") || val("sep"), "1", "NO. SEP"],
+      ["h", val("tanggalAwal"), "1", "TGL. MASUK"],
+      ["i", val("tanggalAkhir"), "1", "TGL. KELUAR"],
+      ["j", val("id_visit"), "1", "ID VISIT"]
+    ])}
+<div class="sub-heading-rm">Matriks Kelengkapan Berkas (${inventory.length} berkas \xB7 ${ada} berisi \xB7 ${inventory.length - ada} tidak terisi)</div>
+<table class="rm-grid-table"><thead><tr><th style="width:32px">NO</th><th style="width:70px">KODE RM</th><th>JENIS BERKAS / DOKUMEN KLAIM</th><th style="width:120px">STATUS BERKAS</th><th style="width:60px">TANDA (&#10003;)</th></tr></thead><tbody>${ctlRows}</tbody></table>
 ${checksHtml}
-<main>${docs}</main>
-<div class="sign"><div class="sign-box">
-  <div>Petugas Verifikasi</div><div class="sign-space"></div>
-  <div><strong>( .................................... )</strong></div>
-</div></div>
-</body>
-</html>`;
+<div class="rm-signature-block">
+<div class="rm-sig-box"><div>Petugas Casemix / Klaim JKN RS</div><div class="rm-sig-space"></div><div class="rm-sig-name">( .................................................. )</div></div>
+<div class="rm-sig-box"><div>Diterima &amp; Diverifikasi Oleh,</div><div>Verifikator BPJS Kesehatan</div><div class="rm-sig-space"></div><div class="rm-sig-name">( .................................................. )</div><div class="rm-sig-sub">NPP. ............................................</div></div>
+</div></section>`;
+    const docs = sections.map(
+      (s, i) => `<section class="rm-page" id="doc-${i + 1}">
+${KOP}
+<div class="rm-form-title">${esc(s.title)}</div>
+<div class="doc-body">${s.html}</div>
+</section>`
+    ).join("");
+    const tabs = [
+      `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
+      `<button type="button" class="tab-btn" data-target="doc-0">RM. 00 Kendali</button>`,
+      ...sections.map(
+        (s, i) => `<button type="button" class="tab-btn" data-target="doc-${i + 1}">RM. ${String(i + 1).padStart(2, "0")} ${esc(s.title)}</button>`
+      )
+    ].join("");
+    const opts = [
+      `<option value="all">Semua Formulir RM</option>`,
+      `<option value="doc-0">RM. 00 \u2014 Lembar Kendali &amp; Verifikasi</option>`,
+      ...sections.map(
+        (s, i) => `<option value="doc-${i + 1}">RM. ${String(i + 1).padStart(2, "0")} \u2014 ${esc(s.title)}</option>`
+      )
+    ].join("");
+    return `<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="${esc(location.origin)}">
+<title>Formulir Rekam Medis Baku \u2014 Dossier Klaim BPJS ${esc(HOSPITAL_NAME)}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;font-size:8.5pt;line-height:1.35;color:#000;background:#E5E5E5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+/* toolbar layar */
+.verifier-toolbar{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:2px solid #000;padding:8px 16px}
+.toolbar-row,.toolbar-tabs{max-width:210mm;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.toolbar-row{justify-content:space-between}
+.toolbar-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.toolbar-label{font-size:9pt;font-weight:700;text-transform:uppercase}
+.toolbar-select{font:inherit;font-size:8.5pt;color:#000;background:#fff;border:1px solid #000;padding:4px 8px;cursor:pointer}
+.toolbar-counter{font-size:8.5pt;border:1px solid #000;padding:3px 8px;background:#fff;font-variant-numeric:tabular-nums}
+.toolbar-btn{font:inherit;font-size:8.5pt;font-weight:700;color:#000;background:#fff;border:1px solid #000;padding:4px 10px;cursor:pointer}
+.toolbar-btn:hover{background:#F0F0F0}
+.toolbar-btn:focus-visible,.toolbar-select:focus-visible,.tab-btn:focus-visible{outline:2px solid #000;outline-offset:2px}
+.toolbar-btn-print{background:#000;color:#fff}.toolbar-btn-print:hover{background:#222}
+.toolbar-tabs{margin-top:6px;padding-top:6px;border-top:1px solid #000}
+.tab-btn{font:inherit;font-size:7.5pt;color:#000;background:#fff;border:1px solid #000;padding:2px 6px;cursor:pointer}
+.tab-btn.active{background:#000;color:#fff;font-weight:700}
+/* kertas */
+.dossier-wrapper{max-width:210mm;margin:16px auto 40px;display:flex;flex-direction:column;gap:18px}
+.rm-page{width:100%;background:#fff;border:1px solid #888;padding:12mm 14mm}
+.rm-page.hidden-section{display:none}
+.rm-code-top{text-align:right;font-size:9pt;font-weight:700;margin-bottom:2px;letter-spacing:.02em}
+.kop-surat{display:flex;align-items:center;gap:12px;padding-bottom:5px}
+.kop-logo{width:52px;height:60px;flex-shrink:0}
+.kop-text{flex:1;text-align:center;font-family:"Times New Roman",Times,serif;line-height:1.2}
+.kop-line-1,.kop-line-2{font-size:11pt;font-weight:700;letter-spacing:.03em}
+.kop-line-3{font-size:12.5pt;font-weight:700;letter-spacing:.02em;margin-top:1px}
+.kop-line-4,.kop-line-5{font-size:7.5pt;margin-top:2px}
+.kop-double-rule{border-top:2px solid #000;height:2px;border-bottom:.75px solid #000;margin-bottom:10px}
+.rm-form-title{text-align:center;font-size:11pt;font-weight:700;text-transform:uppercase;margin-bottom:8px;letter-spacing:.02em}
+/* blok identitas */
+.id-box-bordered{border:1px solid #000;padding:6px 10px;margin-bottom:9px;display:flex;gap:16px}
+.id-box-borderless{padding:2px 0;margin-bottom:8px;display:flex;gap:16px}
+.id-col{flex:1;min-width:0}.id-table{width:100%;border-collapse:collapse}
+.id-table td{padding:1.5px 0;vertical-align:top;font-size:8.2pt;line-height:1.3}
+.id-table td.lbl{width:118px;white-space:nowrap}.id-table td.col{width:10px;text-align:center}
+.id-table td.val{overflow-wrap:anywhere}
+/* tabel grid medis \u2014 garis hitam penuh */
+.rm-grid-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.2pt}
+.rm-grid-table th,.rm-grid-table td{border:1px solid #000;padding:4px 6px;vertical-align:top}
+.rm-grid-table th{font-weight:700;text-align:center;vertical-align:middle;background:#fff}
+.rm-grid-table td.center,.rm-grid-table th.center{text-align:center;vertical-align:middle}
+.rm-grid-table td.num,.rm-grid-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rm-grid-table td.nowrap{white-space:nowrap}
+.rm-checkbox,.vbox{appearance:none;-webkit-appearance:none;width:11px;height:11px;margin:0;border:1px solid #000;border-radius:0;background:#fff;display:inline-grid;place-content:center;vertical-align:middle;cursor:pointer}
+.rm-checkbox::before,.vbox::before{content:"\u2713";font-size:9px;font-weight:700;line-height:1;transform:scale(0)}
+.rm-checkbox:checked::before,.vbox:checked::before{transform:scale(1)}
+.static-box{display:inline-block;width:10px;height:10px;border:1px solid #000;text-align:center;line-height:9px;font-size:8px;font-weight:700;margin-right:4px;vertical-align:middle}
+.sub-heading-rm{font-size:8.5pt;font-weight:700;text-transform:uppercase;margin:7px 0 4px}
+.footnote-rm{font-size:7.5pt;margin-top:4px}
+.rm-signature-block{margin-top:10px;display:flex;justify-content:space-between;gap:20px;break-inside:avoid;page-break-inside:avoid;font-size:8.2pt}
+.rm-sig-box{width:44%;text-align:center}.rm-sig-space{height:44px}.rm-sig-name{font-weight:700}.rm-sig-sub{font-size:7.5pt}
+/* konten section hasil scrape MORBIS \u2014 seragamkan ke grid hitam */
+.doc-body table{width:100%!important;border-collapse:collapse!important;margin:0 0 8px!important;font-size:8.2pt!important}
+.doc-body th,.doc-body td{border:1px solid #000!important;padding:3px 5px!important;vertical-align:top;color:#000!important;overflow-wrap:anywhere}
+.doc-body th{background:#fff!important;font-weight:700;text-align:center}
+.doc-body h1,.doc-body h2,.doc-body h3{font-size:9.5pt;margin:6px 0}
+.doc-body p{margin:2px 0}
+.doc-body label{min-width:100px;font-weight:600;color:#333}
+.doc-body .fv{font-weight:500}
+.doc-body img{max-width:100%!important;height:auto!important}
+.doc-body .panel,.doc-body .isidalam,.doc-body .card{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;width:100%!important}
+.doc-body .vcol{width:16px!important;text-align:center!important}
+/* Telaah Resep \u2014 medication table + 3 checklist tables side-by-side */
+.telaah-layout{display:flex;gap:8px;align-items:stretch;margin:0 0 6px}
+.telaah-layout table{flex:1;margin-bottom:0}
+.img-wrap{display:inline-block;max-width:100%}.img-tools{display:flex;gap:6px;justify-content:flex-end;margin:0 0 5px}
+.img-tools button{font:inherit;font-size:10px;padding:3px 9px;border:1px solid #000;background:#fff;cursor:pointer}
+@page{size:A4 portrait;margin:12mm}
+@media print{
+ body{background:#fff!important;margin:0;padding:0}
+ .no-print,.verifier-toolbar,.img-tools{display:none!important}
+ .dossier-wrapper{max-width:100%;margin:0;gap:0}
+ .rm-page{border:none!important;padding:0!important;margin:0!important;break-after:page;page-break-after:always}
+ .rm-page:last-child{break-after:auto;page-break-after:auto}
+ .rm-page.hidden-section{display:none!important}
+ thead{display:table-header-group}
+ tr,.rm-signature-block,.id-box-bordered{break-inside:avoid;page-break-inside:avoid}
+}
+@media(max-width:720px){.rm-page{padding:12px}.id-box-bordered{display:block}.rm-signature-block{flex-direction:column;gap:14px}.rm-sig-box{width:100%}}
+</style></head><body>
+<header class="verifier-toolbar no-print"><div class="toolbar-row">
+<div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>
+<div class="toolbar-group"><span class="toolbar-counter">Tanda Verifikator (&#10003;): <strong id="checkCounter">0 / 0</strong></span>
+<button type="button" class="toolbar-btn" id="btnCheckAll">Centang Semua</button>
+<button type="button" class="toolbar-btn" id="btnResetChecks">Reset</button>
+<button type="button" class="toolbar-btn toolbar-btn-print" id="btnPrintPdf">Cetak / Simpan PDF (A4)</button></div>
+</div><nav class="toolbar-tabs" aria-label="Navigasi Formulir RM">${tabs}</nav></header>
+<main class="dossier-wrapper">${cover}${docs}</main>
+</body></html>`;
   }
   function installImageTools(win) {
     const doc = win.document;
@@ -559,10 +717,36 @@ ${checksHtml}
       } catch {
       }
     };
-    win.document.getElementById("print-view")?.addEventListener("click", doPrint);
-    win.document.getElementById("close-view")?.addEventListener("click", () => {
-      if (win.confirm("Tutup halaman cetak ini?")) win.close();
+    const d = win.document;
+    d.getElementById("btnPrintPdf")?.addEventListener("click", doPrint);
+    const pages = Array.from(d.querySelectorAll(".rm-page"));
+    const sel = d.getElementById("rmSectionSelect");
+    const tabs = Array.from(d.querySelectorAll(".tab-btn"));
+    const filter = (target) => {
+      if (sel) sel.value = target;
+      tabs.forEach((b) => b.classList.toggle("active", b.dataset.target === target));
+      pages.forEach(
+        (pg) => pg.classList.toggle("hidden-section", target !== "all" && pg.id !== target)
+      );
+      win.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    sel?.addEventListener("change", (ev) => filter(ev.target.value));
+    tabs.forEach((b) => b.addEventListener("click", () => filter(b.dataset.target || "all")));
+    const countEl = d.getElementById("checkCounter");
+    const boxes = Array.from(d.querySelectorAll(".rm-checkbox, .vbox"));
+    const syncCount = () => {
+      if (countEl) countEl.textContent = `${boxes.filter((b) => b.checked).length} / ${boxes.length}`;
+    };
+    boxes.forEach((b) => b.addEventListener("change", syncCount));
+    d.getElementById("btnCheckAll")?.addEventListener("click", () => {
+      boxes.forEach((b) => b.checked = true);
+      syncCount();
     });
+    d.getElementById("btnResetChecks")?.addEventListener("click", () => {
+      boxes.forEach((b) => b.checked = false);
+      syncCount();
+    });
+    syncCount();
     win.addEventListener("afterprint", () => {
       if (win.confirm("Apakah menu print ini akan ditutup?")) win.close();
     });
