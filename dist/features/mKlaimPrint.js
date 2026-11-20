@@ -337,11 +337,7 @@ body{
       e.stopPropagation();
       handleMklaimPrint();
     });
-    const nativePrint = Array.from(host.querySelectorAll("button.btn-success")).find(
-      (b) => /^printDiv\s*\(/i.test(b.getAttribute("onclick") || "")
-    );
-    if (nativePrint) host.insertBefore(btn, nativePrint);
-    else host.appendChild(btn);
+    host.appendChild(btn);
   }
   if (typeof g.featureModules !== "undefined") {
     g.featureModules.mKlaimPrint = {
@@ -353,10 +349,18 @@ body{
         const check = () => renderMklaimPrintButton();
         if (document.readyState === "complete") window.setTimeout(check, 500);
         else window.addEventListener("load", () => window.setTimeout(check, 500));
+        const keepLast = () => {
+          const btn = document.getElementById("ext-mklaim-print-btn");
+          if (btn?.parentElement && btn.parentElement.lastElementChild !== btn) {
+            btn.parentElement.appendChild(btn);
+          }
+        };
         const obs = new MutationObserver(() => {
           if (!document.getElementById("ext-mklaim-print-btn")) renderMklaimPrintButton();
+          else keepLast();
         });
         obs.observe(document.body, { childList: true, subtree: true });
+        window.setInterval(keepLast, 1500);
       }
     };
   }

@@ -389,11 +389,9 @@ function renderMklaimPrintButton(): void {
     e.stopPropagation();
     handleMklaimPrint();
   });
-  const nativePrint = Array.from(host.querySelectorAll<HTMLElement>('button.btn-success')).find(
-    (b) => /^printDiv\s*\(/i.test(b.getAttribute('onclick') || ''),
-  );
-  if (nativePrint) host.insertBefore(btn, nativePrint);
-  else host.appendChild(btn);
+  // Taruh PALING AKHIR di action bar bawah (gabung dengan Kembali,
+  // Verif/Revisi bila ada, dan tombol mark) — bukan di depan tombol Print.
+  host.appendChild(btn);
 }
 
 if (typeof g.featureModules !== 'undefined') {
@@ -407,10 +405,21 @@ if (typeof g.featureModules !== 'undefined') {
       const check = (): void => renderMklaimPrintButton();
       if (document.readyState === 'complete') window.setTimeout(check, 500);
       else window.addEventListener('load', () => window.setTimeout(check, 500));
+      const keepLast = (): void => {
+        const btn = document.getElementById('ext-mklaim-print-btn');
+        if (btn?.parentElement && btn.parentElement.lastElementChild !== btn) {
+          // Tombol mark (Telaah/Partial/Labor/...) bisa ditambahkan belakangan
+          // — geser tombol cetak supaya tetap PALING AKHIR di action bar.
+          btn.parentElement.appendChild(btn);
+        }
+      };
       const obs = new MutationObserver(() => {
         if (!document.getElementById('ext-mklaim-print-btn')) renderMklaimPrintButton();
+        else keepLast();
       });
       obs.observe(document.body, { childList: true, subtree: true });
+      // Jaga juga saat observer tidak terpicu (render ulang cepat).
+      window.setInterval(keepLast, 1500);
     },
   };
 }
