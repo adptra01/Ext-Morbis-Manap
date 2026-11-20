@@ -594,24 +594,33 @@ function runChecks(sections: Section[], inventory: InventoryRow[]): Check[] {
   return out;
 }
 
-/** SVG lambang Kota Jambi — monokrom, dipakai di kop surat tiap halaman. */
-const EMBLEM = `<svg class="kop-logo" viewBox="0 0 52 60" aria-hidden="true">
-<path d="M4,4 L48,4 L48,34 C48,47 26,56 26,56 C26,56 4,47 4,34 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>
-<path d="M7,7 L45,7 L45,33 C45,44 26,52.5 26,52.5 C26,52.5 7,44 7,33 Z" fill="none" stroke="#000" stroke-width=".8"/>
-<rect x="8" y="8" width="36" height="6.5" fill="#000"/>
-<text x="26" y="13" font-family="Arial" font-size="4.2" font-weight="bold" fill="#fff" text-anchor="middle">KOTA JAMBI</text>
-<polygon points="26,16 27.3,19.5 31,19.5 28,21.6 29.1,25 26,22.9 22.9,25 24,21.6 21,19.5 24.7,19.5" fill="#000"/>
-<path d="M14,31 L26,25.5 L38,31 Z" fill="#000"/>
-<rect x="17" y="31" width="18" height="6" fill="none" stroke="#000" stroke-width="1"/>
-<path d="M12,40 Q19,38.5 26,40 T40,40 M14,43 Q20,41.5 26,43 T38,43" fill="none" stroke="#000" stroke-width="1"/>
-<path d="M11,17 C9,25 10,36 18,46 M41,17 C43,25 42,36 34,46" fill="none" stroke="#000" stroke-width="1"/>
-<path d="M10,50 L42,50 L39,55 L13,55 Z" fill="#fff" stroke="#000" stroke-width="1"/>
-<text x="26" y="53.6" font-family="Arial" font-size="3.2" font-weight="bold" fill="#000" text-anchor="middle">TANAH PILIH PESAKO BETUAH</text>
+/** Lambang Kota Jambi — didefinisikan SEKALI di <body>, dipakai tiap kop via <use>. */
+const EMBLEM_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="kota-jambi-emblem">
+      <path d="M4,4 L48,4 L48,34 C48,47 26,56 26,56 C26,56 4,47 4,34 Z" fill="#FFFFFF" stroke="#000000" stroke-width="1.6"/>
+      <path d="M7,7 L45,7 L45,33 C45,44 26,52.5 26,52.5 C26,52.5 7,44 7,33 Z" fill="none" stroke="#000000" stroke-width="0.8"/>
+      <rect x="8" y="8" width="36" height="6.5" fill="#000000"/>
+      <text x="26" y="13" font-family="Arial, sans-serif" font-size="4.4" font-weight="bold" fill="#FFFFFF" text-anchor="middle">★ KOTA JAMBI ★</text>
+      <polygon points="26,16 27.3,19.5 31,19.5 28,21.6 29.1,25 26,22.9 22.9,25 24,21.6 21,19.5 24.7,19.5" fill="#000000"/>
+      <path d="M14,31 L26,25.5 L38,31 Z" fill="#000000"/>
+      <rect x="17" y="31" width="18" height="6" fill="none" stroke="#000000" stroke-width="1.1"/>
+      <line x1="22" y1="31" x2="22" y2="37" stroke="#000000" stroke-width="0.9"/>
+      <line x1="26" y1="31" x2="26" y2="37" stroke="#000000" stroke-width="0.9"/>
+      <line x1="30" y1="31" x2="30" y2="37" stroke="#000000" stroke-width="0.9"/>
+      <path d="M12,40 Q19,38.5 26,40 T40,40" fill="none" stroke="#000000" stroke-width="1"/>
+      <path d="M14,43 Q20,41.5 26,43 T38,43" fill="none" stroke="#000000" stroke-width="1"/>
+      <path d="M11,17 C9,25 10,36 18,46" fill="none" stroke="#000000" stroke-width="1.1" stroke-dasharray="2,1.5"/>
+      <path d="M41,17 C43,25 42,36 34,46" fill="none" stroke="#000000" stroke-width="1.1" stroke-dasharray="2,1.5"/>
+      <path d="M10,50 L42,50 L39,55 L13,55 Z" fill="#FFFFFF" stroke="#000000" stroke-width="1.1"/>
+      <text x="26" y="53.6" font-family="Arial, sans-serif" font-size="3.6" font-weight="bold" fill="#000000" text-anchor="middle">TANAH PILIH PESAKO BETUAH</text>
+    </g>
+  </defs>
 </svg>`;
 
 /** Kop surat resmi RSUD H. Abdul Manap (Times New Roman + double rule). */
-const KOP = `<div class="rm-code-top">FORMULIR RM KLAIM JKN</div>
-<div class="kop-surat">${EMBLEM}<div class="kop-text">
+const kop = (code: string): string => `<div class="rm-code-top">${code}</div>
+<div class="kop-surat"><svg class="kop-logo" viewBox="0 0 52 60"><use href="#kota-jambi-emblem"/></svg><div class="kop-text">
 <div class="kop-line-1">PEMERINTAH KOTA JAMBI</div>
 <div class="kop-line-2">DINAS KESEHATAN</div>
 <div class="kop-line-3">RUMAH SAKIT UMUM DAERAH H. ABDUL MANAP</div>
@@ -619,73 +628,140 @@ const KOP = `<div class="rm-code-top">FORMULIR RM KLAIM JKN</div>
 <div class="kop-line-5">email : rsud_ham.jambi@yahoo.co.id, rsud@jambikota.go.id, website : rsud.jambikota.go.id</div>
 </div></div><div class="kop-double-rule"></div>`;
 
-/** Blok identitas 2 kolom dengan titik dua sejajar (Pola A: bordered). */
-const idBox = (rows: string[][]): string =>
-  `<div class="id-box-bordered">${[0, 1]
-    .map(
-      (c) =>
-        `<div class="id-col"><table class="id-table">${rows
-          .filter((r) => r[2] === String(c))
-          .map(
-            (r) =>
-              `<tr><td class="lbl">${esc(r[3])}</td><td class="col">:</td><td class="val">${esc(r[1] || '-')}</td></tr>`,
-          )
-          .join('')}</table></div>`,
-    )
-    .join('')}</div>`;
-
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
-  const ada = inventory.filter((r) => r.docNo !== null).length;
   const checks = runChecks(sections, inventory);
 
-  // Lembar Kendali — inventaris 25 berkas (termasuk yang kosong).
-  const ctlRows = inventory
-    .map((r, i) =>
-      r.docNo === null
-        ? `<tr><td class="center">${i + 1}</td><td class="center">—</td><td>${esc(r.title)}</td><td class="center">TIDAK TERISI</td><td class="center">—</td></tr>`
-        : `<tr><td class="center">${i + 1}</td><td class="center">RM. ${String(r.docNo).padStart(2, '0')}</td><td>${esc(r.title)}</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi ${esc(r.title)}"></td></tr>`,
-    )
-    .join('');
-  const checksHtml = checks.length
-    ? `<div class="sub-heading-rm">Catatan Ketidaksesuaian Data Lintas Dokumen (Uji Silang Otomatis)</div>
-<table class="rm-grid-table"><thead><tr><th style="width:32px">NO</th><th style="width:180px">JENIS KETIDAKSESUAIAN</th><th>URAIAN TEMUAN VERIFIKASI</th></tr></thead><tbody>${checks
-        .map(
-          (c, i) =>
-            `<tr><td class="center">${i + 1}</td><td><strong>${esc(c.title)}</strong></td><td>${esc(c.detail)}</td></tr>`,
-        )
-        .join('')}</tbody></table>`
-    : '';
+  // Nilai dinamis dari halaman M-KLAIM; struktur mengikuti referensi apa adanya.
+  const sep = val('no_sep') || val('sep') || '-';
+  const ruang = val('ruang') || val('kelas') || '-';
+  const dpjp = val('dokter') || val('dpjp') || '-';
+  const awal = val('tanggalAwal') || '';
+  const akhir = val('tanggalAkhir') || '';
+  const lahir = val('tgl_lahir') || val('tglLahir') || '-';
+  const umur = val('umur') || val('usia') || '';
+  const los = val('los') || val('lama_rawat') || '';
+  const nota = sections.filter((s) => /resep/i.test(s.title)).length;
+  const bulan = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+  const now = new Date();
+  const tglCetak = `${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`;
 
-  const masukKeluar =
-    [val('tanggalAwal'), val('tanggalAkhir')].filter(Boolean).join(' s/d ') || '-';
-  const cover = `<section class="rm-page" id="doc-0">
-${KOP}
+  const checksHtml = `<table class="rm-grid-table">
+  <thead>
+    <tr><th colspan="3">CATATAN KETIDAKSESUAIAN DATA LINTAS DOKUMEN (HASIL UJI SILANG OTOMATIS)</th></tr>
+    <tr><th style="width: 32px;">NO</th><th style="width: 170px;">JENIS KETIDAKSESUAIAN</th><th>URAIAN TEMUAN VERIFIKASI</th></tr>
+  </thead>
+  <tbody>${checks
+    .map(
+      (c, i) =>
+        `<tr><td class="center">${i + 1}</td><td><strong>${esc(c.title)}</strong></td><td>${esc(c.detail)}</td></tr>`,
+    )
+    .join('')}</tbody>
+</table>`;
+
+  const cover = `<section class="rm-page" id="rm-00">
+${kop('RM. 00')}
 <div class="rm-form-title">LEMBAR KENDALI KELENGKAPAN &amp; VERIFIKASI BERKAS KLAIM JKN</div>
-${idBox([
-  ['a', val('nama') || '-', '0', 'NAMA PASIEN'],
-  ['b', val('norm') || '-', '0', 'NO. REKAM MEDIS'],
-  ['c', val('tgl_lahir') || val('tglLahir') || '-', '0', 'TGL. LAHIR / UMUR'],
-  ['d', val('jenis_kelamin') || val('jk') || '-', '0', 'JENIS KELAMIN'],
-  ['e', val('alamat') || '-', '0', 'ALAMAT'],
-  ['f', val('no_kartu') || val('noka') || '-', '1', 'NO. KARTU BPJS'],
-  ['g', val('no_sep') || val('sep') || '-', '1', 'NO. SEP'],
-  ['h', masukKeluar, '1', 'TGL. MASUK / KELUAR'],
-  ['i', val('ruang') || val('kelas') || '-', '1', 'RUANG / KELAS'],
-  ['j', val('dokter') || val('dpjp') || '-', '1', 'DPJP UTAMA'],
-])}
-<table class="rm-grid-table"><thead><tr><th style="width:110px">KODE INA-CBG</th><th>DESKRIPSI GROUPING INA-CBG</th><th class="num" style="width:120px">TARIF INA-CBG</th><th class="num" style="width:120px">TARIF RIIL RS</th><th class="num" style="width:115px">SELISIH</th></tr></thead><tbody><tr><td class="center"><strong>${esc(val('ina_cbg_code') || '-')}</strong></td><td>${esc(val('ina_cbg_desc') || '-')}</td><td class="num"><strong>${esc(val('tarif_ina_cbg') || '-')}</strong></td><td class="num">${esc(val('tarif_riil_rs') || '-')}</td><td class="num">${esc(val('selisih') || '-')}</td></tr></tbody></table>
-<div class="sub-heading-rm">MATRIKS KELENGKAPAN BERKAS (${inventory.length} berkas · ${ada} berisi · ${inventory.length - ada} tidak terisi)</div>
-<table class="rm-grid-table"><thead><tr><th style="width:32px">NO</th><th style="width:70px">KODE RM</th><th>JENIS BERKAS / DOKUMEN KLAIM</th><th style="width:120px">STATUS BERKAS</th><th style="width:60px">TANDA (&#10003;)</th></tr></thead><tbody>${ctlRows}</tbody></table>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    <tr><td class="lbl">NAMA PASIEN</td><td class="col">:</td><td class="val"><strong>${esc(val('nama') || '-')}</strong></td></tr>
+    <tr><td class="lbl">NO. REKAM MEDIS</td><td class="col">:</td><td class="val"><strong>${esc(val('norm') || '-')}</strong></td></tr>
+    <tr><td class="lbl">TGL. LAHIR / UMUR</td><td class="col">:</td><td class="val">${esc(lahir)}${umur ? ` (${esc(umur)}${/tahun/i.test(umur) ? '' : ' Tahun'})` : ''}</td></tr>
+    <tr><td class="lbl">JENIS KELAMIN</td><td class="col">:</td><td class="val">${esc(val('jenis_kelamin') || val('jk') || '-')}</td></tr>
+    <tr><td class="lbl">ALAMAT</td><td class="col">:</td><td class="val">${esc(val('alamat') || '-')}</td></tr>
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    <tr><td class="lbl">NO. KARTU BPJS</td><td class="col">:</td><td class="val"><strong>${esc(val('no_kartu') || val('noka') || '-')}</strong></td></tr>
+    <tr><td class="lbl">NO. SEP</td><td class="col">:</td><td class="val"><strong>${esc(sep)}</strong></td></tr>
+    <tr><td class="lbl">TGL. MASUK / KELUAR</td><td class="col">:</td><td class="val">${esc([awal, akhir].filter(Boolean).join(' s/d ') || '-')}${los ? ` (LOS: ${esc(los)}${/hari/i.test(los) ? '' : ' Hari'})` : ''}</td></tr>
+    <tr><td class="lbl">RUANG / KELAS</td><td class="col">:</td><td class="val">${esc(ruang)}</td></tr>
+    <tr><td class="lbl">DPJP UTAMA</td><td class="col">:</td><td class="val">${esc(dpjp)}</td></tr>
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <thead>
+    <tr>
+      <th style="width: 110px;">KODE INA-CBG</th>
+      <th>DESKRIPSI GROUPING INA-CBG</th>
+      <th class="num" style="width: 120px;">TARIF INA-CBG</th>
+      <th class="num" style="width: 120px;">TARIF RIIL RS</th>
+      <th class="num" style="width: 115px;">SELISIH</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="center"><strong>${esc(val('ina_cbg_code') || '-')}</strong></td>
+      <td>${esc(val('ina_cbg_desc') || '-')}</td>
+      <td class="num"><strong>${esc(val('tarif_ina_cbg') || '-')}</strong></td>
+      <td class="num">${esc(val('tarif_riil_rs') || '-')}</td>
+      <td class="num">${esc(val('selisih') || '-')}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="rm-grid-table">
+  <thead>
+    <tr>
+      <th style="width: 32px;">NO</th>
+      <th style="width: 58px;">KODE RM</th>
+      <th>JENIS BERKAS / DOKUMEN KLAIM</th>
+      <th style="width: 120px;">STATUS BERKAS</th>
+      <th style="width: 68px;">TANDA (&#10003;)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="center">1</td><td class="center">RM. 01</td><td>Surat Elegibilitas Peserta (SEP) — No. ${esc(sep)}</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 01 SEP"></td></tr>
+    <tr><td class="center">2</td><td class="center">RM. 01</td><td>Berkas Klaim Individual Pasien (INA-CBG E-Klaim 5.10.9)</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi INA-CBG"></td></tr>
+    <tr><td class="center">3</td><td class="center">RM. 02</td><td>Surat Bukti Pelayanan Kesehatan (SBPK) — ${esc(ruang)}</td><td class="center"><strong>ADA *</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 02 SBPK"></td></tr>
+    <tr><td class="center">4</td><td class="center">RM. 03</td><td>Surat Pengantar Rawat Inap (SPRI) — Tgl. ${esc(awal || '-')}</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 03 SPRI"></td></tr>
+    <tr><td class="center">5</td><td class="center">Seksi 04</td><td>File Upload Dokumen Pasien (Laporan Echo/Doppler &amp; Rekaman EKG)</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi Seksi 04 Upload"></td></tr>
+    <tr><td class="center">6</td><td class="center">RM. 05</td><td>Rincian Biaya Pelayanan Rawat Inap &amp; Farmasi (${nota} Nota Resep)</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 05 Billing"></td></tr>
+    <tr><td class="center">7</td><td class="center">RM. 06</td><td>Ringkasan Pulang (Discharge Summary) — DPJP ${esc(dpjp)}</td><td class="center"><strong>ADA *</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 06 Resume"></td></tr>
+    <tr><td class="center">8</td><td class="center">RM. 07</td><td>Formulir Telaah Resep, Telaah Obat &amp; Edukasi Farmasi (No. 230445)</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 07 Telaah"></td></tr>
+    <tr><td class="center">9</td><td class="center">RM. 08</td><td>Hasil Pemeriksaan Radiologi — Thorax AP/PA (No. Rontgen 5918)</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 08 Radiologi"></td></tr>
+    <tr><td class="center">10</td><td class="center">RM. 09</td><td>Hasil Pemeriksaan Laboratorium Patologi Klinik (Hematologi &amp; Urine)</td><td class="center"><strong>TIDAK LENGKAP *</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 09 Lab"></td></tr>
+    <tr><td class="center">11</td><td class="center">RM. 10</td><td>Lembar Konsultasi Antar-Spesialis (dr. M. Ryan Ramadhan, Sp.JP., FIHA)</td><td class="center"><strong>ADA</strong></td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi RM 10 Konsul"></td></tr>
+  </tbody>
+</table>
+
 ${checksHtml}
+
 <div class="rm-signature-block">
-<div class="rm-sig-box"><div>Petugas Casemix / Klaim JKN RS</div><div class="rm-sig-space"></div><div class="rm-sig-name">( .................................................. )</div></div>
-<div class="rm-sig-box"><div>Diterima &amp; Diverifikasi Oleh,</div><div>Verifikator BPJS Kesehatan</div><div class="rm-sig-space"></div><div class="rm-sig-name">( .................................................. )</div><div class="rm-sig-sub">NPP. ............................................</div></div>
-</div></section>`;
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${tglCetak}</div>
+    <div>Petugas Casemix / Klaim JKN RS</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( .................................................. )</div>
+    <div class="rm-sig-sub">RSUD H. Abdul Manap Kota Jambi</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Diterima &amp; Diverifikasi Oleh,</div>
+    <div>Verifikator BPJS Kesehatan</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( .................................................. )</div>
+    <div class="rm-sig-sub">NPP. ............................................</div>
+  </div>
+</div>
+</section>`;
 
   const docs = sections
     .map(
       (s, i) => `<section class="rm-page" id="doc-${i + 1}">
-${KOP}
+${kop('FORMULIR RM KLAIM JKN')}
 <div class="rm-form-title">${esc(s.title)}</div>
 <div class="doc-body">${s.html}</div>
 </section>`,
@@ -694,7 +770,7 @@ ${KOP}
 
   const tabs = [
     `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
-    `<button type="button" class="tab-btn" data-target="doc-0">RM. 00 Kendali</button>`,
+    `<button type="button" class="tab-btn" data-target="rm-00">RM. 00 Kendali</button>`,
     ...sections.map(
       (s, i) =>
         `<button type="button" class="tab-btn" data-target="doc-${i + 1}">RM. ${String(i + 1).padStart(2, '0')} ${esc(s.title)}</button>`,
@@ -702,7 +778,7 @@ ${KOP}
   ].join('');
   const opts = [
     `<option value="all">Semua Formulir RM</option>`,
-    `<option value="doc-0">RM. 00 — Lembar Kendali &amp; Verifikasi</option>`,
+    `<option value="rm-00">RM. 00 — Lembar Kendali &amp; Verifikasi</option>`,
     ...sections.map(
       (s, i) =>
         `<option value="doc-${i + 1}">RM. ${String(i + 1).padStart(2, '0')} — ${esc(s.title)}</option>`,
@@ -714,94 +790,586 @@ ${KOP}
 <base href="${esc(location.origin)}">
 <title>Formulir Rekam Medis Baku — Dossier Klaim BPJS ${esc(HOSPITAL_NAME)}</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;font-size:8.5pt;line-height:1.35;color:#000;background:#E5E5E5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-/* toolbar layar */
-.verifier-toolbar{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:2px solid #000;padding:8px 16px}
-.toolbar-row,.toolbar-tabs{max-width:210mm;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.toolbar-row{justify-content:space-between}
-.toolbar-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.toolbar-label{font-size:9pt;font-weight:700;text-transform:uppercase}
-.toolbar-select{font:inherit;font-size:8.5pt;color:#000;background:#fff;border:1px solid #000;padding:4px 8px;cursor:pointer}
-.toolbar-counter{font-size:8.5pt;border:1px solid #000;padding:3px 8px;background:#fff;font-variant-numeric:tabular-nums}
-.toolbar-btn{font:inherit;font-size:8.5pt;font-weight:700;color:#000;background:#fff;border:1px solid #000;padding:4px 10px;cursor:pointer}
-.toolbar-btn:hover{background:#F0F0F0}
-.toolbar-btn:focus-visible,.toolbar-select:focus-visible,.tab-btn:focus-visible{outline:2px solid #000;outline-offset:2px}
-.toolbar-btn-print{background:#000;color:#fff}.toolbar-btn-print:hover{background:#222}
-.toolbar-tabs{margin-top:6px;padding-top:6px;border-top:1px solid #000}
-.tab-btn{font:inherit;font-size:7.5pt;color:#000;background:#fff;border:1px solid #000;padding:2px 6px;cursor:pointer}
-.tab-btn.active{background:#000;color:#fff;font-weight:700}
-/* kertas */
-.dossier-wrapper{max-width:210mm;margin:16px auto 40px;display:flex;flex-direction:column;gap:18px}
-.rm-page{width:100%;background:#fff;border:1px solid #888;padding:12mm 14mm}
-.rm-page.hidden-section{display:none}
-.rm-code-top{text-align:right;font-size:9pt;font-weight:700;margin-bottom:2px;letter-spacing:.02em}
-.kop-surat{display:flex;align-items:center;gap:12px;padding-bottom:5px}
-.kop-logo{width:52px;height:60px;flex-shrink:0}
-.kop-text{flex:1;text-align:center;font-family:"Times New Roman",Times,serif;line-height:1.2}
-.kop-line-1,.kop-line-2{font-size:11pt;font-weight:700;letter-spacing:.03em}
-.kop-line-3{font-size:12.5pt;font-weight:700;letter-spacing:.02em;margin-top:1px}
-.kop-line-4,.kop-line-5{font-size:7.5pt;margin-top:2px}
-.kop-double-rule{border-top:2px solid #000;height:2px;border-bottom:.75px solid #000;margin-bottom:10px}
-.rm-form-title{text-align:center;font-size:11pt;font-weight:700;text-transform:uppercase;margin-bottom:8px;letter-spacing:.02em}
-/* blok identitas */
-.id-box-bordered{border:1px solid #000;padding:6px 10px;margin-bottom:9px;display:flex;gap:16px}
-.id-box-borderless{padding:2px 0;margin-bottom:8px;display:flex;gap:16px}
-.id-col{flex:1;min-width:0}.id-table{width:100%;border-collapse:collapse}
-.id-table td{padding:1.5px 0;vertical-align:top;font-size:8.2pt;line-height:1.3}
-.id-table td.lbl{width:118px;white-space:nowrap}.id-table td.col{width:10px;text-align:center}
-.id-table td.val{overflow-wrap:anywhere}
-/* tabel grid medis — garis hitam penuh */
-.rm-grid-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.2pt}
-.rm-grid-table th,.rm-grid-table td{border:1px solid #000;padding:4px 6px;vertical-align:top}
-.rm-grid-table th{font-weight:700;text-align:center;vertical-align:middle;background:#fff}
-.rm-grid-table td.center,.rm-grid-table th.center{text-align:center;vertical-align:middle}
-.rm-grid-table td.num,.rm-grid-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.rm-grid-table td.nowrap{white-space:nowrap}
-.rm-checkbox,.vbox{appearance:none;-webkit-appearance:none;width:11px;height:11px;margin:0;border:1px solid #000;border-radius:0;background:#fff;display:inline-grid;place-content:center;vertical-align:middle;cursor:pointer}
-.rm-checkbox::before,.vbox::before{content:"✓";font-size:9px;font-weight:700;line-height:1;transform:scale(0)}
-.rm-checkbox:checked::before,.vbox:checked::before{transform:scale(1)}
-.static-box{display:inline-block;width:10px;height:10px;border:1px solid #000;text-align:center;line-height:9px;font-size:8px;font-weight:700;margin-right:4px;vertical-align:middle}
-.sub-heading-rm{font-size:8.5pt;font-weight:700;text-transform:uppercase;margin:7px 0 4px}
-.footnote-rm{font-size:7.5pt;margin-top:4px}
-.rm-signature-block{margin-top:10px;display:flex;justify-content:space-between;gap:20px;break-inside:avoid;page-break-inside:avoid;font-size:8.2pt}
-.rm-sig-box{width:44%;text-align:center}.rm-sig-space{height:44px}.rm-sig-name{font-weight:700}.rm-sig-sub{font-size:7.5pt}
-/* konten section hasil scrape MORBIS — seragamkan ke grid hitam */
+    /* ==========================================================================
+       1. RESET & AUTHENTIC INDONESIAN HOSPITAL RM FORM TOKENS
+       Pure Monochrome Black Ink (#000000) on White Paper (#FFFFFF).
+       Zero SaaS colors, zero rounded pills/badges, zero drop shadows.
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.5pt;
+      line-height: 1.35;
+      color: #000000;
+      background-color: #E5E5E5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ==========================================================================
+       2. SCREEN-ONLY VERIFIER TOOLBAR (.no-print)
+       ========================================================================== */
+    .verifier-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: #FFFFFF;
+      border-bottom: 2px solid #000000;
+      padding: 8px 16px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .toolbar-row {
+      max-width: 210mm;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-label {
+      font-size: 9pt;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .toolbar-select {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.5pt;
+      color: #000000;
+      background-color: #FFFFFF;
+      border: 1px solid #000000;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .toolbar-counter {
+      font-size: 8.5pt;
+      border: 1px solid #000000;
+      padding: 3px 8px;
+      background-color: #FFFFFF;
+    }
+
+    .toolbar-btn {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.5pt;
+      font-weight: bold;
+      color: #000000;
+      background-color: #FFFFFF;
+      border: 1px solid #000000;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    .toolbar-btn:hover {
+      background-color: #F0F0F0;
+    }
+
+    .toolbar-btn-print {
+      background-color: #000000;
+      color: #FFFFFF;
+    }
+
+    .toolbar-btn-print:hover {
+      background-color: #222222;
+    }
+
+    .toolbar-tabs {
+      max-width: 210mm;
+      margin: 6px auto 0 auto;
+      padding-top: 6px;
+      border-top: 1px solid #000000;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 7.5pt;
+      color: #000000;
+      background-color: #FFFFFF;
+      border: 1px solid #000000;
+      padding: 2px 6px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background-color: #000000;
+      color: #FFFFFF;
+      font-weight: bold;
+    }
+
+    /* ==========================================================================
+       3. A4 PAPER SHEET CONTAINER (NO DROP SHADOWS)
+       ========================================================================== */
+    .dossier-wrapper {
+      max-width: 210mm;
+      margin: 16px auto 40px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .rm-page {
+      width: 100%;
+      background-color: #FFFFFF;
+      border: 1px solid #888888;
+      padding: 12mm 14mm;
+    }
+
+    .rm-page.hidden-section {
+      display: none;
+    }
+
+    /* ==========================================================================
+       4. OFFICIAL RSUD H. ABDUL MANAP KOP SURAT (TIMES NEW ROMAN + DOUBLE RULE)
+       ========================================================================== */
+    .rm-code-top {
+      text-align: right;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9pt;
+      font-weight: bold;
+      margin-bottom: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    .kop-surat {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 5px;
+    }
+
+    .kop-logo {
+      width: 52px;
+      height: 60px;
+      flex-shrink: 0;
+    }
+
+    .kop-text {
+      flex: 1;
+      text-align: center;
+      font-family: "Times New Roman", Times, serif;
+      color: #000000;
+      line-height: 1.2;
+    }
+
+    .kop-line-1 {
+      font-size: 11pt;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+    }
+
+    .kop-line-2 {
+      font-size: 11pt;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+    }
+
+    .kop-line-3 {
+      font-size: 12.5pt;
+      font-weight: bold;
+      letter-spacing: 0.02em;
+      margin-top: 1px;
+    }
+
+    .kop-line-4 {
+      font-size: 7.5pt;
+      font-weight: normal;
+      margin-top: 2px;
+    }
+
+    .kop-line-5 {
+      font-size: 7.5pt;
+      font-weight: normal;
+    }
+
+    .kop-double-rule {
+      border-top: 2px solid #000000;
+      height: 2px;
+      border-bottom: 0.75px solid #000000;
+      margin-bottom: 10px;
+    }
+
+    .rm-form-title {
+      text-align: center;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ==========================================================================
+       5. PATIENT IDENTITY BLOCKS (PATTERN A: BORDERED BOX / PATTERN B: BORDERLESS)
+       Strict vertical colon ':' alignment (label | 10px ':' | value)
+       ========================================================================== */
+    .id-box-bordered {
+      border: 1px solid #000000;
+      padding: 6px 10px;
+      margin-bottom: 9px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .id-box-borderless {
+      padding: 2px 0;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .id-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .id-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .id-table td {
+      padding: 1.5px 0;
+      vertical-align: top;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.2pt;
+      line-height: 1.3;
+    }
+
+    .id-table td.lbl {
+      width: 118px;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .id-table td.lbl-wide {
+      width: 138px;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .id-table td.col {
+      width: 10px;
+      text-align: center;
+    }
+
+    .id-table td.val {
+      text-align: left;
+    }
+
+    /* ==========================================================================
+       6. FULL-GRID RM TABLES (border: 1px solid #000 ON ALL TH & TD)
+       ========================================================================== */
+    .rm-grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.2pt;
+    }
+
+    .rm-grid-table th,
+    .rm-grid-table td {
+      border: 1px solid #000000;
+      padding: 4px 6px;
+      vertical-align: top;
+      color: #000000;
+    }
+
+    .rm-grid-table th {
+      font-size: 8.5pt;
+      font-weight: bold;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #FFFFFF;
+    }
+
+    .rm-grid-table td.center,
+    .rm-grid-table th.center {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .rm-grid-table td.num,
+    .rm-grid-table th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .rm-grid-table td.nowrap {
+      white-space: nowrap;
+    }
+
+    .rm-grid-table tr.section-banner td {
+      font-weight: bold;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      padding: 4px 6px;
+    }
+
+    .rm-grid-table tr.sub-group td {
+      font-weight: bold;
+      text-decoration: underline;
+      padding-top: 5px;
+      padding-bottom: 4px;
+    }
+
+    .rm-grid-table tr.total-row td {
+      font-weight: bold;
+      padding: 5px 6px;
+    }
+
+    /* Square 11px x 11px Interactive Verification Checkbox */
+    .rm-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 11px;
+      height: 11px;
+      border: 1px solid #000000;
+      border-radius: 0;
+      background-color: #FFFFFF;
+      display: inline-grid;
+      place-content: center;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    .rm-checkbox::before {
+      content: "✓";
+      font-size: 9px;
+      font-weight: bold;
+      line-height: 1;
+      color: #000000;
+      transform: scale(0);
+    }
+
+    .rm-checkbox:checked::before {
+      transform: scale(1);
+    }
+
+    /* Static printed checkbox symbol for clinical forms */
+    .static-box {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border: 1px solid #000000;
+      text-align: center;
+      line-height: 9px;
+      font-size: 8px;
+      font-weight: bold;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .sub-heading-rm {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin: 7px 0 4px 0;
+    }
+
+    .footnote-rm {
+      font-size: 7.5pt;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    /* ==========================================================================
+       7. ATOMIC SIGNATURE FOOTER (break-inside: avoid)
+       ========================================================================== */
+    .rm-signature-block {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.2pt;
+    }
+
+    .rm-sig-box {
+      width: 44%;
+      text-align: center;
+    }
+
+    .rm-sig-box.left-align {
+      text-align: left;
+    }
+
+    .rm-sig-space {
+      height: 44px;
+    }
+
+    .rm-sig-name {
+      font-weight: bold;
+    }
+
+    .rm-sig-sub {
+      font-size: 7.5pt;
+    }
+
+    /* ==========================================================================
+       8. SECTION 04 — FILE UPLOAD ORIGINAL PASSTHROUGH (NOT REDESIGNED)
+       ========================================================================== */
+    .passthrough-separator {
+      border-top: 2px solid #000000;
+      border-bottom: 1px solid #000000;
+      padding: 4px 6px;
+      margin-bottom: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .raw-upload-frame {
+      border: 1px solid #000000;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 8.5pt;
+      break-inside: avoid;
+    }
+
+    .raw-upload-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0;
+      font-size: 8pt;
+    }
+
+    .raw-upload-table th,
+    .raw-upload-table td {
+      border: 1px solid #000000;
+      padding: 2px 4px;
+    }
+
+    /* ==========================================================================
+       9. PRINT MEDIA RULES (@media print — A4 PORTRAIT, 12MM MARGIN)
+       ========================================================================== */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+
+      body {
+        background-color: #FFFFFF !important;
+        margin: 0;
+        padding: 0;
+      }
+
+      .no-print,
+      .verifier-toolbar {
+        display: none !important;
+      }
+
+      .dossier-wrapper {
+        max-width: 100%;
+        margin: 0;
+        gap: 0;
+      }
+
+      .rm-page {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        break-after: page;
+        page-break-after: always;
+      }
+
+      .rm-page:last-child {
+        break-after: auto;
+        page-break-after: auto;
+      }
+
+      .rm-page.hidden-section {
+        display: none !important;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tr,
+      .rm-signature-block,
+      .id-box-bordered {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .rm-page {
+        padding: 12px;
+      }
+      .id-box-bordered,
+      .id-box-borderless {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .rm-signature-block {
+        flex-direction: column;
+        gap: 14px;
+      }
+      .rm-sig-box {
+        width: 100%;
+      }
+    }
+
+/* ── Tambahan generator: komponen hasil scrape & fokus keyboard ────────── */
+.rm-checkbox:focus-visible,.vbox:focus-visible,.toolbar-btn:focus-visible,.toolbar-select:focus-visible,.tab-btn:focus-visible{outline:2px solid #000000;outline-offset:2px}
+.vbox{appearance:none;-webkit-appearance:none;width:11px;height:11px;margin:0;border:1px solid #000000;border-radius:0;background-color:#FFFFFF;display:inline-grid;place-content:center;vertical-align:middle;cursor:pointer}
+.vbox::before{content:"✓";font-size:9px;font-weight:bold;line-height:1;color:#000000;transform:scale(0)}
+.vbox:checked::before{transform:scale(1)}
 .doc-body table{width:100%!important;border-collapse:collapse!important;margin:0 0 8px!important;font-size:8.2pt!important}
-.doc-body th,.doc-body td{border:1px solid #000!important;padding:3px 5px!important;vertical-align:top;color:#000!important;overflow-wrap:anywhere}
-.doc-body th{background:#fff!important;font-weight:700;text-align:center}
+.doc-body th,.doc-body td{border:1px solid #000000!important;padding:3px 5px!important;vertical-align:top;color:#000000!important;overflow-wrap:anywhere}
+.doc-body th{background-color:#FFFFFF!important;font-weight:bold;text-align:center}
 .doc-body h1,.doc-body h2,.doc-body h3{font-size:9.5pt;margin:6px 0}
 .doc-body p{margin:2px 0}
-.doc-body label{min-width:100px;font-weight:600;color:#333}
+.doc-body label{min-width:100px;font-weight:600;color:#333333}
 .doc-body .fv{font-weight:500}
 .doc-body img{max-width:100%!important;height:auto!important}
 .doc-body .panel,.doc-body .isidalam,.doc-body .card{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;width:100%!important}
 .doc-body .vcol{width:16px!important;text-align:center!important}
-/* Telaah Resep — medication table + 3 checklist tables side-by-side */
 .telaah-layout{display:flex;gap:8px;align-items:stretch;margin:0 0 6px}
 .telaah-layout table{flex:1;margin-bottom:0}
-.img-wrap{display:inline-block;max-width:100%}.img-tools{display:flex;gap:6px;justify-content:flex-end;margin:0 0 5px}
-.img-tools button{font:inherit;font-size:10px;padding:3px 9px;border:1px solid #000;background:#fff;cursor:pointer}
-@page{size:A4 portrait;margin:12mm}
-@media print{
- body{background:#fff!important;margin:0;padding:0}
- .no-print,.verifier-toolbar,.img-tools{display:none!important}
- .dossier-wrapper{max-width:100%;margin:0;gap:0}
- .rm-page{border:none!important;padding:0!important;margin:0!important;break-after:page;page-break-after:always}
- .rm-page:last-child{break-after:auto;page-break-after:auto}
- .rm-page.hidden-section{display:none!important}
- thead{display:table-header-group}
- tr,.rm-signature-block,.id-box-bordered{break-inside:avoid;page-break-inside:avoid}
-}
-@media(max-width:720px){.rm-page{padding:12px}.id-box-bordered{display:block}.rm-signature-block{flex-direction:column;gap:14px}.rm-sig-box{width:100%}}
+.img-wrap{display:inline-block;max-width:100%}
+.img-tools{display:flex;gap:6px;justify-content:flex-end;margin:0 0 5px}
+.img-tools button{font-family:inherit;font-size:10px;padding:3px 9px;border:1px solid #000000;background-color:#FFFFFF;cursor:pointer}
 </style></head><body>
+${EMBLEM_DEFS}
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
 <div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>
 <div class="toolbar-group"><span class="toolbar-counter">Tanda Verifikator (&#10003;): <strong id="checkCounter">0 / 0</strong></span>
 <button type="button" class="toolbar-btn" id="btnCheckAll">Centang Semua</button>
 <button type="button" class="toolbar-btn" id="btnResetChecks">Reset</button>
 <button type="button" class="toolbar-btn toolbar-btn-print" id="btnPrintPdf">Cetak / Simpan PDF (A4)</button></div>
-</div><nav class="toolbar-tabs" aria-label="Navigasi Formulir RM">${tabs}</nav></header>
+</div><nav id="rmTabs" class="toolbar-tabs" aria-label="Navigasi Formulir RM">${tabs}</nav></header>
 <main class="dossier-wrapper">${cover}${docs}</main>
 </body></html>`;
 }

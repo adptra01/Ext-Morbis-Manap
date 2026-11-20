@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — replikasi persis Section RM.00 sesuai referensi (`98a1282`)
+- **mKlaimPrint** — tata letak Lembar Kendali sesuai evidence (`6b0f029`)
 - **mKlaimPrint** — redesign dossier monokrom & telaah resep (`30f329c`)
 - **mKlaimPrint** — catatan pemeriksaan lintas berkas, kolom Ver tabel, alat rotasi/hapus lampiran (`0a8a2b4`)
 - **mKlaimPrint** — lembar kendali berkas (halaman 1) + filter canvas kosong/hitam + header tabel berulang (`5a7e6e9`)
@@ -2124,4 +2126,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 30f329c72327db190915ff6570a25adee88725d7 -->
+<!-- changelog-upto: 98a128208bd7d07c97ddaf1b02fe0c7d92331ce3 -->
