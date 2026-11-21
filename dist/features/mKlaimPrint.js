@@ -604,6 +604,7 @@ var __morbis_feature = (() => {
     const dokter = pick("dokter", "dpjp");
     const kartu = pick("kartu", "no_kartu", "noka");
     const mr = pick("norm", "rekam_medis");
+    const namaPeserta = pick("nama") || "-";
     const km = kartu.match(/^(.*?)\s*\(MR\.?\s*([^)]+)\)$/i);
     const kartuHtml = km ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>` : `${esc(kartu)}${mr !== "-" ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ""}`;
     const kunjungan = pick("jenis_kunjungan") !== "-" ? pick("jenis_kunjungan") : grab(/Jns\.?\s*Kunjungan\s*[:.]?\s*([\s\S]*?)(?:\s+Kls\.?\s*Hak|$)/i);
@@ -638,7 +639,7 @@ var __morbis_feature = (() => {
      ${kv("No. SEP", `<span class="sep-no-value">${esc(sep)}</span>`)}
      ${kv("Tgl. SEP", esc(tglSep))}
      ${kv("No.Kartu", kartuHtml)}
-     ${kv("Nama Peserta", `<strong>${esc(pick("nama"))}</strong>`)}
+     ${kv("Nama Peserta", `<strong>${esc(namaPeserta)}</strong>`)}
      ${kv("Tgl.Lahir", `${esc(lahir)} &nbsp;&nbsp; Kelamin : ${esc(kelamin)}`)}
      ${kv("No.Telepon", esc(noHp))}
      ${kv("Sub/Spesialis", esc(subSpesialis))}
@@ -669,11 +670,7 @@ var __morbis_feature = (() => {
      ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR SEP" width="100" height="100" />` : ""}
      <div class="sep-sig-space"></div>
      <div class="sep-sig-line">&nbsp;</div>
-   </div>
-   <div class="sep-sig-box">
-     <div class="sep-sig-role">Petugas<br/>BPJS Kesehatan</div>
-     <div class="sep-sig-space"></div>
-     <div class="sep-sig-line">&nbsp;</div>
+     <div class="sep-sig-name">${esc(namaPeserta)}</div>
    </div>
  </div>
  </section>
@@ -3028,16 +3025,18 @@ ${kop(m.code)}
 .sep-col-right .sep-kv-table td.lbl{width:92px}
 .sep-kv-table td.sep{width:12px;text-align:center}
 .sep-kv-table td.val{word-break:break-word}
-.sep-no-value{font-size:12pt;letter-spacing:.2px}
+.sep-no-value{font-size:9.5pt;letter-spacing:.2px}
 .sep-inline-mr{margin-left:14px;white-space:nowrap}
 .sep-multiline-list{margin:0;padding:0;list-style:none}
 .sep-disclaimer{margin-top:10px;font-size:7.5pt;font-style:italic}
-.sep-print-meta{font-size:8pt;font-style:normal}
-.sep-signatures{display:flex;justify-content:space-between;gap:16px;margin-top:18px}
-.sep-sig-box{flex:1;font-size:8.8pt;line-height:1.25;text-align:center}
+.sep-print-meta{font-size:9.5pt;font-style:normal}
+/* Isi/body SEP seragam 9.5pt \u2014 kecuali disclaimer (7.5pt italic). */
+.sep-signatures{display:flex;justify-content:flex-end;gap:16px;margin-top:18px}
+.sep-sig-box{flex:0 0 44%;font-size:9.5pt;line-height:1.25;text-align:center}
 .sep-sig-role{min-height:24px}
 .sep-sig-space{height:36px}
-.sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
+.sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:9.5pt;white-space:nowrap}
+.sep-sig-name{margin-top:2px;font-weight:bold}
 .sep-qr{display:block;margin:2px auto;width:100px;height:100px;object-fit:contain}
 .rm-sig-qr{display:block;width:80px;height:80px;margin:0 auto 4px;object-fit:contain}
 /* @page A4 portrait 12mm ditetapkan sekali di blok print utama \u2014 jangan

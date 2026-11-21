@@ -59,15 +59,15 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'class="sep-signatures"',
       'class="sep-sig-line"',
       '>Pasien/<br/>Keluarga Pasien<',
-      '>Petugas<br/>BPJS Kesehatan<',
+      'class="sep-sig-name"',
       'Kelamin : ${esc(kelamin)}',
       'class="sep-qr"',
       'kunjunganItems.length > 1',
-      'Petugas<br/>BPJS Kesehatan',
     ]) {
       expect(sep).toContain(marker);
     }
-    // SEP hanya sheet BPJS — blok INA-CBG dihapus, nama tidak dobel di ttd.
+    // SEP hanya sheet BPJS — blok INA-CBG & TTD Petugas BPJS dihapus.
+    expect(sep).not.toContain('Petugas<br/>BPJS Kesehatan');
     expect(sep).not.toContain('BERKAS KLAIM INDIVIDUAL PASIEN');
     expect(sep).not.toContain('HASIL GROUPING INA-CBG');
     expect(sep).not.toContain('codeRows');
@@ -88,12 +88,15 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // Judul & nama RS sama besarnya (10.5pt).
     expect(src).toContain('.sep-title{font-size:10.5pt');
     expect(src).toContain('.sep-hospital{font-size:10.5pt');
-    // TTD: dua blok kiri/kanan, isi tiap blok di-center.
-    expect(src).toContain('.sep-signatures{display:flex;justify-content:space-between');
-    expect(src).toContain(
-      '.sep-sig-box{flex:1;font-size:8.8pt;line-height:1.25;text-align:center}',
-    );
+    // TTD hanya Pasien/Keluarga, diposisikan kanan; nama di bawah garis.
+    expect(src).toContain('.sep-signatures{display:flex;justify-content:flex-end');
+    expect(src).toContain('.sep-sig-box{flex:0 0 44%;font-size:9.5pt');
     expect(src).toContain('.sep-sig-line{width:115px;margin:0 auto');
+    expect(src).toContain('.sep-sig-name{margin-top:2px;font-weight:bold}');
+    // Isi/body seragam 9.5pt; disclaimer tetap 7.5pt italic.
+    expect(src).toContain('.sep-no-value{font-size:9.5pt');
+    expect(src).toContain('.sep-print-meta{font-size:9.5pt');
+    expect(src).toContain('.sep-disclaimer{margin-top:10px;font-size:7.5pt;font-style:italic}');
     // Satu @page A4 portrait 12mm — tidak ada override margin di blok SEP.
     expect(src.match(/@page\s*\{/g)?.length).toBe(1);
     expect(src).toContain('size: A4 portrait;');

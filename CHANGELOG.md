@@ -54,6 +54,10 @@
 
 - **mKlaimPrint** — kembali ke dossier tab halaman ekstensi (tanpa overlay/blob) (`9580894`)
 
+### ⚡ perf
+
+- **mKlaimPrint** — buka dossier langsung via tab kosong (jalan cepat) (`fd459d0`)
+
 ### 🎨 style
 
 - **mKlaimPrint** — hapus tanggal Kota Jambi dari TTD SBPK (`e41ac9f`)
@@ -65,6 +69,7 @@
 
 ### 🧹 chore
 
+- **policy** — kosongkan ExtensionSettings staging (hapus force_installed) (`af3b920`)
 - **changelog** — sync entri alternatif tab dossier (`2bae6b8`)
 - **dist** — sync mKlaimPrint — fallback dossier lokal (`5f6fe33`)
 - **dist** — sync mKlaimPrint — audit fixes & self-healing print button (`600348f`)
@@ -2191,4 +2196,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c0306553cb870244de8ef75f406634b4fb4033b3 -->
+<!-- changelog-upto: fd459d0aaf35c4f98448ed3d9d6a8c61693416f8 -->
