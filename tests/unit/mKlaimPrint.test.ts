@@ -82,6 +82,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       '.sep-header{display:flex;align-items:flex-start;justify-content:space-between',
     );
     expect(src).toContain('.sep-title-wrap{flex:0 0 auto;text-align:right;padding-right:0}');
+    // Judul & nama RS sama besarnya (10.5pt).
+    expect(src).toContain('.sep-title{font-size:10.5pt');
+    expect(src).toContain('.sep-hospital{font-size:10.5pt');
     // TTD: dua blok kiri/kanan, isi tiap blok di-center.
     expect(src).toContain('.sep-signatures{display:flex;justify-content:space-between');
     expect(src).toContain(
