@@ -1395,7 +1395,9 @@ ${kop("TRIAGE")}
     const cell = (td) => (td.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
     const rows = (t) => t ? Array.from(t.rows).map((tr) => Array.from(tr.cells).map(cell)) : [];
     const find = (re) => {
-      const t = tables.find((tb) => re.test((tb.rows[0]?.textContent || "").replace(/\s+/g, " ").trim()));
+      const t = tables.find(
+        (tb) => re.test((tb.rows[0]?.textContent || "").replace(/\s+/g, " ").trim())
+      );
       return rows(t);
     };
     const byText = (re) => {
@@ -1418,7 +1420,9 @@ ${kop("TRIAGE")}
       const c = on ? r.slice(1) : r;
       return `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ""}>` + c.map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>";
     }).join("");
-    const nyeriRows = nyeri.slice(1).map((r) => "<tr>" + r.map((x, i) => `<td${i === 0 ? "" : ' class="center"'}>${esc(x || "-")}</td>`).join("") + "</tr>").join("");
+    const nyeriRows = nyeri.slice(1).map(
+      (r) => "<tr>" + r.map((x, i) => `<td${i === 0 ? "" : ' class="center"'}>${esc(x || "-")}</td>`).join("") + "</tr>"
+    ).join("");
     const skorRows = (data) => data.slice(1).map((r) => {
       if (/^(JUMLAH SKOR|Keterangan Hasil|Catatan)$/i.test(r[0] || "")) {
         return '<tr><td colspan="5"><strong>' + esc(r[0]) + "</strong> : " + esc(r.slice(1).filter(Boolean).join(" ") || "-") + "</td></tr>";
@@ -1428,13 +1432,19 @@ ${kop("TRIAGE")}
       const cells = r.length >= 5 ? r : ["", "", r[0] || "", r[1] || "", ""];
       return `<tr${selected ? ' style="font-weight:bold;"' : ""}>` + cells.map((x) => `<td>${esc(x || "&nbsp;")}</td>`).join("") + "</tr>";
     }).join("");
-    const objektifRows = objektif.slice(1).map((r) => `<tr><td>${esc(r[0] || "-")}</td><td>${esc(r.slice(1).filter(Boolean).join(" ") || "-")}</td></tr>`).join("");
+    const objektifRows = objektif.slice(1).map(
+      (r) => `<tr><td>${esc(r[0] || "-")}</td><td>${esc(r.slice(1).filter(Boolean).join(" ") || "-")}</td></tr>`
+    ).join("");
     const diagnosaRows = [
       ["DIAGNOSA UTAMA", diagnosaUtama.slice(1).flat().filter(Boolean).join(" ") || "-"],
       ["DIAGNOSA BANDING", diagnosaBanding.slice(1).flat().filter(Boolean).join(" ") || "-"]
-    ].map(([k, val2]) => `<tr><td style="width:180px;"><strong>${k}</strong></td><td>${esc(val2)}</td></tr>`).join("");
+    ].map(
+      ([k, val2]) => `<tr><td style="width:180px;"><strong>${k}</strong></td><td>${esc(val2)}</td></tr>`
+    ).join("");
     const tindakanVal = tindakan.slice(1).flat().filter(Boolean).join(" ") || "-";
-    const obatRows = obat.slice(1).filter((r) => r.some(Boolean)).map((r) => "<tr>" + r.slice(0, 4).map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>").join("");
+    const obatRows = obat.slice(1).filter((r) => r.some(Boolean)).map(
+      (r) => "<tr>" + r.slice(0, 4).map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>"
+    ).join("");
     const perawatVal = perawat.slice(1).flat().filter(Boolean).join(" \xB7 ");
     return `<section class="rm-page" id="pengkajian-igd">
 ${kop("PENGKAJIAN IGD")}
@@ -1463,7 +1473,14 @@ ${kop("PENGKAJIAN IGD")}
 ${grid(
       ["TEKANAN DARAH", "NADI", "PERNAPASAN", "SUHU", "SpO2", "GCS", "GCS (E/V/M)", "KESADARAN"],
       [
-        "<tr>" + [pick("vital_td"), pick("vital_nadi"), pick("vital_nafas"), pick("vital_suhu"), pick("vital_spo"), pick("vital_gcs")].map((x) => `<td class="center">${esc(x)}</td>`).join("") + `<td class="center">${esc([pick("vital_e"), pick("vital_m"), pick("vital_v")].join("/"))}</td><td class="center">${esc(pick("vital_kesadaran"))}</td></tr>`
+        "<tr>" + [
+          pick("vital_td"),
+          pick("vital_nadi"),
+          pick("vital_nafas"),
+          pick("vital_suhu"),
+          pick("vital_spo"),
+          pick("vital_gcs")
+        ].map((x) => `<td class="center">${esc(x)}</td>`).join("") + `<td class="center">${esc([pick("vital_e"), pick("vital_m"), pick("vital_v")].join("/"))}</td><td class="center">${esc(pick("vital_kesadaran"))}</td></tr>`
       ]
     )}
 

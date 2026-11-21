@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign Pengkajian IGD — triase, FLACC, risiko jatuh, tindakan (`4f55ab8`)
+- **mKlaimPrint** — redesign section Triage IGD — pengkajian awal terstruktur (`357d061`)
 - **mKlaimPrint** — redesign RM.08 Radiologi — hasil pemeriksaan terstruktur (`d874b61`)
 - **mKlaimPrint** — redesign RM.07 Telaah ikut format telaahResepPrint (data scrape) (`aaf9239`)
 - **mKlaimPrint** — redesign Section RM.06 (Resume) — ringkasan pulang (`849b335`)
@@ -2162,4 +2164,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d874b61b1667fd86f8081c84e2c7bfe9be486bac -->
+<!-- changelog-upto: 4f55ab84b3fe9680856b8f82e6c74164798d3f10 -->
