@@ -60,6 +60,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'class="sep-sig-line"',
       '>Pasien/<br/>Keluarga Pasien<',
       '>Petugas<br/>BPJS Kesehatan<',
+      'Kelamin : ${esc(kelamin)}',
+      'class="sep-qr"',
+      'kunjunganItems.length > 1',
       'Petugas<br/>BPJS Kesehatan',
     ]) {
       expect(sep).toContain(marker);

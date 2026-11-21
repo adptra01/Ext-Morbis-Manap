@@ -693,6 +693,14 @@ const sepNorm = (s: string): string =>
 function buildSepSection(sections: Section[]): string {
   const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
   const txt = sepSection ? plainText(sepSection.html) : '';
+  // QR SEP asli dari halaman (berisi No.Kartu + Nama Pasien) — dipakai kembali
+  // apa adanya supaya tidak perlu generate ulang di sisi ekstensi.
+  const qrSrc = sepSection
+    ? new DOMParser()
+        .parseFromString(sepSection.html, 'text/html')
+        .querySelector('img[src*="qrserver"], img[src*="qr-code"]')
+        ?.getAttribute('src') || ''
+    : '';
   const grab = (re: RegExp): string => sepNorm(txt.match(re)?.[1] || '') || '-';
   /** Ambil nilai field SEP dari hasil scrape dengan lookahead label berikutnya. */
   // ':' WAJIB — kalau opsional, kata "PESERTA" di judul SURAT ELEGIBILITAS
@@ -712,6 +720,7 @@ function buildSepSection(sections: Section[]): string {
   const kelas = pick('kelas').replace(/^Kelas\s*/i, '');
   const lahirRaw = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '');
   const lahir = lahirRaw.split(/\s*\/\s*/)[0]?.trim() || '-';
+  const kelamin = grabField('Kelamin', 'No\\.?\\s*Telepon');
   const dokter = pick('dokter', 'dpjp');
 
   // Sheet BPJS: nilai dari field halaman + scrape section SEP, kosong → '-'.
@@ -725,14 +734,17 @@ function buildSepSection(sections: Section[]): string {
     pick('jenis_kunjungan') !== '-'
       ? pick('jenis_kunjungan')
       : grab(/Jns\.?\s*Kunjungan\s*[:.]?\s*([\s\S]*?)(?:\s+Kls\.?\s*Hak|$)/i);
-  const kunjunganHtml = /^-\s|\n/.test(kunjungan)
-    ? '<ul class="sep-multiline-list">' +
-      kunjungan
-        .split(/\n/)
-        .map((x) => `<li>${esc(x.replace(/^-\s*/, '').trim())}</li>`)
-        .join('') +
-      '</ul>'
-    : esc(kunjungan);
+  const kunjunganItems = kunjungan
+    .replace(/^-\s*/, '')
+    .split(/\s+-\s+|\n/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+  const kunjunganHtml =
+    kunjunganItems.length > 1
+      ? '<ul class="sep-multiline-list">' +
+        kunjunganItems.map((x) => `<li>${esc(x)}</li>`).join('') +
+        '</ul>'
+      : esc(kunjungan);
   const peserta =
     pick('peserta', 'jenis_peserta') !== '-'
       ? pick('peserta', 'jenis_peserta')
@@ -781,7 +793,7 @@ function buildSepSection(sections: Section[]): string {
      ${kv('Tgl. SEP', esc(tglSep))}
      ${kv('No.Kartu', kartuHtml)}
      ${kv('Nama Peserta', `<strong>${esc(pick('nama'))}</strong>`)}
-     ${kv('Tgl.Lahir', esc(lahir))}
+     ${kv('Tgl.Lahir', `${esc(lahir)} &nbsp;&nbsp; Kelamin : ${esc(kelamin)}`)}
      ${kv('No.Telepon', esc(noHp))}
      ${kv('Sub/Spesialis', esc(subSpesialis))}
      ${kv('Dokter', esc(dokter))}
@@ -808,6 +820,7 @@ function buildSepSection(sections: Section[]): string {
  <div class="sep-signatures">
    <div class="sep-sig-box">
      <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
+     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR SEP" width="100" height="100" />` : ''}
      <div class="sep-sig-space"></div>
      <div class="sep-sig-line">&nbsp;</div>
    </div>
@@ -3549,6 +3562,7 @@ ${kop(m.code)}
 .sep-sig-role{min-height:24px}
 .sep-sig-space{height:36px}
 .sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
+.sep-qr{display:block;margin:2px auto;width:100px;height:100px;object-fit:contain}
 /* @page A4 portrait 12mm ditetapkan sekali di blok print utama — jangan
    ditimpa di sini supaya margin semua halaman dossier konsisten. */
 @media print{body{background:#fff;padding:0}.bpjs-sep-sheet{width:100%;padding:0}}
