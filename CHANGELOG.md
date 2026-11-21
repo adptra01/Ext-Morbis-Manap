@@ -33,6 +33,7 @@
 
 ### 🐛 fix
 
+- **shortcutButtons** — fallback tombol Cetak Rapi di halaman detail (`dedaf7e`)
 - **mKlaimPrint** — SBPK pakai cells (ReferenceError c tidak terdefinisi) (`22adc21`)
 - **mKlaimPrint** — expertise radiologi pertahankan baris baru asli (`fab8f3b`)
 - **mKlaimPrint** — peserta SEP tak menelan seluruh teks dari judul (`0e84800`)
@@ -60,6 +61,7 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — TTD SEP hanya pasien di kanan + font isi seragam (`6b6d739`)
 - **mKlaimPrint** — hapus tanggal Kota Jambi dari TTD SBPK (`e41ac9f`)
 - **mKlaimPrint** — ukuran judul SEP disamakan dengan nama RS (`2847f3a`)
 - **mKlaimPrint** — judul SEP & nama RS ke pojok kanan atas (`52472f1`)
@@ -2196,4 +2198,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: fd459d0aaf35c4f98448ed3d9d6a8c61693416f8 -->
+<!-- changelog-upto: dedaf7eae6292f2ff0ad5c7bd2701d7896db0078 -->

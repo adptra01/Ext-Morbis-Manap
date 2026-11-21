@@ -57,7 +57,6 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'class="sep-disclaimer"',
       'class="sep-print-meta"',
       'class="sep-signatures"',
-      'class="sep-sig-line"',
       '>Pasien/<br/>Keluarga Pasien<',
       'class="sep-sig-name"',
       'Kelamin : ${esc(kelamin)}',
@@ -91,7 +90,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // TTD hanya Pasien/Keluarga, diposisikan kanan; nama di bawah garis.
     expect(src).toContain('.sep-signatures{display:flex;justify-content:flex-end');
     expect(src).toContain('.sep-sig-box{flex:0 0 44%;font-size:9.5pt');
-    expect(src).toContain('.sep-sig-line{width:115px;margin:0 auto');
+    expect(sep).not.toContain('sep-sig-space');
+    expect(sep).not.toContain('sep-sig-line');
     expect(src).toContain('.sep-sig-name{margin-top:2px;font-weight:bold}');
     // Isi/body seragam 9.5pt; disclaimer tetap 7.5pt italic.
     expect(src).toContain('.sep-no-value{font-size:9.5pt');

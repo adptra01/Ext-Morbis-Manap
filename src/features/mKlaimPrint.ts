@@ -823,8 +823,6 @@ function buildSepSection(sections: Section[]): string {
    <div class="sep-sig-box">
      <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
      ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR SEP" width="100" height="100" />` : ''}
-     <div class="sep-sig-space"></div>
-     <div class="sep-sig-line">&nbsp;</div>
      <div class="sep-sig-name">${esc(namaPeserta)}</div>
    </div>
  </div>
@@ -3601,8 +3599,6 @@ ${kop(m.code)}
 .sep-signatures{display:flex;justify-content:flex-end;gap:16px;margin-top:18px}
 .sep-sig-box{flex:0 0 44%;font-size:9.5pt;line-height:1.25;text-align:center}
 .sep-sig-role{min-height:24px}
-.sep-sig-space{height:36px}
-.sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:9.5pt;white-space:nowrap}
 .sep-sig-name{margin-top:2px;font-weight:bold}
 .sep-qr{display:block;margin:2px auto;width:100px;height:100px;object-fit:contain}
 .rm-sig-qr{display:block;width:80px;height:80px;margin:0 auto 4px;object-fit:contain}
