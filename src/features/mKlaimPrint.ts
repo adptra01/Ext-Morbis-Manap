@@ -191,121 +191,7 @@ function stripOriginalLetterhead(root: HTMLElement): void {
   }
 }
 
-function formatTelaahResep(root: HTMLElement): void {
-  root.querySelectorAll('table').forEach((table) => {
-    table.setAttribute('data-telaah-layout', '1');
-    table.classList.add('telaah-layout');
-  });
-
-  const medicationRows = [
-    ['R/1', 'RL Infus 500 ml', 'Infus IV', '2'],
-    ['R/2', 'Propanolol Tablet 10 mg', '3 × 1 tablet', '3'],
-    ['R/3', 'Propylthiouracil Tablet 100 mg', '3 × 1 tablet', '3'],
-    ['R/4', 'Benzatin Benzil Penicillin Injeksi 1,2 juta IU/ml', '1 × 1 vial', '1'],
-    ['R/5', 'Spuit 1 ml', 'Alat Kesehatan', '1'],
-    ['R/6', 'Lidokain Injeksi 2%', 'Pelarut Injeksi', '1'],
-    ['R/7', 'Spuit 10 ml', 'Alat Kesehatan', '1'],
-  ] as const;
-
-  const medicationTable = document.createElement('table');
-  medicationTable.className = 'rm-grid-table';
-  medicationTable.innerHTML =
-    '<thead><tr><th style="width:45px">R/</th><th>NAMA OBAT &amp; SEDIAAN</th><th style="width:140px">DOSIS / ATURAN PAKAI</th><th class="center" style="width:60px">JUMLAH</th><th class="center" style="width:56px">VER (&#10003;)</th></tr></thead>';
-  medicationRows.forEach(([num, drug, dose, qty]) => {
-    const tr = document.createElement('tr');
-    const tdNo = document.createElement('td');
-    tdNo.className = 'center';
-    tdNo.innerHTML = `<strong>${esc(num)}</strong>`;
-    tr.appendChild(tdNo);
-    const tdDrug = document.createElement('td');
-    tdDrug.textContent = drug;
-    tr.appendChild(tdDrug);
-    const tdDose = document.createElement('td');
-    tdDose.textContent = dose;
-    tr.appendChild(tdDose);
-    const tdQty = document.createElement('td');
-    tdQty.className = 'center';
-    tdQty.textContent = qty;
-    tr.appendChild(tdQty);
-    const tdVer = document.createElement('td');
-    tdVer.className = 'center';
-    const box = document.createElement('input');
-    box.type = 'checkbox';
-    box.className = 'rm-checkbox';
-    box.setAttribute('aria-label', `Verifikasi Resep ${num}`);
-    tdVer.appendChild(box);
-    tr.appendChild(tdVer);
-    medicationTable.appendChild(tr);
-  });
-
-  const checklistTables = [
-    {
-      title: 'TELAAH RESEP (1–10)',
-      items: [
-        'Kejelasan tulisan',
-        'Benar nama pasien',
-        'Benar nama obat',
-        'Benar dosis',
-        'Benar waktu &amp; frekuensi pemberian',
-        'Benar aturan minum obat',
-        'Ada/tidaknya interaksi obat',
-        'Ada/tidaknya kontraindikasi',
-        'Ada/tidaknya polifarmasi',
-        'Ada/tidaknya duplikasi',
-      ],
-    },
-    {
-      title: 'TELAAH OBAT (1–6)',
-      items: [
-        'Benar identitas pasien',
-        'Benar ketepatan obat',
-        'Benar dosis &amp; rute pemberian',
-        'Benar waktu pemberian',
-        'Kesesuaian dengan formularium',
-        'Persetujuan perubahan resep',
-      ],
-    },
-    {
-      title: 'EDUKASI INFORMASI OBAT (1–7)',
-      items: [
-        'Nama &amp; kegunaan obat',
-        'Dosis, sediaan &amp; rute cara pakai',
-        'Cara penyimpanan, efek samping &amp; alergi',
-      ],
-    },
-  ].map((group) => {
-    const table = document.createElement('table');
-    table.className = 'rm-grid-table';
-    table.style.marginBottom = '0';
-    table.innerHTML = `<thead><tr><th style="width:28px">NO</th><th>${esc(group.title)}</th><th style="width:54px">TANDA (&#10003;)</th></tr></thead>`;
-    const tbody = document.createElement('tbody');
-    group.items.forEach((item, i) => {
-      const tr = document.createElement('tr');
-      const tdNo = document.createElement('td');
-      tdNo.className = 'center';
-      tdNo.textContent = String(i + 1);
-      tr.appendChild(tdNo);
-      const tdText = document.createElement('td');
-      tdText.innerHTML = esc(item);
-      tr.appendChild(tdText);
-      const tdVer = document.createElement('td');
-      tdVer.className = 'center';
-      tdVer.innerHTML = '&#10003;';
-      tr.appendChild(tdVer);
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    return table;
-  });
-
-  const wrap = document.createElement('div');
-  wrap.className = 'telaah-layout';
-  wrap.appendChild(medicationTable);
-  checklistTables.forEach((t) => wrap.appendChild(t));
-  root.appendChild(wrap);
-}
-
-function clean(section: HTMLElement, withVer = false, title = ''): string {
+function clean(section: HTMLElement, withVer = false): string {
   const c = section.cloneNode(true) as HTMLElement;
   // Canvas PDF (pdf.js) tidak ikut tersalin oleh cloneNode → ubah jadi img
   // data-URL dari canvas asli supaya berkas tetap tampil di dossier.
@@ -364,9 +250,6 @@ function clean(section: HTMLElement, withVer = false, title = ''): string {
     if (!el.children.length && !(el.textContent || '').trim()) el.remove();
   });
   stripOriginalLetterhead(c);
-  if (/Telaah|Edukasi/i.test(title)) {
-    formatTelaahResep(c);
-  }
   if (withVer) addVerColumns(c);
   return c.innerHTML.trim();
 }
@@ -390,7 +273,7 @@ function collectSections(): { sections: Section[]; inventory: InventoryRow[] } {
     // persis → section besar (mis. Pengkajian IGD) ikut terbuang.
     if (seen.has(title)) return;
     seen.add(title);
-    const html = clean(node, VER_DOCS.test(title), title);
+    const html = clean(node, VER_DOCS.test(title));
     if (html.length < 20) {
       inventory.push({ title, docNo: null });
       return;
@@ -1367,6 +1250,177 @@ ${kop('RM. 06')}
 </section>`;
 }
 
+/** SECTION RM.07 — FORMULIR TELAAH RESEP, OBAT & EDUKASI FARMASI.
+ *  Mengikuti format src/features/telaahResepPrint.ts (metadata 2 kolom,
+ *  daftar obat, tabel admin, checklist telaah, perubahan resep, paraf).
+ *  Data diambil dari section hasil scrape — bukan hardcoded. */
+function buildTelaahSection(sections: Section[]): string {
+  const tel = sections.find((s) => /^Telaah/i.test(s.title));
+  const doc = tel ? new DOMParser().parseFromString(tel.html, 'text/html') : null;
+  const fields = new Map<string, string>();
+  const meds: Array<{ no: string; name: string; jml: string }> = [];
+  const checklists: Array<{ title: string; rows: Array<[string, string]> }> = [];
+  const adminHeads: string[] = [];
+
+  if (doc) {
+    // Field label : nilai (dua tabel identitas & metadata).
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const c = Array.from(tr.cells).map((td) =>
+        (td.innerHTML || '')
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/[ \t]+/g, ' ')
+          .trim(),
+      );
+      for (let i = 0; i < c.length - 2; i++) {
+        const label = c[i].replace(/:$/, '').trim();
+        if (c[i + 1] !== ':') continue;
+        if (label && c[i + 2] && !fields.has(label)) fields.set(label, c[i + 2]);
+      }
+    }
+    // Daftar obat: baris "R/n" → nama + "Jml: x".
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const c = Array.from(tr.cells).map((td) =>
+        (td.textContent || '').replace(/\s+/g, ' ').trim(),
+      );
+      if (c.length < 2 || !/^R\/\d+$/i.test(c[0])) continue;
+      const m = c[1].match(/^(.*?)\s*Jml:\s*(\S+)/i);
+      meds.push({
+        no: c[0],
+        name: m ? m[1].trim() : c[1],
+        jml: m ? m[2] : '-',
+      });
+    }
+    // Checklist: tabel dengan header "Telaah Resep" / "Telaah Obat" / "Edukasi".
+    for (const table of Array.from(doc.querySelectorAll('table'))) {
+      const head = (table.rows[0]?.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!/^(Telaah Resep|Telaah Obat|Edukasi)/i.test(head)) continue;
+      const rows: Array<[string, string]> = [];
+      for (const tr of Array.from(table.rows).slice(1)) {
+        const c = Array.from(tr.cells).map((td) =>
+          (td.textContent || '').replace(/\s+/g, ' ').trim(),
+        );
+        if (c.length < 2 || !/^\d+$/.test(c[0])) continue;
+        rows.push([c[0], c[1]]);
+      }
+      if (rows.length) checklists.push({ title: head.split(/\s{2,}/)[0] || head, rows });
+    }
+    // Header tabel admin (Hitung | Timbang | Kemas | Penyerahan).
+    const adminTable = Array.from(doc.querySelectorAll('table')).find((t) =>
+      /Hitung/i.test(t.rows[0]?.textContent || ''),
+    );
+    if (adminTable) {
+      adminHeads.push(
+        ...Array.from(adminTable.rows[0].cells)
+          .map((td) => (td.textContent || '').replace(/\s+/g, ' ').trim())
+          .filter((v) => /Hitung|Timbang|Kemas|Penyerahan/i.test(v)),
+      );
+    }
+  }
+  if (!adminHeads.length) adminHeads.push('Hitung', 'Timbang', 'Kemas', 'Penyerahan');
+
+  const f = (...res: RegExp[]): string => {
+    for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
+    return '-';
+  };
+  const dokter = f(/^Dokter\s*:/i, /^Dokter$/i);
+  const noResep = f(/^No Resep/i);
+  const ruang = f(/^Ruangan\/?Poli/i, /^Ruangan/i);
+  const tanggal = f(/^Tanggal/i);
+  const jam = f(/^Jam/i);
+  const nama = f(/^Nama Pasien/i);
+  const norm = f(/^No\.? RM/i);
+  const alamat = f(/^Alamat/i);
+  const tglLahir = f(/^Tgl\.? Lahir/i);
+  const noHp = f(/^No HP/i);
+  const penjamin = f(/^Penjamin/i);
+
+  const medRows = meds.length
+    ? meds
+        .map(
+          (m) =>
+            `<tr><td class="center">${esc(m.no)}</td><td>${esc(m.name)}</td><td class="center">${esc(m.jml)}</td></tr>`,
+        )
+        .join('')
+    : '<tr><td class="center">-</td><td>Tidak ada data obat pada halaman telaah.</td><td class="center">-</td></tr>';
+
+  const adminHtml =
+    '<table class="rm-grid-table"><thead><tr>' +
+    adminHeads.map((h) => `<th class="center">${esc(h)}</th>`).join('') +
+    '</tr></thead><tbody><tr>' +
+    adminHeads.map(() => '<td style="height:30px">&nbsp;</td>').join('') +
+    '</tr></tbody></table>';
+
+  const checklistHtml = checklists.length
+    ? checklists
+        .map(
+          (g) =>
+            '<table class="rm-grid-table"><thead><tr>' +
+            `<th colspan="2">${esc(g.title)}</th><th style="width:44px;">Y/T</th></tr></thead><tbody>` +
+            g.rows
+              .map(
+                ([n, item]) =>
+                  `<tr><td class="center" style="width:28px;">${esc(n)}</td><td>${esc(item)}</td><td class="center">&nbsp;</td></tr>`,
+              )
+              .join('') +
+            '</tbody></table>',
+        )
+        .join('')
+    : '';
+
+  const changeSignHtml =
+    '<table class="rm-grid-table"><tbody>' +
+    '<tr><th colspan="2">PERUBAHAN RESEP</th></tr>' +
+    '<tr><th>Tertulis</th><th>Menjadi</th></tr>' +
+    '<tr><td style="height:28px">&nbsp;</td><td style="height:28px">&nbsp;</td></tr>' +
+    '<tr><td class="center">Apoteker</td><td class="center">Disetujui Dokter</td></tr>' +
+    '<tr><td style="height:28px">&nbsp;</td><td style="height:28px">&nbsp;</td></tr>' +
+    '<tr><th colspan="2">WAKTU TUNGGU</th></tr>' +
+    '<tr><td>Masuk</td><td>&nbsp;</td></tr>' +
+    '<tr><td>Diserahkan</td><td>&nbsp;</td></tr>' +
+    '<tr><td>Paraf Pasien/Keluarga</td><td style="height:30px">&nbsp;</td></tr>' +
+    '</tbody></table>';
+
+  return `<section class="rm-page" id="rm-07">
+${kop('RM. 07')}
+<div class="rm-form-title">FORMULIR TELAAH RESEP, TELAAH OBAT &amp; EDUKASI FARMASI</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('No. RM', norm)}
+    ${idRow('Tgl. Lahir / Umur', tglLahir)}
+    ${idRow('Alamat', alamat)}
+    ${idRow('No HP', noHp)}
+    ${idRow('Penjamin', penjamin)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Dokter', dokter, true)}
+    ${idRow('Ruangan / Poli', ruang)}
+    ${idRow('No Resep', noResep)}
+    ${idRow('Tanggal', tanggal)}
+    ${idRow('Jam', jam)}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 64px;">NO</th>
+    <th>NAMA OBAT &amp; SEDIAAN</th>
+    <th class="center" style="width: 56px;">JML</th>
+  </tr></thead>
+  <tbody>${medRows}</tbody>
+</table>
+
+${adminHtml}
+${checklistHtml}
+${changeSignHtml}
+
+<div class="footnote-rm">Obat tidak boleh diganti tanpa sepengetahuan Dokter.</div>
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -1508,6 +1562,7 @@ ${checksHtml}
       if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
       if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
       if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
+      if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}

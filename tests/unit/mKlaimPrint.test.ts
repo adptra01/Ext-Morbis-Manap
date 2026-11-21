@@ -155,6 +155,28 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildResumeSection(sections);');
   });
 
+  it('RM.07 (Telaah): format telaahResepPrint tanpa data hardcoded', () => {
+    const tel = src.slice(
+      src.indexOf('function buildTelaahSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="rm-07">',
+      'FORMULIR TELAAH RESEP, TELAAH OBAT &amp; EDUKASI FARMASI',
+      'NAMA OBAT &amp; SEDIAAN',
+      'PERUBAHAN RESEP',
+      'WAKTU TUNGGU',
+      'Paraf Pasien/Keluarga',
+      'Obat tidak boleh diganti tanpa sepengetahuan Dokter.',
+    ]) {
+      expect(tel).toContain(marker);
+    }
+    // Data obat dari scrape, bukan array hardcoded lama.
+    expect(src).not.toContain('const medicationRows = [');
+    expect(src).not.toContain("'Propanolol Tablet 10 mg'");
+    expect(src).toContain('return buildTelaahSection(sections);');
+  });
+
   it('memakai ID field produksi & kode section referensi', () => {
     expect(src).toContain("pick('kartu', 'no_kartu', 'noka')");
     expect(src).toContain("id: 'rm-01'");

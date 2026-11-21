@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign Section RM.06 (Resume) — ringkasan pulang (`849b335`)
 - **mKlaimPrint** — buka dossier via extension page print-berkas-klaim (tahan refresh) (`9aee17d`)
 - **mKlaimPrint** — footer ringkasan Rincian Biaya ala contoh billing BPJS (`d0a5339`)
 - **mKlaimPrint** — redesign RM.05 Rincian Biaya — tanpa tanggal/VER, agregasi frek obat (`7b41728`)
@@ -22,6 +23,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — kirim HTML ke background (hindari Extension context invalidated) (`a0000a8`)
 - **mKlaimPrint** — buka dossier lewat background tabs.create (Brave ERR_BLOCKED_BY_CLIENT) (`53948dd`)
 - **mKlaimPrint** — seragamkan newline jadi <br/> rapat, baris kosong tetap (`a091e04`)
 - **mKlaimPrint** — pertahankan baris baru pada value SPRI (`e28d820`)
@@ -2156,4 +2158,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 53948ddb97cf3e483c5f4c0f7e094e47e81f4337 -->
+<!-- changelog-upto: 849b335aafedde5e52481994a49107a9a2bce31d -->
