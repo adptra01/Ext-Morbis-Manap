@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- **mKlaimPrint** — footer ringkasan Rincian Biaya ala contoh billing BPJS (`631e508`)
+- **mKlaimPrint** — footer ringkasan Rincian Biaya ala contoh billing BPJS (`d0a5339`)
 - **mKlaimPrint** — redesign RM.05 Rincian Biaya — tanpa tanggal/VER, agregasi frek obat (`7b41728`)
 - **shortcutButtons** — tambah tombol Cetak Rapi M-KLAIM (tanpa icon) (`8e0912f`)
 - **mKlaimPrint** — logo asli di kop surat & matikan auto-print tab cetak (`c15b288`)
@@ -2154,4 +2154,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 631e5083215e890a19624b4c76390ae85266b3d8 -->
+<!-- changelog-upto: d0a533942e8e4905a8c6f164492b929cfa828161 -->

@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const src = readFileSync('src/features/mKlaimPrint.ts', 'utf8');
+const dossierShared = readFileSync('src/features/shared/printDossier.ts', 'utf8');
+const printPage = readFileSync('src/features/printBerkasKlaim/main.ts', 'utf8');
+const printHtml = readFileSync('print-berkas-klaim.html', 'utf8');
 const reference = readFileSync(
   'docs/evidence/Format Laporan RS/formulir_rm_baku_dossier_verifikasi_klaim_bpjs_rsud_h_abdul_manap.html',
   'utf8',
@@ -142,7 +145,22 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
 
   it('tidak auto-print saat tab cetak dibuka', () => {
     expect(src).not.toContain('win.setTimeout(doPrint');
-    expect(src).toContain("d.getElementById('btnPrintPdf')?.addEventListener('click', doPrint)");
+    expect(dossierShared).toContain(
+      "d.getElementById('btnPrintPdf')?.addEventListener('click', doPrint)",
+    );
+  });
+
+  it('dossier dibuka via extension page (tahan refresh)', () => {
+    // Content script: simpan HTML lalu buka halaman ekstensi, bukan about:blank.
+    expect(src).not.toContain("window.open('', '_blank')");
+    expect(src).toContain('saveDossier(buildHtml(sections, inventory))');
+    expect(src).toContain("chrome.runtime.getURL('print-berkas-klaim.html?id='");
+    // Storage: session + fallback local; handler dipasang ulang di halaman ekstensi.
+    expect(dossierShared).toContain('chrome.storage.session.set');
+    expect(dossierShared).toContain('chrome.storage.local.set');
+    expect(printHtml).toContain('src="./src/features/printBerkasKlaim/main.ts"');
+    expect(printPage).toContain('document.write(html)');
+    expect(printPage).toContain('installDossierHandlers(window)');
   });
 
   it('toolbar mempertahankan ID yang dipakai handler', () => {

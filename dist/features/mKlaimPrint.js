@@ -8,6 +8,18 @@ var __morbis_feature = (() => {
   // src/features/shared/config.ts
   var HOSPITAL_NAME = "RSUD H. Abdul Manap";
 
+  // src/features/shared/printDossier.ts
+  var PREFIX = "extDossier:";
+  async function saveDossier(html) {
+    const key = `${PREFIX}${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    try {
+      await chrome.storage.session.set({ [key]: html });
+    } catch {
+      await chrome.storage.local.set({ [key]: html });
+    }
+    return key;
+  }
+
   // src/features/mKlaimPrint.ts
   var g = getMorbisGlobals();
   var REMOVE = [
@@ -1774,112 +1786,18 @@ ${kop(m.code)}
 <main class="dossier-wrapper">${cover}${docs}</main>
 </body></html>`;
   }
-  function installImageTools(win) {
-    const doc = win.document;
-    const setup = (img) => {
-      if (img.dataset.tools || !img.naturalWidth || img.naturalWidth < 260) return;
-      if (img.closest("table")) return;
-      img.dataset.tools = "1";
-      const wrap = doc.createElement("span");
-      wrap.className = "img-wrap";
-      img.parentNode?.insertBefore(wrap, img);
-      wrap.appendChild(img);
-      const tools = doc.createElement("span");
-      tools.className = "img-tools";
-      const mk = (label, act) => {
-        const b = doc.createElement("button");
-        b.type = "button";
-        b.dataset.act = act;
-        b.textContent = label;
-        return b;
-      };
-      tools.appendChild(mk("\u21BB Rotasi 90\xB0", "rot"));
-      tools.appendChild(mk("Hapus", "del"));
-      wrap.insertBefore(tools, img);
-      tools.addEventListener("click", (ev) => {
-        const act = ev.target.closest("button")?.dataset.act;
-        if (act === "del") {
-          wrap.remove();
-          return;
-        }
-        if (act !== "rot") return;
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        if (!w || !h) return;
-        const c = doc.createElement("canvas");
-        c.width = h;
-        c.height = w;
-        const ctx = c.getContext("2d");
-        if (!ctx) return;
-        ctx.translate(h / 2, w / 2);
-        ctx.rotate(Math.PI / 2);
-        ctx.drawImage(img, -w / 2, -h / 2);
-        try {
-          img.src = c.toDataURL("image/png");
-        } catch {
-        }
-      });
-    };
-    doc.querySelectorAll(".doc-body img").forEach((img) => {
-      if (img.complete) setup(img);
-      else img.addEventListener("load", () => setup(img), { once: true });
-    });
-  }
-  function handleMklaimPrint() {
+  async function handleMklaimPrint() {
     const { sections, inventory } = collectSections();
     if (!sections.length) {
       window.alert("Tidak ada section berkas yang bisa dicetak.");
       return;
     }
-    const win = window.open("", "_blank");
+    const key = await saveDossier(buildHtml(sections, inventory));
+    const url = chrome.runtime.getURL("print-berkas-klaim.html?id=" + encodeURIComponent(key));
+    const win = window.open(url, "_blank");
     if (!win) {
       window.alert("Popup diblokir \u2014 izinkan popup untuk membuka dossier cetak M-KLAIM.");
-      return;
     }
-    win.document.open();
-    win.document.write(buildHtml(sections, inventory));
-    win.document.close();
-    installImageTools(win);
-    const doPrint = () => {
-      try {
-        win.focus();
-        win.print();
-      } catch {
-      }
-    };
-    const d = win.document;
-    d.getElementById("btnPrintPdf")?.addEventListener("click", doPrint);
-    const pages = Array.from(d.querySelectorAll(".rm-page"));
-    const sel = d.getElementById("rmSectionSelect");
-    const tabs = Array.from(d.querySelectorAll(".tab-btn"));
-    const filter = (target) => {
-      if (sel) sel.value = target;
-      tabs.forEach((b) => b.classList.toggle("active", b.dataset.target === target));
-      pages.forEach(
-        (pg) => pg.classList.toggle("hidden-section", target !== "all" && pg.id !== target)
-      );
-      win.scrollTo({ top: 0, behavior: "smooth" });
-    };
-    sel?.addEventListener("change", (ev) => filter(ev.target.value));
-    tabs.forEach((b) => b.addEventListener("click", () => filter(b.dataset.target || "all")));
-    const countEl = d.getElementById("checkCounter");
-    const boxes = Array.from(d.querySelectorAll(".rm-checkbox, .vbox"));
-    const syncCount = () => {
-      if (countEl) countEl.textContent = `${boxes.filter((b) => b.checked).length} / ${boxes.length}`;
-    };
-    boxes.forEach((b) => b.addEventListener("change", syncCount));
-    d.getElementById("btnCheckAll")?.addEventListener("click", () => {
-      boxes.forEach((b) => b.checked = true);
-      syncCount();
-    });
-    d.getElementById("btnResetChecks")?.addEventListener("click", () => {
-      boxes.forEach((b) => b.checked = false);
-      syncCount();
-    });
-    syncCount();
-    win.addEventListener("afterprint", () => {
-      if (win.confirm("Apakah menu print ini akan ditutup?")) win.close();
-    });
   }
   function anchorForButton() {
     const nativePrint = Array.from(document.querySelectorAll("button.btn-success")).find(

@@ -27,6 +27,7 @@ export default defineConfig({
       input: {
         popup: resolve(__dirname, 'popup/index.html'),
         sidepanel: resolve(__dirname, 'sidepanel.html'),
+        printBerkasKlaim: resolve(__dirname, 'print-berkas-klaim.html'),
       },
       output: {
         entryFileNames: '[name].js',
