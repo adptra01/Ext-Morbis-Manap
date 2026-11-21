@@ -163,7 +163,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     for (const marker of [
       '<section class="rm-page" id="rm-07">',
       'FORMULIR TELAAH RESEP, TELAAH OBAT &amp; EDUKASI FARMASI',
-      'NAMA OBAT &amp; SEDIAAN',
+      'Hitung',
       'PERUBAHAN RESEP',
       'WAKTU TUNGGU',
       'Paraf Pasien/Keluarga',
@@ -171,6 +171,13 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(tel).toContain(marker);
     }
+    // Grid 2 kolom ala telaahResepPrint + data pasien/dokter lengkap via pick().
+    expect(tel).toContain('<div class="t-main">');
+    expect(tel).toContain('class="tm-card tm-card--small tm-card--left"');
+    expect(tel).toContain('class="tm-card tm-card--right"');
+    expect(tel).toContain("tm('SIP Dokter', sipDokter)");
+    expect(tel).toContain("tm('Alergi &amp; BB', alergiBB)");
+    expect(src).toContain('.t-main{display:grid;grid-template-columns:62% 38%');
     // Data obat dari scrape, bukan array hardcoded lama.
     expect(src).not.toContain('const medicationRows = [');
     expect(src).not.toContain("'Propanolol Tablet 10 mg'");

@@ -1324,26 +1324,28 @@ function buildTelaahSection(sections: Section[]): string {
     for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
     return '-';
   };
-  const dokter = f(/^Dokter\s*:/i, /^Dokter$/i);
+  // Data pasien/dokter: field halaman (pick) lebih lengkap, field section (f)
+  // sebagai fallback untuk data yang hanya ada di tabel telaah (SIP, alergi, BB,
+  // no resep, ruang, jam, penjamin).
+  const dokter = pick('dokter', 'dpjp') !== '-' ? pick('dokter', 'dpjp') : f(/^Dokter/i);
   const noResep = f(/^No Resep/i);
   const ruang = f(/^Ruangan\/?Poli/i, /^Ruangan/i);
-  const tanggal = f(/^Tanggal/i);
+  const tanggal = f(/^Tanggal/i, /^Tanggal & Jam/i);
   const jam = f(/^Jam/i);
-  const nama = f(/^Nama Pasien/i);
-  const norm = f(/^No\.? RM/i);
-  const alamat = f(/^Alamat/i);
-  const tglLahir = f(/^Tgl\.? Lahir/i);
-  const noHp = f(/^No HP/i);
+  const sipDokter = f(/^SIP/i);
+  const nama = pick('nama') !== '-' ? pick('nama') : f(/^Nama Pasien/i);
+  const norm = pick('norm', 'rekam_medis') !== '-' ? pick('norm', 'rekam_medis') : f(/^No\.? RM/i);
+  const alamat = pick('alamat') !== '-' ? pick('alamat') : f(/^Alamat/i);
+  const tglLahir = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '') || f(/^Tgl\.? Lahir/i);
+  const noHp = pick('no_hp', 'telepon').replace(/^:\s*/, '') || f(/^No HP/i);
   const penjamin = f(/^Penjamin/i);
-
-  const medRows = meds.length
-    ? meds
-        .map(
-          (m) =>
-            `<tr><td class="center">${esc(m.no)}</td><td>${esc(m.name)}</td><td class="center">${esc(m.jml)}</td></tr>`,
-        )
-        .join('')
-    : '<tr><td class="center">-</td><td>Tidak ada data obat pada halaman telaah.</td><td class="center">-</td></tr>';
+  const alergi = f(/alergi/i);
+  const bb = f(/berat|\bbb\b/i);
+  const jkRaw = pick('jenis_kelamin', 'jk').replace(/^:\s*/, '');
+  const jkShort = /perempuan|^p$/i.test(jkRaw) ? 'P' : /laki|^l$/i.test(jkRaw) ? 'L' : jkRaw;
+  const pasienJK = nama + (jkShort && jkShort !== '-' ? ` (${jkShort})` : '');
+  const alergiBB = `${alergi !== '-' ? alergi : '-'} / ${bb !== '-' ? `BB ${bb}${/\bkg\b/i.test(bb) ? '' : ' kg'}` : '- kg'}`;
+  const sep = pick('no_sep', 'sep') !== '-' ? pick('no_sep', 'sep') : pick('kartu');
 
   const adminHtml =
     '<table class="rm-grid-table"><thead><tr>' +
@@ -1382,40 +1384,60 @@ function buildTelaahSection(sections: Section[]): string {
     '<tr><td>Paraf Pasien/Keluarga</td><td style="height:30px">&nbsp;</td></tr>' +
     '</tbody></table>';
 
+  // Baris metadata ala telaahResepPrint: label kiri + titik dua, nilai kanan.
+  const tm = (label: string, value: string, long = false): string =>
+    `<div class="tm-row${long ? ' long' : ''}"><span class="tm-label">${esc(label)}:</span>` +
+    `<span class="tm-val">${value && value.trim() && value !== '-' ? esc(value) : '-'}</span></div>`;
+
+  const medListHtml = meds.length
+    ? meds
+        .map(
+          (m) =>
+            `<div class="med"><span class="med-no">${esc(m.no)}</span> ` +
+            `<span class="med-name">${esc(m.name)}</span>` +
+            (m.jml && m.jml !== '-' ? `, <span class="med-jml">Jml: ${esc(m.jml)}</span>` : '') +
+            '</div>',
+        )
+        .join('')
+    : '<div class="med">Tidak ada data obat pada halaman telaah.</div>';
+
   return `<section class="rm-page" id="rm-07">
 ${kop('RM. 07')}
 <div class="rm-form-title">FORMULIR TELAAH RESEP, TELAAH OBAT &amp; EDUKASI FARMASI</div>
 
-<div class="id-box-bordered">
-  <div class="id-col"><table class="id-table">
-    ${idRow('Nama Pasien', nama, true)}
-    ${idRow('No. RM', norm)}
-    ${idRow('Tgl. Lahir / Umur', tglLahir)}
-    ${idRow('Alamat', alamat)}
-    ${idRow('No HP', noHp)}
-    ${idRow('Penjamin', penjamin)}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow('Dokter', dokter, true)}
-    ${idRow('Ruangan / Poli', ruang)}
-    ${idRow('No Resep', noResep)}
-    ${idRow('Tanggal', tanggal)}
-    ${idRow('Jam', jam)}
-  </table></div>
+<div class="t-main">
+  <div class="t-left">
+    <div class="tm-card tm-card--small tm-card--left"><div class="tm-col">
+      ${tm('Pasien', pasienJK)}
+      ${tm('No. RM', norm)}
+      ${tm('Tgl. Lahir', tglLahir)}
+      ${tm('Alergi &amp; BB', alergiBB)}
+      ${tm('Alamat', alamat, true)}
+      ${tm('No HP', noHp)}
+    </div></div>
+    <div class="t-meds">${medListHtml}</div>
+    ${adminHtml}
+    <table class="rm-grid-table t-lampiran"><thead><tr>
+      <th>Srt. Rujuk Balik</th><th>Surat Iter</th><th>Hasil Lab</th>
+    </tr></thead><tbody><tr>
+      <td style="height:26px">&nbsp;</td><td style="height:26px">&nbsp;</td><td style="height:26px">&nbsp;</td>
+    </tr></tbody></table>
+  </div>
+  <div class="t-right">
+    <div class="tm-card tm-card--right"><div class="tm-col">
+      ${tm('Dokter', dokter)}
+      ${tm('SIP Dokter', sipDokter)}
+      ${tm('No Resep', noResep)}
+      ${tm('No SEP', sep)}
+      ${tm('Ruangan', ruang)}
+      ${tm('Tanggal', tanggal)}
+      ${tm('Jam', jam)}
+      ${tm('Penjamin', penjamin)}
+    </div></div>
+    ${checklistHtml}
+    ${changeSignHtml}
+  </div>
 </div>
-
-<table class="rm-grid-table">
-  <thead><tr>
-    <th style="width: 64px;">NO</th>
-    <th>NAMA OBAT &amp; SEDIAAN</th>
-    <th class="center" style="width: 56px;">JML</th>
-  </tr></thead>
-  <tbody>${medRows}</tbody>
-</table>
-
-${adminHtml}
-${checklistHtml}
-${changeSignHtml}
 
 <div class="footnote-rm">Obat tidak boleh diganti tanpa sepengetahuan Dokter.</div>
 </section>`;
@@ -2147,6 +2169,21 @@ ${kop(m.code)}
 
 /* ── Tambahan generator: komponen hasil scrape & fokus keyboard ────────── */
 .kop-logo{object-fit:contain;object-position:center}
+/* Telaah (RM.07) — grid 2 kolom ala telaahResepPrint.ts */
+.t-main{display:grid;grid-template-columns:62% 38%;gap:8px;align-items:start}
+.t-left,.t-right{display:flex;flex-direction:column;gap:5px;min-width:0}
+.tm-card{padding:2px 0 4px;margin-bottom:4px;border-bottom:.5pt solid #333}
+.tm-col{display:flex;flex-direction:column;gap:2px}
+.tm-row{display:grid;grid-template-columns:30% 70%;column-gap:4px;align-items:start}
+.tm-row.long{display:grid}
+.tm-label{font-size:7.5pt;line-height:1.25;color:#333}
+.tm-val{font-size:8pt;line-height:1.25;overflow-wrap:anywhere}
+.t-meds{font-size:8pt;margin-bottom:6px}
+.med{margin-bottom:3px;line-height:1.3}
+.med-no{font-weight:400}
+.med-name{font-weight:700}
+.med-jml{font-weight:700;white-space:nowrap}
+.t-lampiran th{font-size:7.5pt}
 .rm-summary{margin:8px 0 10px;font-size:8.5pt}
 .rm-sum-line{display:flex;align-items:baseline;gap:6px;padding:1px 0}
 .rm-sum-line .rm-sum-dots{flex:1;border-bottom:1px dotted #000;transform:translateY(-3px)}
