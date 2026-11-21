@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — alternatif tab dossier via blob: & document.write (`4807f59`)
 - **mKlaimPrint** — sheet SEP BPJS VClaim + 14 formulir RM dedicated (`edb4273`)
 - **mKlaimPrint** — redesign Pengkajian IGD — triase, FLACC, risiko jatuh, tindakan (`4f55ab8`)
 - **mKlaimPrint** — redesign section Triage IGD — pengkajian awal terstruktur (`357d061`)
@@ -46,6 +47,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync mKlaimPrint — fallback dossier lokal (`5f6fe33`)
 - **dist** — sync mKlaimPrint — audit fixes & self-healing print button (`600348f`)
 - **dist** — sync mKlaimPrint — SEP BPJS + formulir RM dedicated (`60e1b39`)
 - **mKlaimPrint** — sync dist setelah rebase (Pengkajian IGD) (`25d7426`)
@@ -2170,4 +2172,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: cf74d63fad18ec01773aeee19f3695379f991e6e -->
+<!-- changelog-upto: 4807f59a3d5f5a080db7c862be27817e3c28f577 -->
