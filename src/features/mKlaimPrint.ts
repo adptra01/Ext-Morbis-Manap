@@ -1024,6 +1024,7 @@ function buildSbpkSection(sections: Section[]): string {
   const unit = diagRows[0]?.unit || f(/^Unit Pelayanan|^Poliklinik/i);
   const anamnesis = f(/^ANAMNESE$/i);
   const dokter = penanggung !== '-' ? penanggung : pick('dokter', 'dpjp');
+  const qrDpjp = sectionQrs(sections, /^SBPK/i)[0] ?? '';
 
   const diagBody = diagRows.length
     ? diagRows
@@ -1113,6 +1114,7 @@ ${kop('RM. 02')}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
+    ${qrDpjp ? `<img class="rm-sig-qr" src="${esc(qrDpjp)}" alt="QR persetujuan DPJP" width="80" height="80" />` : ''}
     <div>Dokter Penanggung Jawab Pelayanan (DPJP)</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
@@ -1229,6 +1231,7 @@ function buildBillingSection(sections: Section[]): string {
   const ruang = [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-';
   const awal = pick('tanggalAwal', 'tgl_masuk', 'tgl');
   const akhir = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
+  const [qrPasien, qrPenerima] = sectionQrs(sections, /^Rincian Biaya/i);
 
   return `<section class="rm-page" id="rm-05">
 ${kop('RM. 05')}
@@ -1290,12 +1293,14 @@ ${kop('RM. 05')}
 
 <div class="rm-signature-block">
   <div class="rm-sig-box">
+    ${qrPasien ? `<img class="rm-sig-qr" src="${esc(qrPasien)}" alt="QR persetujuan pasien" width="80" height="80" />` : ''}
     <div>Yang Menyerahkan,</div>
     <div>Pasien / Keluarga Pasien</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
+    ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ''}
     <div>Yang Menerima (Petugas Billing / Kasir)</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( .................................................. )</div>
@@ -2150,6 +2155,16 @@ const patientAlamat = (sections: Section[]): string => {
     .replace(/^\s*:\s*/, '')
     .trim();
   return v || sectionField(sections, /^Alamat/i);
+};
+
+/** Ambil URL QR asli dari section hasil scrape (urutan sesuai DOM). */
+const sectionQrs = (sections: Section[], titleRe: RegExp): string[] => {
+  const src = sections.find((s) => titleRe.test(s.title));
+  if (!src) return [];
+  const doc = new DOMParser().parseFromString(src.html, 'text/html');
+  return Array.from(doc.querySelectorAll('img'))
+    .map((img) => img.getAttribute('src') || '')
+    .filter((url) => /qr|barcode/i.test(url));
 };
 
 /** Nilai vital "mundur" (mis. TD "/") dianggap kosong. */
@@ -3590,6 +3605,7 @@ ${kop(m.code)}
 .sep-sig-space{height:36px}
 .sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
 .sep-qr{display:block;margin:2px auto;width:100px;height:100px;object-fit:contain}
+.rm-sig-qr{display:block;width:80px;height:80px;margin:0 auto 4px;object-fit:contain}
 /* @page A4 portrait 12mm ditetapkan sekali di blok print utama — jangan
    ditimpa di sini supaya margin semua halaman dossier konsisten. */
 @media print{body{background:#fff;padding:0}.bpjs-sep-sheet{width:100%;padding:0}}

@@ -786,6 +786,7 @@ ${kop("RM. 03")}
     const unit = diagRows[0]?.unit || f(/^Unit Pelayanan|^Poliklinik/i);
     const anamnesis = f(/^ANAMNESE$/i);
     const dokter = penanggung !== "-" ? penanggung : pick("dokter", "dpjp");
+    const qrDpjp = sectionQrs(sections, /^SBPK/i)[0] ?? "";
     const diagBody = diagRows.length ? diagRows.map(
       (r) => `<tr><td>${esc(r.unit)}</td><td>Diagnosa</td><td><strong>${esc(r.diag)}</strong></td><td class="center">${esc(r.icd)}</td><td>${esc(r.dokter)}</td></tr>`
     ).join("") : `<tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
@@ -863,6 +864,7 @@ ${kop("RM. 02")}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
+    ${qrDpjp ? `<img class="rm-sig-qr" src="${esc(qrDpjp)}" alt="QR persetujuan DPJP" width="80" height="80" />` : ""}
     <div>Dokter Penanggung Jawab Pelayanan (DPJP)</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
@@ -954,6 +956,7 @@ ${kop("RM. 02")}
     const ruang = [pick("jenis"), pick("kelas", "ruang")].filter((v) => v !== "-").join(" / ") || "-";
     const awal = pick("tanggalAwal", "tgl_masuk", "tgl");
     const akhir = pick("tanggalAkhir", "keluar", "tgl_keluar");
+    const [qrPasien, qrPenerima] = sectionQrs(sections, /^Rincian Biaya/i);
     return `<section class="rm-page" id="rm-05">
 ${kop("RM. 05")}
 <div class="rm-form-title">RINCIAN BIAYA PELAYANAN RAWAT INAP &amp; FARMASI</div>
@@ -1014,12 +1017,14 @@ ${kop("RM. 05")}
 
 <div class="rm-signature-block">
   <div class="rm-sig-box">
+    ${qrPasien ? `<img class="rm-sig-qr" src="${esc(qrPasien)}" alt="QR persetujuan pasien" width="80" height="80" />` : ""}
     <div>Yang Menyerahkan,</div>
     <div>Pasien / Keluarga Pasien</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
+    ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ""}
     <div>Yang Menerima (Petugas Billing / Kasir)</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( .................................................. )</div>
@@ -1646,6 +1651,12 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
   var patientAlamat = (sections) => {
     const v = val("alamat").replace(/^\s*:\s*/, "").trim();
     return v || sectionField(sections, /^Alamat/i);
+  };
+  var sectionQrs = (sections, titleRe) => {
+    const src = sections.find((s) => titleRe.test(s.title));
+    if (!src) return [];
+    const doc = new DOMParser().parseFromString(src.html, "text/html");
+    return Array.from(doc.querySelectorAll("img")).map((img) => img.getAttribute("src") || "").filter((url) => /qr|barcode/i.test(url));
   };
   var normVital = (v) => /\d/.test(v) ? v : "-";
   function formFields(sections, titleRe) {
@@ -2984,6 +2995,7 @@ ${kop(m.code)}
 .sep-sig-space{height:36px}
 .sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
 .sep-qr{display:block;margin:2px auto;width:100px;height:100px;object-fit:contain}
+.rm-sig-qr{display:block;width:80px;height:80px;margin:0 auto 4px;object-fit:contain}
 /* @page A4 portrait 12mm ditetapkan sekali di blok print utama \u2014 jangan
    ditimpa di sini supaya margin semua halaman dossier konsisten. */
 @media print{body{background:#fff;padding:0}.bpjs-sep-sheet{width:100%;padding:0}}

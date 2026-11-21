@@ -158,6 +158,10 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(sbpk).toContain('${diagBody}');
     expect(sbpk).toContain('let penanggung');
     expect(sbpk).toContain('penanggung = pm[1].trim()');
+    // QR persetujuan DPJP dari section SBPK.
+    expect(sbpk).toContain('sectionQrs(sections, /^SBPK/i)');
+    expect(sbpk).toContain('QR persetujuan DPJP');
+    expect(src).toContain('const sectionQrs = (sections: Section[], titleRe: RegExp): string[]');
     expect(src).toContain('return buildSbpkSection(sections);');
     expect(src).not.toContain('formatSbpkActions');
   });
@@ -181,6 +185,12 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // Agregasi dua arah: Map nama→{frek} untuk tindakan, {qty} untuk obat.
     expect(bill).toContain('prev.frek += frek');
     expect(bill).toContain('prev.qty += qty');
+    // QR persetujuan pasien & penerima dari section Rincian Biaya.
+    expect(bill).toContain(
+      'const [qrPasien, qrPenerima] = sectionQrs(sections, /^Rincian Biaya/i)',
+    );
+    expect(bill).toContain('QR persetujuan pasien');
+    expect(bill).toContain('QR penerima');
     expect(src).toContain('return buildBillingSection(sections);');
     // Footer ringkasan ala contoh billing BPJS.
     for (const label of [
