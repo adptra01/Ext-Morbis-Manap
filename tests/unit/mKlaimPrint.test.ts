@@ -256,6 +256,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       src.indexOf('function buildPengkajianIgdSection'),
       src.indexOf('function buildKonsentSection'),
     );
+    // grid() menerima string hasil map().join('') — bukan array (regresi body.join).
+    expect(igd).toContain("const rows = Array.isArray(body) ? body.join('') : body");
     for (const marker of [
       '<section class="rm-page" id="pengkajian-igd">',
       'LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT',

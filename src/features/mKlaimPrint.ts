@@ -1960,12 +1960,16 @@ function buildPengkajianIgdSection(sections: Section[]): string {
   const obat = find(/^Pukul\s*Nama Obat/i);
   const perawat = find(/^No\s*Nama Perawat IGD/i);
 
-  const grid = (head: string[], body: string[]): string =>
-    '<table class="rm-grid-table"><thead><tr>' +
-    head.map((h) => `<th>${esc(h)}</th>`).join('') +
-    '</tr></thead><tbody>' +
-    (body.length ? body.join('') : '<tr><td colspan="' + head.length + '">-</td></tr>') +
-    '</tbody></table>';
+  const grid = (head: string[], body: string[] | string): string => {
+    const rows = Array.isArray(body) ? body.join('') : body;
+    return (
+      '<table class="rm-grid-table"><thead><tr>' +
+      head.map((h) => `<th>${esc(h)}</th>`).join('') +
+      '</tr></thead><tbody>' +
+      (rows || '<tr><td colspan="' + head.length + '">-</td></tr>') +
+      '</tbody></table>'
+    );
+  };
 
   const triaseRows = triase
     .slice(1)

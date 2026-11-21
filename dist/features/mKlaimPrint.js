@@ -1554,7 +1554,10 @@ ${kop("TRIAGE")}
     const tindakan = find(/^Tindakan$/i);
     const obat = find(/^Pukul\s*Nama Obat/i);
     const perawat = find(/^No\s*Nama Perawat IGD/i);
-    const grid = (head, body) => '<table class="rm-grid-table"><thead><tr>' + head.map((h) => `<th>${esc(h)}</th>`).join("") + "</tr></thead><tbody>" + (body.length ? body.join("") : '<tr><td colspan="' + head.length + '">-</td></tr>') + "</tbody></table>";
+    const grid = (head, body) => {
+      const rows2 = Array.isArray(body) ? body.join("") : body;
+      return '<table class="rm-grid-table"><thead><tr>' + head.map((h) => `<th>${esc(h)}</th>`).join("") + "</tr></thead><tbody>" + (rows2 || '<tr><td colspan="' + head.length + '">-</td></tr>') + "</tbody></table>";
+    };
     const triaseRows = triase.slice(1).map((r) => {
       const on = (r[0] || "").includes("\u2713");
       const c = on ? r.slice(1) : r;

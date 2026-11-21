@@ -40,6 +40,10 @@
 - **mKlaimPrint** — perbaiki ID field cover & kode section RM sesuai produksi (`0de750e`)
 - **penerimaan** — tampilkan kembali kolom No Antrian di daftar resep (`52e8515`)
 
+### 🔙 revert
+
+- **mKlaimPrint** — kembali ke dossier tab halaman ekstensi (tanpa overlay/blob) (`9580894`)
+
 ### 🎨 style
 
 - **mKlaimMarks** — samakan tombol mark footer detail dengan Telaah/Partial (`591b8e8`)
@@ -47,6 +51,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri alternatif tab dossier (`2bae6b8`)
 - **dist** — sync mKlaimPrint — fallback dossier lokal (`5f6fe33`)
 - **dist** — sync mKlaimPrint — audit fixes & self-healing print button (`600348f`)
 - **dist** — sync mKlaimPrint — SEP BPJS + formulir RM dedicated (`60e1b39`)
@@ -2172,4 +2177,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4807f59a3d5f5a080db7c862be27817e3c28f577 -->
+<!-- changelog-upto: 9580894b2361f267a2c6f24a2eacaef81105e550 -->
