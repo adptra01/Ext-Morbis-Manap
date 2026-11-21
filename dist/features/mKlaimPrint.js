@@ -562,7 +562,7 @@ var __morbis_feature = (() => {
     const kartuHtml = km ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>` : `${esc(kartu)}${mr !== "-" ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ""}`;
     const kunjungan = pick("jenis_kunjungan") !== "-" ? pick("jenis_kunjungan") : grab(/Jns\.?\s*Kunjungan\s*[:.]?\s*([\s\S]*?)(?:\s+Kls\.?\s*Hak|$)/i);
     const kunjunganHtml = /^-\s|\n/.test(kunjungan) ? '<ul class="sep-multiline-list">' + kunjungan.split(/\n/).map((x) => `<li>${esc(x.replace(/^-\s*/, "").trim())}</li>`).join("") + "</ul>" : esc(kunjungan);
-    const peserta = pick("peserta", "jenis_peserta") !== "-" ? pick("peserta", "jenis_peserta") : grabField("Peserta", "COB|Jns\\.?\\s*Rawat");
+    const peserta = pick("peserta", "jenis_peserta") !== "-" ? pick("peserta", "jenis_peserta") : grabField("(?<!Nama )Peserta", "COB|Jns\\.?\\s*Rawat");
     const penjamin = pick("penjamin") !== "-" ? pick("penjamin") : grabField("Penjamin", "\\*Saya|CATATAN");
     const faskes = pick("faskes_perujuk", "faskes") !== "-" ? pick("faskes_perujuk", "faskes") : grabField("Faskes\\s*Perujuk", "Diagnosa\\s*Awal");
     const diagnosaAwal = pick("diagnosa_awal") !== "-" ? pick("diagnosa_awal") : grabField("Diagnosa\\s*Awal", "Catatan|Peserta");

@@ -734,7 +734,9 @@ function buildSepSection(sections: Section[]): string {
   const peserta =
     pick('peserta', 'jenis_peserta') !== '-'
       ? pick('peserta', 'jenis_peserta')
-      : grabField('Peserta', 'COB|Jns\\.?\\s*Rawat');
+      : // Jangan ikut menangkap field nama di kolom kiri — field ini khusus
+        // label peserta (PBI JAMINAN KESEHATAN) di kolom kanan.
+        grabField('(?<!Nama )Peserta', 'COB|Jns\\.?\\s*Rawat');
   const penjamin =
     pick('penjamin') !== '-' ? pick('penjamin') : grabField('Penjamin', '\\*Saya|CATATAN');
   const faskes =

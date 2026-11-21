@@ -67,6 +67,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(sep).not.toContain('HASIL GROUPING INA-CBG');
     expect(sep).not.toContain('codeRows');
     expect(sep.match(/Nama Peserta/g)?.length).toBe(1);
+    // Field "Peserta" tidak boleh menangkap "Nama Peserta" di kolom kiri.
+    expect(sep).toContain("grabField('(?<!Nama )Peserta'");
     // Logo resmi BPJS (bukan SVG buatan sendiri) dari situs resmi, di-embed.
     expect(src).toContain('const BPJS_LOGO = `data:image/svg+xml;base64,');
     expect(sep).toContain('src="${BPJS_LOGO}"');
@@ -454,9 +456,10 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     );
     // 1. Field SEP yang tidak punya id halaman → scrape section SEP.
     expect(src).toContain('const grabField =');
-    for (const label of ['Peserta', 'Penjamin', 'Faskes', 'Diagnosa', 'Catatan']) {
+    for (const label of ['Penjamin', 'Faskes', 'Diagnosa', 'Catatan']) {
       expect(sep, label).toContain(`grabField('${label}`);
     }
+    expect(sep).toContain("grabField('(?<!Nama )Peserta'");
     expect(sep).not.toContain("const peserta = pick('peserta', 'jenis_peserta');");
     // 2. Alamat: helper bersama dipakai semua builder (tidak ada pick('alamat') lagi).
     expect(src).not.toContain("pick('alamat')");
