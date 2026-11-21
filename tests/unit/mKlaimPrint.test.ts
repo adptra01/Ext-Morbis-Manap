@@ -67,8 +67,10 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(sep).not.toContain('HASIL GROUPING INA-CBG');
     expect(sep).not.toContain('codeRows');
     expect(sep.match(/Nama Peserta/g)?.length).toBe(1);
-    // Field "Peserta" tidak boleh menangkap "Nama Peserta" di kolom kiri.
+    // Field "Peserta" tidak boleh menangkap "Nama Peserta" di kolom kiri,
+    // dan ':' wajib supaya judul "SURAT ELEGIBILITAS PESERTA" tak jadi awal.
     expect(sep).toContain("grabField('(?<!Nama )Peserta'");
+    expect(src).toContain('${label}\\\\s*:\\\\s*([\\\\s\\\\S]*?)(?=${next}|$)');
     // Logo resmi BPJS (bukan SVG buatan sendiri) dari situs resmi, di-embed.
     expect(src).toContain('const BPJS_LOGO = `data:image/svg+xml;base64,');
     expect(sep).toContain('src="${BPJS_LOGO}"');

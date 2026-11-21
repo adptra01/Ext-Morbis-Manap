@@ -548,7 +548,7 @@ var __morbis_feature = (() => {
     const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
     const txt = sepSection ? plainText(sepSection.html) : "";
     const grab = (re) => sepNorm(txt.match(re)?.[1] || "") || "-";
-    const grabField = (label, next) => grab(new RegExp(`${label}\\s*[:.]?\\s*([\\s\\S]*?)(?=${next}|$)`, "i"));
+    const grabField = (label, next) => grab(new RegExp(`${label}\\s*:\\s*([\\s\\S]*?)(?=${next}|$)`, "i"));
     const sep = pick("no_sep", "sep") !== "-" ? pick("no_sep", "sep") : grab(/No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]+)/i);
     const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
     const noHp = pick("no_hp", "telepon") !== "-" ? pick("no_hp", "telepon") : grabField("No\\.?\\s*Telepon", "Sub\\/Spesialis");
@@ -562,7 +562,11 @@ var __morbis_feature = (() => {
     const kartuHtml = km ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>` : `${esc(kartu)}${mr !== "-" ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ""}`;
     const kunjungan = pick("jenis_kunjungan") !== "-" ? pick("jenis_kunjungan") : grab(/Jns\.?\s*Kunjungan\s*[:.]?\s*([\s\S]*?)(?:\s+Kls\.?\s*Hak|$)/i);
     const kunjunganHtml = /^-\s|\n/.test(kunjungan) ? '<ul class="sep-multiline-list">' + kunjungan.split(/\n/).map((x) => `<li>${esc(x.replace(/^-\s*/, "").trim())}</li>`).join("") + "</ul>" : esc(kunjungan);
-    const peserta = pick("peserta", "jenis_peserta") !== "-" ? pick("peserta", "jenis_peserta") : grabField("(?<!Nama )Peserta", "COB|Jns\\.?\\s*Rawat");
+    const peserta = pick("peserta", "jenis_peserta") !== "-" ? pick("peserta", "jenis_peserta") : (
+      // Jangan ikut menangkap field nama di kolom kiri — field ini khusus
+      // label peserta (PBI JAMINAN KESEHATAN) di kolom kanan.
+      grabField("(?<!Nama )Peserta", "COB|Jns\\.?\\s*Rawat")
+    );
     const penjamin = pick("penjamin") !== "-" ? pick("penjamin") : grabField("Penjamin", "\\*Saya|CATATAN");
     const faskes = pick("faskes_perujuk", "faskes") !== "-" ? pick("faskes_perujuk", "faskes") : grabField("Faskes\\s*Perujuk", "Diagnosa\\s*Awal");
     const diagnosaAwal = pick("diagnosa_awal") !== "-" ? pick("diagnosa_awal") : grabField("Diagnosa\\s*Awal", "Catatan|Peserta");

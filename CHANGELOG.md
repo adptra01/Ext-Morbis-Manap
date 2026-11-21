@@ -30,6 +30,8 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — field Peserta tidak menangkap Nama Peserta di SEP (`99b413a`)
+- **mKlaimPrint** — SEP hanya sheet BPJS — hapus blok INA-CBG & nama ganda di ttd (`bf9188c`)
 - **mKlaimPrint** — grid() terima string baris — perbaiki body.join is not a function (`c1de84a`)
 - **mKlaimPrint** — fallback dossier lokal via iframe saat background gagal (`cf74d63`)
 - **mKlaimPrint** — SEP field scrape, alamat lintas-section & print self-healing (`5cfbd9a`)
@@ -2179,4 +2181,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 11f6f1d287ebd587cd147059b02e9c5ab5036af4 -->
+<!-- changelog-upto: 99b413aea0915432e1aa3a29a376e0411494cafc -->

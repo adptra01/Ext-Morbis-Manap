@@ -695,8 +695,10 @@ function buildSepSection(sections: Section[]): string {
   const txt = sepSection ? plainText(sepSection.html) : '';
   const grab = (re: RegExp): string => sepNorm(txt.match(re)?.[1] || '') || '-';
   /** Ambil nilai field SEP dari hasil scrape dengan lookahead label berikutnya. */
+  // ':' WAJIB — kalau opsional, kata "PESERTA" di judul SURAT ELEGIBILITAS
+  // ikut jadi titik awal tangkapan dan menelan seluruh teks SEP.
   const grabField = (label: string, next: string): string =>
-    grab(new RegExp(`${label}\\s*[:.]?\\s*([\\s\\S]*?)(?=${next}|$)`, 'i'));
+    grab(new RegExp(`${label}\\s*:\\s*([\\s\\S]*?)(?=${next}|$)`, 'i'));
 
   const sep =
     pick('no_sep', 'sep') !== '-'
