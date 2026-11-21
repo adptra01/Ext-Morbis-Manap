@@ -122,10 +122,10 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'PEMERIKSAAN FISIK / CATATAN',
       'TERAPI &amp; DIIT AWAL',
       '<strong>Diit :</strong>',
-      'Petugas Admisi / TPPRI',
     ]) {
       expect(spr).toContain(marker);
     }
+    expect(spr).not.toContain('Petugas Admisi / TPPRI');
     expect(src).toContain('return buildSpriSection(sections);');
     // Baris baru pada value tidak boleh di-esc() langsung (jadi sambung).
     expect(spr).not.toContain('const nl2br');
@@ -272,7 +272,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'JENIS PEMERIKSAAN',
       'URAIAN EXPERTISE &amp; KESAN RADIOGRAFI TORAKS',
       'Kode Prosedur ICD-9-CM : 87.44',
-      'Dokter Spesialis Radiologi Penilai',
+      'Dokter Penilai',
     ]) {
       expect(rad).toContain(marker);
     }
@@ -426,8 +426,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         [
           'id="rm-09"',
           'HASIL PEMERIKSAAN LABORATORIUM PATOLOGI KLINIK',
-          'img[src^="data:"]',
-          'LAMPIRAN CETAKAN SISTEM LABORATORIUM (LIS)',
+          'querySelectorAll("img")',
+          'LAMPIRAN HASIL LABORATORIUM (LIS)',
+          'raw-upload-frame',
         ],
       ],
       [
@@ -499,6 +500,26 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // Seksi 04 upload tetap passthrough mentah.
     expect(src).not.toContain('return buildFileUploadSection(sections);');
     expect(src).toContain('<div class="doc-body">${s.html}</div>');
+  });
+
+  it('perapian TTD & entity: SEP (nama), QR pasien/DPJP, decode &gt;, lab upload', () => {
+    expect(src).toContain('<div class="sep-sig-name">(${esc(namaPeserta)})</div>');
+    // QR pasien dipakai ulang di SBPK & Resume bila tidak ada di section-nya.
+    expect(src).toContain('qrPasienSbpk');
+    expect(src).toContain('qrPasienResume');
+    // Entity hasil scrape didekode sebelum escape ulang.
+    expect(src).toContain('const decodeEntities = (s: string): string');
+    expect(src).toContain("replace(/&gt;/gi, '>')");
+    // Expertise radiologi mempertahankan baris kosong.
+    expect(src).toContain("'<div>&nbsp;</div>'");
+    // Lab = lampiran upload, tanpa data pasien & footer TTD.
+    const lab = src.slice(
+      src.indexOf('function buildLaboratoriumSection'),
+      src.indexOf('function buildKematianSection'),
+    );
+    expect(lab).not.toContain('id-box-bordered');
+    expect(lab).not.toContain('rm-signature-block');
+    expect(lab).toContain('passthrough-separator');
   });
 
   it('QR TTD: pakai QR asli yang ditemukan, tanpa baris kosong pengganti ttd', () => {

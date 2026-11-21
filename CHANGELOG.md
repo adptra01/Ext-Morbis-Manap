@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — QR TTD di semua section, hapus spacer saat QR tersedia (`c3fd523`)
 - **mKlaimPrint** — QR pasien & DPJP di SBPK/Rincian Biaya dari data asli (`c030655`)
 - **mKlaimPrint** — SBPK pakai diagnosa & dokter penanggung dari tabel asli (`3c16d67`)
 - **mKlaimPrint** — lengkapi SEP — QR code, kelamin & item kunjungan terpisah (`ccd5a9f`)
@@ -61,6 +62,7 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — rapikan jarak QR SEP — hapus sep-sig-space & sep-sig-line (`5fa8509`)
 - **mKlaimPrint** — TTD SEP hanya pasien di kanan + font isi seragam (`6b6d739`)
 - **mKlaimPrint** — hapus tanggal Kota Jambi dari TTD SBPK (`e41ac9f`)
 - **mKlaimPrint** — ukuran judul SEP disamakan dengan nama RS (`2847f3a`)
@@ -2198,4 +2200,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: dedaf7eae6292f2ff0ad5c7bd2701d7896db0078 -->
+<!-- changelog-upto: c3fd523cc4ad257272b656391935f1bd3a2dc390 -->

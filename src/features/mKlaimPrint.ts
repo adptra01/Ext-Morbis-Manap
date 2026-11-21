@@ -823,7 +823,7 @@ function buildSepSection(sections: Section[]): string {
    <div class="sep-sig-box">
      <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
      ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR SEP" width="100" height="100" />` : ''}
-     <div class="sep-sig-name">${esc(namaPeserta)}</div>
+     <div class="sep-sig-name">(${esc(namaPeserta)})</div>
    </div>
  </div>
  </section>
@@ -936,14 +936,9 @@ ${kop('RM. 03')}
 
 <div class="rm-signature-block">
   <div class="rm-sig-box">
-    <div>Petugas Admisi / TPPRI</div>
-    <div class="rm-sig-space"></div>
-    <div class="rm-sig-name">( .................................................. )</div>
-  </div>
-  <div class="rm-sig-box">
     <div>${esc(pengantar)}</div>
-    ${qrSpri ? `<img class="rm-sig-qr" src="${esc(qrSpri)}" alt="QR tanda tangan dokter" width="80" height="80" />` : ''}
     <div>Dokter yang Memeriksa</div>
+    ${qrSpri ? `<img class="rm-sig-qr" src="${esc(qrSpri)}" alt="QR tanda tangan dokter" width="80" height="80" />` : ''}
     ${qrSpri ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
@@ -1023,6 +1018,10 @@ function buildSbpkSection(sections: Section[]): string {
   const anamnesis = f(/^ANAMNESE$/i);
   const dokter = penanggung !== '-' ? penanggung : pick('dokter', 'dpjp');
   const qrDpjp = sectionQrs(sections, /^SBPK/i)[0] ?? '';
+  // QR pasien tidak ada di SBPK — pakai QR persetujuan pasien yang sudah
+  // ada di SEP / Rincian Biaya (nama & No.Kartu sama).
+  const qrPasienSbpk =
+    sectionQrs(sections, /^SEP/i)[0] ?? sectionQrs(sections, /^Rincian Biaya/i)[0] ?? '';
 
   const diagBody = diagRows.length
     ? diagRows
@@ -1108,12 +1107,13 @@ ${kop('RM. 02')}
 <div class="rm-signature-block">
   <div class="rm-sig-box">
     <div>Pasien / Keluarga Pasien</div>
-    <div class="rm-sig-space"></div>
+    ${qrPasienSbpk ? `<img class="rm-sig-qr" src="${esc(qrPasienSbpk)}" alt="QR persetujuan pasien" width="80" height="80" />` : ''}
+    ${qrPasienSbpk ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
-    ${qrDpjp ? `<img class="rm-sig-qr" src="${esc(qrDpjp)}" alt="QR persetujuan DPJP" width="80" height="80" />` : ''}
     <div>Dokter Penanggung Jawab Pelayanan (DPJP)</div>
+    ${qrDpjp ? `<img class="rm-sig-qr" src="${esc(qrDpjp)}" alt="QR persetujuan DPJP" width="80" height="80" />` : ''}
     ${qrDpjp ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
@@ -1313,6 +1313,8 @@ ${kop('RM. 05')}
 function buildResumeSection(sections: Section[]): string {
   const res = sections.find((s) => /^Resume/i.test(s.title));
   const qrResume = sectionQrs(sections, /^Resume/i)[0] ?? '';
+  const qrPasienResume =
+    sectionQrs(sections, /^SEP/i)[0] ?? sectionQrs(sections, /^Rincian Biaya/i)[0] ?? '';
   const doc = res ? new DOMParser().parseFromString(res.html, 'text/html') : null;
   const fields = new Map<string, string>();
 
@@ -1418,13 +1420,14 @@ ${kop('RM. 06')}
 <div class="rm-signature-block">
   <div class="rm-sig-box">
     <div>Mengetahui Pasien / Keluarga</div>
-    <div class="rm-sig-space"></div>
+    ${qrPasienResume ? `<img class="rm-sig-qr" src="${esc(qrPasienResume)}" alt="QR persetujuan pasien" width="80" height="80" />` : ''}
+    ${qrPasienResume ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
     <div>Kota Jambi, ${esc(keluar)}</div>
-    ${qrResume ? `<img class="rm-sig-qr" src="${esc(qrResume)}" alt="QR tanda tangan DPJP" width="80" height="80" />` : ''}
     <div>Yang Membuat : DPJP</div>
+    ${qrResume ? `<img class="rm-sig-qr" src="${esc(qrResume)}" alt="QR tanda tangan DPJP" width="80" height="80" />` : ''}
     ${qrResume ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
@@ -1717,12 +1720,14 @@ function buildRadiologiSection(sections: Section[]): string {
         .join('')
     : '<tr><td class="center">-</td><td>Tidak ada jenis pemeriksaan tercatat.</td><td class="center">-</td><td class="center">-</td><td class="center">-</td></tr>';
 
+  // Baris kosong antar paragraf sengaja dipertahankan (bukan dibuang) supaya
+  // jarak antar bagian expertise mengikuti value asli.
   const expertiseHtml = expertise
     ? expertise
+        .replace(/^\n+|\n+$/g, '')
         .split('\n')
         .map((l) => l.trim())
-        .filter(Boolean)
-        .map((l) => `<div>${esc(l)}</div>`)
+        .map((l) => (l ? `<div>${esc(l)}</div>` : '<div>&nbsp;</div>'))
         .join('')
     : '<div>Tidak ada expertise tercatat pada halaman.</div>';
 
@@ -1743,8 +1748,10 @@ ${kop('RM. 08')}
     ${idRow('Umur / Tgl. Lahir', umur)}
     ${idRow('Ruang / Asal', ruang !== '-' && status !== '-' ? `${ruang} (Status: ${status})` : ruang)}
     ${idRow('Dokter Pengirim', dokterPengirim)}
-    ${idRow('Dokter DPJP Rad', dokterDpjp)}
-    ${idRow('Diagnosa Klinis', diagnosa !== '-' && diagnosaIcd !== '-' ? `${diagnosa} (${diagnosaIcd})` : diagnosa)}
+    ${idRow('Dokter DPJP / Penilai', dokterDpjp)}
+    ${idRow('Diagnosa Klinis', diagnosa)}
+    ${idRow('Diagnosa ICD', diagnosaIcd)}
+    ${idRow('Status Pasien', status)}
     ${idRow('Golongan / Jenis', `${golongan} — Tanpa Kontras`)}
   </table></div>
 </div>
@@ -1772,8 +1779,8 @@ ${kop('RM. 08')}
   </div>
   <div class="rm-sig-box">
     <div>Kota Jambi, ${esc(tglPeriksa)}</div>
+    <div>Dokter Penilai</div>
     ${qrRad ? `<img class="rm-sig-qr" src="${esc(qrRad)}" alt="QR tanda tangan radiolog" width="80" height="80" />` : ''}
-    <div>Dokter Spesialis Radiologi Penilai</div>
     ${qrRad ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokterDpjp)} )</div>
   </div>
@@ -2203,9 +2210,20 @@ function formFields(sections: Section[], titleRe: RegExp): Map<string, string> {
   return out;
 }
 
+/** Decode entity HTML dari hasil scrape sebelum diescape ulang — kalau tidak,
+ *  teks seperti "Meninggal &gt;= 48 jam" tampil literal "&gt;". */
+const decodeEntities = (s: string): string =>
+  s
+    .replace(/&gt;/gi, '>')
+    .replace(/&lt;/gi, '<')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&');
+
 /** Ambil nilai field dengan fallback '-'. */
 const fieldValue = (fields: Map<string, string>, ...res: RegExp[]): string => {
-  for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
+  for (const [k, v] of fields) if (res.some((r) => r.test(k))) return decodeEntities(v);
   return '-';
 };
 
@@ -2480,45 +2498,21 @@ ${sig(
 
 /** FORM RM.09 — HASIL PEMERIKSAAN LABORATORIUM (data = lampiran PDF LIS). */
 function buildLaboratoriumSection(sections: Section[]): string {
-  const fields = formFields(sections, /^Laboratorium/i);
-  const rows = formRows(sections, /^Laboratorium/i);
   const src = sections.find((s) => /^Laboratorium/i.test(s.title));
   const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
-  // clean() sudah mengubah canvas pdf.js jadi img data-URL — pertahankan utuh.
-  const images = doc
-    ? Array.from(doc.querySelectorAll('img[src^="data:"]')).map((img) => img.outerHTML)
+  // Lampiran LIS bukan data pasien — tampilkan sebagai berkas upload mentah.
+  const lampiran = doc
+    ? Array.from(doc.querySelectorAll('img'))
+        .map((img) => img.outerHTML)
+        .filter((html) => !/logo/i.test(html))
     : [];
-  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
   return `<section class="rm-page" id="rm-09">
 ${kop('RM. 09')}
 <div class="rm-form-title">HASIL PEMERIKSAAN LABORATORIUM PATOLOGI KLINIK</div>
-<div class="id-box-bordered">
-  <div class="id-col"><table class="id-table">
-    ${idRow('No. Lab', f(/^No\.? Lab/i))}
-    ${idRow('NIK / No. RM', pick('norm', 'rekam_medis'))}
-    ${idRow('Nama Lengkap', pick('nama'), true)}
-    ${idRow('Tgl. Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow('Ruangan', f(/^Ruang|^Unit|^Poliklinik/i))}
-    ${idRow('Dokter Pengirim', f(/^Dokter Pengirim/i))}
-    ${idRow('Diagnosa Klinis', f(/^Diagnosa/i))}
-    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
-  </table></div>
+<div class="passthrough-separator"><span>LAMPIRAN HASIL LABORATORIUM (LIS)</span><span>FILE UPLOAD</span></div>
+<div class="raw-upload-frame">
+  ${lampiran.length ? lampiran.join('<br/>') : '-'}
 </div>
-<div class="sub-heading-rm">HASIL PEMERIKSAAN</div>
-${dataTable(['PARAMETER PEMERIKSAAN', 'HASIL', 'SATUAN', 'NILAI RUJUKAN'], rows, true)}
-<table class="rm-grid-table"><thead><tr><th>LAMPIRAN CETAKAN SISTEM LABORATORIUM (LIS)</th></tr></thead><tbody><tr><td style="padding:6px;">${
-    images.length ? images.join('<br/>') : '-'
-  }</td></tr></tbody></table>
-${sig(
-  ['Analis Patologi Klinik', `( ${esc(f(/^Analis|^Validator/i))} )`],
-  [
-    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
-    'Dokter Spesialis Patologi Klinik',
-    `( ${esc(f(/^Dokter Spesialis|^Dokter Patologi/i))} )`,
-  ],
-)}
 </section>`;
 }
 
@@ -2726,6 +2720,8 @@ ${sig(
 function buildKonsulSection(sections: Section[]): string {
   const fields = formFields(sections, /Konsul/i);
   const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  const qrKonsul = sectionQrs(sections, /Konsul/i)[0] ?? '';
+  const konsulen = f(/konsulen|konsul/i) !== '-' ? f(/konsulen|konsul/i) : pick('dokter_konsulen');
   return `<section class="rm-page" id="rm-10">
 ${kop('RM. 10')}
 <div class="rm-form-title">LEMBAR KONSULTASI</div>
@@ -2740,7 +2736,7 @@ ${kop('RM. 10')}
   </table></div>
 </div>
 ${kvTable([
-  ['BAGIAN I : KEPADA YTH. KONSULEN', f(/^Konsulen|^Dokter Konsulen/i)],
+  ['BAGIAN I : KEPADA YTH. KONSULEN', konsulen],
   ['JENIS PERMOHONAN', f(/^Jenis Permohonan|^Permohonan/i)],
   ['PENEMUAN KLINIS TERPENTING', f(/^Penemuan|^Keluhan/i)],
   ['DUGAAN DIAGNOSA', f(/^Dugaan|^Diagnosa/i)],
@@ -2755,9 +2751,11 @@ ${kvTable([
 ${sig(
   ['Dokter Pemohon Konsultasi', `( ${esc(pick('dokter', 'dpjp'))} )`],
   [
-    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
     'Dokter Konsulen',
-    `( ${esc(f(/^Konsulen|^Dokter Konsulen/i))} )`,
+    qrKonsul
+      ? `<img class="rm-sig-qr" src="${esc(qrKonsul)}" alt="QR dokter konsulen" width="80" height="80" />`
+      : '<div class="rm-sig-space"></div>',
+    `( ${esc(konsulen)} )`,
   ],
 )}
 </section>`;
