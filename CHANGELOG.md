@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign RM.07 Telaah ikut format telaahResepPrint (data scrape) (`aaf9239`)
 - **mKlaimPrint** — redesign Section RM.06 (Resume) — ringkasan pulang (`849b335`)
 - **mKlaimPrint** — buka dossier via extension page print-berkas-klaim (tahan refresh) (`9aee17d`)
 - **mKlaimPrint** — footer ringkasan Rincian Biaya ala contoh billing BPJS (`d0a5339`)
@@ -23,6 +24,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — RM.07 lengkapi data pasien/dokter & samakan grid telaahResepPrint (`02c7a16`)
 - **mKlaimPrint** — kirim HTML ke background (hindari Extension context invalidated) (`a0000a8`)
 - **mKlaimPrint** — buka dossier lewat background tabs.create (Brave ERR_BLOCKED_BY_CLIENT) (`53948dd`)
 - **mKlaimPrint** — seragamkan newline jadi <br/> rapat, baris kosong tetap (`a091e04`)
@@ -2158,4 +2160,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 849b335aafedde5e52481994a49107a9a2bce31d -->
+<!-- changelog-upto: 02c7a16c0dcb91a0da74fa5294b29a4ce1a08c1f -->

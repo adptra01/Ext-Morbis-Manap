@@ -177,6 +177,10 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(tel).toContain('class="tm-card tm-card--right"');
     expect(tel).toContain("tm('SIP Dokter', sipDokter)");
     expect(tel).toContain("tm('Alergi &amp; BB', alergiBB)");
+    expect(tel).toContain('detailField(/^Ruangan\\/Poli/i)');
+    expect(tel).toContain('detailField(/^Jam Datang/i)');
+    // Parser format "Label : nilai" dalam satu sel (T2 telaah).
+    expect(tel).toContain('cell.match(/^([^:]{2,40}?)\\s*:\\s*(.+)$/)');
     expect(src).toContain('.t-main{display:grid;grid-template-columns:62% 38%');
     // Data obat dari scrape, bukan array hardcoded lama.
     expect(src).not.toContain('const medicationRows = [');

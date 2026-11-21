@@ -1044,6 +1044,10 @@ ${lanjutan}`.trim())}
           if (c[i + 1] !== ":") continue;
           if (label && c[i + 2] && !fields.has(label)) fields.set(label, c[i + 2]);
         }
+        for (const cell of c) {
+          const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+          if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
+        }
       }
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
         const c = Array.from(tr.cells).map(
@@ -1084,11 +1088,23 @@ ${lanjutan}`.trim())}
       for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
       return "-";
     };
+    const detailField = (re) => {
+      for (const td of Array.from(document.querySelectorAll("td"))) {
+        const t = (td.textContent || "").replace(/\s+/g, " ").trim();
+        const m = t.match(re);
+        if (!m) continue;
+        const after = t.slice((m.index ?? 0) + m[0].length).replace(/^\s*:\s*/, "").trim();
+        if (after) return after;
+        const next = (td.nextElementSibling?.textContent || "").replace(/\s+/g, " ").trim();
+        if (next && !/^:/.test(next)) return next;
+      }
+      return "-";
+    };
     const dokter = pick("dokter", "dpjp") !== "-" ? pick("dokter", "dpjp") : f(/^Dokter/i);
     const noResep = f(/^No Resep/i);
-    const ruang = f(/^Ruangan\/?Poli/i, /^Ruangan/i);
-    const tanggal = f(/^Tanggal/i, /^Tanggal & Jam/i);
-    const jam = f(/^Jam/i);
+    const ruang = detailField(/^Ruangan\/Poli/i) !== "-" ? detailField(/^Ruangan\/Poli/i) : f(/^Ruangan\/?Poli/i, /^Ruangan/i);
+    const tanggal = detailField(/^Tanggal Periksa/i) !== "-" ? detailField(/^Tanggal Periksa/i) : f(/^Tanggal/i, /^Tanggal & Jam/i);
+    const jam = detailField(/^Jam Datang/i) !== "-" ? detailField(/^Jam Datang/i) : f(/^Jam/i);
     const sipDokter = f(/^SIP/i);
     const nama = pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i);
     const norm = pick("norm", "rekam_medis") !== "-" ? pick("norm", "rekam_medis") : f(/^No\.? RM/i);
