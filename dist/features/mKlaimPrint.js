@@ -595,6 +595,131 @@ var __morbis_feature = (() => {
 <div class="kop-line-4">Alamat : Jl. Sk. Rd. Syahbuddin Kel. Mayang Mangurai Kec. Alam Barajo Kota Jambi 36129 &#9742; (0741) 670459</div>
 <div class="kop-line-5">email : rsud_ham.jambi@yahoo.co.id, rsud@jambikota.go.id, website : rsud.jambikota.go.id</div>
 </div></div><div class="kop-double-rule"></div>`;
+  var idRow = (label, value, strong = false) => `<tr><td class="lbl">${label}</td><td class="col">:</td><td class="val">${strong ? `<strong>${esc(value)}</strong>` : esc(value)}</td></tr>`;
+  function buildSepSection(sections) {
+    const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
+    const txt = sepSection ? plainText(sepSection.html) : "";
+    const grab = (re) => txt.match(re)?.[1]?.replace(/\s+/g, " ").trim() || "-";
+    const sep = pick("no_sep", "sep") !== "-" ? pick("no_sep", "sep") : grab(/No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]+)/i);
+    const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
+    const noHp = pick("no_hp", "telepon");
+    const kelas = pick("kelas").replace(/^Kelas\s*/i, "");
+    const jk = pick("jenis_kelamin", "jk");
+    const jkLabel = /^L$/i.test(jk) ? "Laki-laki" : /^P$/i.test(jk) ? "Perempuan" : jk;
+    const lahir = pick("tgl_lahir", "tglLahir").replace(/^:\s*/, "");
+    const masuk = pick("tanggalAwal", "tgl_masuk", "tgl");
+    const keluar = pick("tanggalAkhir", "keluar", "tgl_keluar");
+    const dokter = pick("dokter", "dpjp");
+    const cbgCode = grab(/(E-\d+-\d+-\d+)/i);
+    const cbgDesc = grab(/(?:GROUP|INA-CBG)\s+([A-Z][A-Z0-9\s\-(),.]+?)(?:\s+Rp|\s+2\.930|$)/i);
+    const cbgTarif = grab(/(?:TARIF|Rp\.?)\s*([\d.]+(?:,\d{2})?)/i);
+    const codeRows = [];
+    if (sepSection) {
+      const doc = new DOMParser().parseFromString(sepSection.html, "text/html");
+      doc.querySelectorAll("tr").forEach((tr) => {
+        const cells = Array.from(tr.cells).map(
+          (c) => c.textContent?.replace(/\s+/g, " ").trim() || ""
+        );
+        if (cells.length < 3) return;
+        const code = cells.find((c) => /^[A-Z]?\d{2}(?:\.\d+)?$/.test(c));
+        if (!code) return;
+        const desc = cells[cells.length - 1] === code ? "-" : cells[cells.length - 1];
+        const jenis = cells[0] === code ? "-" : cells[0];
+        codeRows.push(
+          `<tr><td>${esc(jenis)}</td><td class="center"><strong>${esc(code)}</strong></td><td>${esc(desc)}</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi ${esc(code)}"></td></tr>`
+        );
+      });
+    }
+    if (!codeRows.length) {
+      codeRows.push(
+        '<tr><td>Diagnosa Utama</td><td class="center">-</td><td>-</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi Diagnosa Utama"></td></tr>'
+      );
+    }
+    return `<section class="rm-page" id="rm-01">
+${kop("RM. 01")}
+<div class="rm-form-title">SURAT ELEGIBILITAS PESERTA (SEP) &amp; BERKAS KLAIM INDIVIDUAL (INA-CBG)</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow("No. SEP", sep, true)}
+    ${idRow("Tgl. SEP", tglSep)}
+    ${idRow("No. Kartu", `${pick("kartu")} (MR. ${pick("norm", "rekam_medis")})`)}
+    ${idRow("Nama Peserta", pick("nama"), true)}
+    ${idRow("Tgl. Lahir", `${lahir} \xA0\xA0 Kelamin : ${jkLabel}`)}
+    ${idRow("No. Telepon", noHp)}
+    ${idRow("Sub/Spesialis", "-")}
+    ${idRow("Dokter", dokter)}
+    ${idRow("Faskes Perujuk", "RSUD H. Abdul Manap - Kota Jambi")}
+    ${idRow("Diagnosa Awal", "-")}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow("Peserta", "PBI JAMINAN KESEHATAN")}
+    ${idRow("COB", "-")}
+    ${idRow("Jns. Rawat", pick("jenis"), true)}
+    ${idRow("Jns. Kunjungan", "-")}
+    ${idRow("Kls. Hak", kelas ? `Kelas ${kelas}` : "-", true)}
+    ${idRow("Kls. Rawat", kelas ? `Kelas ${kelas}` : "-", true)}
+    ${idRow("Penjamin", "BPJS Kesehatan")}
+    ${idRow("Catatan", "-")}
+  </table></div>
+</div>
+
+<div class="sub-heading-rm">BERKAS KLAIM INDIVIDUAL PASIEN (E-KLAIM INA-CBG)</div>
+
+<div class="id-box-borderless">
+  <div class="id-col"><table class="id-table">
+    ${idRow("Kode / Kelas RS", "-")}
+    ${idRow("Tanggal Masuk", masuk)}
+    ${idRow("Tanggal Keluar", keluar)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow("Umur Tahun / Hari", "-")}
+    ${idRow("Lama Rawat (LOS)", "-")}
+    ${idRow("Cara Pulang", "-")}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 120px;">JENIS KODING</th>
+    <th style="width: 72px;">KODE</th>
+    <th>DESKRIPSI DIAGNOSA (ICD-10) / PROSEDUR (ICD-9-CM)</th>
+    <th style="width: 56px;">VER (&#10003;)</th>
+  </tr></thead>
+  <tbody>${codeRows.join("")}</tbody>
+</table>
+
+<table class="rm-grid-table">
+  <thead>
+    <tr><th colspan="3">HASIL GROUPING INA-CBG (Generated: E-Klaim 5.10.9)</th></tr>
+    <tr><th style="width: 110px;">KODE INA-CBG</th><th>DESKRIPSI GROUP</th><th class="num" style="width: 140px;">TARIF (Rp)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center"><strong>${esc(cbgCode)}</strong></td><td>${esc(cbgDesc)}</td><td class="num">${esc(cbgTarif)}</td></tr>
+    <tr><td class="center">-</td><td>Sub Acute / Chronic / Special CMG</td><td class="num">0,00</td></tr>
+    <tr class="total-row"><td colspan="2" style="text-align: right;">TOTAL TARIF INA-CBG :</td><td class="num">Rp ${esc(cbgTarif)}</td></tr>
+  </tbody>
+</table>
+
+<div class="footnote-rm">
+  *Saya Menyetujui BPJS Kesehatan menggunakan informasi Medis Pasien jika diperlukan. *SEP bukan bagian bukti penjamin peserta.
+</div>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box">
+    <div>Pasien / Keluarga Pasien</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(pick("nama"))} )</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(tglSep)}</div>
+    <div>Petugas Pendaftaran / Coder JKN</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( .................................................. )</div>
+  </div>
+</div>
+</section>`;
+  }
   function buildHtml(sections, inventory) {
     const checks = runChecks(sections, inventory);
     const sep = pick("no_sep", "sep");
@@ -721,6 +846,7 @@ ${checksHtml}
 </div>
 </section>`;
     const docs = sections.map((s, i) => {
+      if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}
