@@ -13,6 +13,9 @@ export const MessageTypes = {
   DELETE_URL: 'DELETE_URL',
   TOGGLE_URL: 'TOGGLE_URL',
   OPEN_SIDE_PANEL: 'OPEN_SIDE_PANEL',
+  // Content script → Background: buka halaman ekstensi (tab baru). window.open
+  // dari halaman web ke chrome-extension:// diblokir Brave/Chrome.
+  OPEN_PRINT_DOSSIER: 'OPEN_PRINT_DOSSIER',
   CONFIG_CHANGED: 'CONFIG_CHANGED',
 
   // --- Batch feature actions (content script ↔ side panel via background proxy) ---
@@ -48,6 +51,7 @@ type RequestMap = {
   DELETE_URL: { type: 'DELETE_URL'; id: string };
   TOGGLE_URL: { type: 'TOGGLE_URL'; id: string; enabled: boolean };
   OPEN_SIDE_PANEL: { type: 'OPEN_SIDE_PANEL' };
+  OPEN_PRINT_DOSSIER: { type: 'OPEN_PRINT_DOSSIER'; url: string };
   CONFIG_CHANGED: { type: 'CONFIG_CHANGED' };
 
   // Content script → Background: notify page state
@@ -94,6 +98,7 @@ type ResponseMap = {
   DELETE_URL: { success: true };
   TOGGLE_URL: { success: true };
   OPEN_SIDE_PANEL: { success: true };
+  OPEN_PRINT_DOSSIER: { success: boolean };
   CONFIG_CHANGED: { success: true };
 
   PAGE_CONTEXT: { success: true };

@@ -2015,9 +2015,16 @@ async function handleMklaimPrint(): Promise<void> {
   // dari storage oleh src/features/printBerkasKlaim/main.ts).
   const key = await saveDossier(buildHtml(sections, inventory));
   const url = chrome.runtime.getURL('print-berkas-klaim.html?id=' + encodeURIComponent(key));
-  const win = window.open(url, '_blank');
-  if (!win) {
-    window.alert('Popup diblokir — izinkan popup untuk membuka dossier cetak M-KLAIM.');
+  // Buka lewat background — window.open(chrome-extension://...) dari halaman
+  // web diblokir Brave/Chrome (ERR_BLOCKED_BY_CLIENT).
+  try {
+    const res = (await chrome.runtime.sendMessage({
+      type: 'OPEN_PRINT_DOSSIER',
+      url,
+    })) as { success?: boolean } | undefined;
+    if (!res?.success) throw new Error('background menolak membuka tab');
+  } catch {
+    window.alert('Gagal membuka tab dossier cetak. Coba lagi atau izinkan popup ekstensi.');
   }
 }
 

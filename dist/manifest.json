@@ -655,6 +655,8 @@
     {
       "resources": [
         "ui/shadow.css",
+        "print-berkas-klaim.html",
+        "printBerkasKlaim.js",
         "features/antrianTools.js",
         "features/farmasiRecallDeleg.js",
         "features/fetchWatchdog.js"

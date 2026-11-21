@@ -873,6 +873,26 @@ chrome.runtime.onMessage.addListener(
         return true;
       }
 
+      case 'OPEN_PRINT_DOSSIER': {
+        // Buka dari background: window.open(chrome-extension://...) dari
+        // content script diblokir Brave/Chrome (ERR_BLOCKED_BY_CLIENT).
+        (async () => {
+          const url = (validated as unknown as Record<string, unknown>).url;
+          if (typeof url !== 'string' || !url.startsWith(chrome.runtime.getURL(''))) {
+            sendResponse({ success: false });
+            return;
+          }
+          try {
+            await chrome.tabs.create({ url });
+            sendResponse({ success: true });
+          } catch (err) {
+            log.log('OPEN_PRINT_DOSSIER failed:', err);
+            sendResponse({ success: false });
+          }
+        })();
+        return true;
+      }
+
       case 'TAB_ACTION': {
         (async () => {
           const targetTabId = (validated as unknown as Record<string, unknown>).tabId as
@@ -964,7 +984,7 @@ function validateMessage(msg: unknown): MessagePayload | null {
   // Validasi bentuk payload minimal per-tipe (anti payload korup/asing).
   // Field URL diharuskan string (bentuk/shape saja; host di-allowlist di
   // handler PROXY_FETCH/QUEUE_API), field wajib lain dicek seperlunya.
-  if (m.type === 'PROXY_FETCH' || m.type === 'QUEUE_API') {
+  if (m.type === 'PROXY_FETCH' || m.type === 'QUEUE_API' || m.type === 'OPEN_PRINT_DOSSIER') {
     if (typeof m.url !== 'string') return null;
   }
   if (m.type === 'TTS_LOCAL') {

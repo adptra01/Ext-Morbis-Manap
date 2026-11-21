@@ -14,6 +14,9 @@ var __morbis_feature = (() => {
     DELETE_URL: "DELETE_URL",
     TOGGLE_URL: "TOGGLE_URL",
     OPEN_SIDE_PANEL: "OPEN_SIDE_PANEL",
+    // Content script → Background: buka halaman ekstensi (tab baru). window.open
+    // dari halaman web ke chrome-extension:// diblokir Brave/Chrome.
+    OPEN_PRINT_DOSSIER: "OPEN_PRINT_DOSSIER",
     CONFIG_CHANGED: "CONFIG_CHANGED",
     // --- Batch feature actions (content script ↔ side panel via background proxy) ---
     PAGE_CONTEXT: "PAGE_CONTEXT",

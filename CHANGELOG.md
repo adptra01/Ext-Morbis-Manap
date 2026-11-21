@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — buka dossier via extension page print-berkas-klaim (tahan refresh) (`9aee17d`)
 - **mKlaimPrint** — footer ringkasan Rincian Biaya ala contoh billing BPJS (`d0a5339`)
 - **mKlaimPrint** — redesign RM.05 Rincian Biaya — tanpa tanggal/VER, agregasi frek obat (`7b41728`)
 - **shortcutButtons** — tambah tombol Cetak Rapi M-KLAIM (tanpa icon) (`8e0912f`)
@@ -21,6 +22,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — buka dossier lewat background tabs.create (Brave ERR_BLOCKED_BY_CLIENT) (`4d1111a`)
 - **mKlaimPrint** — seragamkan newline jadi <br/> rapat, baris kosong tetap (`a091e04`)
 - **mKlaimPrint** — pertahankan baris baru pada value SPRI (`e28d820`)
 - **mKlaimPrint** — perbaiki ID field cover & kode section RM sesuai produksi (`0de750e`)
@@ -2154,4 +2156,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d0a533942e8e4905a8c6f164492b929cfa828161 -->
+<!-- changelog-upto: 4d1111afc9e42e054568308d80200acd6bf0a15d -->

@@ -15,6 +15,9 @@ var __morbis_bg = (() => {
     DELETE_URL: "DELETE_URL",
     TOGGLE_URL: "TOGGLE_URL",
     OPEN_SIDE_PANEL: "OPEN_SIDE_PANEL",
+    // Content script → Background: buka halaman ekstensi (tab baru). window.open
+    // dari halaman web ke chrome-extension:// diblokir Brave/Chrome.
+    OPEN_PRINT_DOSSIER: "OPEN_PRINT_DOSSIER",
     CONFIG_CHANGED: "CONFIG_CHANGED",
     // --- Batch feature actions (content script ↔ side panel via background proxy) ---
     PAGE_CONTEXT: "PAGE_CONTEXT",
@@ -803,6 +806,23 @@ var __morbis_bg = (() => {
           })();
           return true;
         }
+        case "OPEN_PRINT_DOSSIER": {
+          (async () => {
+            const url = validated.url;
+            if (typeof url !== "string" || !url.startsWith(chrome.runtime.getURL(""))) {
+              sendResponse({ success: false });
+              return;
+            }
+            try {
+              await chrome.tabs.create({ url });
+              sendResponse({ success: true });
+            } catch (err) {
+              log.log("OPEN_PRINT_DOSSIER failed:", err);
+              sendResponse({ success: false });
+            }
+          })();
+          return true;
+        }
         case "TAB_ACTION": {
           (async () => {
             const targetTabId = validated.tabId;
@@ -877,7 +897,7 @@ var __morbis_bg = (() => {
     if (!msg || typeof msg !== "object") return null;
     const m = msg;
     if (typeof m.type !== "string" || !VALID_ACTIONS.includes(m.type)) return null;
-    if (m.type === "PROXY_FETCH" || m.type === "QUEUE_API") {
+    if (m.type === "PROXY_FETCH" || m.type === "QUEUE_API" || m.type === "OPEN_PRINT_DOSSIER") {
       if (typeof m.url !== "string") return null;
     }
     if (m.type === "TTS_LOCAL") {
