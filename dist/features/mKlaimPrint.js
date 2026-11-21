@@ -8,50 +8,6 @@ var __morbis_feature = (() => {
   // src/features/shared/config.ts
   var HOSPITAL_NAME = "RSUD H. Abdul Manap";
 
-  // src/features/shared/printDossier.ts
-  function installDossierHandlers(win) {
-    const doPrint = () => {
-      try {
-        win.focus();
-        win.print();
-      } catch {
-      }
-    };
-    const d = win.document;
-    d.getElementById("btnPrintPdf")?.addEventListener("click", doPrint);
-    const pages = Array.from(d.querySelectorAll(".rm-page"));
-    const sel = d.getElementById("rmSectionSelect");
-    const tabs = Array.from(d.querySelectorAll(".tab-btn"));
-    const filter = (target) => {
-      if (sel) sel.value = target;
-      tabs.forEach((b) => b.classList.toggle("active", b.dataset.target === target));
-      pages.forEach(
-        (pg) => pg.classList.toggle("hidden-section", target !== "all" && pg.id !== target)
-      );
-      win.scrollTo({ top: 0, behavior: "smooth" });
-    };
-    sel?.addEventListener("change", (ev) => filter(ev.target.value));
-    tabs.forEach((b) => b.addEventListener("click", () => filter(b.dataset.target || "all")));
-    const countEl = d.getElementById("checkCounter");
-    const boxes = Array.from(d.querySelectorAll(".rm-checkbox, .vbox"));
-    const syncCount = () => {
-      if (countEl) countEl.textContent = `${boxes.filter((b) => b.checked).length} / ${boxes.length}`;
-    };
-    boxes.forEach((b) => b.addEventListener("change", syncCount));
-    d.getElementById("btnCheckAll")?.addEventListener("click", () => {
-      boxes.forEach((b) => b.checked = true);
-      syncCount();
-    });
-    d.getElementById("btnResetChecks")?.addEventListener("click", () => {
-      boxes.forEach((b) => b.checked = false);
-      syncCount();
-    });
-    syncCount();
-    win.addEventListener("afterprint", () => {
-      if (win.confirm("Apakah menu print ini akan ditutup?")) win.close();
-    });
-  }
-
   // src/features/mKlaimPrint.ts
   var g = getMorbisGlobals();
   var REMOVE = [
@@ -3137,84 +3093,6 @@ ${kop(m.code)}
     }
     await new Promise((r) => window.setTimeout(r, 50));
   }
-  function openDossierTab(html) {
-    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-    let win = window.open(url, "_blank");
-    if (win) {
-      window.setTimeout(() => URL.revokeObjectURL(url), 6e4);
-      win.addEventListener(
-        "load",
-        () => {
-          try {
-            if (win) installDossierHandlers(win);
-          } catch {
-          }
-        },
-        { once: true }
-      );
-      return true;
-    }
-    URL.revokeObjectURL(url);
-    win = window.open("", "_blank");
-    if (!win) return false;
-    try {
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-      installDossierHandlers(win);
-    } catch {
-    }
-    return true;
-  }
-  function openDossierOverlay(html, fallback = false) {
-    document.getElementById("ext-dossier-overlay")?.remove();
-    const host = document.createElement("div");
-    host.id = "ext-dossier-overlay";
-    host.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column";
-    const bar = document.createElement("div");
-    bar.style.cssText = "flex:0 0 auto;padding:6px 10px;border-bottom:2px solid #000;background:#fff;font:600 12px Arial,sans-serif;display:flex;gap:8px;align-items:center";
-    const title = document.createElement("strong");
-    title.textContent = fallback ? "Dossier Cetak M-KLAIM \u2014 mode lokal (tab ekstensi gagal dibuka)" : "Dossier Cetak M-KLAIM";
-    bar.appendChild(title);
-    for (const [text, act] of [
-      ["Cetak", "print"],
-      ["Buka Tab Baru", "tab"],
-      ["Tutup", "close"]
-    ]) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.textContent = text;
-      b.style.cssText = "font:600 12px Arial;padding:4px 10px;border:1px solid #000;background:#fff;cursor:pointer";
-      b.addEventListener("click", () => {
-        if (act === "close") host.remove();
-        else if (act === "tab") {
-          if (!openDossierTab(html))
-            window.alert("Popup diblokir \u2014 izinkan popup untuk situs MORBIS lalu klik lagi.");
-        } else frame.contentWindow?.print();
-      });
-      bar.appendChild(b);
-    }
-    const frame = document.createElement("iframe");
-    frame.title = "Dossier Cetak M-KLAIM";
-    frame.style.cssText = "flex:1 1 auto;width:100%;border:0;background:#fff";
-    frame.addEventListener(
-      "load",
-      () => {
-        try {
-          if (frame.contentWindow) {
-            installDossierHandlers(frame.contentWindow);
-            frame.contentWindow.focus();
-          }
-        } catch {
-        }
-      },
-      { once: true }
-    );
-    host.appendChild(bar);
-    host.appendChild(frame);
-    document.body.appendChild(host);
-    frame.srcdoc = html;
-  }
   async function handleMklaimPrint() {
     await waitForPartials();
     let { sections, inventory } = collectSections();
@@ -3243,13 +3121,14 @@ ${kop(m.code)}
         if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
       }
     }
-    if (openDossierTab(html)) return;
-    try {
-      openDossierOverlay(html, true);
-    } catch (e) {
-      const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || "");
+    const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || "");
+    if (!chrome.runtime?.id) {
       window.alert(
-        `Gagal membuka dossier: ${reason || "tidak diketahui"}. Render lokal juga gagal: ${e instanceof Error ? e.message : String(e)}`
+        "Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi."
+      );
+    } else {
+      window.alert(
+        `Gagal membuka dossier: ${reason || "tidak diketahui"}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`
       );
     }
   }

@@ -307,8 +307,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('dossier dibuka via extension page (tahan refresh)', () => {
     // Content script: kirim HTML ke background (TANPA chrome.storage langsung —
     // konteks content script bisa invalid setelah ekstensi di-reload).
-    // Jalur utama tetap via background; window.open('') hanya fallback saat
-    // background gagal (lihat test fallback lokal di bawah).
+    expect(src).not.toContain("window.open('', '_blank')");
     expect(src).not.toContain('saveDossier(');
     expect(src).toContain("type: 'OPEN_PRINT_DOSSIER'");
     expect(src).toContain('const html = buildHtml(sections, inventory);');
@@ -473,17 +472,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('sections.length < 3');
     expect(src).toContain('[0, 300, 600]');
     expect(src).toContain('Receiving end does not exist|Extension context invalidated');
-    // Fallback lokal: render di iframe srcdoc tanpa background/storage.
-    expect(src).toContain('function openDossierOverlay');
-    expect(src).toContain('frame.srcdoc = html');
-    expect(src).toContain('installDossierHandlers(frame.contentWindow)');
-    expect(src).toContain('openDossierOverlay(html, true)');
-    // Alternatif tab baru tanpa background: blob: lalu document.write.
-    expect(src).toContain('function openDossierTab');
-    expect(src).toContain("new Blob([html], { type: 'text/html' })");
-    expect(src).toContain('win.document.write(html)');
-    expect(src).toContain('Buka Tab Baru');
-    expect(src).toContain('if (openDossierTab(html)) return;');
+    expect(src).toContain('chrome.runtime?.id');
     expect(src).toContain('Gagal membuka dossier: ${reason');
     // Tombol stale dari content script lama diganti otomatis.
     expect(src).toContain("const BUILD_TAG = 'v2'");

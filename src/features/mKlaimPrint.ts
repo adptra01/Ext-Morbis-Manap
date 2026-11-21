@@ -1,6 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { HOSPITAL_NAME } from './shared/config.js';
-import { installDossierHandlers } from './shared/printDossier.js';
 
 const g = getMorbisGlobals();
 
@@ -3681,103 +3680,6 @@ async function waitForPartials(): Promise<void> {
   await new Promise((r) => window.setTimeout(r, 50));
 }
 
-/** Buka dossier di tab baru TANPA background: blob: URL dulu, lalu
- *  window.open('') + document.write bila blob diblokir popup blocker. */
-function openDossierTab(html: string): boolean {
-  const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-  let win = window.open(url, '_blank');
-  if (win) {
-    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
-    win.addEventListener(
-      'load',
-      () => {
-        try {
-          if (win) installDossierHandlers(win);
-        } catch {
-          /* abaikan */
-        }
-      },
-      { once: true },
-    );
-    return true;
-  }
-  URL.revokeObjectURL(url);
-  win = window.open('', '_blank');
-  if (!win) return false;
-  try {
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    installDossierHandlers(win);
-  } catch {
-    /* abaikan */
-  }
-  return true;
-}
-
-/** Fallback TERAKHIR: render dossier di overlay iframe di halaman yang sama.
- *  Tidak memakai chrome.runtime / chrome.storage / window.open — jadi tetap
- *  jalan walaupun background mati, storage penuh, atau tab ekstensi diblokir. */
-function openDossierOverlay(html: string, fallback = false): void {
-  document.getElementById('ext-dossier-overlay')?.remove();
-  const host = document.createElement('div');
-  host.id = 'ext-dossier-overlay';
-  host.style.cssText =
-    'position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;flex-direction:column';
-
-  const bar = document.createElement('div');
-  bar.style.cssText =
-    'flex:0 0 auto;padding:6px 10px;border-bottom:2px solid #000;background:#fff;' +
-    'font:600 12px Arial,sans-serif;display:flex;gap:8px;align-items:center';
-  const title = document.createElement('strong');
-  title.textContent = fallback
-    ? 'Dossier Cetak M-KLAIM — mode lokal (tab ekstensi gagal dibuka)'
-    : 'Dossier Cetak M-KLAIM';
-  bar.appendChild(title);
-  for (const [text, act] of [
-    ['Cetak', 'print'],
-    ['Buka Tab Baru', 'tab'],
-    ['Tutup', 'close'],
-  ] as const) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = text;
-    b.style.cssText =
-      'font:600 12px Arial;padding:4px 10px;border:1px solid #000;background:#fff;cursor:pointer';
-    b.addEventListener('click', () => {
-      if (act === 'close') host.remove();
-      else if (act === 'tab') {
-        if (!openDossierTab(html))
-          window.alert('Popup diblokir — izinkan popup untuk situs MORBIS lalu klik lagi.');
-      } else frame.contentWindow?.print();
-    });
-    bar.appendChild(b);
-  }
-
-  const frame = document.createElement('iframe');
-  frame.title = 'Dossier Cetak M-KLAIM';
-  frame.style.cssText = 'flex:1 1 auto;width:100%;border:0;background:#fff';
-  frame.addEventListener(
-    'load',
-    () => {
-      try {
-        if (frame.contentWindow) {
-          installDossierHandlers(frame.contentWindow);
-          frame.contentWindow.focus();
-        }
-      } catch {
-        /* abaikan: toolbar kosong pun dossier tetap tampil & bisa dicetak */
-      }
-    },
-    { once: true },
-  );
-
-  host.appendChild(bar);
-  host.appendChild(frame);
-  document.body.appendChild(host);
-  frame.srcdoc = html;
-}
-
 async function handleMklaimPrint(): Promise<void> {
   await waitForPartials();
   let { sections, inventory } = collectSections();
@@ -3811,16 +3713,14 @@ async function handleMklaimPrint(): Promise<void> {
       if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
     }
   }
-  // Semua jalur background gagal → coba tab baru tanpa background (blob /
-  // document.write); kalau popup diblokir, tampilkan dossier di overlay.
-  if (openDossierTab(html)) return;
-  try {
-    openDossierOverlay(html, true);
-  } catch (e) {
-    const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || '');
+  const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || '');
+  if (!chrome.runtime?.id) {
     window.alert(
-      `Gagal membuka dossier: ${reason || 'tidak diketahui'}. ` +
-        `Render lokal juga gagal: ${e instanceof Error ? e.message : String(e)}`,
+      'Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi.',
+    );
+  } else {
+    window.alert(
+      `Gagal membuka dossier: ${reason || 'tidak diketahui'}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`,
     );
   }
 }
