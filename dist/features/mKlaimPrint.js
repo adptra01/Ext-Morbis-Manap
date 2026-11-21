@@ -3137,6 +3137,35 @@ ${kop(m.code)}
     }
     await new Promise((r) => window.setTimeout(r, 50));
   }
+  function openDossierTab(html) {
+    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    let win = window.open(url, "_blank");
+    if (win) {
+      window.setTimeout(() => URL.revokeObjectURL(url), 6e4);
+      win.addEventListener(
+        "load",
+        () => {
+          try {
+            if (win) installDossierHandlers(win);
+          } catch {
+          }
+        },
+        { once: true }
+      );
+      return true;
+    }
+    URL.revokeObjectURL(url);
+    win = window.open("", "_blank");
+    if (!win) return false;
+    try {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      installDossierHandlers(win);
+    } catch {
+    }
+    return true;
+  }
   function openDossierOverlay(html, fallback = false) {
     document.getElementById("ext-dossier-overlay")?.remove();
     const host = document.createElement("div");
@@ -3149,6 +3178,7 @@ ${kop(m.code)}
     bar.appendChild(title);
     for (const [text, act] of [
       ["Cetak", "print"],
+      ["Buka Tab Baru", "tab"],
       ["Tutup", "close"]
     ]) {
       const b = document.createElement("button");
@@ -3157,7 +3187,10 @@ ${kop(m.code)}
       b.style.cssText = "font:600 12px Arial;padding:4px 10px;border:1px solid #000;background:#fff;cursor:pointer";
       b.addEventListener("click", () => {
         if (act === "close") host.remove();
-        else frame.contentWindow?.print();
+        else if (act === "tab") {
+          if (!openDossierTab(html))
+            window.alert("Popup diblokir \u2014 izinkan popup untuk situs MORBIS lalu klik lagi.");
+        } else frame.contentWindow?.print();
       });
       bar.appendChild(b);
     }
@@ -3210,6 +3243,7 @@ ${kop(m.code)}
         if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
       }
     }
+    if (openDossierTab(html)) return;
     try {
       openDossierOverlay(html, true);
     } catch (e) {

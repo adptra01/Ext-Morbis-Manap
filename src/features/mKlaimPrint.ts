@@ -3681,6 +3681,40 @@ async function waitForPartials(): Promise<void> {
   await new Promise((r) => window.setTimeout(r, 50));
 }
 
+/** Buka dossier di tab baru TANPA background: blob: URL dulu, lalu
+ *  window.open('') + document.write bila blob diblokir popup blocker. */
+function openDossierTab(html: string): boolean {
+  const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  let win = window.open(url, '_blank');
+  if (win) {
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    win.addEventListener(
+      'load',
+      () => {
+        try {
+          if (win) installDossierHandlers(win);
+        } catch {
+          /* abaikan */
+        }
+      },
+      { once: true },
+    );
+    return true;
+  }
+  URL.revokeObjectURL(url);
+  win = window.open('', '_blank');
+  if (!win) return false;
+  try {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    installDossierHandlers(win);
+  } catch {
+    /* abaikan */
+  }
+  return true;
+}
+
 /** Fallback TERAKHIR: render dossier di overlay iframe di halaman yang sama.
  *  Tidak memakai chrome.runtime / chrome.storage / window.open — jadi tetap
  *  jalan walaupun background mati, storage penuh, atau tab ekstensi diblokir. */
@@ -3702,6 +3736,7 @@ function openDossierOverlay(html: string, fallback = false): void {
   bar.appendChild(title);
   for (const [text, act] of [
     ['Cetak', 'print'],
+    ['Buka Tab Baru', 'tab'],
     ['Tutup', 'close'],
   ] as const) {
     const b = document.createElement('button');
@@ -3711,7 +3746,10 @@ function openDossierOverlay(html: string, fallback = false): void {
       'font:600 12px Arial;padding:4px 10px;border:1px solid #000;background:#fff;cursor:pointer';
     b.addEventListener('click', () => {
       if (act === 'close') host.remove();
-      else frame.contentWindow?.print();
+      else if (act === 'tab') {
+        if (!openDossierTab(html))
+          window.alert('Popup diblokir — izinkan popup untuk situs MORBIS lalu klik lagi.');
+      } else frame.contentWindow?.print();
     });
     bar.appendChild(b);
   }
@@ -3773,7 +3811,9 @@ async function handleMklaimPrint(): Promise<void> {
       if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
     }
   }
-  // Semua jalur background gagal → tetap tampilkan dossier secara lokal.
+  // Semua jalur background gagal → coba tab baru tanpa background (blob /
+  // document.write); kalau popup diblokir, tampilkan dossier di overlay.
+  if (openDossierTab(html)) return;
   try {
     openDossierOverlay(html, true);
   } catch (e) {
