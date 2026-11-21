@@ -121,7 +121,6 @@
         "core.js",
         "features/shared/cookieFilterStorage.js",
         "features/doctorFilterPersistence.js",
-        "features/cpptSearchFilter.js",
         "features/visiteKonsul.js",
         "init.js"
       ],

@@ -14,7 +14,6 @@ const FEATURE_FILES = [
   'src/features/openDetail.ts',
   'src/features/batchDeleteFiles.ts',
   'src/features/batchUploadUrl.ts',
-  'src/features/cpptSearchFilter.ts',
   'src/features/consultationEnhancer.ts',
   'src/features/penerimaan_resep/main.ts',
   'src/features/doctorFilterPersistence.ts',
@@ -285,17 +284,17 @@ const EXPECTED_MATRIX = [
   {
     url: '/admisi/pelaksanaan_pelayanan',
     run: ['doctorFilterPersistence'],
-    skip: ['scrollButtons', 'filterPersistence', 'cpptSearchFilter', 'resepTools'],
+    skip: ['scrollButtons', 'filterPersistence', 'resepTools'],
   },
   {
     url: '/admisi/pelaksanaan_pelayanan/cppt',
-    run: ['shortcutButtons', 'cpptSearchFilter'],
+    run: ['shortcutButtons'],
     skip: ['resepTools', 'doctorFilterPersistence'],
   },
   {
     url: '/admisi/pelaksanaan_pelayanan/resep',
     run: ['shortcutButtons', 'resepTools'],
-    skip: ['cpptSearchFilter', 'doctorFilterPersistence'],
+    skip: ['doctorFilterPersistence'],
   },
   {
     url: '/admisi/detail-rawat-inap',
@@ -304,7 +303,7 @@ const EXPECTED_MATRIX = [
   },
   {
     url: '/admisi/detail-rawat-inap/cppt',
-    run: ['shortcutButtons', 'cpptSearchFilter'],
+    run: ['shortcutButtons'],
     skip: ['doctorFilterPersistence'],
   },
   {

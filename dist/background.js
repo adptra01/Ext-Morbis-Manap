@@ -262,12 +262,6 @@ var __morbis_bg = (() => {
         name: "Konsultasi Enhancer",
         description: "Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien"
       },
-      cpptSearchFilter: {
-        enabled: true,
-        allowedRoles: ["casemix"],
-        name: "CPPT Search & Filter",
-        description: "Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)"
-      },
       resumeValidator: {
         enabled: true,
         allowedRoles: ["casemix", "dokter"],

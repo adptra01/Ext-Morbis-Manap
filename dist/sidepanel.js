@@ -1444,12 +1444,6 @@ var FALLBACK_FEATURES = [
 		roles: ["casemix", "dokter"]
 	},
 	{
-		key: "cpptSearchFilter",
-		name: "CPPT Search",
-		desc: "Cari & filter CPPT",
-		roles: ["casemix"]
-	},
-	{
 		key: "fetchWatchdog",
 		name: "Fetch Watchdog",
 		desc: "Batalkan request menggantung + tutup modal macet",

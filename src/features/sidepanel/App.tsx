@@ -70,7 +70,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     desc: 'Popup edit resume rawat inap',
     roles: ['casemix', 'dokter'],
   },
-  { key: 'cpptSearchFilter', name: 'CPPT Search', desc: 'Cari & filter CPPT', roles: ['casemix'] },
   {
     key: 'fetchWatchdog',
     name: 'Fetch Watchdog',
