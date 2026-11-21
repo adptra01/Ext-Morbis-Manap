@@ -136,6 +136,25 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     }
   });
 
+  it('RM.06 (Resume): ringkasan pulang terstruktur', () => {
+    const res = src.slice(
+      src.indexOf('function buildResumeSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="rm-06">',
+      'RINGKASAN PULANG (DISCHARGE SUMMARY)',
+      'PEMERIKSAAN FISIK &amp; TANDA VITAL MASUK',
+      'HASIL PEMERIKSAAN DIAGNOSTIK',
+      'TINDAKAN / PROSEDUR (ICD-9-CM)',
+      'KONDISI &amp; CARA PULANG',
+      'Yang Membuat : DPJP',
+    ]) {
+      expect(res).toContain(marker);
+    }
+    expect(src).toContain('return buildResumeSection(sections);');
+  });
+
   it('memakai ID field produksi & kode section referensi', () => {
     expect(src).toContain("pick('kartu', 'no_kartu', 'noka')");
     expect(src).toContain("id: 'rm-01'");

@@ -1244,6 +1244,129 @@ ${kop('RM. 05')}
 </section>`;
 }
 
+/** SECTION RM.06 — RINGKASAN PULANG (DISCHARGE SUMMARY).
+ *  SATU pass kumpulkan field label→nilai dari tabel hasil scrape, lalu
+ *  render baris klinis referensi. Tanpa nested loop per tabel. */
+function buildResumeSection(sections: Section[]): string {
+  const res = sections.find((s) => /^Resume/i.test(s.title));
+  const doc = res ? new DOMParser().parseFromString(res.html, 'text/html') : null;
+  const fields = new Map<string, string>();
+
+  if (doc) {
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const cells = Array.from(tr.cells);
+      for (let i = 0; i < cells.length - 2; i++) {
+        const rawLabel = (cells[i].textContent || '').replace(/\s+/g, ' ').trim();
+        const label = rawLabel.replace(/^-\s*/, '').replace(/\s*:$/, '');
+        if ((cells[i + 1].textContent || '').trim() !== ':') continue;
+        const value = (cells[i + 2].innerHTML || '')
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/[ \t]+/g, ' ')
+          .trim();
+        if (label && value && !fields.has(label)) fields.set(label, value);
+      }
+    }
+  }
+  const f = (...labels: RegExp[]): string => {
+    for (const [k, v] of fields) if (labels.some((re) => re.test(k))) return v;
+    return '-';
+  };
+  // Vital signs: ambil dari pasangan [label, ':', nilai] pada baris pendek.
+  const vital = (re: RegExp): string => {
+    for (const [k, v] of fields) if (re.test(k)) return v;
+    return '-';
+  };
+
+  const nama = pick('nama');
+  const norm = pick('norm', 'rekam_medis');
+  const lahir = pick('tgl_lahir', 'tglLahir');
+  const jk = pick('jenis_kelamin', 'jk');
+  const masuk = f(/^Tanggal Masuk$/i);
+  const keluar = f(/^Tanggal Keluar$/i);
+  const ruang = f(/^Ruang Rawat$/i);
+  const kelas = f(/^Kelas$/i);
+  const dokter = pick('dokter', 'dpjp');
+  const seb = f(/^Anemnesa|^Anamnesa/i);
+  const fisik = f(/^Pemeriksaan Fisik$/i);
+  const diagnostik = f(/^Hasil Pemeriksaan Diagnostik/i);
+  const diagUtama = f(/^Diagnosa Utama$/i);
+  const diagSekunder = f(/^Diagnosa Sekunder$/i);
+  const prosedur = f(/^Prosedur \/ Operasi|^Diagnosa Tindakan/i);
+  const pengobatan = f(/^Pengobatan$/i);
+  const obatPulang = f(/^Obat Pulang$/i);
+  const kondisi = f(/^Kondisi Pulang$/i);
+  const catatanKondisi = f(/^Catatan Kondisi Pulang$/i);
+  const kontrol = f(/^Jadwal Kontrol$/i);
+  const lanjutan = f(/^Pemeriksaan Lanjutan/i);
+
+  const vitalSigns = [
+    ['TD', vital(/^TD$/)],
+    ['HR', vital(/^HR$/)],
+    ['RR', vital(/^RR$/)],
+    ['S', vital(/^S$/)],
+    ['SpO2', vital(/^SPO2$/)],
+    ['GCS', vital(/^GCS$/)],
+  ]
+    .filter(([, v]) => v !== '-')
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(' | ');
+
+  const row = (label: string, value: string): string =>
+    `<tr><td style="width: 175px;"><strong>${label}</strong></td><td>${nl2br(value)}</td></tr>`;
+
+  return `<section class="rm-page" id="rm-06">
+${kop('RM. 06')}
+<div class="rm-form-title">RINGKASAN PULANG (DISCHARGE SUMMARY)</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('No. Rekam Medis', norm, true)}
+    ${idRow('Tgl. Lahir / Kelamin', `${lahir} / ${jk}`)}
+    ${idRow('Jenis Kasus', f(/^Jenis Kasus$/i))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Masuk', masuk)}
+    ${idRow('Tanggal Keluar', keluar)}
+    ${idRow('Ruang / Kelas', `${ruang} / ${kelas}`)}
+    ${idRow('DPJP / Rawat Bersama', dokter)}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <tbody>
+    ${row('ALASAN / INDIKASI RAWAT &amp; ANAMNESA', `${f(/^Alasan \/ Indikasi Rawat/i)}\n${seb}`.trim())}
+    ${row('PEMERIKSAAN FISIK &amp; TANDA VITAL MASUK', `${fisik}${vitalSigns ? `\nVital Signs : ${vitalSigns}` : ''}`.trim())}
+    ${row('HASIL PEMERIKSAAN DIAGNOSTIK', diagnostik)}
+    ${row('DIAGNOSA UTAMA', diagUtama)}
+    ${row('DIAGNOSA SEKUNDER', diagSekunder)}
+    ${row('TINDAKAN / PROSEDUR (ICD-9-CM)', prosedur)}
+    ${row('PENGOBATAN SELAMA RAWAT', pengobatan)}
+    ${row('OBAT PULANG', obatPulang)}
+    ${row('KONDISI &amp; CARA PULANG', `${kondisi}\n${catatanKondisi}`.trim())}
+    ${row('INSTRUKSI &amp; JADWAL KONTROL', `${kontrol}\n${lanjutan}`.trim())}
+    ${row('STATUS RUJUKAN &amp; PELAYANAN KB', f(/^Apakah pasien rujukan masuk/i))}
+  </tbody>
+</table>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box">
+    <div>Mengetahui Pasien / Keluarga</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(nama)} )</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(keluar)}</div>
+    <div>Yang Membuat : DPJP</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(dokter)} )</div>
+  </div>
+</div>
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -1384,6 +1507,7 @@ ${checksHtml}
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
       if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
       if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
+      if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}
