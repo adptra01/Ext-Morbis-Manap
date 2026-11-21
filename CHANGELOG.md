@@ -51,6 +51,8 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — ukuran judul SEP disamakan dengan nama RS (`2847f3a`)
+- **mKlaimPrint** — judul SEP & nama RS ke pojok kanan atas (`52472f1`)
 - **mKlaimPrint** — footer TTD SEP di-center di blok kiri/kanan (`e4ad655`)
 - **mKlaimMarks** — samakan tombol mark footer detail dengan Telaah/Partial (`591b8e8`)
 - **mKlaimMarks** — samakan tombol mark dengan tombol Pre-op/Verif/Detail (`98dfd91`)
@@ -2183,4 +2185,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e4ad655a3ebdb422ba8a09d6c18ea575b66c37ee -->
+<!-- changelog-upto: 2847f3a77ecbeef13f86558add11157fbbd6c9c1 -->

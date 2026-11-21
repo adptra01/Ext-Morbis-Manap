@@ -1268,7 +1268,6 @@ ${kop("RM. 07")}
     const fields = /* @__PURE__ */ new Map();
     const exams = [];
     let expertise = "";
-    const cellText = (tr) => (tr.textContent || "").replace(/\s+/g, " ").trim();
     if (doc) {
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
         const c = Array.from(tr.cells).map(
@@ -1277,9 +1276,10 @@ ${kop("RM. 07")}
         for (const cell of c) {
           const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
           if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
+          const em = cell.match(/^expertise\s*:\s*([\s\S]+)$/i);
+          if (em && !expertise) expertise = em[1].trim();
         }
         if (c.length >= 4 && /^\d+$/.test(c[0]) && c[1]) exams.push(c[1]);
-        if (/expertise/i.test(cellText(tr))) expertise = cellText(tr);
       }
     }
     const f = (...res) => {

@@ -1617,8 +1617,6 @@ function buildRadiologiSection(sections: Section[]): string {
   const fields = new Map<string, string>();
   const exams: string[] = [];
   let expertise = '';
-  const cellText = (tr: HTMLTableRowElement): string =>
-    (tr.textContent || '').replace(/\s+/g, ' ').trim();
 
   if (doc) {
     for (const tr of Array.from(doc.querySelectorAll('tr'))) {
@@ -1633,9 +1631,12 @@ function buildRadiologiSection(sections: Section[]): string {
       for (const cell of c) {
         const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
         if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
+        // c[] sudah mengubah <br> jadi \n — pakai ini, BUKAN textContent
+        // (textContent menggabungkan semua baris jadi satu spasi).
+        const em = cell.match(/^expertise\s*:\s*([\s\S]+)$/i);
+        if (em && !expertise) expertise = em[1].trim();
       }
       if (c.length >= 4 && /^\d+$/.test(c[0]) && c[1]) exams.push(c[1]);
-      if (/expertise/i.test(cellText(tr))) expertise = cellText(tr);
     }
   }
   const f = (...res: RegExp[]): string => {

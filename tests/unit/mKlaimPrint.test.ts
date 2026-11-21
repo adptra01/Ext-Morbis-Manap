@@ -249,6 +249,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(rad).toContain(marker);
     }
+    // Expertise mengawetkan newline asli (<br> → \n), bukan textContent yang
+    // menggabungkan semua baris jadi satu spasi.
+    expect(rad).toContain('/^expertise\\s*:\\s*([\\s\\S]+)$/i');
+    expect(rad).toContain('expertise = em[1].trim()');
+    expect(rad).not.toContain('cellText(tr)');
     expect(src).toContain('return buildRadiologiSection(sections);');
   });
 
