@@ -3524,9 +3524,9 @@ ${kop(m.code)}
 /* SEP BPJS — cetakan VClaim (sheet menggantikan kop RSUD) */
 .rm-page.sep-page{padding:0}
 .bpjs-sep-sheet{width:210mm;max-width:100%;margin:0 auto;padding:10mm 14mm;background:#fff;color:#000;font:9.5pt/1.38 Arial,Helvetica,sans-serif;box-sizing:border-box;break-inside:avoid;page-break-inside:avoid}
-.sep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative}
+.sep-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;position:relative}
 .sep-logo{flex:0 0 215px;width:215px;height:33px;object-fit:contain;object-position:left center}
-.sep-title-wrap{flex:1;text-align:center;padding-right:120px}
+.sep-title-wrap{flex:0 0 auto;text-align:right;padding-right:0}
 .sep-title{font-size:13pt;font-weight:400;letter-spacing:.3px;text-transform:uppercase}
 .sep-hospital{font-size:10.5pt;text-transform:uppercase}
 .sep-columns{display:flex;justify-content:space-between;gap:18px}

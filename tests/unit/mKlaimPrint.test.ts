@@ -77,6 +77,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('const BPJS_LOGO = `data:image/svg+xml;base64,');
     expect(sep).toContain('src="${BPJS_LOGO}"');
     expect(src).toContain('.sep-logo{flex:0 0 215px');
+    // Judul SEP + nama RS di pojok kanan atas, logo tetap kiri.
+    expect(src).toContain(
+      '.sep-header{display:flex;align-items:flex-start;justify-content:space-between',
+    );
+    expect(src).toContain('.sep-title-wrap{flex:0 0 auto;text-align:right;padding-right:0}');
     // TTD: dua blok kiri/kanan, isi tiap blok di-center.
     expect(src).toContain('.sep-signatures{display:flex;justify-content:space-between');
     expect(src).toContain(

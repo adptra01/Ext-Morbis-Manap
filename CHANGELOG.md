@@ -30,6 +30,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — peserta SEP tak menelan seluruh teks dari judul (`0e84800`)
 - **mKlaimPrint** — field Peserta tidak menangkap Nama Peserta di SEP (`99b413a`)
 - **mKlaimPrint** — SEP hanya sheet BPJS — hapus blok INA-CBG & nama ganda di ttd (`bf9188c`)
 - **mKlaimPrint** — grid() terima string baris — perbaiki body.join is not a function (`c1de84a`)
@@ -50,6 +51,7 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — footer TTD SEP di-center di blok kiri/kanan (`e4ad655`)
 - **mKlaimMarks** — samakan tombol mark footer detail dengan Telaah/Partial (`591b8e8`)
 - **mKlaimMarks** — samakan tombol mark dengan tombol Pre-op/Verif/Detail (`98dfd91`)
 
@@ -2181,4 +2183,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 99b413aea0915432e1aa3a29a376e0411494cafc -->
+<!-- changelog-upto: e4ad655a3ebdb422ba8a09d6c18ea575b66c37ee -->
