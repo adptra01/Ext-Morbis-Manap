@@ -501,6 +501,28 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('<div class="doc-body">${s.html}</div>');
   });
 
+  it('QR TTD: pakai QR asli yang ditemukan, tanpa baris kosong pengganti ttd', () => {
+    for (const [fn, marker] of [
+      ['buildSpriSection', 'qrSpri'],
+      ['buildResumeSection', 'qrResume'],
+      ['buildRadiologiSection', 'qrRad'],
+      ['buildTriageSection', 'qrTriage'],
+      ['buildSbpkSection', 'qrDpjp'],
+      ['buildBillingSection', 'qrPasien'],
+    ] as const) {
+      const body = src.slice(
+        src.indexOf(`function ${fn}`),
+        src.indexOf('function ', src.indexOf(`function ${fn}`) + 1),
+      );
+      expect(body, fn).toContain(marker);
+      expect(body, fn).toContain('rm-sig-qr');
+      // Spacer hanya dipakai bila QR tidak tersedia.
+      expect(body, fn).toContain("' : '<div class=\"rm-sig-space\"></div>'");
+    }
+    expect(src).not.toContain('sep-sig-space');
+    expect(src).not.toContain('sep-sig-line');
+  });
+
   it('fix audit: field SEP scrape, alamat lintas-section, vital & tanggal lahir', () => {
     const sep = src.slice(
       src.indexOf('function buildSepSection'),

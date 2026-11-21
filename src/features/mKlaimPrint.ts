@@ -835,6 +835,7 @@ function buildSepSection(sections: Section[]): string {
  *  tidak lagi berupa teks mentah berantakan. */
 function buildSpriSection(sections: Section[]): string {
   const spr = sections.find((s) => /^SPRI$/i.test(s.title));
+  const qrSpri = sectionQrs(sections, /^SPRI$/i)[0] ?? '';
   const doc = spr ? new DOMParser().parseFromString(spr.html, 'text/html') : null;
 
   /** Ambil nilai dari sel kedua baris tabel yang sel pertamanya = label. */
@@ -941,8 +942,9 @@ ${kop('RM. 03')}
   </div>
   <div class="rm-sig-box">
     <div>${esc(pengantar)}</div>
+    ${qrSpri ? `<img class="rm-sig-qr" src="${esc(qrSpri)}" alt="QR tanda tangan dokter" width="80" height="80" />` : ''}
     <div>Dokter yang Memeriksa</div>
-    <div class="rm-sig-space"></div>
+    ${qrSpri ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
 </div>
@@ -1112,7 +1114,7 @@ ${kop('RM. 02')}
   <div class="rm-sig-box">
     ${qrDpjp ? `<img class="rm-sig-qr" src="${esc(qrDpjp)}" alt="QR persetujuan DPJP" width="80" height="80" />` : ''}
     <div>Dokter Penanggung Jawab Pelayanan (DPJP)</div>
-    <div class="rm-sig-space"></div>
+    ${qrDpjp ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
 </div>
@@ -1292,13 +1294,13 @@ ${kop('RM. 05')}
     ${qrPasien ? `<img class="rm-sig-qr" src="${esc(qrPasien)}" alt="QR persetujuan pasien" width="80" height="80" />` : ''}
     <div>Yang Menyerahkan,</div>
     <div>Pasien / Keluarga Pasien</div>
-    <div class="rm-sig-space"></div>
+    ${qrPasien ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
     ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ''}
     <div>Yang Menerima (Petugas Billing / Kasir)</div>
-    <div class="rm-sig-space"></div>
+    ${qrPenerima ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( .................................................. )</div>
   </div>
 </div>
@@ -1310,6 +1312,7 @@ ${kop('RM. 05')}
  *  render baris klinis referensi. Tanpa nested loop per tabel. */
 function buildResumeSection(sections: Section[]): string {
   const res = sections.find((s) => /^Resume/i.test(s.title));
+  const qrResume = sectionQrs(sections, /^Resume/i)[0] ?? '';
   const doc = res ? new DOMParser().parseFromString(res.html, 'text/html') : null;
   const fields = new Map<string, string>();
 
@@ -1420,8 +1423,9 @@ ${kop('RM. 06')}
   </div>
   <div class="rm-sig-box">
     <div>Kota Jambi, ${esc(keluar)}</div>
+    ${qrResume ? `<img class="rm-sig-qr" src="${esc(qrResume)}" alt="QR tanda tangan DPJP" width="80" height="80" />` : ''}
     <div>Yang Membuat : DPJP</div>
-    <div class="rm-sig-space"></div>
+    ${qrResume ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
 </div>
@@ -1654,6 +1658,7 @@ ${kop('RM. 07')}
  *  '-' bila halaman tidak mengisinya. */
 function buildRadiologiSection(sections: Section[]): string {
   const rad = sections.find((s) => /^Radiologi/i.test(s.title));
+  const qrRad = sectionQrs(sections, /^Radiologi/i)[0] ?? '';
   const doc = rad ? new DOMParser().parseFromString(rad.html, 'text/html') : null;
   const fields = new Map<string, string>();
   const exams: string[] = [];
@@ -1767,8 +1772,9 @@ ${kop('RM. 08')}
   </div>
   <div class="rm-sig-box">
     <div>Kota Jambi, ${esc(tglPeriksa)}</div>
+    ${qrRad ? `<img class="rm-sig-qr" src="${esc(qrRad)}" alt="QR tanda tangan radiolog" width="80" height="80" />` : ''}
     <div>Dokter Spesialis Radiologi Penilai</div>
-    <div class="rm-sig-space"></div>
+    ${qrRad ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokterDpjp)} )</div>
   </div>
 </div>
@@ -1780,6 +1786,7 @@ ${kop('RM. 08')}
  *  tabel label ':' section hasil scrape, field halaman lewat pick(), fallback '-'. */
 function buildTriageSection(sections: Section[]): string {
   const tri = sections.find((s) => /^Triage/i.test(s.title));
+  const qrTriage = sectionQrs(sections, /^Triage/i)[0] ?? '';
   const doc = tri ? new DOMParser().parseFromString(tri.html, 'text/html') : null;
   const fields = new Map<string, string>();
   let dokterPemeriksa = '-';
@@ -1887,8 +1894,9 @@ ${kop('TRIAGE')}
   </div>
   <div class="rm-sig-box">
     <div>Kota Jambi, ${esc(tanggal)}</div>
+    ${qrTriage ? `<img class="rm-sig-qr" src="${esc(qrTriage)}" alt="QR tanda tangan dokter" width="80" height="80" />` : ''}
     <div>Dokter yang Memeriksa</div>
-    <div class="rm-sig-space"></div>
+    ${qrTriage ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokterPemeriksa)} )</div>
   </div>
 </div>
