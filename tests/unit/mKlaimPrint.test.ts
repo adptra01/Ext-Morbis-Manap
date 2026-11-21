@@ -42,28 +42,46 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.01 mengikuti struktur referensi (bukan doc-body scrape)', () => {
     const sep = src.slice(
       src.indexOf('function buildSepSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildSpriSection'),
     );
     for (const marker of [
-      '<section class="rm-page" id="rm-01">',
-      'id-box-bordered',
+      '<section class="rm-page sep-page" id="rm-01">',
+      'class="bpjs-sep-sheet"',
+      'class="sep-header"',
+      'SURAT ELEGIBILITAS PESERTA',
+      'class="sep-col-left"',
+      'class="sep-col-right"',
+      'class="sep-no-value"',
+      'class="sep-inline-mr"',
+      'class="sep-multiline-list"',
+      'class="sep-disclaimer"',
+      'class="sep-print-meta"',
+      'class="sep-signatures"',
+      'class="sep-sig-line"',
+      'Petugas<br/>BPJS Kesehatan',
+      // Blok INA-CBG tetap dipertahankan di bawah sheet.
       'BERKAS KLAIM INDIVIDUAL PASIEN (E-KLAIM INA-CBG)',
       'id-box-borderless',
       'DESKRIPSI DIAGNOSA (ICD-10) / PROSEDUR (ICD-9-CM)',
       'HASIL GROUPING INA-CBG (Generated: E-Klaim 5.10.9)',
       '<tr class="total-row">',
-      'class="footnote-rm"',
-      'class="rm-signature-block"',
     ]) {
       expect(sep).toContain(marker);
     }
+    expect(src).toContain('const SEP_LOGO_SVG');
+    expect(src).toContain('const sepNorm');
+    expect(sep).not.toContain("kop('RM. 01')");
+    expect(sep).not.toContain('SAMPLE_SEP_DATA');
+    expect(sep).not.toContain('Petugas Pendaftaran / Coder JKN');
+    expect(src).toContain('.rm-page.sep-page{padding:0}');
+    expect(src).toContain('.bpjs-sep-sheet{width:210mm');
     expect(src).toContain('return buildSepSection(sections);');
   });
 
   it('RM.03 (SPRI): vital, fisik/catatan, diit & terapi terstruktur', () => {
     const spr = src.slice(
       src.indexOf('function buildSpriSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildSbpkSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-03">',
@@ -87,7 +105,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.02 (SBPK): redesign efisien (2 pass, tanpa formatSbpkActions)', () => {
     const sbpk = src.slice(
       src.indexOf('function buildSbpkSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildBillingSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-02">',
@@ -139,7 +157,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.06 (Resume): ringkasan pulang terstruktur', () => {
     const res = src.slice(
       src.indexOf('function buildResumeSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildTelaahSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-06">',
@@ -158,7 +176,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.07 (Telaah): format telaahResepPrint tanpa data hardcoded', () => {
     const tel = src.slice(
       src.indexOf('function buildTelaahSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildRadiologiSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-07">',
@@ -236,7 +254,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('Pengkajian IGD: triase, FLACC, risiko jatuh & tindakan terstruktur', () => {
     const igd = src.slice(
       src.indexOf('function buildPengkajianIgdSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildKonsentSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="pengkajian-igd">',
@@ -304,6 +322,121 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(printHtml).toContain('src="./src/features/printBerkasKlaim/main.ts"');
     expect(printPage).toContain('document.write(html)');
     expect(printPage).toContain('installDossierHandlers(window)');
+  });
+
+  it('formulir RM khusus: builder dedicated + wiring (tanpa data dummy)', () => {
+    // [fn, builder berikutnya, id RM_META, marker unik di dalam slice fn]
+    const specs: Array<[string, string, string, string[]]> = [
+      [
+        'buildKonsentSection',
+        'buildAnestesiSection',
+        'form-konsent',
+        ['PERSETUJUAN TINDAKAN KEDOKTERAN (RM 19 A)', 'TUJUAN TINDAKAN', 'RISIKO &amp; KOMPLIKASI'],
+      ],
+      [
+        'buildAnestesiSection',
+        'buildFisioterapiSection',
+        'form-anestesi',
+        ['REKAM PELAKSANAAN ANESTESI', 'MONITORING ANESTESI', 'ASA'],
+      ],
+      [
+        'buildFisioterapiSection',
+        'buildHemodialisaSection',
+        'form-fisioterapi',
+        ['LEMBAR ASSESMEN &amp; TERAPI FISIOTERAPI', 'PELAKSANAAN TERAPI', 'ROM / MMT / FUNGSI'],
+      ],
+      [
+        'buildHemodialisaSection',
+        'buildOperasiSection',
+        'form-hemodialisa',
+        ['LEMBAR PENGKAJIAN &amp; SESI HEMODIALISA', 'SEBELUM DIALISA', 'Kt/V'],
+      ],
+      [
+        'buildOperasiSection',
+        'buildLaboratoriumSection',
+        'form-operasi',
+        ['LAPORAN PELAKSANAAN OPERASI', 'TIM OPERASI', 'ICD-9-CM'],
+      ],
+      [
+        'buildLaboratoriumSection',
+        'buildKematianSection',
+        'rm-09',
+        [
+          'id="rm-09"',
+          'HASIL PEMERIKSAAN LABORATORIUM PATOLOGI KLINIK',
+          'img[src^="data:"]',
+          'LAMPIRAN CETAKAN SISTEM LABORATORIUM (LIS)',
+        ],
+      ],
+      [
+        'buildKematianSection',
+        'buildTerapiSection',
+        'form-kematian',
+        ['SURAT KETERANGAN KEMATIAN', 'PENYEBAB KEMATIAN LANGSUNG (I)'],
+      ],
+      [
+        'buildTerapiSection',
+        'buildUjiFungsiSection',
+        'form-terapi',
+        ['PERMINTAAN TERAPI REHABILITASI MEDIK', 'RINCIAN PERMINTAAN'],
+      ],
+      [
+        'buildUjiFungsiSection',
+        'buildPartografSection',
+        'form-uji-fungsi',
+        ['LEMBAR UJI FUNGSI', 'PARAMETER FUNGSI'],
+      ],
+      [
+        'buildPartografSection',
+        'buildLaporanTindakanSection',
+        'form-partograf',
+        ['PARTOGRAF — PEMANTAUAN KEMAJUAN PERSALINAN', 'KEMAJUAN PERSALINAN &amp; OBSERVASI'],
+      ],
+      [
+        'buildLaporanTindakanSection',
+        'buildKonsulSection',
+        'form-laporan-tindakan',
+        ['LAPORAN PELAKSANAAN TINDAKAN', 'URAIAN TINDAKAN'],
+      ],
+      [
+        'buildKonsulSection',
+        'buildBonMakanSection',
+        'rm-10',
+        ['id="rm-10"', 'BAGIAN I : KEPADA YTH. KONSULEN', 'S (SUBJEKTIF)'],
+      ],
+      [
+        'buildBonMakanSection',
+        'buildPemeriksaanSection',
+        'form-bon-makan',
+        ['BON MAKAN PASIEN / PENDAMPING', 'Jumlah Porsi'],
+      ],
+      [
+        'buildPemeriksaanSection',
+        'buildHtml',
+        'form-pemeriksaan',
+        ['HASIL PEMERIKSAAN / DIAGNOSTIK', 'MIKROSKOPIK'],
+      ],
+    ];
+    for (const [fn, next, id, markers] of specs) {
+      const a = src.indexOf(`function ${fn}`);
+      const b = src.indexOf(`function ${next}`);
+      expect(a, fn).toBeGreaterThan(-1);
+      expect(b, next).toBeGreaterThan(-1);
+      expect(b, fn).toBeGreaterThan(a);
+      const body = src.slice(a, b);
+      for (const m of markers) expect(body, `${fn}: ${m}`).toContain(m);
+      expect(src, fn).toContain(`return ${fn}(sections);`);
+      expect(src, fn).toContain(`id: '${id}'`);
+    }
+    // Parser sekali pass + fallback '-' — bukan data contoh referensi.
+    expect(src).toContain('function formFields(');
+    expect(src).toContain('const fieldValue =');
+    expect(src).toContain('function formRows(');
+    expect(src).not.toContain('RAIHANA ATHA MAHABAH');
+    expect(src).not.toContain('M. RYAN RAMADHAN');
+    // Seksi 04 upload tetap passthrough mentah.
+    expect(src).not.toContain('return buildFileUploadSection(sections);');
+    expect(src).toContain('<div class="doc-body">${s.html}</div>');
   });
 
   it('toolbar mempertahankan ID yang dipakai handler', () => {

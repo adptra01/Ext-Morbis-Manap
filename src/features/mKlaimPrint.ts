@@ -538,6 +538,114 @@ const RM_META: Array<[RegExp, { id: string; code: string; tab: string; option: s
       option: 'RM. 10 — Lembar Konsultasi Antar-Spesialis',
     },
   ],
+  [
+    /^Persetujuan Tindakan/i,
+    {
+      id: 'form-konsent',
+      code: 'RM. 19A',
+      tab: 'RM. 19A Persetujuan',
+      option: 'RM. 19A — Persetujuan Tindakan Kedokteran',
+    },
+  ],
+  [
+    /^Anestesi/i,
+    {
+      id: 'form-anestesi',
+      code: 'ANESTESI',
+      tab: 'Anestesi',
+      option: 'Anestesi — Rekam Pelaksanaan Anestesi',
+    },
+  ],
+  [
+    /^Fisioterapi/i,
+    {
+      id: 'form-fisioterapi',
+      code: 'FISIOTERAPI',
+      tab: 'Fisioterapi',
+      option: 'Fisioterapi — Assesmen &amp; Terapi',
+    },
+  ],
+  [
+    /^Pengkajian Hemodialisa/i,
+    {
+      id: 'form-hemodialisa',
+      code: 'HEMODIALISA',
+      tab: 'Hemodialisa',
+      option: 'Hemodialisa — Pengkajian &amp; Sesi',
+    },
+  ],
+  [
+    /^Operasi/i,
+    {
+      id: 'form-operasi',
+      code: 'OPERASI',
+      tab: 'Operasi',
+      option: 'Operasi — Laporan Pelaksanaan',
+    },
+  ],
+  [
+    /^Surat Kematian/i,
+    {
+      id: 'form-kematian',
+      code: 'KEMATIAN',
+      tab: 'Surat Kematian',
+      option: 'Surat Kematian — Surat Keterangan',
+    },
+  ],
+  [
+    /^Permintaan Terapi/i,
+    {
+      id: 'form-terapi',
+      code: 'TERAPI',
+      tab: 'Permintaan Terapi',
+      option: 'Permintaan Terapi — Rehabilitasi Medik',
+    },
+  ],
+  [
+    /^Uji Fungsi/i,
+    {
+      id: 'form-uji-fungsi',
+      code: 'UJI FUNGSI',
+      tab: 'Uji Fungsi',
+      option: 'Uji Fungsi — Lembar Uji Fungsi',
+    },
+  ],
+  [
+    /^Partograf/i,
+    {
+      id: 'form-partograf',
+      code: 'PARTOGRAF',
+      tab: 'Partograf',
+      option: 'Partograf — Pemantauan Persalinan',
+    },
+  ],
+  [
+    /^Laporan Tindakan/i,
+    {
+      id: 'form-laporan-tindakan',
+      code: 'LAPORAN TINDAKAN',
+      tab: 'Laporan Tindakan',
+      option: 'Laporan Tindakan — Pelaksanaan Tindakan',
+    },
+  ],
+  [
+    /^Bon Makan/i,
+    {
+      id: 'form-bon-makan',
+      code: 'BON MAKAN',
+      tab: 'Bon Makan',
+      option: 'Bon Makan — Pasien / Pendamping',
+    },
+  ],
+  [
+    /^PEMERIKSAAN$/i,
+    {
+      id: 'form-pemeriksaan',
+      code: 'PEMERIKSAAN',
+      tab: 'Pemeriksaan',
+      option: 'Pemeriksaan — Hasil Diagnostik',
+    },
+  ],
 ];
 
 const metaFor = (
@@ -567,13 +675,31 @@ const idRow = (label: string, value: string, strong = false): string =>
     strong ? `<strong>${nl2br(value)}</strong>` : nl2br(value)
   }</td></tr>`;
 
-/** SECTION RM.01 — SEP & BERKAS KLAIM INDIVIDUAL (INA-CBG).
- *  Struktur mengikuti referensi: id-box-bordered, sub-heading, id-box-borderless,
- *  tabel kode ICD (VER), tabel grouping (colspan + total-row), footnote, ttd. */
+/** Logo BPJS Kesehatan — SVG inline (CSP tab cetak, tanpa file/script). */
+const SEP_LOGO_SVG = `<svg class="sep-logo" viewBox="0 0 215 58" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BPJS Kesehatan">
+<g transform="translate(4,3)"><circle cx="26" cy="26" r="23" fill="#fff" stroke="#00A651" stroke-width="2.2"/>
+<circle cx="26" cy="11" r="3.2" fill="#0066B3"/><circle cx="14" cy="21" r="3.2" fill="#00A651"/>
+<circle cx="38" cy="21" r="3.2" fill="#0066B3"/><circle cx="20" cy="38" r="3.2" fill="#0066B3"/>
+<circle cx="32" cy="38" r="3.2" fill="#00A651"/><path d="M14 27 Q26 17 38 27 Q26 36 14 27 Z" fill="#0066B3"/></g>
+<text x="60" y="24" fill="#009B4C" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700">BPJS</text>
+<text x="60" y="44" fill="#005BAA" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="400">Kesehatan</text>
+<text x="60" y="54" fill="#222222" font-family="Arial,Helvetica,sans-serif" font-size="8.6">Badan Penyelenggara Jaminan Sosial</text></svg>`;
+
+/** Normalisasi label yang terpotong di DOM cetakan BPJS
+ *  (mis. "No.Telep\non" → "No.Telepon", "Sub/Spes\ialis" → "Sub/Spesialis"). */
+const sepNorm = (s: string): string =>
+  s
+    .replace(/\s+/g, ' ')
+    .replace(/Telep\s+on/gi, 'Telepon')
+    .replace(/Kunjunga\s+n/gi, 'Kunjungan')
+    .replace(/Spes\s+ialis/gi, 'Spesialis')
+    .trim();
+
+/** SECTION RM.01 — sheet SEP BPJS persis cetakan VClaim + blok INA-CBG. */
 function buildSepSection(sections: Section[]): string {
   const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
   const txt = sepSection ? plainText(sepSection.html) : '';
-  const grab = (re: RegExp): string => txt.match(re)?.[1]?.replace(/\s+/g, ' ').trim() || '-';
+  const grab = (re: RegExp): string => sepNorm(txt.match(re)?.[1] || '') || '-';
 
   const sep =
     pick('no_sep', 'sep') !== '-'
@@ -582,8 +708,6 @@ function buildSepSection(sections: Section[]): string {
   const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
   const noHp = pick('no_hp', 'telepon');
   const kelas = pick('kelas').replace(/^Kelas\s*/i, '');
-  const jk = pick('jenis_kelamin', 'jk');
-  const jkLabel = /^L$/i.test(jk) ? 'Laki-laki' : /^P$/i.test(jk) ? 'Perempuan' : jk;
   const lahir = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '');
   const masuk = pick('tanggalAwal', 'tgl_masuk', 'tgl');
   const keluar = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
@@ -591,6 +715,38 @@ function buildSepSection(sections: Section[]): string {
   const cbgCode = grab(/(E-\d+-\d+-\d+)/i);
   const cbgDesc = grab(/(?:GROUP|INA-CBG)\s+([A-Z][A-Z0-9\s\-(),.]+?)(?:\s+Rp|\s+2\.930|$)/i);
   const cbgTarif = grab(/(?:TARIF|Rp\.?)\s*([\d.]+(?:,\d{2})?)/i);
+
+  // Sheet BPJS: nilai dari field halaman + scrape section SEP, kosong → '-'.
+  const kartu = pick('kartu', 'no_kartu', 'noka');
+  const mr = pick('norm', 'rekam_medis');
+  const km = kartu.match(/^(.*?)\s*\(MR\.?\s*([^)]+)\)$/i);
+  const kartuHtml = km
+    ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>`
+    : `${esc(kartu)}${mr !== '-' ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ''}`;
+  const kunjungan =
+    pick('jenis_kunjungan') !== '-'
+      ? pick('jenis_kunjungan')
+      : grab(/Jns\.?\s*Kunjungan\s*[:.]?\s*([\s\S]*?)(?:\s+Kls\.?\s*Hak|$)/i);
+  const kunjunganHtml = /^-\s|\n/.test(kunjungan)
+    ? '<ul class="sep-multiline-list">' +
+      kunjungan
+        .split(/\n/)
+        .map((x) => `<li>${esc(x.replace(/^-\s*/, '').trim())}</li>`)
+        .join('') +
+      '</ul>'
+    : esc(kunjungan);
+  const peserta = pick('peserta', 'jenis_peserta');
+  const penjamin = pick('penjamin');
+  const faskes = pick('faskes_perujuk', 'faskes');
+  const diagnosaAwal = pick('diagnosa_awal');
+  const catatan = pick('catatan_sep', 'catatan');
+  const subSpesialis = pick('sub_spesialis', 'spesialis');
+  const cetakan = grab(/Cetakan\s+ke\s*[:.]?\s*(\d+)/i);
+  const printMeta =
+    cetakan !== '-' ? `<div class="sep-print-meta">Cetakan ke ${esc(cetakan)}</div>` : '';
+  const kv = (label: string, value: string, cls = '', right = false): string =>
+    `<tr><td class="lbl${right ? ' right' : ''}">${label}</td><td class="sep">:</td><td class="val${cls ? ' ' + cls : ''}">${value}</td></tr>`;
+  const spacer = '<tr><td colspan="3">&nbsp;</td></tr>';
 
   // Baris kode ICD-10 / ICD-9-CM diambil dari tabel section SEP bila ada.
   const codeRows: string[] = [];
@@ -616,34 +772,60 @@ function buildSepSection(sections: Section[]): string {
     );
   }
 
-  return `<section class="rm-page" id="rm-01">
-${kop('RM. 01')}
-<div class="rm-form-title">SURAT ELEGIBILITAS PESERTA (SEP) &amp; BERKAS KLAIM INDIVIDUAL (INA-CBG)</div>
+  const kelasTeks = kelas !== '-' ? `Kelas ${esc(kelas)}` : '-';
 
-<div class="id-box-bordered">
-  <div class="id-col"><table class="id-table">
-    ${idRow('No. SEP', sep, true)}
-    ${idRow('Tgl. SEP', tglSep)}
-    ${idRow('No. Kartu', `${pick('kartu')} (MR. ${pick('norm', 'rekam_medis')})`)}
-    ${idRow('Nama Peserta', pick('nama'), true)}
-    ${idRow('Tgl. Lahir', `${lahir} \u00a0\u00a0 Kelamin : ${jkLabel}`)}
-    ${idRow('No. Telepon', noHp)}
-    ${idRow('Sub/Spesialis', '-')}
-    ${idRow('Dokter', dokter)}
-    ${idRow('Faskes Perujuk', 'RSUD H. Abdul Manap - Kota Jambi')}
-    ${idRow('Diagnosa Awal', '-')}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow('Peserta', 'PBI JAMINAN KESEHATAN')}
-    ${idRow('COB', '-')}
-    ${idRow('Jns. Rawat', pick('jenis'), true)}
-    ${idRow('Jns. Kunjungan', '-')}
-    ${idRow('Kls. Hak', kelas ? `Kelas ${kelas}` : '-', true)}
-    ${idRow('Kls. Rawat', kelas ? `Kelas ${kelas}` : '-', true)}
-    ${idRow('Penjamin', 'BPJS Kesehatan')}
-    ${idRow('Catatan', '-')}
-  </table></div>
-</div>
+  return `<section class="rm-page sep-page" id="rm-01">
+ <section class="bpjs-sep-sheet">
+ <div class="sep-header">
+   ${SEP_LOGO_SVG}
+   <div class="sep-title-wrap">
+     <div class="sep-title">SURAT ELEGIBILITAS PESERTA</div>
+     <div class="sep-hospital">${esc(HOSPITAL_NAME.toUpperCase())}</div>
+   </div>
+ </div>
+ <div class="sep-columns">
+   <div class="sep-col-left"><table class="sep-kv-table">
+     ${kv('No. SEP', `<span class="sep-no-value">${esc(sep)}</span>`)}
+     ${kv('Tgl. SEP', esc(tglSep))}
+     ${kv('No.Kartu', kartuHtml)}
+     ${kv('Nama Peserta', `<strong>${esc(pick('nama'))}</strong>`)}
+     ${kv('Tgl.Lahir', esc(lahir))}
+     ${kv('No.Telepon', esc(noHp))}
+     ${kv('Sub/Spesialis', esc(subSpesialis))}
+     ${kv('Dokter', esc(dokter))}
+     ${kv('Faskes Perujuk', esc(faskes !== '-' ? faskes : `${HOSPITAL_NAME} - Kota Jambi`))}
+     ${kv('Diagnosa Awal', esc(diagnosaAwal))}
+     ${kv('Catatan', esc(catatan))}
+   </table></div>
+   <div class="sep-col-right"><table class="sep-kv-table">
+     ${spacer}${spacer}
+     ${kv('Peserta', esc(peserta), '', true)}
+     ${kv('COB', '-', '', true)}
+     ${kv('Jns.Rawat', `<strong>${esc(pick('jenis'))}</strong>`, '', true)}
+     ${kv('Jns.Kunjungan', kunjunganHtml, '', true)}
+     ${kv('Kls.Hak', `<strong>${kelasTeks}</strong>`, '', true)}
+     ${kv('Kls.Rawat', `<strong>${kelasTeks}</strong>`, '', true)}
+     ${kv('Penjamin', esc(penjamin), '', true)}
+   </table></div>
+ </div>
+ <div class="sep-disclaimer">
+   *Saya Menyetujui BPJS Kesehatan menggunakan informasi Medis Pasien jika diperlukan.<br/>
+   *SEP bukan sebagai bukti penjamin peserta
+ </div>
+ ${printMeta}
+ <div class="sep-signatures">
+   <div class="sep-sig-box">
+     <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
+     <div class="sep-sig-space"></div>
+     <div class="sep-sig-line">${esc(pick('nama'))}</div>
+   </div>
+   <div class="sep-sig-box">
+     <div class="sep-sig-role">Petugas<br/>BPJS Kesehatan</div>
+     <div class="sep-sig-space"></div>
+     <div class="sep-sig-line">&nbsp;</div>
+   </div>
+ </div>
+ </section>
 
 <div class="sub-heading-rm">BERKAS KLAIM INDIVIDUAL PASIEN (E-KLAIM INA-CBG)</div>
 
@@ -681,24 +863,6 @@ ${kop('RM. 01')}
     <tr class="total-row"><td colspan="2" style="text-align: right;">TOTAL TARIF INA-CBG :</td><td class="num">Rp ${esc(cbgTarif)}</td></tr>
   </tbody>
 </table>
-
-<div class="footnote-rm">
-  *Saya Menyetujui BPJS Kesehatan menggunakan informasi Medis Pasien jika diperlukan. *SEP bukan bagian bukti penjamin peserta.
-</div>
-
-<div class="rm-signature-block">
-  <div class="rm-sig-box">
-    <div>Pasien / Keluarga Pasien</div>
-    <div class="rm-sig-space"></div>
-    <div class="rm-sig-name">( ${esc(pick('nama'))} )</div>
-  </div>
-  <div class="rm-sig-box">
-    <div>Kota Jambi, ${esc(tglSep)}</div>
-    <div>Petugas Pendaftaran / Coder JKN</div>
-    <div class="rm-sig-space"></div>
-    <div class="rm-sig-name">( .................................................. )</div>
-  </div>
-</div>
 </section>`;
 }
 
@@ -1947,6 +2111,674 @@ ${grid(['PUKUL', 'NAMA OBAT', 'DOSIS / RUTE', 'TANDA TANGAN'], obatRows)}
 </section>`;
 }
 
+/* ── Builder formulir RM khusus (section yang kosong di produksi) ────────
+ * Data klinis diambil dari section hasil scrape lewat parser sekali pass;
+ * identitas pasien memakai field halaman produksi (pick). Kosong → '-'.
+ * Tidak ada data dummy/plaintext hardcoded. */
+
+/** Parser sekali pass: label ':' nilai dari baris tabel section hasil scrape. */
+function formFields(sections: Section[], titleRe: RegExp): Map<string, string> {
+  const src = sections.find((s) => titleRe.test(s.title));
+  const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
+  const out = new Map<string, string>();
+  if (!doc) return out;
+  for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+    const c = Array.from(tr.cells).map((td) =>
+      (td.innerHTML || '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .trim(),
+    );
+    for (let i = 0; i < c.length - 2; i++) {
+      const label = c[i].replace(/^[-:\s]+|[\s:]+$/g, '');
+      if (!label || c[i + 1] !== ':' || !c[i + 2] || out.has(label)) continue;
+      out.set(label, c[i + 2]);
+    }
+    for (const cell of c) {
+      const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+      if (m && !m[2].includes(':') && m[2].length <= 120 && !out.has(m[1].trim()))
+        out.set(m[1].trim(), m[2].trim());
+    }
+  }
+  return out;
+}
+
+/** Ambil nilai field dengan fallback '-'. */
+const fieldValue = (fields: Map<string, string>, ...res: RegExp[]): string => {
+  for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
+  return '-';
+};
+
+/** Baris tabel data dari section (grid hasil pemeriksaan/tindakan). */
+function formRows(sections: Section[], titleRe: RegExp, limit = 30): string[][] {
+  const src = sections.find((s) => titleRe.test(s.title));
+  const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
+  if (!doc) return [];
+  const out: string[][] = [];
+  for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+    const c = Array.from(tr.cells).map((td) => (td.textContent || '').replace(/\s+/g, ' ').trim());
+    if (c.length && c.some(Boolean)) out.push(c);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+/** Tabel 2 kolom label | nilai (nilai multibaris lewat nl2br). */
+const kvTable = (pairs: Array<[string, string]>): string =>
+  '<table class="rm-grid-table"><tbody>' +
+  pairs
+    .map(
+      ([k, v]) =>
+        `<tr><td style="width:175px;"><strong>${k}</strong></td><td>${nl2br(v)}</td></tr>`,
+    )
+    .join('') +
+  '</tbody></table>';
+
+/** Tabel grid header + baris scrape (kolom VER opsional, isi '-' bila kosong). */
+const dataTable = (head: string[], rows: string[][], ver = false): string => {
+  const h = ver ? [...head, 'VER (&#10003;)'] : head;
+  return (
+    '<table class="rm-grid-table"><thead><tr>' +
+    h.map((x) => `<th>${x}</th>`).join('') +
+    '</tr></thead><tbody>' +
+    (rows.length
+      ? rows
+          .map(
+            (r) =>
+              '<tr>' +
+              h
+                .map((_, i) =>
+                  ver && i === h.length - 1
+                    ? '<td class="center"><input type="checkbox" class="rm-checkbox"></td>'
+                    : `<td>${nl2br(r[i] || '-')}</td>`,
+                )
+                .join('') +
+              '</tr>',
+          )
+          .join('')
+      : `<tr><td colspan="${h.length}">-</td></tr>`) +
+    '</tbody></table>'
+  );
+};
+
+/** Blok tanda tangan dua pihak — baris terakhir jadi nama tebal. */
+const sig = (left: string[], right: string[]): string =>
+  '<div class="rm-signature-block">' +
+  [left, right]
+    .map(
+      (lines, i) =>
+        `<div class="rm-sig-box${i ? '' : ' left-align'}">` +
+        lines
+          .slice(0, -1)
+          .map((x) => `<div>${x}</div>`)
+          .join('') +
+        '<div class="rm-sig-space"></div>' +
+        `<div class="rm-sig-name">${lines[lines.length - 1]}</div>` +
+        '</div>',
+    )
+    .join('') +
+  '</div>';
+
+/** FORM — PERSETUJUAN TINDAKAN KEDOKTERAN (RM 19 A). */
+function buildKonsentSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Persetujuan Tindakan/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  const nama = pick('nama');
+  const dokter = pick('dokter', 'dpjp');
+  return `<section class="rm-page" id="form-konsent">
+${kop('RM. 19A')}
+<div class="rm-form-title">PERSETUJUAN TINDAKAN KEDOKTERAN (RM 19 A)</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Ruang / Kelas', [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-')}
+    ${idRow('Tanggal', f(/^Tanggal/i))}
+    ${idRow('Dokter Penanggung Jawab', dokter)}
+    ${idRow('Diagnosa', f(/^Diagnosa/i))}
+  </table></div>
+</div>
+${kvTable([
+  ['TUJUAN TINDAKAN', f(/^Tujuan/i)],
+  ['TINDAKAN / PROSEDUR YANG AKAN DILAKUKAN', f(/^Tindakan|^Prosedur/i)],
+  ['RISIKO &amp; KOMPLIKASI YANG MUNGKIN', f(/^Risiko|^Komplikasi/i)],
+  ['ALTERNATIF TINDAKAN', f(/^Alternatif/i)],
+])}
+<div class="footnote-rm">Dengan tanda tangan di bawah ini saya menyatakan telah mendapat penjelasan dan menyetujui tindakan kedokteran tersebut di atas.</div>
+${sig(
+  [`Pasien / Keluarga Pasien`, `( ${esc(nama)} )`],
+  [`Kota Jambi, ${esc(f(/^Tanggal/i))}`, `Dokter Penanggung Jawab`, `( ${esc(dokter)} )`],
+)}
+</section>`;
+}
+
+/** FORM — REKAM ANESTESI. */
+function buildAnestesiSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Anestesi/i);
+  const rows = formRows(sections, /^Anestesi/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-anestesi">
+${kop('ANESTESI')}
+<div class="rm-form-title">REKAM PELAKSANAAN ANESTESI</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal', f(/^Tanggal/i))}
+    ${idRow('Jenis Anestesi', f(/^Jenis Anestesi|^Anestesi/i))}
+    ${idRow('ASA', f(/^ASA/i))}
+    ${idRow('Dokter Anestesi', f(/^Dokter Anestesi|^Anestesiologi/i))}
+  </table></div>
+</div>
+${kvTable([
+  ['DIAGNOSA / TINDAKAN', f(/^Diagnosa|^Tindakan/i)],
+  ['PEMERIKSAAN PRA ANESTESI', f(/^Pra Anestesi|^Pemeriksaan/i)],
+  ['OBAT &amp; TEKNIK ANESTESI', f(/^Obat|^Teknik/i)],
+  ['KOMPLIKASI / CATATAN', f(/^Komplikasi|^Catatan/i)],
+])}
+<div class="sub-heading-rm">MONITORING ANESTESI</div>
+${dataTable(['JAM', 'TEKANAN DARAH', 'NADI', 'RR', 'SpO2', 'CATATAN'], rows, true)}
+${sig(
+  ['Petugas Anestesi', `( ${esc(f(/^Dokter Anestesi|^Anestesiologi/i))} )`],
+  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Dokter Operator', `( ${esc(pick('dokter', 'dpjp'))} )`],
+)}
+</section>`;
+}
+
+/** FORM — ASSESMEN &amp; TERAPI FISIOTERAPI. */
+function buildFisioterapiSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Fisioterapi/i);
+  const rows = formRows(sections, /^Fisioterapi/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-fisioterapi">
+${kop('FISIOTERAPI')}
+<div class="rm-form-title">LEMBAR ASSESMEN &amp; TERAPI FISIOTERAPI</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal', f(/^Tanggal/i))}
+    ${idRow('Diagnosa', f(/^Diagnosa/i))}
+    ${idRow('Ruang / Asal', f(/^Ruang|^Unit/i))}
+    ${idRow('Terapis', f(/^Terapis|^Fisioterapis/i))}
+  </table></div>
+</div>
+${kvTable([
+  ['KELUHAN UTAMA (SUBJEKTIF)', f(/^Keluhan|^Subjektif/i)],
+  ['PEMERIKSAAN OBJEKTIF (ROM / MMT / FUNGSI)', f(/^Objektif|^Pemeriksaan/i)],
+  ['ASSESMEN FISIOTERAPI', f(/^Assesmen|^Diagnosa Fisio/i)],
+  ['RENCANA TERAPI &amp; TUJUAN', f(/^Rencana|^Terapi|^Tujuan/i)],
+])}
+<div class="sub-heading-rm">PELAKSANAAN TERAPI</div>
+${dataTable(['TANGGAL', 'MODALITAS / LATIHAN', 'FREKUENSI', 'RESPON PASIEN'], rows, true)}
+${sig(
+  ['Pasien / Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Terapis / Fisioterapis',
+    `( ${esc(f(/^Terapis|^Fisioterapis/i))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM — PENGKAJIAN HEMODIALISA. */
+function buildHemodialisaSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Pengkajian Hemodialisa/i);
+  const rows = formRows(sections, /^Pengkajian Hemodialisa/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-hemodialisa">
+${kop('HEMODIALISA')}
+<div class="rm-form-title">LEMBAR PENGKAJIAN &amp; SESI HEMODIALISA</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Sesi', f(/^Tanggal/i))}
+    ${idRow('Akses Vaskular', f(/^Akses/i))}
+    ${idRow('Diagnosa', f(/^Diagnosa/i))}
+    ${idRow('Perawat / Dokter', f(/^Perawat|^Dokter/i))}
+  </table></div>
+</div>
+${dataTable(
+  ['PARAMETER', 'SEBELUM DIALISA', 'SESUDAH DIALISA', 'KETERANGAN'],
+  [
+    ['Berat Badan', f(/^BB Sebelum|^Berat Sebelum/), f(/^BB Sesudah|^Berat Sesudah/), '-'],
+    ['Tekanan Darah', f(/^TD Sebelum|^Tekanan Sebelum/), f(/^TD Sesudah|^Tekanan Sesudah/), '-'],
+    ['Nadi', f(/^Nadi Sebelum/), f(/^Nadi Sesudah/), '-'],
+    ...rows,
+  ],
+  true,
+)}
+${kvTable([
+  ['BLOOD FLOW / DIALYSATE FLOW', f(/^Blood Flow|^Dialysate/i)],
+  ['ULTRAFILTRASI &amp; Heparinisasi', f(/^Ultrafiltrasi|^UF|^Heparin/i)],
+  ['ADEKUASI (Kt/V)', f(/^Kt\/V|^Adekuasi/i)],
+  ['KOMPLIKASI / CATATAN', f(/^Komplikasi|^Catatan/i)],
+])}
+${sig(
+  ['Pasien / Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Perawat Hemodialisa', `( ${esc(f(/^Perawat/i))} )`],
+)}
+</section>`;
+}
+
+/** FORM — LAPORAN OPERASI / PEMELAKSANAAN OPERASI. */
+function buildOperasiSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Operasi/i);
+  const rows = formRows(sections, /^Operasi/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-operasi">
+${kop('OPERASI')}
+<div class="rm-form-title">LAPORAN PELAKSANAAN OPERASI</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Operasi', f(/^Tanggal/i))}
+    ${idRow('Diagnosa Pra Operasi', f(/^Diagnosa Pra|^Diagnosa Awal/i))}
+    ${idRow('Diagnosa Pasca Operasi', f(/^Diagnosa Pasca|^Diagnosa Akhir/i))}
+    ${idRow('Tindakan / ICD-9-CM', f(/^Tindakan|^Prosedur/i))}
+  </table></div>
+</div>
+${kvTable([
+  ['JENIS ANESTESI &amp; ASA', f(/^Anestesi|^ASA/i)],
+  ['TIM OPERASI (OPERATOR / ASISTEN / ANASTESI)', f(/^Operator|^Asisten|^Tim Operasi/i)],
+  ['ALAT / BAHAN &amp; IMPLAN', f(/^Alat|^Bahan|^Implan/i)],
+  ['URAIAN PROSEDUR &amp; TEMUAN', f(/^Uraian|^Prosedur|^Temuan/i)],
+  ['KOMPLIKASI INTRA OPERASI', f(/^Komplikasi/i)],
+  ['KEADAAN PASIEN SELESAI OPERASI', f(/^Keadaan|^Kondisi/i)],
+])}
+<div class="sub-heading-rm">RINCIAN TINDAKAN</div>
+${dataTable(['NO', 'TINDAKAN / PROSEDUR', 'WAKTU', 'PELAKSANA'], rows, true)}
+${sig(
+  ['Asisten Operasi', '-'],
+  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Dokter Operator', `( ${esc(f(/^Operator/i))} )`],
+)}
+</section>`;
+}
+
+/** FORM RM.09 — HASIL PEMERIKSAAN LABORATORIUM (data = lampiran PDF LIS). */
+function buildLaboratoriumSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Laboratorium/i);
+  const rows = formRows(sections, /^Laboratorium/i);
+  const src = sections.find((s) => /^Laboratorium/i.test(s.title));
+  const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
+  // clean() sudah mengubah canvas pdf.js jadi img data-URL — pertahankan utuh.
+  const images = doc
+    ? Array.from(doc.querySelectorAll('img[src^="data:"]')).map((img) => img.outerHTML)
+    : [];
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="rm-09">
+${kop('RM. 09')}
+<div class="rm-form-title">HASIL PEMERIKSAAN LABORATORIUM PATOLOGI KLINIK</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. Lab', f(/^No\.? Lab/i))}
+    ${idRow('NIK / No. RM', pick('norm', 'rekam_medis'))}
+    ${idRow('Nama Lengkap', pick('nama'), true)}
+    ${idRow('Tgl. Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Ruangan', f(/^Ruang|^Unit|^Poliklinik/i))}
+    ${idRow('Dokter Pengirim', f(/^Dokter Pengirim/i))}
+    ${idRow('Diagnosa Klinis', f(/^Diagnosa/i))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+</div>
+<div class="sub-heading-rm">HASIL PEMERIKSAAN</div>
+${dataTable(['PARAMETER PEMERIKSAAN', 'HASIL', 'SATUAN', 'NILAI RUJUKAN'], rows, true)}
+<table class="rm-grid-table"><thead><tr><th>LAMPIRAN CETAKAN SISTEM LABORATORIUM (LIS)</th></tr></thead><tbody><tr><td style="padding:6px;">${
+    images.length ? images.join('<br/>') : '-'
+  }</td></tr></tbody></table>
+${sig(
+  ['Analis Patologi Klinik', `( ${esc(f(/^Analis|^Validator/i))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Dokter Spesialis Patologi Klinik',
+    `( ${esc(f(/^Dokter Spesialis|^Dokter Patologi/i))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM — SURAT KEMATIAN. */
+function buildKematianSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Surat Kematian/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-kematian">
+${kop('KEMATIAN')}
+<div class="rm-form-title">SURAT KETERANGAN KEMATIAN</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+    ${idRow('Alamat', pick('alamat'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Kematian', f(/^Tanggal Kematian|^Tanggal/i))}
+    ${idRow('Jam Kematian', f(/^Jam/i))}
+    ${idRow('Tempat Kematian', f(/^Tempat/i))}
+    ${idRow('Ruang / Kelas', [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-')}
+  </table></div>
+</div>
+${kvTable([
+  ['PENYEBAB KEMATIAN LANGSUNG (I)', f(/^Penyebab Langsung|^Penyebab I/i)],
+  ['PENYEBAB ANTARA (II)', f(/^Penyebab Antara|^Penyebab II/i)],
+  ['PENYAKIT / KONDISI LAIN', f(/^Penyakit Lain|^Kondisi Lain/i)],
+  ['KETERANGAN', f(/^Keterangan|^Catatan/i)],
+])}
+${sig(
+  ['Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal Kematian|^Tanggal/i)),
+    'Dokter yang Menyatakan Meninggal',
+    `( ${esc(pick('dokter', 'dpjp'))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM — PERMINTAAN TERAPI REHABILITASI MEDIK. */
+function buildTerapiSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Permintaan Terapi/i);
+  const rows = formRows(sections, /^Permintaan Terapi/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-terapi">
+${kop('TERAPI')}
+<div class="rm-form-title">PERMINTAAN TERAPI REHABILITASI MEDIK</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Permintaan', f(/^Tanggal/i))}
+    ${idRow('Ruangan / Unit Asal', f(/^Ruang|^Unit/i))}
+    ${idRow('Dokter Pengirim', f(/^Dokter Pengirim/i))}
+    ${idRow('Diagnosa', f(/^Diagnosa/i))}
+  </table></div>
+</div>
+${kvTable([
+  ['JENIS TERAPI YANG DIMINTA', f(/^Jenis Terapi|^Terapi/i)],
+  ['TUJUAN TERAPI', f(/^Tujuan/i)],
+  ['FREKUENSI / RENCANA', f(/^Frekuensi|^Rencana/i)],
+  ['CATATAN KLINIS', f(/^Catatan/i)],
+])}
+<div class="sub-heading-rm">RINCIAN PERMINTAAN</div>
+${dataTable(['NO', 'TERAPI / MODALITAS', 'FREKUENSI', 'KETERANGAN'], rows, true)}
+${sig(
+  ['Pasien / Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Dokter Pengirim', `( ${esc(f(/^Dokter Pengirim/i))} )`],
+)}
+</section>`;
+}
+
+/** FORM — UJI FUNGSI (REHABILITASI MEDIK). */
+function buildUjiFungsiSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Uji Fungsi/i);
+  const rows = formRows(sections, /^Uji Fungsi/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-uji-fungsi">
+${kop('UJI FUNGSI')}
+<div class="rm-form-title">LEMBAR UJI FUNGSI</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Pemeriksaan', f(/^Tanggal/i))}
+    ${idRow('Diagnosa', f(/^Diagnosa/i))}
+    ${idRow('Petugas Uji', f(/^Petugas|^Terapis/i))}
+    ${idRow('Alat / Metode', f(/^Alat|^Metode/i))}
+  </table></div>
+</div>
+${dataTable(['PARAMETER FUNGSI', 'NILAI / SKOR', 'SATUAN', 'KETERANGAN'], rows, true)}
+${kvTable([
+  ['HASIL / INTERPRETASI', f(/^Hasil|^Interpretasi/i)],
+  ['KESIMPULAN', f(/^Kesimpulan/i)],
+  ['REKOMENDASI TERAPI', f(/^Rekomendasi|^Saran/i)],
+])}
+${sig(
+  ['Pasien / Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Petugas Uji Fungsi',
+    `( ${esc(f(/^Petugas|^Terapis/i))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM — PARTOGRAF (PEMANTAUAN PERSALINAN). */
+function buildPartografSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Partograf/i);
+  const rows = formRows(sections, /^Partograf/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-partograf">
+${kop('PARTOGRAF')}
+<div class="rm-form-title">PARTOGRAF — PEMANTAUAN KEMAJUAN PERSALINAN</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Umur', f(/^Umur/i))}
+    ${idRow('Grafida / Paritas', f(/^Grafida|^Paritas|^G/i))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('HPHT', f(/^HPHT/i))}
+    ${idRow('Taksiran Persalinan', f(/^Taksiran|^TP/i))}
+    ${idRow('Tanggal Persalinan', f(/^Tanggal/i))}
+    ${idRow('Petugas', f(/^Petugas|^Bidan/i))}
+  </table></div>
+</div>
+<div class="sub-heading-rm">KEMAJUAN PERSALINAN &amp; OBSERVASI</div>
+${dataTable(
+  ['JAM', 'PEMBUKAAN', 'TURUN', 'KONTRAKSI', 'DJJ', 'TD / NADI', 'SUHU', 'URINE', 'CATATAN'],
+  rows,
+  true,
+)}
+${kvTable([
+  ['KEADAAN IBU &amp; JANIN', f(/^Keadaan|^Kondisi/i)],
+  ['TINDAKAN / PENYIMPANGAN', f(/^Tindakan|^Penyimpangan/i)],
+  ['CATATAN', f(/^Catatan/i)],
+])}
+${sig(
+  ['Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Bidan / Petugas Persalinan',
+    `( ${esc(f(/^Petugas|^Bidan/i))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM — LAPORAN TINDAKAN. */
+function buildLaporanTindakanSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Laporan Tindakan/i);
+  const rows = formRows(sections, /^Laporan Tindakan/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-laporan-tindakan">
+${kop('LAPORAN TINDAKAN')}
+<div class="rm-form-title">LAPORAN PELAKSANAAN TINDAKAN</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Tindakan', f(/^Tanggal/i))}
+    ${idRow('Jenis Tindakan', f(/^Jenis Tindakan|^Tindakan/i))}
+    ${idRow('Ruang / Unit', f(/^Ruang|^Unit/i))}
+    ${idRow('Pelaksana', f(/^Pelaksana|^Petugas|^Dokter/i))}
+  </table></div>
+</div>
+${kvTable([
+  ['INDIKASI / DIAGNOSA', f(/^Indikasi|^Diagnosa/i)],
+  ['URAIAN TINDAKAN', f(/^Uraian|^Prosedur/i)],
+  ['HASIL TINDAKAN', f(/^Hasil/i)],
+  ['KOMPLIKASI / CATATAN', f(/^Komplikasi|^Catatan/i)],
+])}
+<div class="sub-heading-rm">RINCIAN TINDAKAN</div>
+${dataTable(['NO', 'TINDAKAN', 'WAKTU / JAM', 'PELAKSANA'], rows, true)}
+${sig(
+  ['Pasien / Keluarga Pasien', `( ${esc(pick('nama'))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Pelaksana Tindakan',
+    `( ${esc(f(/^Pelaksana|^Petugas|^Dokter/i))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM RM.10 — LEMBAR KONSULTASI ANTAR-SPESIALIS (S-O-A-P). */
+function buildKonsulSection(sections: Section[]): string {
+  const fields = formFields(sections, /Konsul/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="rm-10">
+${kop('RM. 10')}
+<div class="rm-form-title">LEMBAR KONSULTASI</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'), true)}
+    ${idRow('Nama Pasien', pick('nama'), true)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kunjungan', [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-')}
+  </table></div>
+</div>
+${kvTable([
+  ['BAGIAN I : KEPADA YTH. KONSULEN', f(/^Konsulen|^Dokter Konsulen/i)],
+  ['JENIS PERMOHONAN', f(/^Jenis Permohonan|^Permohonan/i)],
+  ['PENEMUAN KLINIS TERPENTING', f(/^Penemuan|^Keluhan/i)],
+  ['DUGAAN DIAGNOSA', f(/^Dugaan|^Diagnosa/i)],
+])}
+${kvTable([
+  ['S (SUBJEKTIF)', f(/^S \(Subjektif\)|^Subjektif/i)],
+  ['O (OBJEKTIF)', f(/^O \(Objektif\)|^Objektif/i)],
+  ['A (ASSESMEN)', f(/^A \(Assesmen\)|^Assesmen/i)],
+  ['P (PLANNING &amp; INSTRUKSI)', f(/^P \(Planning|^Planning|^Instruksi/i)],
+  ['KEPUTUSAN KONSULTASI', f(/^Keputusan/i)],
+])}
+${sig(
+  ['Dokter Pemohon Konsultasi', `( ${esc(pick('dokter', 'dpjp'))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Dokter Konsulen',
+    `( ${esc(f(/^Konsulen|^Dokter Konsulen/i))} )`,
+  ],
+)}
+</section>`;
+}
+
+/** FORM — BON MAKAN. */
+function buildBonMakanSection(sections: Section[]): string {
+  const fields = formFields(sections, /^Bon Makan/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-bon-makan">
+${kop('BON MAKAN')}
+<div class="rm-form-title">BON MAKAN PASIEN / PENDAMPING</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Ruang / Kelas', [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-')}
+    ${idRow('Tanggal', f(/^Tanggal/i))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pendamping', f(/^Pendamping|^Keluarga/i))}
+    ${idRow('Jumlah Porsi', f(/^Jumlah|^Porsi/i))}
+    ${idRow('Waktu', f(/^Waktu|^Jam/i))}
+    ${idRow('Petugas', f(/^Petugas/i))}
+  </table></div>
+</div>
+${dataTable(
+  ['NO', 'NAMA', 'HUBUNGAN', 'JUMLAH', 'KETERANGAN'],
+  formRows(sections, /^Bon Makan/i),
+  true,
+)}
+<div class="footnote-rm">Bon ini berlaku sesuai jadwal makan yang ditetapkan ruangan / instalasi gizi.</div>
+${sig(
+  ['Pasien / Pendamping', `( ${esc(f(/^Pendamping|^Keluarga/i))} )`],
+  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Petugas Ruangan', `( ${esc(f(/^Petugas/i))} )`],
+)}
+</section>`;
+}
+
+/** FORM — HASIL PEMERIKSAAN (PATOLOGI ANATOMI / DIAGNOSTIK LAIN). */
+function buildPemeriksaanSection(sections: Section[]): string {
+  const fields = formFields(sections, /^PEMERIKSAAN$/i);
+  const rows = formRows(sections, /^PEMERIKSAAN$/i);
+  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  return `<section class="rm-page" id="form-pemeriksaan">
+${kop('PEMERIKSAAN')}
+<div class="rm-form-title">HASIL PEMERIKSAAN / DIAGNOSTIK</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
+    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Pemeriksaan', f(/^Tanggal/i))}
+    ${idRow('Jenis Pemeriksaan', f(/^Jenis Pemeriksaan|^Pemeriksaan/i))}
+    ${idRow('Spesimen / Bahan', f(/^Spesimen|^Bahan/i))}
+    ${idRow('Dokter Pengirim', f(/^Dokter Pengirim/i))}
+  </table></div>
+</div>
+${dataTable(['PARAMETER', 'HASIL', 'SATUAN', 'NILAI RUJUKAN'], rows, true)}
+${kvTable([
+  ['MAKROSKOPIK / TEMUAN', f(/^Makroskopik|^Temuan/i)],
+  ['MIKROSKOPIK', f(/^Mikroskopik/i)],
+  ['KESIMPULAN / DIAGNOSA', f(/^Kesimpulan|^Diagnosa/i)],
+  ['CATATAN', f(/^Catatan/i)],
+])}
+${sig(
+  ['Petugas / Analis', `( ${esc(f(/^Petugas|^Analis/i))} )`],
+  [
+    'Kota Jambi, ' + esc(f(/^Tanggal/i)),
+    'Dokter Penanggung Jawab',
+    `( ${esc(f(/^Dokter Penanggung Jawab|^Dokter/i))} )`,
+  ],
+)}
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -2093,6 +2925,20 @@ ${checksHtml}
       if (/^Triage/i.test(s.title)) return buildTriageSection(sections);
       if (/PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title))
         return buildPengkajianIgdSection(sections);
+      if (/^Laboratorium/i.test(s.title)) return buildLaboratoriumSection(sections);
+      if (/Konsul/i.test(s.title)) return buildKonsulSection(sections);
+      if (/^Persetujuan Tindakan/i.test(s.title)) return buildKonsentSection(sections);
+      if (/^Anestesi/i.test(s.title)) return buildAnestesiSection(sections);
+      if (/^Fisioterapi/i.test(s.title)) return buildFisioterapiSection(sections);
+      if (/^Pengkajian Hemodialisa/i.test(s.title)) return buildHemodialisaSection(sections);
+      if (/^Operasi/i.test(s.title)) return buildOperasiSection(sections);
+      if (/^Surat Kematian/i.test(s.title)) return buildKematianSection(sections);
+      if (/^Permintaan Terapi/i.test(s.title)) return buildTerapiSection(sections);
+      if (/^Uji Fungsi/i.test(s.title)) return buildUjiFungsiSection(sections);
+      if (/^Partograf/i.test(s.title)) return buildPartografSection(sections);
+      if (/^Laporan Tindakan/i.test(s.title)) return buildLaporanTindakanSection(sections);
+      if (/^Bon Makan/i.test(s.title)) return buildBonMakanSection(sections);
+      if (/^PEMERIKSAAN$/i.test(s.title)) return buildPemeriksaanSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}
@@ -2677,6 +3523,35 @@ ${kop(m.code)}
 
 /* ── Tambahan generator: komponen hasil scrape & fokus keyboard ────────── */
 .kop-logo{object-fit:contain;object-position:center}
+/* SEP BPJS — cetakan VClaim (sheet menggantikan kop RSUD) */
+.rm-page.sep-page{padding:0}
+.bpjs-sep-sheet{width:210mm;max-width:100%;margin:0 auto;padding:10mm 14mm;background:#fff;color:#000;font:9.5pt/1.38 Arial,Helvetica,sans-serif;box-sizing:border-box;break-inside:avoid;page-break-inside:avoid}
+.sep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative}
+.sep-logo{flex:0 0 215px;height:auto}
+.sep-title-wrap{flex:1;text-align:center;padding-right:120px}
+.sep-title{font-size:13pt;font-weight:400;letter-spacing:.3px;text-transform:uppercase}
+.sep-hospital{font-size:10.5pt;text-transform:uppercase}
+.sep-columns{display:flex;justify-content:space-between;gap:18px}
+.sep-col-left{flex:0 0 56%}
+.sep-col-right{flex:0 0 42%;display:flex;flex-direction:column;justify-content:space-between}
+.sep-kv-table{width:100%;border-collapse:collapse}
+.sep-kv-table td{padding:1.8px 0;vertical-align:top;border:none}
+.sep-kv-table td.lbl{width:102px;white-space:nowrap}
+.sep-col-right .sep-kv-table td.lbl{width:92px}
+.sep-kv-table td.sep{width:12px;text-align:center}
+.sep-kv-table td.val{word-break:break-word}
+.sep-no-value{font-size:12pt;letter-spacing:.2px}
+.sep-inline-mr{margin-left:14px;white-space:nowrap}
+.sep-multiline-list{margin:0;padding:0;list-style:none}
+.sep-disclaimer{margin-top:10px;font-size:7.5pt;font-style:italic}
+.sep-print-meta{font-size:8pt;font-style:normal}
+.sep-signatures{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding-right:8px}
+.sep-sig-box{flex:1;font-size:8.8pt;line-height:1.25}
+.sep-sig-role{min-height:24px}
+.sep-sig-space{height:36px}
+.sep-sig-line{width:115px;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
+@media print{@page{size:A4 portrait;margin:10mm 12mm}body{background:#fff;padding:0}.bpjs-sep-sheet{width:100%;padding:0}}
+@media screen{body{background:#e5e7eb;padding:20px}.bpjs-sep-sheet{box-shadow:0 1px 4px rgba(0,0,0,.15)}}
 /* Telaah (RM.07) — grid 2 kolom ala telaahResepPrint.ts */
 .t-main{display:grid;grid-template-columns:62% 38%;gap:8px;align-items:start}
 .t-left,.t-right{display:flex;flex-direction:column;gap:5px;min-width:0}
