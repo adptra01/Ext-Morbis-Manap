@@ -310,7 +310,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain("window.open('', '_blank')");
     expect(src).not.toContain('saveDossier(');
     expect(src).toContain("type: 'OPEN_PRINT_DOSSIER'");
-    expect(src).toContain('html: buildHtml(sections, inventory)');
+    expect(src).toContain('const html = buildHtml(sections, inventory);');
     // Background: simpan ke storage lalu tabs.create ke halaman ekstensi.
     const bg = readFileSync('src/background.ts', 'utf8');
     expect(bg).toContain("case 'OPEN_PRINT_DOSSIER'");
@@ -437,6 +437,50 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // Seksi 04 upload tetap passthrough mentah.
     expect(src).not.toContain('return buildFileUploadSection(sections);');
     expect(src).toContain('<div class="doc-body">${s.html}</div>');
+  });
+
+  it('fix audit: field SEP scrape, alamat lintas-section, vital & tanggal lahir', () => {
+    const sep = src.slice(
+      src.indexOf('function buildSepSection'),
+      src.indexOf('function buildSpriSection'),
+    );
+    // 1. Field SEP yang tidak punya id halaman → scrape section SEP.
+    expect(src).toContain('const grabField =');
+    for (const label of ['Peserta', 'Penjamin', 'Faskes', 'Diagnosa', 'Catatan']) {
+      expect(sep, label).toContain(`grabField('${label}`);
+    }
+    expect(sep).not.toContain("const peserta = pick('peserta', 'jenis_peserta');");
+    // 2. Alamat: helper bersama dipakai semua builder (tidak ada pick('alamat') lagi).
+    expect(src).not.toContain("pick('alamat')");
+    expect((src.match(/patientAlamat\(sections\)/g) || []).length).toBeGreaterThanOrEqual(6);
+    // 3. TD "/" → '-'; Tgl.Lahir cuma bagian tanggal sebelum ' / '.
+    expect(src).toContain("normVital(pick('vital_td'))");
+    expect(sep).toContain('lahirRaw.split(');
+    expect(sep).toContain("[0]?.trim() || '-'");
+    // 5. Parser single-cell sekali pass (guard sudah ada, jangan duplikat).
+    expect(src).toContain('m[2].length <= 120');
+  });
+
+  it('print handler: tunggu partial, retry stale context & tombol self-healing', () => {
+    // 4. Lazy-load + error handling.
+    expect(src).toContain('async function waitForPartials');
+    for (const sel of ['.swal2-container', '.swal-overlay--active', '.sweet-alert']) {
+      expect(src).toContain(sel);
+    }
+    expect(src).toContain('Date.now() + 3000');
+    expect(src).toContain('await waitForPartials();');
+    expect(src).toContain('sections.length < 3');
+    expect(src).toContain('[0, 300, 600]');
+    expect(src).toContain('Receiving end does not exist|Extension context invalidated');
+    expect(src).toContain('chrome.runtime?.id');
+    expect(src).toContain('Gagal membuka dossier: ${reason');
+    // Tombol stale dari content script lama diganti otomatis.
+    expect(src).toContain("const BUILD_TAG = 'v2'");
+    expect(src).toContain('old?.dataset.extBuild === BUILD_TAG');
+    expect(src).toContain('btn.dataset.extBuild = BUILD_TAG');
+    expect(src).toContain('old?.remove()');
+    expect(src).toContain('btn?.dataset.extBuild !== BUILD_TAG');
+    expect(src).toContain('new MutationObserver(() => keepLast())');
   });
 
   it('toolbar mempertahankan ID yang dipakai handler', () => {

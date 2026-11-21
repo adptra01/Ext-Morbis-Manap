@@ -700,15 +700,22 @@ function buildSepSection(sections: Section[]): string {
   const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
   const txt = sepSection ? plainText(sepSection.html) : '';
   const grab = (re: RegExp): string => sepNorm(txt.match(re)?.[1] || '') || '-';
+  /** Ambil nilai field SEP dari hasil scrape dengan lookahead label berikutnya. */
+  const grabField = (label: string, next: string): string =>
+    grab(new RegExp(`${label}\\s*[:.]?\\s*([\\s\\S]*?)(?=${next}|$)`, 'i'));
 
   const sep =
     pick('no_sep', 'sep') !== '-'
       ? pick('no_sep', 'sep')
       : grab(/No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]+)/i);
   const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
-  const noHp = pick('no_hp', 'telepon');
+  const noHp =
+    pick('no_hp', 'telepon') !== '-'
+      ? pick('no_hp', 'telepon')
+      : grabField('No\\.?\\s*Telepon', 'Sub\\/Spesialis');
   const kelas = pick('kelas').replace(/^Kelas\s*/i, '');
-  const lahir = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '');
+  const lahirRaw = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '');
+  const lahir = lahirRaw.split(/\s*\/\s*/)[0]?.trim() || '-';
   const masuk = pick('tanggalAwal', 'tgl_masuk', 'tgl');
   const keluar = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
   const dokter = pick('dokter', 'dpjp');
@@ -735,12 +742,28 @@ function buildSepSection(sections: Section[]): string {
         .join('') +
       '</ul>'
     : esc(kunjungan);
-  const peserta = pick('peserta', 'jenis_peserta');
-  const penjamin = pick('penjamin');
-  const faskes = pick('faskes_perujuk', 'faskes');
-  const diagnosaAwal = pick('diagnosa_awal');
-  const catatan = pick('catatan_sep', 'catatan');
-  const subSpesialis = pick('sub_spesialis', 'spesialis');
+  const peserta =
+    pick('peserta', 'jenis_peserta') !== '-'
+      ? pick('peserta', 'jenis_peserta')
+      : grabField('Peserta', 'COB|Jns\\.?\\s*Rawat');
+  const penjamin =
+    pick('penjamin') !== '-' ? pick('penjamin') : grabField('Penjamin', '\\*Saya|CATATAN');
+  const faskes =
+    pick('faskes_perujuk', 'faskes') !== '-'
+      ? pick('faskes_perujuk', 'faskes')
+      : grabField('Faskes\\s*Perujuk', 'Diagnosa\\s*Awal');
+  const diagnosaAwal =
+    pick('diagnosa_awal') !== '-'
+      ? pick('diagnosa_awal')
+      : grabField('Diagnosa\\s*Awal', 'Catatan|Peserta');
+  const catatan =
+    pick('catatan_sep', 'catatan') !== '-'
+      ? pick('catatan_sep', 'catatan')
+      : grabField('Catatan', 'Peserta|COB');
+  const subSpesialis =
+    pick('sub_spesialis', 'spesialis') !== '-'
+      ? pick('sub_spesialis', 'spesialis')
+      : grabField('Sub\\/Spesialis', 'Dokter');
   const cetakan = grab(/Cetakan\s+ke\s*[:.]?\s*(\d+)/i);
   const printMeta =
     cetakan !== '-' ? `<div class="sep-print-meta">Cetakan ke ${esc(cetakan)}</div>` : '';
@@ -932,7 +955,7 @@ ${kop('RM. 03')}
     ${idRow('Umur / Tgl. Lahir', umurTeks)}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow('Alamat', pick('alamat'))}
+    ${idRow('Alamat', patientAlamat(sections))}
     ${idRow('Dikirim Oleh', dokter)}
     ${idRow('Waktu Pengantar', pengantar)}
   </table></div>
@@ -1229,7 +1252,7 @@ function buildBillingSection(sections: Section[]): string {
   const norm = pick('norm', 'rekam_medis');
   const nama = pick('nama');
   const dokter = pick('dokter', 'dpjp');
-  const alamat = pick('alamat');
+  const alamat = patientAlamat(sections);
   const sep = pick('no_sep', 'sep');
   const ruang = [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-';
   const awal = pick('tanggalAwal', 'tgl_masuk', 'tgl');
@@ -1545,7 +1568,7 @@ function buildTelaahSection(sections: Section[]): string {
   const sipDokter = f(/^SIP/i);
   const nama = pick('nama') !== '-' ? pick('nama') : f(/^Nama Pasien/i);
   const norm = pick('norm', 'rekam_medis') !== '-' ? pick('norm', 'rekam_medis') : f(/^No\.? RM/i);
-  const alamat = pick('alamat') !== '-' ? pick('alamat') : f(/^Alamat/i);
+  const alamat = patientAlamat(sections);
   const tglLahir = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '') || f(/^Tgl\.? Lahir/i);
   const noHp = pick('no_hp', 'telepon').replace(/^:\s*/, '') || f(/^No HP/i);
   const penjamin = f(/^Penjamin/i);
@@ -1695,7 +1718,7 @@ function buildRadiologiSection(sections: Section[]): string {
   const nama = pick('nama') !== '-' ? pick('nama') : f(/^Nama Pasien/i);
   const jkRaw = pick('jenis_kelamin', 'jk').replace(/^:\s*/, '') || f(/^Jenis Kelamin/i);
   const jkShort = /perempuan|^p$/i.test(jkRaw) ? 'P' : /laki|^l$/i.test(jkRaw) ? 'L' : jkRaw;
-  const alamat = pick('alamat') !== '-' ? pick('alamat') : f(/^Alamat/i);
+  const alamat = patientAlamat(sections);
   const ruang = f(/^Bed|^Ruang/i);
   const status = f(/^Status/i);
   const dokterPengirim = f(/^dr\.? Pengirim|^Dokter Pengirim/i);
@@ -2054,7 +2077,7 @@ ${grid(
   [
     '<tr>' +
       [
-        pick('vital_td'),
+        normVital(pick('vital_td')),
         pick('vital_nadi'),
         pick('vital_nafas'),
         pick('vital_suhu'),
@@ -2115,6 +2138,45 @@ ${grid(['PUKUL', 'NAMA OBAT', 'DOSIS / RUTE', 'TANDA TANGAN'], obatRows)}
  * Data klinis diambil dari section hasil scrape lewat parser sekali pass;
  * identitas pasien memakai field halaman produksi (pick). Kosong → '-'.
  * Tidak ada data dummy/plaintext hardcoded. */
+
+/** Cari nilai label dari section mana pun — dipakai untuk data yang tidak punya
+ *  id di halaman (mis. Alamat). Prioritas: Telaah > SBPK > Radiologi > lainnya. */
+function sectionField(sections: Section[], labelRe: RegExp): string {
+  const priority = [/^Telaah/i, /^SBPK/i, /^Radiologi/i];
+  const rank = (title: string): number => {
+    const i = priority.findIndex((r) => r.test(title));
+    return i < 0 ? 99 : i;
+  };
+  const ordered = [...sections].sort((a, b) => rank(a.title) - rank(b.title));
+  for (const s of ordered) {
+    const doc = new DOMParser().parseFromString(s.html, 'text/html');
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const c = Array.from(tr.cells).map((td) =>
+        (td.textContent || '').replace(/\s+/g, ' ').trim(),
+      );
+      for (let i = 0; i < c.length - 2; i++) {
+        if (labelRe.test(c[i]) && c[i + 1] === ':' && c[i + 2]) return c[i + 2];
+      }
+      for (const cell of c) {
+        const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+        if (m && labelRe.test(m[1].trim()) && m[2] && !m[2].includes(':') && m[2].length <= 160)
+          return m[2].trim();
+      }
+    }
+  }
+  return '-';
+}
+
+/** Alamat pasien: field halaman bila ada, kalau tidak ambil dari section scrape. */
+const patientAlamat = (sections: Section[]): string => {
+  const v = val('alamat')
+    .replace(/^\s*:\s*/, '')
+    .trim();
+  return v || sectionField(sections, /^Alamat/i);
+};
+
+/** Nilai vital "mundur" (mis. TD "/") dianggap kosong. */
+const normVital = (v: string): string => (/\d/.test(v) ? v : '-');
 
 /** Parser sekali pass: label ':' nilai dari baris tabel section hasil scrape. */
 function formFields(sections: Section[], titleRe: RegExp): Map<string, string> {
@@ -2477,7 +2539,7 @@ ${kop('KEMATIAN')}
     ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
     ${idRow('Tgl. Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
     ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
-    ${idRow('Alamat', pick('alamat'))}
+    ${idRow('Alamat', patientAlamat(sections))}
   </table></div>
   <div class="id-col"><table class="id-table">
     ${idRow('Tanggal Kematian', f(/^Tanggal Kematian|^Tanggal/i))}
@@ -2794,7 +2856,7 @@ function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const akhir = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
   const lahir = pick('tgl_lahir', 'tglLahir');
   const jk = pick('jenis_kelamin', 'jk');
-  const alamat = pick('alamat');
+  const alamat = patientAlamat(sections);
   const nota = sections.filter((s) => /resep/i.test(s.title)).length;
   const bulan = [
     'Januari',
@@ -3601,8 +3663,31 @@ ${kop(m.code)}
 </body></html>`;
 }
 
+/** Tunggu overlay loading MORBIS (loadFiles() → Promise.all partials) hilang. */
+async function waitForPartials(): Promise<void> {
+  const visible = (el: Element): boolean => {
+    const s = getComputedStyle(el);
+    return s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) > 0;
+  };
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const loading = ['.swal2-container', '.swal-overlay--active', '.sweet-alert']
+      .flatMap((sel) => Array.from(document.querySelectorAll(sel)))
+      .some(visible);
+    if (!loading) break;
+    await new Promise((r) => window.setTimeout(r, 150));
+  }
+  await new Promise((r) => window.setTimeout(r, 50));
+}
+
 async function handleMklaimPrint(): Promise<void> {
-  const { sections, inventory } = collectSections();
+  await waitForPartials();
+  let { sections, inventory } = collectSections();
+  // Partial masih datang → satu kali collect ulang setelah jeda singkat.
+  if (sections.length < 3) {
+    await new Promise((r) => window.setTimeout(r, 800));
+    ({ sections, inventory } = collectSections());
+  }
   if (!sections.length) {
     window.alert('Tidak ada section berkas yang bisa dicetak.');
     return;
@@ -3610,16 +3695,32 @@ async function handleMklaimPrint(): Promise<void> {
 
   // Kirim HTML ke background: background yang simpan ke storage & buka tab.
   // Content script TIDAK memanggil chrome.storage langsung — kalau ekstensi
-  // baru di-reload, konteks content script lama invalid (lihat catch di bawah).
-  try {
-    const res = (await chrome.runtime.sendMessage({
-      type: 'OPEN_PRINT_DOSSIER',
-      html: buildHtml(sections, inventory),
-    })) as { success?: boolean } | undefined;
-    if (!res?.success) throw new Error('background menolak membuka tab');
-  } catch {
+  // baru di-reload, konteks content script lama invalid.
+  const html = buildHtml(sections, inventory);
+  let lastErr: unknown;
+  for (const delay of [0, 300, 600]) {
+    if (delay) await new Promise((r) => window.setTimeout(r, delay));
+    try {
+      const res = (await chrome.runtime.sendMessage({
+        type: 'OPEN_PRINT_DOSSIER',
+        html,
+      })) as { success?: boolean } | undefined;
+      if (!res?.success) throw new Error('background menolak membuka tab');
+      return;
+    } catch (e) {
+      lastErr = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
+    }
+  }
+  const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || '');
+  if (!chrome.runtime?.id) {
     window.alert(
-      'Gagal membuka dossier. Ekstensi baru saja diperbarui — refresh halaman M-KLAIM ini lalu klik lagi Cetak Rapi.',
+      'Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi.',
+    );
+  } else {
+    window.alert(
+      `Gagal membuka dossier: ${reason || 'tidak diketahui'}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`,
     );
   }
 }
@@ -3636,12 +3737,19 @@ function anchorForButton(): HTMLElement | null {
   return bar || document.getElementById('SCETAK') || document.body;
 }
 
+/** Penanda versi tombol — content script lama yang masih menempel di DOM
+ *  diganti otomatis tanpa perlu hard-refresh. */
+const BUILD_TAG = 'v2';
+
 function renderMklaimPrintButton(): void {
   if (!window.location.pathname.includes('/v2/m-klaim/detail-v2-refaktor')) return;
-  if (document.getElementById('ext-mklaim-print-btn')) return;
+  const old = document.getElementById('ext-mklaim-print-btn') as HTMLButtonElement | null;
+  if (old?.dataset.extBuild === BUILD_TAG) return;
+  old?.remove(); // handler stale dari content script lama → pasang ulang
   const host = anchorForButton();
   const btn = document.createElement('button');
   btn.id = 'ext-mklaim-print-btn';
+  btn.dataset.extBuild = BUILD_TAG;
   btn.type = 'button';
   btn.className = 'btn btn-primary btn-sm';
   btn.style.cssText =
@@ -3673,17 +3781,19 @@ if (typeof g.featureModules !== 'undefined') {
       if (document.readyState === 'complete') window.setTimeout(check, 500);
       else window.addEventListener('load', () => window.setTimeout(check, 500));
       const keepLast = (): void => {
-        const btn = document.getElementById('ext-mklaim-print-btn');
-        if (btn?.parentElement && btn.parentElement.lastElementChild !== btn) {
+        const btn = document.getElementById('ext-mklaim-print-btn') as HTMLButtonElement | null;
+        if (btn?.dataset.extBuild !== BUILD_TAG) {
+          // Tombol lama/hilang → render ulang dengan handler versi ini.
+          renderMklaimPrintButton();
+          return;
+        }
+        if (btn.parentElement && btn.parentElement.lastElementChild !== btn) {
           // Tombol mark (Telaah/Partial/Labor/...) bisa ditambahkan belakangan
           // — geser tombol cetak supaya tetap PALING AKHIR di action bar.
           btn.parentElement.appendChild(btn);
         }
       };
-      const obs = new MutationObserver(() => {
-        if (!document.getElementById('ext-mklaim-print-btn')) renderMklaimPrintButton();
-        else keepLast();
-      });
+      const obs = new MutationObserver(() => keepLast());
       obs.observe(document.body, { childList: true, subtree: true });
       // Jaga juga saat observer tidak terpicu (render ulang cepat).
       window.setInterval(keepLast, 1500);
