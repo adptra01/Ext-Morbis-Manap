@@ -191,67 +191,6 @@ function stripOriginalLetterhead(root: HTMLElement): void {
   }
 }
 
-function formatSbpkActions(root: HTMLElement): void {
-  root.querySelectorAll('table').forEach((table) => {
-    const listItems = Array.from(table.querySelectorAll<HTMLLIElement>('li'));
-    if (!listItems.length) return;
-
-    const tbody = document.createElement('tbody');
-    listItems.forEach((li, i) => {
-      const txt = (li.textContent || '').trim();
-      if (!txt) return;
-      const tr = document.createElement('tr');
-      const tdNo = document.createElement('td');
-      tdNo.className = 'center';
-      tdNo.textContent = String(i + 1);
-      tr.appendChild(tdNo);
-
-      const tdAction = document.createElement('td');
-      tdAction.textContent = txt;
-      tr.appendChild(tdAction);
-
-      const trSrc = li.closest('tr');
-      const srcCells = trSrc ? Array.from(trSrc.cells) : [];
-      const unit =
-        srcCells
-          .map((c) => (c.textContent || '').trim())
-          .filter(Boolean)
-          .find((t) => t !== txt) || '-';
-      const frek =
-        srcCells.map((c) => (c.textContent || '').trim()).find((t) => /^\d+$/.test(t)) || '-';
-
-      const tdUnit = document.createElement('td');
-      tdUnit.className = 'center';
-      tdUnit.textContent = unit;
-      tr.appendChild(tdUnit);
-
-      const tdFrek = document.createElement('td');
-      tdFrek.className = 'center';
-      tdFrek.textContent = frek;
-      tr.appendChild(tdFrek);
-
-      const tdVer = document.createElement('td');
-      tdVer.className = 'center';
-      const box = document.createElement('input');
-      box.type = 'checkbox';
-      box.className = 'rm-checkbox';
-      box.setAttribute('aria-label', `Verifikasi SBPK Item ${i + 1}`);
-      tdVer.appendChild(box);
-      tr.appendChild(tdVer);
-
-      tbody.appendChild(tr);
-      li.remove();
-    });
-
-    table.innerHTML = '';
-    const thead = document.createElement('thead');
-    thead.innerHTML =
-      '<tr><th style="width:32px">NO</th><th>TINDAKAN / PEMERIKSAAN PENUNJANG / TERAPI (TERAGGREGASI)</th><th style="width:165px">UNIT / DOKTER PELAKSANA</th><th class="center" style="width:48px">FREK</th><th class="center" style="width:56px">VER (&#10003;)</th></tr>';
-    table.appendChild(thead);
-    table.appendChild(tbody);
-  });
-}
-
 function formatTelaahResep(root: HTMLElement): void {
   root.querySelectorAll('table').forEach((table) => {
     table.setAttribute('data-telaah-layout', '1');
@@ -425,9 +364,6 @@ function clean(section: HTMLElement, withVer = false, title = ''): string {
     if (!el.children.length && !(el.textContent || '').trim()) el.remove();
   });
   stripOriginalLetterhead(c);
-  if (/SBPK/i.test(title)) {
-    formatSbpkActions(c);
-  }
   if (/Telaah|Edukasi/i.test(title)) {
     formatTelaahResep(c);
   }
@@ -998,6 +934,142 @@ ${kop('RM. 03')}
 </section>`;
 }
 
+/** SECTION RM.02 — SURAT BUKTI PELAYANAN KESEHATAN (SBPK).
+ *  Efisien: SATU pass kumpulkan field (Map label→nilai), SATU pass kumpulkan
+ *  tindakan dari <li> (Map nama→frek). Tanpa nested forEach per tabel. */
+function buildSbpkSection(sections: Section[]): string {
+  const sbpk = sections.find((s) => /^SBPK$/i.test(s.title));
+  const doc = sbpk ? new DOMParser().parseFromString(sbpk.html, 'text/html') : null;
+  const fields = new Map<string, string>();
+  const actions = new Map<string, number>();
+
+  if (doc) {
+    // Pass 1 — field: pasangan sel [label, ':', nilai] dalam satu baris.
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const cells = Array.from(tr.cells);
+      for (let i = 0; i < cells.length - 2; i++) {
+        const label = (cells[i].textContent || '').replace(/\s+/g, ' ').trim();
+        if ((cells[i + 1].textContent || '').trim() !== ':') continue;
+        const value = (cells[i + 2].textContent || '').replace(/\s+/g, ' ').trim();
+        if (label && value && !fields.has(label)) fields.set(label, value);
+      }
+    }
+    // Pass 2 — tindakan: <li> (sudah di-flatten jadi teks oleh clean()).
+    for (const li of Array.from(doc.querySelectorAll('li'))) {
+      const t = (li.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!t) continue;
+      const key = t.toUpperCase();
+      actions.set(key, (actions.get(key) || 0) + 1);
+    }
+  }
+
+  const f = (re: RegExp): string => {
+    for (const [k, v] of fields) if (re.test(k)) return v;
+    return '-';
+  };
+  const ku = f(/^No Kartu BPJS$/i);
+  const norm = pick('norm', 'rekam_medis');
+  const nama = pick('nama');
+  const lahir = f(/^Tanggal lahir/i);
+  const alamat = f(/^Alamat$/i);
+  const sep = pick('no_sep', 'sep') !== '-' ? pick('no_sep', 'sep') : f(/^No SEP$/i);
+  const jkRaw = f(/^Jenis Kelamin$/i);
+  const jk = /^L$/i.test(jkRaw) ? 'Laki-laki (L)' : /^P$/i.test(jkRaw) ? 'Perempuan (P)' : jkRaw;
+  const masuk = f(/^Tgl\.? Masuk RS$/i);
+  const bayi = f(/^Berat badan/i);
+  const unit = f(/^Unit Pelayanan|^Poliklinik/i);
+  const anamnesis = f(/^ANAMNESE$/i);
+  const dokter = pick('dokter', 'dpjp');
+
+  const actionRows = Array.from(actions.entries())
+    .map(
+      ([name, frek], i) =>
+        `<tr><td class="center">${i + 1}</td><td>${esc(name)}</td><td>${esc(dokter)}</td><td class="center">${frek}</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi SBPK Item ${i + 1}"></td></tr>`,
+    )
+    .join('');
+
+  return `<section class="rm-page" id="rm-02">
+${kop('RM. 02')}
+<div class="rm-form-title">SURAT BUKTI PELAYANAN KESEHATAN (SBPK)</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. Kartu BPJS', ku)}
+    ${idRow('No. Rekam Medis', norm)}
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('Tgl. Lahir / Umur', lahir)}
+    ${idRow('Alamat', alamat)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. SEP', sep)}
+    ${idRow('Jenis Kelamin', jk)}
+    ${idRow('Tgl. Masuk RS', `${masuk} (*)`, true)}
+    ${idRow('Berat Badan Bayi', bayi)}
+    ${idRow('Unit Pelayanan', unit)}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <tbody>
+    <tr>
+      <td style="width: 170px;"><strong>Hasil anamnesa datang untuk</strong></td>
+      <td>
+        <span class="static-box">&nbsp;</span> Suspek &nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="static-box">&#10003;</span> <strong>Tegak Diagnosa</strong> &nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="static-box">&nbsp;</span> Observasi &nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="static-box">&nbsp;</span> Kontrol lanjutan &nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="static-box">&nbsp;</span> Buka Balutan / Jahitan
+      </td>
+    </tr>
+    <tr><td><strong>ANAMNESE</strong></td><td>${esc(anamnesis)}</td></tr>
+  </tbody>
+</table>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 150px;">POLIKLINIK / RUANG</th>
+    <th style="width: 120px;">JENIS DIAGNOSA</th>
+    <th>DIAGNOSA</th>
+    <th style="width: 65px;">ICD X</th>
+    <th style="width: 165px;">DOKTER / PETUGAS</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>${esc(unit)}</td><td>Diagnosa Utama</td><td><strong>${esc(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+    <tr><td>${esc(unit)}</td><td>Diagnosa Tambahan</td><td>${esc(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+  </tbody>
+</table>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 32px;">NO</th>
+    <th>TINDAKAN / PEMERIKSAAN PENUNJANG / TERAPI (TERAGGREGASI)</th>
+    <th style="width: 165px;">UNIT / DOKTER PELAKSANA</th>
+    <th class="center" style="width: 48px;">FREK</th>
+    <th class="center" style="width: 56px;">VER (&#10003;)</th>
+  </tr></thead>
+  <tbody>${actionRows}</tbody>
+</table>
+
+<div class="footnote-rm">
+  (*) Catatan Sistem: periksa kembali tanggal masuk pada SBPK dengan SEP &amp; Resume sebelum berkas dikirim.
+</div>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box">
+    <div>Pasien / Keluarga Pasien</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(nama)} )</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(masuk)}</div>
+    <div>Dokter Penanggung Jawab Pelayanan (DPJP)</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(dokter)} )</div>
+  </div>
+</div>
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -1136,6 +1208,7 @@ ${checksHtml}
     .map((s, i) => {
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
+      if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}

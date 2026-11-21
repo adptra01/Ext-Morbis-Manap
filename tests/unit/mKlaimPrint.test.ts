@@ -65,6 +65,26 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildSpriSection(sections);');
   });
 
+  it('RM.02 (SBPK): redesign efisien (2 pass, tanpa formatSbpkActions)', () => {
+    const sbpk = src.slice(
+      src.indexOf('function buildSbpkSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="rm-02">',
+      'SURAT BUKTI PELAYANAN KESEHATAN (SBPK)',
+      'Hasil anamnesa datang untuk',
+      'Tegak Diagnosa',
+      'POLIKLINIK / RUANG',
+      'TINDAKAN / PEMERIKSAAN PENUNJANG / TERAPI (TERAGGREGASI)',
+      'class="footnote-rm"',
+    ]) {
+      expect(sbpk).toContain(marker);
+    }
+    expect(src).toContain('return buildSbpkSection(sections);');
+    expect(src).not.toContain('formatSbpkActions');
+  });
+
   it('memakai ID field produksi & kode section referensi', () => {
     expect(src).toContain("pick('kartu', 'no_kartu', 'noka')");
     expect(src).toContain("id: 'rm-01'");
