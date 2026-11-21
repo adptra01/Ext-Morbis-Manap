@@ -1,6 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { HOSPITAL_NAME } from './shared/config.js';
-import { saveDossier } from './shared/printDossier.js';
 
 const g = getMorbisGlobals();
 
@@ -2010,21 +2009,19 @@ async function handleMklaimPrint(): Promise<void> {
     return;
   }
 
-  // Simpan HTML dossier ke storage ekstensi, lalu buka halaman ekstensi asli.
-  // URL chrome-extension:// bertahan saat tab di-refresh (isi dibaca ulang
-  // dari storage oleh src/features/printBerkasKlaim/main.ts).
-  const key = await saveDossier(buildHtml(sections, inventory));
-  const url = chrome.runtime.getURL('print-berkas-klaim.html?id=' + encodeURIComponent(key));
-  // Buka lewat background — window.open(chrome-extension://...) dari halaman
-  // web diblokir Brave/Chrome (ERR_BLOCKED_BY_CLIENT).
+  // Kirim HTML ke background: background yang simpan ke storage & buka tab.
+  // Content script TIDAK memanggil chrome.storage langsung — kalau ekstensi
+  // baru di-reload, konteks content script lama invalid (lihat catch di bawah).
   try {
     const res = (await chrome.runtime.sendMessage({
       type: 'OPEN_PRINT_DOSSIER',
-      url,
+      html: buildHtml(sections, inventory),
     })) as { success?: boolean } | undefined;
     if (!res?.success) throw new Error('background menolak membuka tab');
   } catch {
-    window.alert('Gagal membuka tab dossier cetak. Coba lagi atau izinkan popup ekstensi.');
+    window.alert(
+      'Gagal membuka dossier. Ekstensi baru saja diperbarui — refresh halaman M-KLAIM ini lalu klik lagi Cetak Rapi.',
+    );
   }
 }
 

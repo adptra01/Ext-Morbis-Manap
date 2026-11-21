@@ -83,6 +83,18 @@ var __morbis_bg = (() => {
     return t.replace(/[,;]?\s*atas\s+nama\s+[^.!?]*[.!?]?\s*/gi, "").replace(/,\s*,/g, ",").replace(/\s{2,}/g, " ").replace(/[,\s]+([.!?])/g, "$1").trim();
   }
 
+  // src/features/shared/printDossier.ts
+  var PREFIX = "extDossier:";
+  async function saveDossier(html) {
+    const key = `${PREFIX}${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    try {
+      await chrome.storage.session.set({ [key]: html });
+    } catch {
+      await chrome.storage.local.set({ [key]: html });
+    }
+    return key;
+  }
+
   // src/background.ts
   var log = createLogger("Background");
   var TTS_CACHE_TTL_MS = 12 * 60 * 60 * 1e3;
@@ -808,12 +820,16 @@ var __morbis_bg = (() => {
         }
         case "OPEN_PRINT_DOSSIER": {
           (async () => {
-            const url = validated.url;
-            if (typeof url !== "string" || !url.startsWith(chrome.runtime.getURL(""))) {
+            const html = validated.html;
+            if (typeof html !== "string" || !html.length) {
               sendResponse({ success: false });
               return;
             }
             try {
+              const key = await saveDossier(html);
+              const url = chrome.runtime.getURL(
+                "print-berkas-klaim.html?id=" + encodeURIComponent(key)
+              );
               await chrome.tabs.create({ url });
               sendResponse({ success: true });
             } catch (err) {
@@ -897,8 +913,11 @@ var __morbis_bg = (() => {
     if (!msg || typeof msg !== "object") return null;
     const m = msg;
     if (typeof m.type !== "string" || !VALID_ACTIONS.includes(m.type)) return null;
-    if (m.type === "PROXY_FETCH" || m.type === "QUEUE_API" || m.type === "OPEN_PRINT_DOSSIER") {
+    if (m.type === "PROXY_FETCH" || m.type === "QUEUE_API") {
       if (typeof m.url !== "string") return null;
+    }
+    if (m.type === "OPEN_PRINT_DOSSIER") {
+      if (typeof m.html !== "string") return null;
     }
     if (m.type === "TTS_LOCAL") {
       if (typeof m.text !== "string") return null;

@@ -51,7 +51,7 @@ type RequestMap = {
   DELETE_URL: { type: 'DELETE_URL'; id: string };
   TOGGLE_URL: { type: 'TOGGLE_URL'; id: string; enabled: boolean };
   OPEN_SIDE_PANEL: { type: 'OPEN_SIDE_PANEL' };
-  OPEN_PRINT_DOSSIER: { type: 'OPEN_PRINT_DOSSIER'; url: string };
+  OPEN_PRINT_DOSSIER: { type: 'OPEN_PRINT_DOSSIER'; html: string };
   CONFIG_CHANGED: { type: 'CONFIG_CHANGED' };
 
   // Content script → Background: notify page state

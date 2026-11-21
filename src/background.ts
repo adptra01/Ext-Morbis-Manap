@@ -3,6 +3,7 @@ import type { ExtensionConfig, CustomUrl } from './shared/types';
 import type { MessagePayload } from './types.js';
 import { createLogger } from './shared/logger';
 import { buildTtsUrl, sanitizeTtsText } from './features/shared/casemixApi.js';
+import { saveDossier } from './features/shared/printDossier.js';
 
 const log = createLogger('Background');
 
@@ -874,15 +875,20 @@ chrome.runtime.onMessage.addListener(
       }
 
       case 'OPEN_PRINT_DOSSIER': {
-        // Buka dari background: window.open(chrome-extension://...) dari
-        // content script diblokir Brave/Chrome (ERR_BLOCKED_BY_CLIENT).
+        // Background yang simpan HTML & buka tab ekstensi. Content script
+        // hanya mengirim HTML — menghindari "Extension context invalidated"
+        // saat content script lama masih aktif setelah ekstensi di-reload.
         (async () => {
-          const url = (validated as unknown as Record<string, unknown>).url;
-          if (typeof url !== 'string' || !url.startsWith(chrome.runtime.getURL(''))) {
+          const html = (validated as unknown as Record<string, unknown>).html;
+          if (typeof html !== 'string' || !html.length) {
             sendResponse({ success: false });
             return;
           }
           try {
+            const key = await saveDossier(html);
+            const url = chrome.runtime.getURL(
+              'print-berkas-klaim.html?id=' + encodeURIComponent(key),
+            );
             await chrome.tabs.create({ url });
             sendResponse({ success: true });
           } catch (err) {
@@ -984,8 +990,11 @@ function validateMessage(msg: unknown): MessagePayload | null {
   // Validasi bentuk payload minimal per-tipe (anti payload korup/asing).
   // Field URL diharuskan string (bentuk/shape saja; host di-allowlist di
   // handler PROXY_FETCH/QUEUE_API), field wajib lain dicek seperlunya.
-  if (m.type === 'PROXY_FETCH' || m.type === 'QUEUE_API' || m.type === 'OPEN_PRINT_DOSSIER') {
+  if (m.type === 'PROXY_FETCH' || m.type === 'QUEUE_API') {
     if (typeof m.url !== 'string') return null;
+  }
+  if (m.type === 'OPEN_PRINT_DOSSIER') {
+    if (typeof m.html !== 'string') return null;
   }
   if (m.type === 'TTS_LOCAL') {
     if (typeof m.text !== 'string') return null;

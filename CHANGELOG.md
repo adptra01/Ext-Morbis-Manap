@@ -22,7 +22,7 @@
 
 ### 🐛 fix
 
-- **mKlaimPrint** — buka dossier lewat background tabs.create (Brave ERR_BLOCKED_BY_CLIENT) (`4d1111a`)
+- **mKlaimPrint** — buka dossier lewat background tabs.create (Brave ERR_BLOCKED_BY_CLIENT) (`53948dd`)
 - **mKlaimPrint** — seragamkan newline jadi <br/> rapat, baris kosong tetap (`a091e04`)
 - **mKlaimPrint** — pertahankan baris baru pada value SPRI (`e28d820`)
 - **mKlaimPrint** — perbaiki ID field cover & kode section RM sesuai produksi (`0de750e`)
@@ -2156,4 +2156,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4d1111afc9e42e054568308d80200acd6bf0a15d -->
+<!-- changelog-upto: 53948ddb97cf3e483c5f4c0f7e094e47e81f4337 -->

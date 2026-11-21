@@ -151,10 +151,17 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   });
 
   it('dossier dibuka via extension page (tahan refresh)', () => {
-    // Content script: simpan HTML lalu buka halaman ekstensi, bukan about:blank.
+    // Content script: kirim HTML ke background (TANPA chrome.storage langsung —
+    // konteks content script bisa invalid setelah ekstensi di-reload).
     expect(src).not.toContain("window.open('', '_blank')");
-    expect(src).toContain('saveDossier(buildHtml(sections, inventory))');
-    expect(src).toContain("chrome.runtime.getURL('print-berkas-klaim.html?id='");
+    expect(src).not.toContain('saveDossier(');
+    expect(src).toContain("type: 'OPEN_PRINT_DOSSIER'");
+    expect(src).toContain('html: buildHtml(sections, inventory)');
+    // Background: simpan ke storage lalu tabs.create ke halaman ekstensi.
+    const bg = readFileSync('src/background.ts', 'utf8');
+    expect(bg).toContain("case 'OPEN_PRINT_DOSSIER'");
+    expect(bg).toContain('saveDossier(html)');
+    expect(bg).toContain('chrome.tabs.create({ url })');
     // Storage: session + fallback local; handler dipasang ulang di halaman ekstensi.
     expect(dossierShared).toContain('chrome.storage.session.set');
     expect(dossierShared).toContain('chrome.storage.local.set');

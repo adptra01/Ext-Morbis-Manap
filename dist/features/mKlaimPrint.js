@@ -8,18 +8,6 @@ var __morbis_feature = (() => {
   // src/features/shared/config.ts
   var HOSPITAL_NAME = "RSUD H. Abdul Manap";
 
-  // src/features/shared/printDossier.ts
-  var PREFIX = "extDossier:";
-  async function saveDossier(html) {
-    const key = `${PREFIX}${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    try {
-      await chrome.storage.session.set({ [key]: html });
-    } catch {
-      await chrome.storage.local.set({ [key]: html });
-    }
-    return key;
-  }
-
   // src/features/mKlaimPrint.ts
   var g = getMorbisGlobals();
   var REMOVE = [
@@ -1792,16 +1780,16 @@ ${kop(m.code)}
       window.alert("Tidak ada section berkas yang bisa dicetak.");
       return;
     }
-    const key = await saveDossier(buildHtml(sections, inventory));
-    const url = chrome.runtime.getURL("print-berkas-klaim.html?id=" + encodeURIComponent(key));
     try {
       const res = await chrome.runtime.sendMessage({
         type: "OPEN_PRINT_DOSSIER",
-        url
+        html: buildHtml(sections, inventory)
       });
       if (!res?.success) throw new Error("background menolak membuka tab");
     } catch {
-      window.alert("Gagal membuka tab dossier cetak. Coba lagi atau izinkan popup ekstensi.");
+      window.alert(
+        "Gagal membuka dossier. Ekstensi baru saja diperbarui \u2014 refresh halaman M-KLAIM ini lalu klik lagi Cetak Rapi."
+      );
     }
   }
   function anchorForButton() {
