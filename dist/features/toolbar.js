@@ -1107,6 +1107,32 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
+  function ensurePrintRapiOnDetail() {
+    if (!window.location.pathname.includes("/v2/m-klaim/detail-v2-refaktor")) return;
+    if (document.getElementById("ext-mklaim-print-btn")) return;
+    const host = document.getElementById("SCETAK")?.parentElement ?? document.body;
+    const btn = document.createElement("button");
+    btn.id = "ext-mklaim-print-btn";
+    btn.dataset.extBuild = "v2";
+    btn.type = "button";
+    btn.textContent = PRINT_RAPI_BTN.text;
+    btn.style.cssText = "margin-left:8px;background:#0f766e;border-color:#0f766e;color:#fff;font-weight:600;border-radius:4px;padding:5px 12px;cursor:pointer;white-space:nowrap;";
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const printNow = window.extMklaimPrintNow;
+      printNow?.();
+    });
+    host.appendChild(btn);
+  }
+  try {
+    if (document.readyState === "complete") {
+      window.setTimeout(ensurePrintRapiOnDetail, 800);
+    } else {
+      window.addEventListener("load", () => window.setTimeout(ensurePrintRapiOnDetail, 800));
+    }
+  } catch {
+  }
   try {
     autoInitRevisionPanel();
   } catch {
