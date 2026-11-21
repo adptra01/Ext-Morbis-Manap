@@ -101,6 +101,28 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain('formatSbpkActions');
   });
 
+  it('RM.05 (Rincian Biaya): tanpa tanggal/VER, obat sama dijumlah Qty', () => {
+    const bill = src.slice(
+      src.indexOf('function buildBillingSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="rm-05">',
+      'URAIAN TINDAKAN / PELAYANAN',
+      'NAMA OBAT / ALKES',
+      'JAMINAN (Rp)',
+    ]) {
+      expect(bill).toContain(marker);
+    }
+    // Tidak ada kolom tanggal & checkbox verifikasi di tabel hasil.
+    expect(bill).not.toContain('<th style="width: 72px;">TANGGAL</th>');
+    expect(bill).not.toContain('class="rm-checkbox"');
+    // Agregasi dua arah: Map nama→{frek} untuk tindakan, {qty} untuk obat.
+    expect(bill).toContain('prev.frek += frek');
+    expect(bill).toContain('prev.qty += qty');
+    expect(src).toContain('return buildBillingSection(sections);');
+  });
+
   it('memakai ID field produksi & kode section referensi', () => {
     expect(src).toContain("pick('kartu', 'no_kartu', 'noka')");
     expect(src).toContain("id: 'rm-01'");

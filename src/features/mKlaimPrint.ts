@@ -1061,6 +1061,142 @@ ${kop('RM. 02')}
 </section>`;
 }
 
+/** SECTION RM.05 — RINCIAN BIAYA PELAYANAN RAWAT INAP & FARMASI.
+ *  Tanpa kolom tanggal & VER. Tindakan dan obat dirangkum per nama; obat
+ *  dengan nama sama digabung frekuensinya (Qty dijumlah). */
+function buildBillingSection(sections: Section[]): string {
+  const bill = sections.find((s) => /^Rincian Biaya/i.test(s.title));
+  const doc = bill ? new DOMParser().parseFromString(bill.html, 'text/html') : null;
+  const tindakan = new Map<
+    string,
+    { name: string; petugas: string; frek: number; tarif: string; jaminan: number }
+  >();
+  const obat = new Map<string, { name: string; qty: number; jaminan: number }>();
+
+  if (doc) {
+    const tables = Array.from(doc.querySelectorAll('table'));
+    // Tabel tindakan = header mengandung 'frek'; kolom: no|tgl|uraian|petugas|frek|tarif|tunai|jaminan
+    const tindakanTable = tables.find((t) => /frek/i.test(t.rows[0]?.textContent || ''));
+    for (const tr of Array.from(tindakanTable?.rows ?? [])) {
+      const c = Array.from(tr.cells).map((td) =>
+        (td.textContent || '').replace(/\s+/g, ' ').trim(),
+      );
+      if (c.length < 6 || !/^\d+\.?$/.test(c[0])) continue; // lewati subgroup & total
+      const name = c[2] || '-';
+      const key = name.toUpperCase().replace(/\s+/g, ' ').trim();
+      const frek = parseInt(c[4], 10) || 1;
+      const jaminan = parseFloat((c[7] || '0').replace(/\./g, '').replace(',', '.')) || 0;
+      const prev = tindakan.get(key);
+      if (prev) {
+        prev.frek += frek;
+        prev.jaminan += jaminan;
+      } else {
+        tindakan.set(key, { name, petugas: c[3] || '-', frek, tarif: c[5] || '-', jaminan });
+      }
+    }
+
+    // Tabel obat = header mengandung 'Nama Obat'; kolom: no|nama|qty|tarif|tunai|jaminan
+    const obatTable = tables.find((t) => /nama\s*obat/i.test(t.rows[0]?.textContent || ''));
+    for (const tr of Array.from(obatTable?.rows ?? [])) {
+      const c = Array.from(tr.cells).map((td) =>
+        (td.textContent || '').replace(/\s+/g, ' ').trim(),
+      );
+      if (c.length < 5 || !/^\d+(\.\d+)?$/.test(c[2])) continue; // kolom Qty harus angka
+      // Nama produksi diawali nomor urut ("1 RL Infus 500 ml ...") → buang.
+      const name = c[1].replace(/^\d+\s*/, '').trim() || '-';
+      const key = name.toUpperCase().replace(/\s+/g, ' ').trim();
+      const qty = parseFloat(c[2].replace(',', '.')) || 0;
+      const jaminan = parseFloat((c[5] || '0').replace(/\./g, '').replace(',', '.')) || 0;
+      const prev = obat.get(key);
+      if (prev) {
+        prev.qty += qty;
+        prev.jaminan += jaminan;
+      } else {
+        obat.set(key, { name, qty, jaminan });
+      }
+    }
+  }
+
+  const rupiah = (n: number): string =>
+    n.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const tindakanRows = Array.from(tindakan.values())
+    .map(
+      (r, i) =>
+        `<tr><td class="center">${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.petugas)}</td><td class="center">${r.frek}</td><td class="num">${esc(r.tarif)}</td><td class="num">${rupiah(r.jaminan)}</td></tr>`,
+    )
+    .join('');
+  const obatRows = Array.from(obat.values())
+    .map(
+      (r, i) =>
+        `<tr><td class="center">${i + 1}</td><td>${esc(r.name)}</td><td class="center">${r.qty}</td><td class="num">${rupiah(r.jaminan)}</td></tr>`,
+    )
+    .join('');
+
+  const norm = pick('norm', 'rekam_medis');
+  const nama = pick('nama');
+  const dokter = pick('dokter', 'dpjp');
+  const alamat = pick('alamat');
+  const sep = pick('no_sep', 'sep');
+  const ruang = [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-';
+  const awal = pick('tanggalAwal', 'tgl_masuk', 'tgl');
+  const akhir = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
+
+  return `<section class="rm-page" id="rm-05">
+${kop('RM. 05')}
+<div class="rm-form-title">RINCIAN BIAYA PELAYANAN RAWAT INAP &amp; FARMASI</div>
+
+<div class="id-box-borderless">
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. Rekam Medis', norm)}
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('Alamat Pasien', alamat)}
+    ${idRow('Unit / Instalasi', ruang)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Golongan Pasien', `BPJS KESEHATAN (SEP: ${sep})`)}
+    ${idRow('Dokter DPJP', dokter)}
+    ${idRow('Periode Rawat', `${awal} s/d ${akhir}`)}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 32px;">NO</th>
+    <th>URAIAN TINDAKAN / PELAYANAN</th>
+    <th style="width: 155px;">DOKTER / PELAKSANA</th>
+    <th class="center" style="width: 48px;">FREK</th>
+    <th class="num" style="width: 88px;">TARIF (Rp)</th>
+    <th class="num" style="width: 98px;">JAMINAN (Rp)</th>
+  </tr></thead>
+  <tbody>${tindakanRows}</tbody>
+</table>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 32px;">NO</th>
+    <th>NAMA OBAT / ALKES</th>
+    <th class="center" style="width: 52px;">QTY</th>
+    <th class="num" style="width: 120px;">JAMINAN (Rp)</th>
+  </tr></thead>
+  <tbody>${obatRows}</tbody>
+</table>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box">
+    <div>Yang Menyerahkan,</div>
+    <div>Pasien / Keluarga Pasien</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(nama)} )</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Yang Menerima (Petugas Billing / Kasir)</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( .................................................. )</div>
+  </div>
+</div>
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -1200,6 +1336,7 @@ ${checksHtml}
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
       if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
+      if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}

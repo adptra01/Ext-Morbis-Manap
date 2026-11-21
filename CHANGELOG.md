@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **shortcutButtons** — tambah tombol Cetak Rapi M-KLAIM (tanpa icon) (`8e0912f`)
 - **mKlaimPrint** — logo asli di kop surat & matikan auto-print tab cetak (`c15b288`)
 - **mKlaimPrint** — redesign Section RM.02 (SBPK) — parser 2 pass, hapus formatSbpkActions (`d856973`)
 - **mKlaimPrint** — redesign Section RM.03 (SPRI) — vital, fisik/catatan, diit (`aab730f`)
@@ -18,6 +19,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — seragamkan newline jadi <br/> rapat, baris kosong tetap (`a091e04`)
 - **mKlaimPrint** — pertahankan baris baru pada value SPRI (`e28d820`)
 - **mKlaimPrint** — perbaiki ID field cover & kode section RM sesuai produksi (`0de750e`)
 - **penerimaan** — tampilkan kembali kolom No Antrian di daftar resep (`52e8515`)
@@ -2150,4 +2152,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e28d820d96a53ef2444dd6c842bed5ac0a0e6c06 -->
+<!-- changelog-upto: a091e04fd35ea16714821eaade7ef10b773abfb2 -->
