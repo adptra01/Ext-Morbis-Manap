@@ -1739,7 +1739,7 @@ ${kop(m.code)}
     btn.type = "button";
     btn.className = "btn btn-primary btn-sm";
     btn.style.cssText = "margin-left:8px;background:#0f766e;border-color:#0f766e;color:#fff;font-weight:600;border-radius:4px;padding:5px 12px;cursor:pointer;white-space:nowrap;";
-    btn.innerHTML = "\u{1F5A8} Cetak Rapi M-KLAIM";
+    btn.textContent = "Cetak Rapi M-KLAIM";
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1747,6 +1747,7 @@ ${kop(m.code)}
     });
     host.appendChild(btn);
   }
+  window.extMklaimPrintNow = handleMklaimPrint;
   if (typeof g.featureModules !== "undefined") {
     g.featureModules.mKlaimPrint = {
       id: "mKlaimPrint",

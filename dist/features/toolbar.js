@@ -640,6 +640,7 @@ var __morbis_feature = (() => {
   // src/features/shortcutButtons.ts
   var g = getMorbisGlobals();
   var BACK_DETAIL_BTN = { text: "Kembali ke Detail Klaim", bg: "#6366f1", hover: "#4f46e5" };
+  var PRINT_RAPI_BTN = { text: "Cetak Rapi M-KLAIM", bg: "#0f766e", hover: "#0d9488" };
   injectCSS(
     "ext-shortcut-styles",
     `@media print{[data-shortcut-buttons],[data-back-to-detail-klaim],[data-bpjs-revision-history],[data-bpjs-revision-history] textarea,.no-print,.hilang-saat-print{display:none!important;height:0!important;width:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important;position:absolute!important;top:-9999px!important;left:-9999px!important;opacity:0!important}[data-shortcut-buttons] a,[data-shortcut-buttons] button,[data-back-to-detail-klaim] a,[data-back-to-detail-klaim] button{display:none!important}}
@@ -676,6 +677,14 @@ var __morbis_feature = (() => {
   }
   [data-back-to-detail-klaim] a:hover { background:${BACK_DETAIL_BTN.hover}; transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
   [data-back-to-detail-klaim] a:active { transform:translateY(0); }
+  [data-back-to-detail-klaim] button {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 16px; background:${PRINT_RAPI_BTN.bg}; color:#fff; border:none;
+    border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  [data-back-to-detail-klaim] button:hover { background:${PRINT_RAPI_BTN.hover}; transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+  [data-back-to-detail-klaim] button:active { transform:translateY(0); }
 `
   );
   function extractParam(name) {
@@ -1121,6 +1130,17 @@ var __morbis_feature = (() => {
       }, 300);
     });
     container.appendChild(btn);
+    const printBtn = document.createElement("button");
+    printBtn.type = "button";
+    printBtn.textContent = PRINT_RAPI_BTN.text;
+    printBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const printNow = window.extMklaimPrintNow;
+      if (printNow) printNow();
+      else window.open(detailUrl, "_blank");
+    });
+    container.appendChild(printBtn);
     document.body.appendChild(container);
   }
   function runWithObserver(fn, checkExist) {

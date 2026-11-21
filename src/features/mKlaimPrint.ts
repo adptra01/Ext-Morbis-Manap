@@ -1951,7 +1951,7 @@ function renderMklaimPrintButton(): void {
   btn.style.cssText =
     'margin-left:8px;background:#0f766e;border-color:#0f766e;color:#fff;font-weight:600;' +
     'border-radius:4px;padding:5px 12px;cursor:pointer;white-space:nowrap;';
-  btn.innerHTML = '🖨 Cetak Rapi M-KLAIM';
+  btn.textContent = 'Cetak Rapi M-KLAIM';
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1961,6 +1961,9 @@ function renderMklaimPrintButton(): void {
   // Verif/Revisi bila ada, dan tombol mark) — bukan di depan tombol Print.
   host.appendChild(btn);
 }
+
+/** Dipakai shortcutButtons/toolbar untuk memicu cetak dari halaman lain. */
+(window as unknown as { extMklaimPrintNow?: () => void }).extMklaimPrintNow = handleMklaimPrint;
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.mKlaimPrint = {
