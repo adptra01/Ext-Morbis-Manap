@@ -329,6 +329,15 @@ var __morbis_feature = (() => {
       }
     ],
     [
+      /PENGKAJIAN INSTALASI GAWAT DARURAT/i,
+      {
+        id: "pengkajian-igd",
+        code: "PENGKAJIAN IGD",
+        tab: "Pengkajian IGD",
+        option: "Pengkajian IGD \u2014 Lembar Pengkajian Instalasi Gawat Darurat"
+      }
+    ],
+    [
       /^SEP$/i,
       {
         id: "rm-01",
@@ -1379,6 +1388,126 @@ ${kop("TRIAGE")}
 </div>
 </section>`;
   }
+  function buildPengkajianIgdSection(sections) {
+    const src = sections.find((s) => /PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title));
+    const doc = src ? new DOMParser().parseFromString(src.html, "text/html") : null;
+    const tables = doc ? Array.from(doc.querySelectorAll("table")) : [];
+    const cell = (td) => (td.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
+    const rows = (t) => t ? Array.from(t.rows).map((tr) => Array.from(tr.cells).map(cell)) : [];
+    const find = (re) => {
+      const t = tables.find((tb) => re.test((tb.rows[0]?.textContent || "").replace(/\s+/g, " ").trim()));
+      return rows(t);
+    };
+    const byText = (re) => {
+      const t = tables.find((tb) => re.test(tb.textContent || ""));
+      return rows(t);
+    };
+    const triase = find(/^Triase/i);
+    const nyeri = find(/^Pengkajian\s*0\s*1\s*2\s*Nilai/i);
+    const jatuh1 = byText(/Usia/i);
+    const jatuh2 = byText(/Riwayat Jatuh/i);
+    const objektif = find(/^Objektif\s*Kelainan/i);
+    const diagnosaUtama = find(/^Diagnosa Utama$/i);
+    const diagnosaBanding = find(/^Diagnosa Banding$/i);
+    const tindakan = find(/^Tindakan$/i);
+    const obat = find(/^Pukul\s*Nama Obat/i);
+    const perawat = find(/^No\s*Nama Perawat IGD/i);
+    const grid = (head, body) => '<table class="rm-grid-table"><thead><tr>' + head.map((h) => `<th>${esc(h)}</th>`).join("") + "</tr></thead><tbody>" + (body.length ? body.join("") : '<tr><td colspan="' + head.length + '">-</td></tr>') + "</tbody></table>";
+    const triaseRows = triase.slice(1).map((r) => {
+      const on = (r[0] || "").includes("\u2713");
+      const c = on ? r.slice(1) : r;
+      return `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ""}>` + c.map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>";
+    }).join("");
+    const nyeriRows = nyeri.slice(1).map((r) => "<tr>" + r.map((x, i) => `<td${i === 0 ? "" : ' class="center"'}>${esc(x || "-")}</td>`).join("") + "</tr>").join("");
+    const skorRows = (data) => data.slice(1).map((r) => {
+      if (/^(JUMLAH SKOR|Keterangan Hasil|Catatan)$/i.test(r[0] || "")) {
+        return '<tr><td colspan="5"><strong>' + esc(r[0]) + "</strong> : " + esc(r.slice(1).filter(Boolean).join(" ") || "-") + "</td></tr>";
+      }
+      const last = r[r.length - 1] || "";
+      const selected = /^\d+$/.test(last);
+      const cells = r.length >= 5 ? r : ["", "", r[0] || "", r[1] || "", ""];
+      return `<tr${selected ? ' style="font-weight:bold;"' : ""}>` + cells.map((x) => `<td>${esc(x || "&nbsp;")}</td>`).join("") + "</tr>";
+    }).join("");
+    const objektifRows = objektif.slice(1).map((r) => `<tr><td>${esc(r[0] || "-")}</td><td>${esc(r.slice(1).filter(Boolean).join(" ") || "-")}</td></tr>`).join("");
+    const diagnosaRows = [
+      ["DIAGNOSA UTAMA", diagnosaUtama.slice(1).flat().filter(Boolean).join(" ") || "-"],
+      ["DIAGNOSA BANDING", diagnosaBanding.slice(1).flat().filter(Boolean).join(" ") || "-"]
+    ].map(([k, val2]) => `<tr><td style="width:180px;"><strong>${k}</strong></td><td>${esc(val2)}</td></tr>`).join("");
+    const tindakanVal = tindakan.slice(1).flat().filter(Boolean).join(" ") || "-";
+    const obatRows = obat.slice(1).filter((r) => r.some(Boolean)).map((r) => "<tr>" + r.slice(0, 4).map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>").join("");
+    const perawatVal = perawat.slice(1).flat().filter(Boolean).join(" \xB7 ");
+    return `<section class="rm-page" id="pengkajian-igd">
+${kop("PENGKAJIAN IGD")}
+<div class="rm-form-title">LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow("Nama Pasien", pick("nama"), true)}
+    ${idRow("No. Rekam Medis", pick("norm", "rekam_medis"), true)}
+    ${idRow("Tgl. Lahir / Umur", pick("tgl_lahir", "tglLahir"))}
+    ${idRow("Jenis Kelamin", pick("jenis_kelamin", "jk"))}
+    ${idRow("No. Telepon", pick("no_hp", "telepon"))}
+    ${idRow("Pekerjaan", pick("pekerjaan"))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow("Tanggal Masuk", pick("tgl_masuk"))}
+    ${idRow("Cara Masuk", pick("cara_masuk_text"))}
+    ${idRow("Tiba di RS", `${pick("tiba_di_rs_tanggal")} ${pick("pukul_tiba_di_rs")}`.trim())}
+    ${idRow("Pukul Diperiksa", pick("pukul_diperiksa"))}
+    ${idRow("Status Spiritual", pick("status_spiritual"))}
+    ${idRow("Indikasi Rawat", pick("tindak_lanjut_indikasi_ranap"))}
+  </table></div>
+</div>
+
+<div class="sub-heading-rm">TANDA VITAL SAAT MASUK</div>
+${grid(
+      ["TEKANAN DARAH", "NADI", "PERNAPASAN", "SUHU", "SpO2", "GCS", "GCS (E/V/M)", "KESADARAN"],
+      [
+        "<tr>" + [pick("vital_td"), pick("vital_nadi"), pick("vital_nafas"), pick("vital_suhu"), pick("vital_spo"), pick("vital_gcs")].map((x) => `<td class="center">${esc(x)}</td>`).join("") + `<td class="center">${esc([pick("vital_e"), pick("vital_m"), pick("vital_v")].join("/"))}</td><td class="center">${esc(pick("vital_kesadaran"))}</td></tr>`
+      ]
+    )}
+
+<div class="sub-heading-rm">TRIASE (DIISI OLEH DOKTER)</div>
+${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
+
+<div class="sub-heading-rm">PENGKAJIAN NYERI (FLACC)</div>
+${grid(["PENGKAJIAN", "0", "1", "2", "NILAI"], nyeriRows)}
+
+<div class="sub-heading-rm">SKRINING RISIKO JATUH \u2014 PARAMETER PERTAMA</div>
+${grid(["NO", "PARAMETER", "KRITERIA", "NILAI", "SKOR"], skorRows(jatuh1))}
+
+<div class="sub-heading-rm">SKRINING RISIKO JATUH \u2014 PARAMETER KEDUA</div>
+${grid(["NO", "PARAMETER", "KRITERIA", "NILAI", "SKOR"], skorRows(jatuh2))}
+
+<div class="sub-heading-rm">PEMERIKSAAN OBJEKTIF</div>
+${grid(["OBJEKTIF", "KELAINAN"], objektifRows)}
+
+<div class="sub-heading-rm">DIAGNOSA &amp; TINDAKAN</div>
+<table class="rm-grid-table"><tbody>
+  ${diagnosaRows}
+  <tr><td style="width:180px;"><strong>TINDAKAN</strong></td><td>${esc(tindakanVal)}</td></tr>
+</tbody></table>
+
+<div class="sub-heading-rm">OBAT / TERAPI IGD</div>
+${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
+
+<div class="sub-heading-rm">PERAWAT IGD</div>
+<table class="rm-grid-table"><tbody><tr><td>${esc(perawatVal || "-")}</td></tr></tbody></table>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box left-align">
+    <div>Ruangan : ${esc(pick("tindak_lanjut_ruangan_ranap"))}</div>
+    <div>Perawat Ruangan : ${esc(pick("perawat_ruangan"))}</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(pick("tgl_masuk"))}</div>
+    <div>Dokter IGD</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(pick("dokter_igd", "dokter"))} )</div>
+  </div>
+</div>
+</section>`;
+  }
   function buildHtml(sections, inventory) {
     const checks = runChecks(sections, inventory);
     const sep = pick("no_sep", "sep");
@@ -1513,6 +1642,8 @@ ${checksHtml}
       if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
       if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections);
       if (/^Triage/i.test(s.title)) return buildTriageSection(sections);
+      if (/PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title))
+        return buildPengkajianIgdSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}

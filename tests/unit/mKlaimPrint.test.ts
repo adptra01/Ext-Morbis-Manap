@@ -211,7 +211,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('Triage IGD: pengkajian awal terstruktur, data scrape + pick()', () => {
     const tri = src.slice(
       src.indexOf('function buildTriageSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildPengkajianIgdSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="triage">',
@@ -231,6 +231,45 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(tri).toContain('Dokter yang memeriksa\\s*\\(([^)]+)\\)');
     expect(src).toContain("id: 'triage'");
     expect(src).toContain('return buildTriageSection(sections);');
+  });
+
+  it('Pengkajian IGD: triase, FLACC, risiko jatuh & tindakan terstruktur', () => {
+    const igd = src.slice(
+      src.indexOf('function buildPengkajianIgdSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="pengkajian-igd">',
+      'LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT',
+      'TANDA VITAL SAAT MASUK',
+      "['TEKANAN DARAH', 'NADI', 'PERNAPASAN', 'SUHU', 'SpO2', 'GCS', 'GCS (E/V/M)', 'KESADARAN']",
+      'TRIASE (DIISI OLEH DOKTER)',
+      'find(/^Triase/i)',
+      'PENGKAJIAN NYERI (FLACC)',
+      'SKRINING RISIKO JATUH — PARAMETER PERTAMA',
+      'SKRINING RISIKO JATUH — PARAMETER KEDUA',
+      'PEMERIKSAAN OBJEKTIF',
+      'DIAGNOSA &amp; TINDAKAN',
+      'OBAT / TERAPI IGD',
+      'PERAWAT IGD',
+    ]) {
+      expect(igd).toContain(marker);
+    }
+    for (const id of [
+      'vital_td',
+      'vital_nadi',
+      'vital_nafas',
+      'vital_suhu',
+      'vital_spo',
+      'vital_gcs',
+      'vital_kesadaran',
+      'dokter_igd',
+      'perawat_ruangan',
+    ]) {
+      expect(igd).toContain(`pick('${id}'`);
+    }
+    expect(src).toContain("id: 'pengkajian-igd'");
+    expect(src).toContain('return buildPengkajianIgdSection(sections);');
   });
 
   it('memakai ID field produksi & kode section referensi', () => {
