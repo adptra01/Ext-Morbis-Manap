@@ -2953,6 +2953,19 @@ var __morbis_feature = (() => {
     .ext-mk-btn[data-ext-mk="${c.mark}"].active:hover {
       background:${c.color} !important;border-color:${c.color} !important;
     }
+    /* Footer detail: ukuran Bootstrap seperti Telaah/Partial, warna khas mark. */
+    .ext-mk-btn.ext-mk-large[data-ext-mk="${c.mark}"] {
+      display:inline-block;margin-left:8px;padding:6px 12px;
+      font-size:14px;line-height:1.42857143;border-radius:4px;font-weight:600;
+      background:${c.color} !important;border-color:${c.color} !important;color:#ffffff !important;
+    }
+    .ext-mk-btn.ext-mk-large[data-ext-mk="${c.mark}"]:hover {
+      background:${c.color} !important;border-color:${c.color} !important;opacity:.9;
+      transform:none;
+    }
+    .ext-mk-btn.ext-mk-large[data-ext-mk="${c.mark}"].active {
+      box-shadow:0 2px 6px ${rgba(c.color, 0.45)};font-weight:700;
+    }
     .ext-mk-badge[data-ext-mk="${c.mark}"] { background:${c.bg}; color:${c.color}; border-color:${c.border}; }
     tr[data-ext-mk-marked="${c.mark}=true"] { box-shadow: inset 3px 0 0 ${c.color} !important; }
   `
@@ -2997,6 +3010,7 @@ var __morbis_feature = (() => {
     if (btn.title !== title) btn.title = title;
     const want = String(marked);
     if (btn.getAttribute("data-ext-mk-marked") !== want) btn.setAttribute("data-ext-mk-marked", want);
+    btn.classList.toggle("active", marked);
   }
   function paintBadge(rt, row, marked) {
     const { cfg } = rt;
@@ -3132,7 +3146,7 @@ var __morbis_feature = (() => {
     if (!footer) return;
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "ext-mk-btn";
+    btn.className = "btn btn-primary ext-mk-btn ext-mk-large";
     btn.id = domId;
     btn.setAttribute("data-ext-mk", rt.cfg.mark);
     const last = Array.from(

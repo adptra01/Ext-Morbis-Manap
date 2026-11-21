@@ -9,6 +9,10 @@
 
 ## 2026-11-21
 
+### ✨ feat
+
+- **mKlaimPrint** — replikasi Section RM.01 (SEP) sesuai referensi (`73bfa31`)
+
 ### 🐛 fix
 
 - **mKlaimPrint** — perbaiki ID field cover & kode section RM sesuai produksi (`0de750e`)
@@ -16,6 +20,7 @@
 
 ### 🎨 style
 
+- **mKlaimMarks** — samakan tombol mark footer detail dengan Telaah/Partial (`9d04caa`)
 - **mKlaimMarks** — samakan tombol mark dengan tombol Pre-op/Verif/Detail (`98dfd91`)
 
 ### 🧹 chore
@@ -2141,4 +2146,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0de750e225ee94a2f1a1685e9184c23e811defd8 -->
+<!-- changelog-upto: 9d04caafed50105ad6b043e9b4596084f96ae430 -->
