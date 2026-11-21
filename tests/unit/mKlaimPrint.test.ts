@@ -15,7 +15,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
 
   it('struktur cover sesuai referensi (bukan inventaris dinamis)', () => {
     expect(src).toContain('<section class="rm-page" id="rm-00">');
-    expect(src).toContain('<use href="#kota-jambi-emblem"/>');
+    expect(src).toContain('<img class="kop-logo" src="${KOP_LOGO}" alt="Logo Kota Jambi">');
+    expect(src).toContain('const KOP_LOGO = `data:image/png;base64,');
     expect(src).toContain(
       '<th colspan="3">CATATAN KETIDAKSESUAIAN DATA LINTAS DOKUMEN (HASIL UJI SILANG OTOMATIS)</th>',
     );
@@ -90,6 +91,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain("id: 'rm-01'");
     expect(src).toContain("id: 'rm-02'");
     expect(src).toContain("id: 'rm-10'");
+  });
+
+  it('tidak auto-print saat tab cetak dibuka', () => {
+    expect(src).not.toContain('win.setTimeout(doPrint');
+    expect(src).toContain("d.getElementById('btnPrintPdf')?.addEventListener('click', doPrint)");
   });
 
   it('toolbar mempertahankan ID yang dipakai handler', () => {

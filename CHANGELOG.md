@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign Section RM.02 (SBPK) — parser 2 pass, hapus formatSbpkActions (`d856973`)
+- **mKlaimPrint** — redesign Section RM.03 (SPRI) — vital, fisik/catatan, diit (`aab730f`)
 - **mKlaimPrint** — replikasi Section RM.01 (SEP) sesuai referensi (`73bfa31`)
 
 ### 🐛 fix
@@ -2146,4 +2148,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 591b8e837400880a9f6a27c7cc4f41851aba6c06 -->
+<!-- changelog-upto: d856973f6379f64b75110adf418f80863f7aef7d -->
