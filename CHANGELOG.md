@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — QR pasien & DPJP di SBPK/Rincian Biaya dari data asli (`c030655`)
 - **mKlaimPrint** — SBPK pakai diagnosa & dokter penanggung dari tabel asli (`3c16d67`)
 - **mKlaimPrint** — lengkapi SEP — QR code, kelamin & item kunjungan terpisah (`ccd5a9f`)
 - **mKlaimPrint** — logo BPJS resmi & satukan margin @page A4 portrait 12mm (`11f6f1d`)
@@ -55,6 +56,7 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — hapus tanggal Kota Jambi dari TTD SBPK (`e41ac9f`)
 - **mKlaimPrint** — ukuran judul SEP disamakan dengan nama RS (`2847f3a`)
 - **mKlaimPrint** — judul SEP & nama RS ke pojok kanan atas (`52472f1`)
 - **mKlaimPrint** — footer TTD SEP di-center di blok kiri/kanan (`e4ad655`)
@@ -2189,4 +2191,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 22adc21300150608fdefb0abf6903bb7cca2d326 -->
+<!-- changelog-upto: c0306553cb870244de8ef75f406634b4fb4033b3 -->
