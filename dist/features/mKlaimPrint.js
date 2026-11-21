@@ -342,6 +342,7 @@ var __morbis_feature = (() => {
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
   );
+  var nl2br = (s) => esc(s).replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").replace(/\n/g, "<br/>");
   var plainText = (html) => (new DOMParser().parseFromString(html.replace(/src="data:[^"]*"/g, ""), "text/html").body.textContent || "").replace(/\s+/g, " ").trim();
   var isoDate = (raw) => {
     const p = raw.split(/[-/]/).map((x) => x.trim());
@@ -525,7 +526,7 @@ var __morbis_feature = (() => {
 <div class="kop-line-4">Alamat : Jl. Sk. Rd. Syahbuddin Kel. Mayang Mangurai Kec. Alam Barajo Kota Jambi 36129 &#9742; (0741) 670459</div>
 <div class="kop-line-5">email : rsud_ham.jambi@yahoo.co.id, rsud@jambikota.go.id, website : rsud.jambikota.go.id</div>
 </div></div><div class="kop-double-rule"></div>`;
-  var idRow = (label, value, strong = false) => `<tr><td class="lbl">${label}</td><td class="col">:</td><td class="val">${strong ? `<strong>${esc(value)}</strong>` : esc(value)}</td></tr>`;
+  var idRow = (label, value, strong = false) => `<tr><td class="lbl">${label}</td><td class="col">:</td><td class="val">${strong ? `<strong>${nl2br(value)}</strong>` : nl2br(value)}</td></tr>`;
   function buildSepSection(sections) {
     const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
     const txt = sepSection ? plainText(sepSection.html) : "";
@@ -686,7 +687,6 @@ ${kop("RM. 01")}
     const dokter = pick("dokter", "dpjp");
     const lahirSplit = pick("tgl_lahir", "tglLahir").split(/\s*\/\s*/);
     const umurTeks = lahirSplit.length > 1 ? `${lahirSplit[1]} (${lahirSplit[0]})` : lahirSplit[0] || "-";
-    const nl2br = (s) => esc(s).replace(/\r?\n/g, "<br/>");
     return `<section class="rm-page" id="rm-03">
 ${kop("RM. 03")}
 <div class="rm-form-title">SURAT PENGANTAR RAWAT INAP (SPRI)</div>
@@ -761,7 +761,7 @@ ${kop("RM. 03")}
         for (let i = 0; i < cells.length - 2; i++) {
           const label = (cells[i].textContent || "").replace(/\s+/g, " ").trim();
           if ((cells[i + 1].textContent || "").trim() !== ":") continue;
-          const value = (cells[i + 2].textContent || "").replace(/\s+/g, " ").trim();
+          const value = (cells[i + 2].innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
           if (label && value && !fields.has(label)) fields.set(label, value);
         }
       }
@@ -825,7 +825,7 @@ ${kop("RM. 02")}
         <span class="static-box">&nbsp;</span> Buka Balutan / Jahitan
       </td>
     </tr>
-    <tr><td><strong>ANAMNESE</strong></td><td>${esc(anamnesis)}</td></tr>
+    <tr><td><strong>ANAMNESE</strong></td><td>${nl2br(anamnesis)}</td></tr>
   </tbody>
 </table>
 
@@ -838,8 +838,8 @@ ${kop("RM. 02")}
     <th style="width: 165px;">DOKTER / PETUGAS</th>
   </tr></thead>
   <tbody>
-    <tr><td>${esc(unit)}</td><td>Diagnosa Utama</td><td><strong>${esc(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
-    <tr><td>${esc(unit)}</td><td>Diagnosa Tambahan</td><td>${esc(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+    <tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+    <tr><td>${nl2br(unit)}</td><td>Diagnosa Tambahan</td><td>${nl2br(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
   </tbody>
 </table>
 

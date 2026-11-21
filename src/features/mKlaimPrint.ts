@@ -415,6 +415,15 @@ const esc = (s: string): string =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
   );
 
+/** Teks baris-baris → <br/> dengan jarak teks biasa. Baris yang memang
+ *  kosong (dua \n beruntun) tetap dapat satu baris kosong; newline beruntun
+ *  lebih dari itu dipangkas supaya tidak ada jarak berlebih. */
+const nl2br = (s: string): string =>
+  esc(s)
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\n/g, '<br/>');
+
 /* ── Pemeriksaan lintas berkas ───────────────────────────────────────── */
 
 interface Check {
@@ -654,7 +663,7 @@ const kop = (code: string): string => `<div class="rm-code-top">${code}</div>
 /** Baris identitas `label : nilai` — format sama persis referensi. */
 const idRow = (label: string, value: string, strong = false): string =>
   `<tr><td class="lbl">${label}</td><td class="col">:</td><td class="val">${
-    strong ? `<strong>${esc(value)}</strong>` : esc(value)
+    strong ? `<strong>${nl2br(value)}</strong>` : nl2br(value)
   }</td></tr>`;
 
 /** SECTION RM.01 — SEP & BERKAS KLAIM INDIVIDUAL (INA-CBG).
@@ -847,8 +856,6 @@ function buildSpriSection(sections: Section[]): string {
   const umurTeks =
     lahirSplit.length > 1 ? `${lahirSplit[1]} (${lahirSplit[0]})` : lahirSplit[0] || '-';
 
-  const nl2br = (s: string): string => esc(s).replace(/\r?\n/g, '<br/>');
-
   return `<section class="rm-page" id="rm-03">
 ${kop('RM. 03')}
 <div class="rm-form-title">SURAT PENGANTAR RAWAT INAP (SPRI)</div>
@@ -929,7 +936,12 @@ function buildSbpkSection(sections: Section[]): string {
       for (let i = 0; i < cells.length - 2; i++) {
         const label = (cells[i].textContent || '').replace(/\s+/g, ' ').trim();
         if ((cells[i + 1].textContent || '').trim() !== ':') continue;
-        const value = (cells[i + 2].textContent || '').replace(/\s+/g, ' ').trim();
+        const value = (cells[i + 2].innerHTML || '')
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/[ \t]+/g, ' ')
+          .trim();
         if (label && value && !fields.has(label)) fields.set(label, value);
       }
     }
@@ -1000,7 +1012,7 @@ ${kop('RM. 02')}
         <span class="static-box">&nbsp;</span> Buka Balutan / Jahitan
       </td>
     </tr>
-    <tr><td><strong>ANAMNESE</strong></td><td>${esc(anamnesis)}</td></tr>
+    <tr><td><strong>ANAMNESE</strong></td><td>${nl2br(anamnesis)}</td></tr>
   </tbody>
 </table>
 
@@ -1013,8 +1025,8 @@ ${kop('RM. 02')}
     <th style="width: 165px;">DOKTER / PETUGAS</th>
   </tr></thead>
   <tbody>
-    <tr><td>${esc(unit)}</td><td>Diagnosa Utama</td><td><strong>${esc(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
-    <tr><td>${esc(unit)}</td><td>Diagnosa Tambahan</td><td>${esc(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+    <tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+    <tr><td>${nl2br(unit)}</td><td>Diagnosa Tambahan</td><td>${nl2br(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
   </tbody>
 </table>
 

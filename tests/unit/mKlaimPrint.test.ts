@@ -13,6 +13,16 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain(css);
   });
 
+  it('nl2br: baris kosong tetap ada, newline beruntun dipangkas', () => {
+    const helper = src.slice(src.indexOf('const nl2br ='), src.indexOf('/* ── Pemeriksaan'));
+    expect(helper).toContain('.replace(/\\r\\n/g');
+    expect(helper).toContain('.replace(/\\n{3,}/g');
+    expect(helper).toContain(".replace(/\\n/g, '<br/>')");
+    // Semua nilai multi-baris memakai helper bersama, bukan esc() langsung.
+    expect(src).not.toContain('const nl2br = (s: string): string => esc(s).replace');
+    expect(src).toContain('${nl2br(anamnesis)}');
+  });
+
   it('struktur cover sesuai referensi (bukan inventaris dinamis)', () => {
     expect(src).toContain('<section class="rm-page" id="rm-00">');
     expect(src).toContain('<img class="kop-logo" src="${KOP_LOGO}" alt="Logo Kota Jambi">');
@@ -65,7 +75,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     }
     expect(src).toContain('return buildSpriSection(sections);');
     // Baris baru pada value tidak boleh di-esc() langsung (jadi sambung).
-    expect(spr).toContain("esc(s).replace(/\\r?\\n/g, '<br/>')");
+    expect(spr).not.toContain('const nl2br');
     expect(spr).not.toContain('esc(fisik)');
     expect(spr).not.toContain('esc(catatan)');
     expect(spr).not.toContain('esc(diit)');
