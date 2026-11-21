@@ -2961,11 +2961,11 @@ ${kop(m.code)}
 .sep-multiline-list{margin:0;padding:0;list-style:none}
 .sep-disclaimer{margin-top:10px;font-size:7.5pt;font-style:italic}
 .sep-print-meta{font-size:8pt;font-style:normal}
-.sep-signatures{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding-right:8px}
-.sep-sig-box{flex:1;font-size:8.8pt;line-height:1.25}
+.sep-signatures{display:flex;justify-content:space-between;gap:16px;margin-top:18px}
+.sep-sig-box{flex:1;font-size:8.8pt;line-height:1.25;text-align:center}
 .sep-sig-role{min-height:24px}
 .sep-sig-space{height:36px}
-.sep-sig-line{width:115px;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
+.sep-sig-line{width:115px;margin:0 auto;border-bottom:1px solid #000;padding-bottom:2px;font-size:8pt;white-space:nowrap}
 /* @page A4 portrait 12mm ditetapkan sekali di blok print utama \u2014 jangan
    ditimpa di sini supaya margin semua halaman dossier konsisten. */
 @media print{body{background:#fff;padding:0}.bpjs-sep-sheet{width:100%;padding:0}}

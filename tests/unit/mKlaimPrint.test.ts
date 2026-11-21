@@ -58,6 +58,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'class="sep-print-meta"',
       'class="sep-signatures"',
       'class="sep-sig-line"',
+      '>Pasien/<br/>Keluarga Pasien<',
+      '>Petugas<br/>BPJS Kesehatan<',
       'Petugas<br/>BPJS Kesehatan',
     ]) {
       expect(sep).toContain(marker);
@@ -75,6 +77,12 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('const BPJS_LOGO = `data:image/svg+xml;base64,');
     expect(sep).toContain('src="${BPJS_LOGO}"');
     expect(src).toContain('.sep-logo{flex:0 0 215px');
+    // TTD: dua blok kiri/kanan, isi tiap blok di-center.
+    expect(src).toContain('.sep-signatures{display:flex;justify-content:space-between');
+    expect(src).toContain(
+      '.sep-sig-box{flex:1;font-size:8.8pt;line-height:1.25;text-align:center}',
+    );
+    expect(src).toContain('.sep-sig-line{width:115px;margin:0 auto');
     // Satu @page A4 portrait 12mm — tidak ada override margin di blok SEP.
     expect(src.match(/@page\s*\{/g)?.length).toBe(1);
     expect(src).toContain('size: A4 portrait;');
