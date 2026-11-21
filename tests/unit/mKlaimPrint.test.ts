@@ -362,9 +362,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   });
 
   it('dossier dibuka via extension page (tahan refresh)', () => {
-    // Content script: kirim HTML ke background (TANPA chrome.storage langsung —
-    // konteks content script bisa invalid setelah ekstensi di-reload).
-    expect(src).not.toContain("window.open('', '_blank')");
+    // Jalur utama sekarang tab kosong + document.write (cepat, langsung dari
+    // klik); background tetap ada sebagai cadangan bila popup diblokir.
+    expect(src).toContain('function openDirectTab');
+    expect(src).toContain("window.open('', '_blank')");
+    expect(src).toContain('if (openDirectTab(html)) return;');
     expect(src).not.toContain('saveDossier(');
     expect(src).toContain("type: 'OPEN_PRINT_DOSSIER'");
     expect(src).toContain('const html = buildHtml(sections, inventory);');

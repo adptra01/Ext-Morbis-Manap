@@ -8,6 +8,50 @@ var __morbis_feature = (() => {
   // src/features/shared/config.ts
   var HOSPITAL_NAME = "RSUD H. Abdul Manap";
 
+  // src/features/shared/printDossier.ts
+  function installDossierHandlers(win) {
+    const doPrint = () => {
+      try {
+        win.focus();
+        win.print();
+      } catch {
+      }
+    };
+    const d = win.document;
+    d.getElementById("btnPrintPdf")?.addEventListener("click", doPrint);
+    const pages = Array.from(d.querySelectorAll(".rm-page"));
+    const sel = d.getElementById("rmSectionSelect");
+    const tabs = Array.from(d.querySelectorAll(".tab-btn"));
+    const filter = (target) => {
+      if (sel) sel.value = target;
+      tabs.forEach((b) => b.classList.toggle("active", b.dataset.target === target));
+      pages.forEach(
+        (pg) => pg.classList.toggle("hidden-section", target !== "all" && pg.id !== target)
+      );
+      win.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    sel?.addEventListener("change", (ev) => filter(ev.target.value));
+    tabs.forEach((b) => b.addEventListener("click", () => filter(b.dataset.target || "all")));
+    const countEl = d.getElementById("checkCounter");
+    const boxes = Array.from(d.querySelectorAll(".rm-checkbox, .vbox"));
+    const syncCount = () => {
+      if (countEl) countEl.textContent = `${boxes.filter((b) => b.checked).length} / ${boxes.length}`;
+    };
+    boxes.forEach((b) => b.addEventListener("change", syncCount));
+    d.getElementById("btnCheckAll")?.addEventListener("click", () => {
+      boxes.forEach((b) => b.checked = true);
+      syncCount();
+    });
+    d.getElementById("btnResetChecks")?.addEventListener("click", () => {
+      boxes.forEach((b) => b.checked = false);
+      syncCount();
+    });
+    syncCount();
+    win.addEventListener("afterprint", () => {
+      if (win.confirm("Apakah menu print ini akan ditutup?")) win.close();
+    });
+  }
+
   // src/features/mKlaimPrint.ts
   var g = getMorbisGlobals();
   var REMOVE = [
@@ -3061,6 +3105,19 @@ ${kop(m.code)}
     }
     await new Promise((r) => window.setTimeout(r, 50));
   }
+  function openDirectTab(html) {
+    const win = window.open("", "_blank");
+    if (!win) return false;
+    try {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      installDossierHandlers(win);
+      return true;
+    } catch {
+      return false;
+    }
+  }
   async function handleMklaimPrint() {
     await waitForPartials();
     let { sections, inventory } = collectSections();
@@ -3073,6 +3130,7 @@ ${kop(m.code)}
       return;
     }
     const html = buildHtml(sections, inventory);
+    if (openDirectTab(html)) return;
     let lastErr;
     for (const delay of [0, 300, 600]) {
       if (delay) await new Promise((r) => window.setTimeout(r, delay));

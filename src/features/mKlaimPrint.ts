@@ -1,5 +1,6 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { HOSPITAL_NAME } from './shared/config.js';
+import { installDossierHandlers } from './shared/printDossier.js';
 
 const g = getMorbisGlobals();
 
@@ -3676,6 +3677,22 @@ async function waitForPartials(): Promise<void> {
   await new Promise((r) => window.setTimeout(r, 50));
 }
 
+/** Jalur cepat: tulis HTML langsung ke tab kosong dari klik user. Tanpa
+ *  roundtrip background → storage → extension page, jadi jauh lebih instan. */
+function openDirectTab(html: string): boolean {
+  const win = window.open('', '_blank');
+  if (!win) return false;
+  try {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    installDossierHandlers(win);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function handleMklaimPrint(): Promise<void> {
   await waitForPartials();
   let { sections, inventory } = collectSections();
@@ -3693,6 +3710,10 @@ async function handleMklaimPrint(): Promise<void> {
   // Content script TIDAK memanggil chrome.storage langsung — kalau ekstensi
   // baru di-reload, konteks content script lama invalid.
   const html = buildHtml(sections, inventory);
+  // Coba dulu jalur cepat (langsung dari klik). Kalau popup diblokir, baru
+  // jalur background di bawah.
+  if (openDirectTab(html)) return;
+
   let lastErr: unknown;
   for (const delay of [0, 300, 600]) {
     if (delay) await new Promise((r) => window.setTimeout(r, delay));
