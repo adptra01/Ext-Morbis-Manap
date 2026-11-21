@@ -3164,15 +3164,19 @@ ${kop(m.code)}
     const frame = document.createElement("iframe");
     frame.title = "Dossier Cetak M-KLAIM";
     frame.style.cssText = "flex:1 1 auto;width:100%;border:0;background:#fff";
-    frame.addEventListener("load", () => {
-      try {
-        if (frame.contentWindow) {
-          installDossierHandlers(frame.contentWindow);
-          frame.contentWindow.focus();
+    frame.addEventListener(
+      "load",
+      () => {
+        try {
+          if (frame.contentWindow) {
+            installDossierHandlers(frame.contentWindow);
+            frame.contentWindow.focus();
+          }
+        } catch {
         }
-      } catch {
-      }
-    }, { once: true });
+      },
+      { once: true }
+    );
     host.appendChild(bar);
     host.appendChild(frame);
     document.body.appendChild(host);

@@ -28,6 +28,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — fallback dossier lokal via iframe saat background gagal (`cf74d63`)
 - **mKlaimPrint** — SEP field scrape, alamat lintas-section & print self-healing (`5cfbd9a`)
 - **mKlaimPrint** — RM.07 ambil Ruangan/Poli, Tanggal, Jam dari detail klaim (`4dc4416`)
 - **mKlaimPrint** — RM.07 lengkapi data pasien/dokter & samakan grid telaahResepPrint (`02c7a16`)
@@ -45,6 +46,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync mKlaimPrint — audit fixes & self-healing print button (`600348f`)
 - **dist** — sync mKlaimPrint — SEP BPJS + formulir RM dedicated (`60e1b39`)
 - **mKlaimPrint** — sync dist setelah rebase (Pengkajian IGD) (`25d7426`)
 - hapus fitur CPPT Search & Filter (`f08e87a`)
@@ -2168,4 +2170,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 5cfbd9a043235695a736c2cae42ddb83600540a0 -->
+<!-- changelog-upto: cf74d63fad18ec01773aeee19f3695379f991e6e -->
