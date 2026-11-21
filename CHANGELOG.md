@@ -20,7 +20,7 @@
 
 ### 🎨 style
 
-- **mKlaimMarks** — samakan tombol mark footer detail dengan Telaah/Partial (`9d04caa`)
+- **mKlaimMarks** — samakan tombol mark footer detail dengan Telaah/Partial (`591b8e8`)
 - **mKlaimMarks** — samakan tombol mark dengan tombol Pre-op/Verif/Detail (`98dfd91`)
 
 ### 🧹 chore
@@ -2146,4 +2146,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9d04caafed50105ad6b043e9b4596084f96ae430 -->
+<!-- changelog-upto: 591b8e837400880a9f6a27c7cc4f41851aba6c06 -->

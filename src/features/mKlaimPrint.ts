@@ -877,6 +877,127 @@ ${kop('RM. 01')}
 </section>`;
 }
 
+/** SECTION RM.03 — SURAT PENGANTAR RAWAT INAP (SPRI).
+ *  Fokus redesign: tanda vital + pemeriksaan fisik rapi, Diit & Catatan
+ *  tidak lagi berupa teks mentah berantakan. */
+function buildSpriSection(sections: Section[]): string {
+  const spr = sections.find((s) => /^SPRI$/i.test(s.title));
+  const doc = spr ? new DOMParser().parseFromString(spr.html, 'text/html') : null;
+
+  /** Ambil nilai dari sel kedua baris tabel yang sel pertamanya = label. */
+  const field = (label: RegExp): string => {
+    if (!doc) return '-';
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const tds = Array.from(tr.cells);
+      if (!tds.length) continue;
+      const head = (tds[0].textContent || '').replace(/\s+/g, ' ').trim();
+      if (!label.test(head)) continue;
+      if (tds.length === 1) return head;
+      const raw = tds
+        .slice(1)
+        .map((td) =>
+          (td.innerHTML || '')
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/[ \t]+/g, ' ')
+            .trim(),
+        )
+        .filter(Boolean)
+        .join('\n')
+        .trim();
+      if (raw) return raw;
+    }
+    return '-';
+  };
+
+  const get = (re: RegExp, from: string): string => from.match(re)?.[1]?.trim() || '-';
+  const vitalRaw = field(/^Pemeriksaan Fisik$/i);
+  const ku = get(/Keadaan Umum\s*:\s*(.*?)\s*(?:Tensi|$)/i, vitalRaw);
+  const tensi = get(/Tensi\s*:\s*(.*?)\s*(?:Nadi|$)/i, vitalRaw);
+  const nadi = get(/Nadi\s*:\s*(.*?)\s*(?:RR|$)/i, vitalRaw);
+  const rr = get(/RR\s*:\s*(.*?)\s*(?:Suhu|$)/i, vitalRaw);
+  const suhu = get(/Suhu\s*:\s*(.*?)\s*(?:BB|$)/i, vitalRaw);
+  const bb = get(/BB\s*:\s*(.*?)\s*(?:TB|$)/i, vitalRaw);
+  const tb = get(/TB\s*:\s*(.*?)$/i, vitalRaw);
+  const fisik = get(/Pemeriksaan Fisik\s*:\s*([\s\S]*)$/i, vitalRaw);
+  const catatan = field(/^Catatan$/i);
+  const diit = field(/^Diit$/i);
+  const terapi = field(/^Terapi$/i);
+  const pengantarRaw = field(/^Kota Jambi,.*Jam|^Waktu Pengantar/i);
+  const pengantar =
+    pengantarRaw.match(/^(Kota Jambi,.*?Jam\s*\d{1,2}:\d{2})/i)?.[1] || pengantarRaw;
+  const dokter = pick('dokter', 'dpjp');
+  const lahirSplit = pick('tgl_lahir', 'tglLahir').split(/\s*\/\s*/);
+  const umurTeks =
+    lahirSplit.length > 1 ? `${lahirSplit[1]} (${lahirSplit[0]})` : lahirSplit[0] || '-';
+
+  const nl2br = (s: string): string => esc(s).replace(/\n/g, '<br/>');
+
+  return `<section class="rm-page" id="rm-03">
+${kop('RM. 03')}
+<div class="rm-form-title">SURAT PENGANTAR RAWAT INAP (SPRI)</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'), true)}
+    ${idRow('Umur / Tgl. Lahir', umurTeks)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Alamat', pick('alamat'))}
+    ${idRow('Dikirim Oleh', dokter)}
+    ${idRow('Waktu Pengantar', pengantar)}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <thead>
+    <tr><th colspan="7">PEMERIKSAAN TANDA VITAL &amp; ANTROPOMETRI SAAT MASUK</th></tr>
+    <tr>
+      <th>KEADAAN UMUM</th><th>TEKANAN DARAH</th><th>NADI</th>
+      <th>PERNAPASAN (RR)</th><th>SUHU</th><th>BERAT BADAN</th><th>TINGGI BADAN</th>
+    </tr>
+  </thead>
+  <tbody><tr>
+    <td class="center"><strong>${esc(ku)}</strong></td>
+    <td class="center"><strong>${esc(tensi)}</strong></td>
+    <td class="center">${esc(nadi)}</td>
+    <td class="center">${esc(rr)}</td>
+    <td class="center">${esc(suhu)}</td>
+    <td class="center">${esc(bb)}</td>
+    <td class="center">${esc(tb)}</td>
+  </tr></tbody>
+</table>
+
+<table class="rm-grid-table">
+  <tbody>
+    <tr><td style="width: 175px;"><strong>ANAMNESIS</strong></td><td>${nl2br(field(/^Anamnesis$/i))}</td></tr>
+    <tr><td><strong>RIWAYAT PENYAKIT KELUARGA</strong></td><td>${nl2br(field(/^Riwayat Penyakit Keluarga$/i))}</td></tr>
+    <tr><td><strong>RIWAYAT ALERGI</strong></td><td>${nl2br(field(/^Riwayat Alergi$/i))}</td></tr>
+    <tr><td><strong>PEMERIKSAAN FISIK / CATATAN</strong></td><td>${fisik !== '-' ? `<strong>${esc(fisik)}</strong>` : '-'}${catatan !== '-' ? `<br/>${esc(catatan)}` : ''}</td></tr>
+    <tr><td><strong>PEMERIKSAAN PENUNJANG AWAL</strong></td><td>${nl2br(field(/^Pemeriksaan Penunjang$/i))}</td></tr>
+    <tr><td><strong>DIAGNOSA KERJA</strong></td><td><strong>${esc(field(/^Diagnosa Kerja$/i))}</strong></td></tr>
+    <tr><td><strong>TERAPI &amp; DIIT AWAL</strong></td><td>${nl2br(terapi)}${diit !== '-' ? `<br/><strong>Diit :</strong> ${esc(diit)}` : ''}</td></tr>
+  </tbody>
+</table>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box">
+    <div>Petugas Admisi / TPPRI</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( .................................................. )</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>${esc(pengantar)}</div>
+    <div>Dokter yang Memeriksa</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(dokter)} )</div>
+  </div>
+</div>
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -1014,6 +1135,7 @@ ${checksHtml}
   const docs = sections
     .map((s, i) => {
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
+      if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}

@@ -46,6 +46,25 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildSepSection(sections);');
   });
 
+  it('RM.03 (SPRI): vital, fisik/catatan, diit & terapi terstruktur', () => {
+    const spr = src.slice(
+      src.indexOf('function buildSpriSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="rm-03">',
+      'PEMERIKSAAN TANDA VITAL &amp; ANTROPOMETRI SAAT MASUK',
+      'PERNAPASAN (RR)',
+      'PEMERIKSAAN FISIK / CATATAN',
+      'TERAPI &amp; DIIT AWAL',
+      '<strong>Diit :</strong>',
+      'Petugas Admisi / TPPRI',
+    ]) {
+      expect(spr).toContain(marker);
+    }
+    expect(src).toContain('return buildSpriSection(sections);');
+  });
+
   it('memakai ID field produksi & kode section referensi', () => {
     expect(src).toContain("pick('kartu', 'no_kartu', 'noka')");
     expect(src).toContain("id: 'rm-01'");
