@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — sheet SEP BPJS VClaim + 14 formulir RM dedicated (`edb4273`)
 - **mKlaimPrint** — redesign Pengkajian IGD — triase, FLACC, risiko jatuh, tindakan (`4f55ab8`)
 - **mKlaimPrint** — redesign section Triage IGD — pengkajian awal terstruktur (`357d061`)
 - **mKlaimPrint** — redesign RM.08 Radiologi — hasil pemeriksaan terstruktur (`d874b61`)
@@ -43,6 +44,7 @@
 
 ### 🧹 chore
 
+- **mKlaimPrint** — sync dist setelah rebase (Pengkajian IGD) (`25d7426`)
 - hapus fitur CPPT Search & Filter (`f08e87a`)
 
 ## 2026-11-20
@@ -2164,4 +2166,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4f55ab84b3fe9680856b8f82e6c74164798d3f10 -->
+<!-- changelog-upto: edb42739c3e74302aa4f4c3a1b1e54cb27ffcc06 -->
