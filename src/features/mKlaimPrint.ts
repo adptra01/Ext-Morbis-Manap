@@ -49,6 +49,18 @@ const val = (id: string): string =>
   (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value?.trim() ||
   '';
 
+/** Baca nilai dari kandidat ID (id produksi MORBIS berbeda-beda), buang
+ *  prefiks ':' yang dipakai field di section pengkajian. */
+const pick = (...ids: string[]): string => {
+  for (const id of ids) {
+    const v = val(id)
+      .replace(/^\s*:\s*/, '')
+      .trim();
+    if (v) return v;
+  }
+  return '-';
+};
+
 /** Ubah kontrol form menjadi teks sebelum dibersihkan — banyak section
  *  (mis. Pengkjadian IGD) menyimpan data pasien di `value` input/textarea,
  *  jadi menghapus input mentah membuat data hilang. */
@@ -618,6 +630,102 @@ const EMBLEM_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hi
   </defs>
 </svg>`;
 
+/** Pemetaan judul section hasil scrape ke kode/ID formulir referensi. */
+const RM_META: Array<[RegExp, { id: string; code: string; tab: string; option: string }]> = [
+  [
+    /^SEP$/i,
+    {
+      id: 'rm-01',
+      code: 'RM. 01',
+      tab: 'RM. 01 SEP/CBG',
+      option: 'RM. 01 — SEP &amp; Berkas Klaim Individual (INA-CBG)',
+    },
+  ],
+  [
+    /^SBPK$/i,
+    {
+      id: 'rm-02',
+      code: 'RM. 02',
+      tab: 'RM. 02 SBPK',
+      option: 'RM. 02 — Surat Bukti Pelayanan Kesehatan (SBPK)',
+    },
+  ],
+  [
+    /^SPRI$/i,
+    {
+      id: 'rm-03',
+      code: 'RM. 03',
+      tab: 'RM. 03 SPRI',
+      option: 'RM. 03 — Surat Pengantar Rawat Inap (SPRI)',
+    },
+  ],
+  [
+    /^Rincian Biaya/i,
+    {
+      id: 'rm-05',
+      code: 'RM. 05',
+      tab: 'RM. 05 Billing',
+      option: 'RM. 05 — Rincian Biaya Pelayanan Rawat Inap &amp; Farmasi',
+    },
+  ],
+  [
+    /^Resume/i,
+    {
+      id: 'rm-06',
+      code: 'RM. 06',
+      tab: 'RM. 06 Resume',
+      option: 'RM. 06 — Ringkasan Pulang (Discharge Summary)',
+    },
+  ],
+  [
+    /^Telaah/i,
+    {
+      id: 'rm-07',
+      code: 'RM. 07',
+      tab: 'RM. 07 Telaah',
+      option: 'RM. 07 — Formulir Telaah Resep, Obat &amp; Edukasi',
+    },
+  ],
+  [
+    /^Radiologi/i,
+    {
+      id: 'rm-08',
+      code: 'RM. 08',
+      tab: 'RM. 08 Radiologi',
+      option: 'RM. 08 — Hasil Pemeriksaan Radiologi',
+    },
+  ],
+  [
+    /^Laboratorium/i,
+    {
+      id: 'rm-09',
+      code: 'RM. 09',
+      tab: 'RM. 09 Lab',
+      option: 'RM. 09 — Hasil Pemeriksaan Laboratorium Patologi Klinik',
+    },
+  ],
+  [
+    /Konsul/i,
+    {
+      id: 'rm-10',
+      code: 'RM. 10',
+      tab: 'RM. 10 Konsul',
+      option: 'RM. 10 — Lembar Konsultasi Antar-Spesialis',
+    },
+  ],
+];
+
+const metaFor = (
+  title: string,
+  i: number,
+): { id: string; code: string; tab: string; option: string } =>
+  RM_META.find(([re]) => re.test(title))?.[1] ?? {
+    id: `doc-${i + 1}`,
+    code: 'FORMULIR RM KLAIM JKN',
+    tab: `RM. ${String(i + 1).padStart(2, '0')} ${title}`,
+    option: `RM. ${String(i + 1).padStart(2, '0')} — ${title}`,
+  };
+
 /** Kop surat resmi RSUD H. Abdul Manap (Times New Roman + double rule). */
 const kop = (code: string): string => `<div class="rm-code-top">${code}</div>
 <div class="kop-surat"><svg class="kop-logo" viewBox="0 0 52 60"><use href="#kota-jambi-emblem"/></svg><div class="kop-text">
@@ -632,14 +740,18 @@ function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
   // Nilai dinamis dari halaman M-KLAIM; struktur mengikuti referensi apa adanya.
-  const sep = val('no_sep') || val('sep') || '-';
-  const ruang = val('ruang') || val('kelas') || '-';
-  const dpjp = val('dokter') || val('dpjp') || '-';
-  const awal = val('tanggalAwal') || '';
-  const akhir = val('tanggalAkhir') || '';
-  const lahir = val('tgl_lahir') || val('tglLahir') || '-';
-  const umur = val('umur') || val('usia') || '';
-  const los = val('los') || val('lama_rawat') || '';
+  // ID di bawah adalah ID asli halaman detail produksi (diverifikasi live).
+  const sep = pick('no_sep', 'sep');
+  const kartu = pick('kartu', 'no_kartu', 'noka');
+  const norm = pick('norm', 'rekam_medis');
+  const nama = pick('nama');
+  const ruang = [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-';
+  const dpjp = pick('dokter', 'dpjp');
+  const awal = pick('tanggalAwal', 'tgl_masuk', 'tgl');
+  const akhir = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
+  const lahir = pick('tgl_lahir', 'tglLahir');
+  const jk = pick('jenis_kelamin', 'jk');
+  const alamat = pick('alamat');
   const nota = sections.filter((s) => /resep/i.test(s.title)).length;
   const bulan = [
     'Januari',
@@ -677,16 +789,16 @@ ${kop('RM. 00')}
 
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
-    <tr><td class="lbl">NAMA PASIEN</td><td class="col">:</td><td class="val"><strong>${esc(val('nama') || '-')}</strong></td></tr>
-    <tr><td class="lbl">NO. REKAM MEDIS</td><td class="col">:</td><td class="val"><strong>${esc(val('norm') || '-')}</strong></td></tr>
-    <tr><td class="lbl">TGL. LAHIR / UMUR</td><td class="col">:</td><td class="val">${esc(lahir)}${umur ? ` (${esc(umur)}${/tahun/i.test(umur) ? '' : ' Tahun'})` : ''}</td></tr>
-    <tr><td class="lbl">JENIS KELAMIN</td><td class="col">:</td><td class="val">${esc(val('jenis_kelamin') || val('jk') || '-')}</td></tr>
-    <tr><td class="lbl">ALAMAT</td><td class="col">:</td><td class="val">${esc(val('alamat') || '-')}</td></tr>
+    <tr><td class="lbl">NAMA PASIEN</td><td class="col">:</td><td class="val"><strong>${esc(nama)}</strong></td></tr>
+    <tr><td class="lbl">NO. REKAM MEDIS</td><td class="col">:</td><td class="val"><strong>${esc(norm)}</strong></td></tr>
+    <tr><td class="lbl">TGL. LAHIR / UMUR</td><td class="col">:</td><td class="val">${esc(lahir)}</td></tr>
+    <tr><td class="lbl">JENIS KELAMIN</td><td class="col">:</td><td class="val">${esc(jk)}</td></tr>
+    <tr><td class="lbl">ALAMAT</td><td class="col">:</td><td class="val">${esc(alamat)}</td></tr>
   </table></div>
   <div class="id-col"><table class="id-table">
-    <tr><td class="lbl">NO. KARTU BPJS</td><td class="col">:</td><td class="val"><strong>${esc(val('no_kartu') || val('noka') || '-')}</strong></td></tr>
+    <tr><td class="lbl">NO. KARTU BPJS</td><td class="col">:</td><td class="val"><strong>${esc(kartu)}</strong></td></tr>
     <tr><td class="lbl">NO. SEP</td><td class="col">:</td><td class="val"><strong>${esc(sep)}</strong></td></tr>
-    <tr><td class="lbl">TGL. MASUK / KELUAR</td><td class="col">:</td><td class="val">${esc([awal, akhir].filter(Boolean).join(' s/d ') || '-')}${los ? ` (LOS: ${esc(los)}${/hari/i.test(los) ? '' : ' Hari'})` : ''}</td></tr>
+    <tr><td class="lbl">TGL. MASUK / KELUAR</td><td class="col">:</td><td class="val">${esc([awal, akhir].filter((v) => v && v !== '-').join(' s/d ') || '-')}</td></tr>
     <tr><td class="lbl">RUANG / KELAS</td><td class="col">:</td><td class="val">${esc(ruang)}</td></tr>
     <tr><td class="lbl">DPJP UTAMA</td><td class="col">:</td><td class="val">${esc(dpjp)}</td></tr>
   </table></div>
@@ -759,30 +871,31 @@ ${checksHtml}
 </section>`;
 
   const docs = sections
-    .map(
-      (s, i) => `<section class="rm-page" id="doc-${i + 1}">
-${kop('FORMULIR RM KLAIM JKN')}
+    .map((s, i) => {
+      const m = metaFor(s.title, i);
+      return `<section class="rm-page" id="${m.id}">
+${kop(m.code)}
 <div class="rm-form-title">${esc(s.title)}</div>
 <div class="doc-body">${s.html}</div>
-</section>`,
-    )
+</section>`;
+    })
     .join('');
 
   const tabs = [
     `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
     `<button type="button" class="tab-btn" data-target="rm-00">RM. 00 Kendali</button>`,
-    ...sections.map(
-      (s, i) =>
-        `<button type="button" class="tab-btn" data-target="doc-${i + 1}">RM. ${String(i + 1).padStart(2, '0')} ${esc(s.title)}</button>`,
-    ),
+    ...sections.map((s, i) => {
+      const m = metaFor(s.title, i);
+      return `<button type="button" class="tab-btn" data-target="${m.id}">${m.tab}</button>`;
+    }),
   ].join('');
   const opts = [
     `<option value="all">Semua Formulir RM</option>`,
     `<option value="rm-00">RM. 00 — Lembar Kendali &amp; Verifikasi</option>`,
-    ...sections.map(
-      (s, i) =>
-        `<option value="doc-${i + 1}">RM. ${String(i + 1).padStart(2, '0')} — ${esc(s.title)}</option>`,
-    ),
+    ...sections.map((s, i) => {
+      const m = metaFor(s.title, i);
+      return `<option value="${m.id}">${m.option}</option>`;
+    }),
   ].join('');
 
   return `<!DOCTYPE html>

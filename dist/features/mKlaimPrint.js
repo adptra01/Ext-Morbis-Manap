@@ -29,6 +29,13 @@ var __morbis_feature = (() => {
     'a[href^="javascript:"]'
   ];
   var val = (id) => document.getElementById(id)?.value?.trim() || "";
+  var pick = (...ids) => {
+    for (const id of ids) {
+      const v = val(id).replace(/^\s*:\s*/, "").trim();
+      if (v) return v;
+    }
+    return "-";
+  };
   function flattenControls(root) {
     const span = (text) => {
       const s = document.createElement("span");
@@ -491,6 +498,95 @@ var __morbis_feature = (() => {
     </g>
   </defs>
 </svg>`;
+  var RM_META = [
+    [
+      /^SEP$/i,
+      {
+        id: "rm-01",
+        code: "RM. 01",
+        tab: "RM. 01 SEP/CBG",
+        option: "RM. 01 \u2014 SEP &amp; Berkas Klaim Individual (INA-CBG)"
+      }
+    ],
+    [
+      /^SBPK$/i,
+      {
+        id: "rm-02",
+        code: "RM. 02",
+        tab: "RM. 02 SBPK",
+        option: "RM. 02 \u2014 Surat Bukti Pelayanan Kesehatan (SBPK)"
+      }
+    ],
+    [
+      /^SPRI$/i,
+      {
+        id: "rm-03",
+        code: "RM. 03",
+        tab: "RM. 03 SPRI",
+        option: "RM. 03 \u2014 Surat Pengantar Rawat Inap (SPRI)"
+      }
+    ],
+    [
+      /^Rincian Biaya/i,
+      {
+        id: "rm-05",
+        code: "RM. 05",
+        tab: "RM. 05 Billing",
+        option: "RM. 05 \u2014 Rincian Biaya Pelayanan Rawat Inap &amp; Farmasi"
+      }
+    ],
+    [
+      /^Resume/i,
+      {
+        id: "rm-06",
+        code: "RM. 06",
+        tab: "RM. 06 Resume",
+        option: "RM. 06 \u2014 Ringkasan Pulang (Discharge Summary)"
+      }
+    ],
+    [
+      /^Telaah/i,
+      {
+        id: "rm-07",
+        code: "RM. 07",
+        tab: "RM. 07 Telaah",
+        option: "RM. 07 \u2014 Formulir Telaah Resep, Obat &amp; Edukasi"
+      }
+    ],
+    [
+      /^Radiologi/i,
+      {
+        id: "rm-08",
+        code: "RM. 08",
+        tab: "RM. 08 Radiologi",
+        option: "RM. 08 \u2014 Hasil Pemeriksaan Radiologi"
+      }
+    ],
+    [
+      /^Laboratorium/i,
+      {
+        id: "rm-09",
+        code: "RM. 09",
+        tab: "RM. 09 Lab",
+        option: "RM. 09 \u2014 Hasil Pemeriksaan Laboratorium Patologi Klinik"
+      }
+    ],
+    [
+      /Konsul/i,
+      {
+        id: "rm-10",
+        code: "RM. 10",
+        tab: "RM. 10 Konsul",
+        option: "RM. 10 \u2014 Lembar Konsultasi Antar-Spesialis"
+      }
+    ]
+  ];
+  var metaFor = (title, i) => RM_META.find(([re]) => re.test(title))?.[1] ?? {
+    id: `doc-${i + 1}`,
+    code: "FORMULIR RM KLAIM JKN",
+    tab: `RM. ${String(i + 1).padStart(2, "0")} ${title}`,
+    option: `RM. ${String(i + 1).padStart(2, "0")} \u2014 ${title}`
+  };
   var kop = (code) => `<div class="rm-code-top">${code}</div>
 <div class="kop-surat"><svg class="kop-logo" viewBox="0 0 52 60"><use href="#kota-jambi-emblem"/></svg><div class="kop-text">
 <div class="kop-line-1">PEMERINTAH KOTA JAMBI</div>
@@ -501,14 +597,17 @@ var __morbis_feature = (() => {
 </div></div><div class="kop-double-rule"></div>`;
   function buildHtml(sections, inventory) {
     const checks = runChecks(sections, inventory);
-    const sep = val("no_sep") || val("sep") || "-";
-    const ruang = val("ruang") || val("kelas") || "-";
-    const dpjp = val("dokter") || val("dpjp") || "-";
-    const awal = val("tanggalAwal") || "";
-    const akhir = val("tanggalAkhir") || "";
-    const lahir = val("tgl_lahir") || val("tglLahir") || "-";
-    const umur = val("umur") || val("usia") || "";
-    const los = val("los") || val("lama_rawat") || "";
+    const sep = pick("no_sep", "sep");
+    const kartu = pick("kartu", "no_kartu", "noka");
+    const norm = pick("norm", "rekam_medis");
+    const nama = pick("nama");
+    const ruang = [pick("jenis"), pick("kelas", "ruang")].filter((v) => v !== "-").join(" / ") || "-";
+    const dpjp = pick("dokter", "dpjp");
+    const awal = pick("tanggalAwal", "tgl_masuk", "tgl");
+    const akhir = pick("tanggalAkhir", "keluar", "tgl_keluar");
+    const lahir = pick("tgl_lahir", "tglLahir");
+    const jk = pick("jenis_kelamin", "jk");
+    const alamat = pick("alamat");
     const nota = sections.filter((s) => /resep/i.test(s.title)).length;
     const bulan = [
       "Januari",
@@ -541,16 +640,16 @@ ${kop("RM. 00")}
 
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
-    <tr><td class="lbl">NAMA PASIEN</td><td class="col">:</td><td class="val"><strong>${esc(val("nama") || "-")}</strong></td></tr>
-    <tr><td class="lbl">NO. REKAM MEDIS</td><td class="col">:</td><td class="val"><strong>${esc(val("norm") || "-")}</strong></td></tr>
-    <tr><td class="lbl">TGL. LAHIR / UMUR</td><td class="col">:</td><td class="val">${esc(lahir)}${umur ? ` (${esc(umur)}${/tahun/i.test(umur) ? "" : " Tahun"})` : ""}</td></tr>
-    <tr><td class="lbl">JENIS KELAMIN</td><td class="col">:</td><td class="val">${esc(val("jenis_kelamin") || val("jk") || "-")}</td></tr>
-    <tr><td class="lbl">ALAMAT</td><td class="col">:</td><td class="val">${esc(val("alamat") || "-")}</td></tr>
+    <tr><td class="lbl">NAMA PASIEN</td><td class="col">:</td><td class="val"><strong>${esc(nama)}</strong></td></tr>
+    <tr><td class="lbl">NO. REKAM MEDIS</td><td class="col">:</td><td class="val"><strong>${esc(norm)}</strong></td></tr>
+    <tr><td class="lbl">TGL. LAHIR / UMUR</td><td class="col">:</td><td class="val">${esc(lahir)}</td></tr>
+    <tr><td class="lbl">JENIS KELAMIN</td><td class="col">:</td><td class="val">${esc(jk)}</td></tr>
+    <tr><td class="lbl">ALAMAT</td><td class="col">:</td><td class="val">${esc(alamat)}</td></tr>
   </table></div>
   <div class="id-col"><table class="id-table">
-    <tr><td class="lbl">NO. KARTU BPJS</td><td class="col">:</td><td class="val"><strong>${esc(val("no_kartu") || val("noka") || "-")}</strong></td></tr>
+    <tr><td class="lbl">NO. KARTU BPJS</td><td class="col">:</td><td class="val"><strong>${esc(kartu)}</strong></td></tr>
     <tr><td class="lbl">NO. SEP</td><td class="col">:</td><td class="val"><strong>${esc(sep)}</strong></td></tr>
-    <tr><td class="lbl">TGL. MASUK / KELUAR</td><td class="col">:</td><td class="val">${esc([awal, akhir].filter(Boolean).join(" s/d ") || "-")}${los ? ` (LOS: ${esc(los)}${/hari/i.test(los) ? "" : " Hari"})` : ""}</td></tr>
+    <tr><td class="lbl">TGL. MASUK / KELUAR</td><td class="col">:</td><td class="val">${esc([awal, akhir].filter((v) => v && v !== "-").join(" s/d ") || "-")}</td></tr>
     <tr><td class="lbl">RUANG / KELAS</td><td class="col">:</td><td class="val">${esc(ruang)}</td></tr>
     <tr><td class="lbl">DPJP UTAMA</td><td class="col">:</td><td class="val">${esc(dpjp)}</td></tr>
   </table></div>
@@ -621,26 +720,29 @@ ${checksHtml}
   </div>
 </div>
 </section>`;
-    const docs = sections.map(
-      (s, i) => `<section class="rm-page" id="doc-${i + 1}">
-${kop("FORMULIR RM KLAIM JKN")}
+    const docs = sections.map((s, i) => {
+      const m = metaFor(s.title, i);
+      return `<section class="rm-page" id="${m.id}">
+${kop(m.code)}
 <div class="rm-form-title">${esc(s.title)}</div>
 <div class="doc-body">${s.html}</div>
-</section>`
-    ).join("");
+</section>`;
+    }).join("");
     const tabs = [
       `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
       `<button type="button" class="tab-btn" data-target="rm-00">RM. 00 Kendali</button>`,
-      ...sections.map(
-        (s, i) => `<button type="button" class="tab-btn" data-target="doc-${i + 1}">RM. ${String(i + 1).padStart(2, "0")} ${esc(s.title)}</button>`
-      )
+      ...sections.map((s, i) => {
+        const m = metaFor(s.title, i);
+        return `<button type="button" class="tab-btn" data-target="${m.id}">${m.tab}</button>`;
+      })
     ].join("");
     const opts = [
       `<option value="all">Semua Formulir RM</option>`,
       `<option value="rm-00">RM. 00 \u2014 Lembar Kendali &amp; Verifikasi</option>`,
-      ...sections.map(
-        (s, i) => `<option value="doc-${i + 1}">RM. ${String(i + 1).padStart(2, "0")} \u2014 ${esc(s.title)}</option>`
-      )
+      ...sections.map((s, i) => {
+        const m = metaFor(s.title, i);
+        return `<option value="${m.id}">${m.option}</option>`;
+      })
     ].join("");
     return `<!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">

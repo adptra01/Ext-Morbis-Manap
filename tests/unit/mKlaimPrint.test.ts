@@ -24,6 +24,13 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain('id="doc-0"');
   });
 
+  it('memakai ID field produksi & kode section referensi', () => {
+    expect(src).toContain("pick('kartu', 'no_kartu', 'noka')");
+    expect(src).toContain("id: 'rm-01'");
+    expect(src).toContain("id: 'rm-02'");
+    expect(src).toContain("id: 'rm-10'");
+  });
+
   it('toolbar mempertahankan ID yang dipakai handler', () => {
     for (const id of [
       'rmSectionSelect',

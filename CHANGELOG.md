@@ -11,7 +11,12 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — perbaiki ID field cover & kode section RM sesuai produksi (`0362ab2`)
 - **penerimaan** — tampilkan kembali kolom No Antrian di daftar resep (`52e8515`)
+
+### 🎨 style
+
+- **mKlaimMarks** — samakan tombol mark dengan tombol Pre-op/Verif/Detail (`98dfd91`)
 
 ### 🧹 chore
 
@@ -2136,4 +2141,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f08e87aa9ae8c72a616415770be4bbd66f02cad9 -->
+<!-- changelog-upto: 0362ab2e18256185485e757a2d07e2d0eadcbab5 -->
