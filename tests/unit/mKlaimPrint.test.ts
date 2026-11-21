@@ -149,6 +149,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     }
     // Data diagnosa & dokter penanggung diambil dari tabel asli SBPK.
     expect(sbpk).toContain('const diagRows:');
+    // Guard regresi: pakai `cells`, bukan `c` yang tidak terdefinisi.
+    expect(sbpk).toContain('cells.length >= 5');
+    expect(sbpk).not.toContain('c.length >= 5');
     expect(sbpk).toContain('/^[A-Z]\\d{2}(?:\\.\\d+)?$/');
     expect(sbpk).toContain('${diagBody}');
     expect(sbpk).toContain('let penanggung');

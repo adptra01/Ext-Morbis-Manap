@@ -980,12 +980,17 @@ function buildSbpkSection(sections: Section[]): string {
         if (label && value && !fields.has(label)) fields.set(label, value);
       }
       // Baris diagnosa asli: POLIKLINIK | DIAGNOSA | ICD X | ... | DOKTER.
-      if (c.length >= 5 && /^[A-Z]\d{2}(?:\.\d+)?$/.test(c[2].trim()) && c[0] && c[1]) {
+      if (
+        cells.length >= 5 &&
+        /^[A-Z]\d{2}(?:\.\d+)?$/.test(cells[2].textContent?.trim() ?? '') &&
+        cells[0].textContent?.trim() &&
+        cells[1].textContent?.trim()
+      ) {
         diagRows.push({
-          unit: c[0],
-          diag: c[1],
-          icd: c[2].trim(),
-          dokter: c[4] || '-',
+          unit: (cells[0].textContent || '').replace(/\s+/g, ' ').trim(),
+          diag: (cells[1].textContent || '').replace(/\s+/g, ' ').trim(),
+          icd: (cells[2].textContent || '').trim(),
+          dokter: (cells[4].textContent || '').replace(/\s+/g, ' ').trim() || '-',
         });
       }
     }
