@@ -472,7 +472,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('sections.length < 3');
     expect(src).toContain('[0, 300, 600]');
     expect(src).toContain('Receiving end does not exist|Extension context invalidated');
-    expect(src).toContain('chrome.runtime?.id');
+    // Fallback lokal: render di iframe srcdoc tanpa background/storage.
+    expect(src).toContain('function openDossierOverlay');
+    expect(src).toContain('frame.srcdoc = html');
+    expect(src).toContain('installDossierHandlers(frame.contentWindow)');
+    expect(src).toContain('openDossierOverlay(html, true)');
     expect(src).toContain('Gagal membuka dossier: ${reason');
     // Tombol stale dari content script lama diganti otomatis.
     expect(src).toContain("const BUILD_TAG = 'v2'");
