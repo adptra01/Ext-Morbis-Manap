@@ -555,11 +555,13 @@ var __morbis_feature = (() => {
     const sepSection = sections.find((s) => /^SEP$/i.test(s.title));
     const txt = sepSection ? plainText(sepSection.html) : "";
     const grab = (re) => sepNorm(txt.match(re)?.[1] || "") || "-";
+    const grabField = (label, next) => grab(new RegExp(`${label}\\s*[:.]?\\s*([\\s\\S]*?)(?=${next}|$)`, "i"));
     const sep = pick("no_sep", "sep") !== "-" ? pick("no_sep", "sep") : grab(/No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]+)/i);
     const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
-    const noHp = pick("no_hp", "telepon");
+    const noHp = pick("no_hp", "telepon") !== "-" ? pick("no_hp", "telepon") : grabField("No\\.?\\s*Telepon", "Sub\\/Spesialis");
     const kelas = pick("kelas").replace(/^Kelas\s*/i, "");
-    const lahir = pick("tgl_lahir", "tglLahir").replace(/^:\s*/, "");
+    const lahirRaw = pick("tgl_lahir", "tglLahir").replace(/^:\s*/, "");
+    const lahir = lahirRaw.split(/\s*\/\s*/)[0]?.trim() || "-";
     const masuk = pick("tanggalAwal", "tgl_masuk", "tgl");
     const keluar = pick("tanggalAkhir", "keluar", "tgl_keluar");
     const dokter = pick("dokter", "dpjp");
@@ -572,12 +574,12 @@ var __morbis_feature = (() => {
     const kartuHtml = km ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>` : `${esc(kartu)}${mr !== "-" ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ""}`;
     const kunjungan = pick("jenis_kunjungan") !== "-" ? pick("jenis_kunjungan") : grab(/Jns\.?\s*Kunjungan\s*[:.]?\s*([\s\S]*?)(?:\s+Kls\.?\s*Hak|$)/i);
     const kunjunganHtml = /^-\s|\n/.test(kunjungan) ? '<ul class="sep-multiline-list">' + kunjungan.split(/\n/).map((x) => `<li>${esc(x.replace(/^-\s*/, "").trim())}</li>`).join("") + "</ul>" : esc(kunjungan);
-    const peserta = pick("peserta", "jenis_peserta");
-    const penjamin = pick("penjamin");
-    const faskes = pick("faskes_perujuk", "faskes");
-    const diagnosaAwal = pick("diagnosa_awal");
-    const catatan = pick("catatan_sep", "catatan");
-    const subSpesialis = pick("sub_spesialis", "spesialis");
+    const peserta = pick("peserta", "jenis_peserta") !== "-" ? pick("peserta", "jenis_peserta") : grabField("Peserta", "COB|Jns\\.?\\s*Rawat");
+    const penjamin = pick("penjamin") !== "-" ? pick("penjamin") : grabField("Penjamin", "\\*Saya|CATATAN");
+    const faskes = pick("faskes_perujuk", "faskes") !== "-" ? pick("faskes_perujuk", "faskes") : grabField("Faskes\\s*Perujuk", "Diagnosa\\s*Awal");
+    const diagnosaAwal = pick("diagnosa_awal") !== "-" ? pick("diagnosa_awal") : grabField("Diagnosa\\s*Awal", "Catatan|Peserta");
+    const catatan = pick("catatan_sep", "catatan") !== "-" ? pick("catatan_sep", "catatan") : grabField("Catatan", "Peserta|COB");
+    const subSpesialis = pick("sub_spesialis", "spesialis") !== "-" ? pick("sub_spesialis", "spesialis") : grabField("Sub\\/Spesialis", "Dokter");
     const cetakan = grab(/Cetakan\s+ke\s*[:.]?\s*(\d+)/i);
     const printMeta = cetakan !== "-" ? `<div class="sep-print-meta">Cetakan ke ${esc(cetakan)}</div>` : "";
     const kv = (label, value, cls = "", right = false) => `<tr><td class="lbl${right ? " right" : ""}">${label}</td><td class="sep">:</td><td class="val${cls ? " " + cls : ""}">${value}</td></tr>`;
@@ -743,7 +745,7 @@ ${kop("RM. 03")}
     ${idRow("Umur / Tgl. Lahir", umurTeks)}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow("Alamat", pick("alamat"))}
+    ${idRow("Alamat", patientAlamat(sections))}
     ${idRow("Dikirim Oleh", dokter)}
     ${idRow("Waktu Pengantar", pengantar)}
   </table></div>
@@ -997,7 +999,7 @@ ${kop("RM. 02")}
     const norm = pick("norm", "rekam_medis");
     const nama = pick("nama");
     const dokter = pick("dokter", "dpjp");
-    const alamat = pick("alamat");
+    const alamat = patientAlamat(sections);
     const sep = pick("no_sep", "sep");
     const ruang = [pick("jenis"), pick("kelas", "ruang")].filter((v) => v !== "-").join(" / ") || "-";
     const awal = pick("tanggalAwal", "tgl_masuk", "tgl");
@@ -1264,7 +1266,7 @@ ${lanjutan}`.trim())}
     const sipDokter = f(/^SIP/i);
     const nama = pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i);
     const norm = pick("norm", "rekam_medis") !== "-" ? pick("norm", "rekam_medis") : f(/^No\.? RM/i);
-    const alamat = pick("alamat") !== "-" ? pick("alamat") : f(/^Alamat/i);
+    const alamat = patientAlamat(sections);
     const tglLahir = pick("tgl_lahir", "tglLahir").replace(/^:\s*/, "") || f(/^Tgl\.? Lahir/i);
     const noHp = pick("no_hp", "telepon").replace(/^:\s*/, "") || f(/^No HP/i);
     const penjamin = f(/^Penjamin/i);
@@ -1358,7 +1360,7 @@ ${kop("RM. 07")}
     const nama = pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i);
     const jkRaw = pick("jenis_kelamin", "jk").replace(/^:\s*/, "") || f(/^Jenis Kelamin/i);
     const jkShort = /perempuan|^p$/i.test(jkRaw) ? "P" : /laki|^l$/i.test(jkRaw) ? "L" : jkRaw;
-    const alamat = pick("alamat") !== "-" ? pick("alamat") : f(/^Alamat/i);
+    const alamat = patientAlamat(sections);
     const ruang = f(/^Bed|^Ruang/i);
     const status = f(/^Status/i);
     const dokterPengirim = f(/^dr\.? Pengirim|^Dokter Pengirim/i);
@@ -1612,7 +1614,7 @@ ${grid(
       ["TEKANAN DARAH", "NADI", "PERNAPASAN", "SUHU", "SpO2", "GCS", "GCS (E/V/M)", "KESADARAN"],
       [
         "<tr>" + [
-          pick("vital_td"),
+          normVital(pick("vital_td")),
           pick("vital_nadi"),
           pick("vital_nafas"),
           pick("vital_suhu"),
@@ -1663,6 +1665,36 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
 </div>
 </section>`;
   }
+  function sectionField(sections, labelRe) {
+    const priority = [/^Telaah/i, /^SBPK/i, /^Radiologi/i];
+    const rank = (title) => {
+      const i = priority.findIndex((r) => r.test(title));
+      return i < 0 ? 99 : i;
+    };
+    const ordered = [...sections].sort((a, b) => rank(a.title) - rank(b.title));
+    for (const s of ordered) {
+      const doc = new DOMParser().parseFromString(s.html, "text/html");
+      for (const tr of Array.from(doc.querySelectorAll("tr"))) {
+        const c = Array.from(tr.cells).map(
+          (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
+        );
+        for (let i = 0; i < c.length - 2; i++) {
+          if (labelRe.test(c[i]) && c[i + 1] === ":" && c[i + 2]) return c[i + 2];
+        }
+        for (const cell of c) {
+          const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+          if (m && labelRe.test(m[1].trim()) && m[2] && !m[2].includes(":") && m[2].length <= 160)
+            return m[2].trim();
+        }
+      }
+    }
+    return "-";
+  }
+  var patientAlamat = (sections) => {
+    const v = val("alamat").replace(/^\s*:\s*/, "").trim();
+    return v || sectionField(sections, /^Alamat/i);
+  };
+  var normVital = (v) => /\d/.test(v) ? v : "-";
   function formFields(sections, titleRe) {
     const src = sections.find((s) => titleRe.test(s.title));
     const doc = src ? new DOMParser().parseFromString(src.html, "text/html") : null;
@@ -1953,7 +1985,7 @@ ${kop("KEMATIAN")}
     ${idRow("No. Rekam Medis", pick("norm", "rekam_medis"))}
     ${idRow("Tgl. Lahir / Umur", pick("tgl_lahir", "tglLahir"))}
     ${idRow("Jenis Kelamin", pick("jenis_kelamin", "jk"))}
-    ${idRow("Alamat", pick("alamat"))}
+    ${idRow("Alamat", patientAlamat(sections))}
   </table></div>
   <div class="id-col"><table class="id-table">
     ${idRow("Tanggal Kematian", f(/^Tanggal Kematian|^Tanggal/i))}
@@ -2252,7 +2284,7 @@ ${sig(
     const akhir = pick("tanggalAkhir", "keluar", "tgl_keluar");
     const lahir = pick("tgl_lahir", "tglLahir");
     const jk = pick("jenis_kelamin", "jk");
-    const alamat = pick("alamat");
+    const alamat = patientAlamat(sections);
     const nota = sections.filter((s) => /resep/i.test(s.title)).length;
     const bulan = [
       "Januari",
@@ -3048,21 +3080,55 @@ ${kop(m.code)}
 <main class="dossier-wrapper">${cover}${docs}</main>
 </body></html>`;
   }
+  async function waitForPartials() {
+    const visible = (el) => {
+      const s = getComputedStyle(el);
+      return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity) > 0;
+    };
+    const deadline = Date.now() + 3e3;
+    while (Date.now() < deadline) {
+      const loading = [".swal2-container", ".swal-overlay--active", ".sweet-alert"].flatMap((sel) => Array.from(document.querySelectorAll(sel))).some(visible);
+      if (!loading) break;
+      await new Promise((r) => window.setTimeout(r, 150));
+    }
+    await new Promise((r) => window.setTimeout(r, 50));
+  }
   async function handleMklaimPrint() {
-    const { sections, inventory } = collectSections();
+    await waitForPartials();
+    let { sections, inventory } = collectSections();
+    if (sections.length < 3) {
+      await new Promise((r) => window.setTimeout(r, 800));
+      ({ sections, inventory } = collectSections());
+    }
     if (!sections.length) {
       window.alert("Tidak ada section berkas yang bisa dicetak.");
       return;
     }
-    try {
-      const res = await chrome.runtime.sendMessage({
-        type: "OPEN_PRINT_DOSSIER",
-        html: buildHtml(sections, inventory)
-      });
-      if (!res?.success) throw new Error("background menolak membuka tab");
-    } catch {
+    const html = buildHtml(sections, inventory);
+    let lastErr;
+    for (const delay of [0, 300, 600]) {
+      if (delay) await new Promise((r) => window.setTimeout(r, delay));
+      try {
+        const res = await chrome.runtime.sendMessage({
+          type: "OPEN_PRINT_DOSSIER",
+          html
+        });
+        if (!res?.success) throw new Error("background menolak membuka tab");
+        return;
+      } catch (e) {
+        lastErr = e;
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
+      }
+    }
+    const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || "");
+    if (!chrome.runtime?.id) {
       window.alert(
-        "Gagal membuka dossier. Ekstensi baru saja diperbarui \u2014 refresh halaman M-KLAIM ini lalu klik lagi Cetak Rapi."
+        "Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi."
+      );
+    } else {
+      window.alert(
+        `Gagal membuka dossier: ${reason || "tidak diketahui"}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`
       );
     }
   }
@@ -3076,12 +3142,16 @@ ${kop(m.code)}
     ).find((d) => d.querySelector("button"));
     return bar || document.getElementById("SCETAK") || document.body;
   }
+  var BUILD_TAG = "v2";
   function renderMklaimPrintButton() {
     if (!window.location.pathname.includes("/v2/m-klaim/detail-v2-refaktor")) return;
-    if (document.getElementById("ext-mklaim-print-btn")) return;
+    const old = document.getElementById("ext-mklaim-print-btn");
+    if (old?.dataset.extBuild === BUILD_TAG) return;
+    old?.remove();
     const host = anchorForButton();
     const btn = document.createElement("button");
     btn.id = "ext-mklaim-print-btn";
+    btn.dataset.extBuild = BUILD_TAG;
     btn.type = "button";
     btn.className = "btn btn-primary btn-sm";
     btn.style.cssText = "margin-left:8px;background:#0f766e;border-color:#0f766e;color:#fff;font-weight:600;border-radius:4px;padding:5px 12px;cursor:pointer;white-space:nowrap;";
@@ -3106,14 +3176,15 @@ ${kop(m.code)}
         else window.addEventListener("load", () => window.setTimeout(check, 500));
         const keepLast = () => {
           const btn = document.getElementById("ext-mklaim-print-btn");
-          if (btn?.parentElement && btn.parentElement.lastElementChild !== btn) {
+          if (btn?.dataset.extBuild !== BUILD_TAG) {
+            renderMklaimPrintButton();
+            return;
+          }
+          if (btn.parentElement && btn.parentElement.lastElementChild !== btn) {
             btn.parentElement.appendChild(btn);
           }
         };
-        const obs = new MutationObserver(() => {
-          if (!document.getElementById("ext-mklaim-print-btn")) renderMklaimPrintButton();
-          else keepLast();
-        });
+        const obs = new MutationObserver(() => keepLast());
         obs.observe(document.body, { childList: true, subtree: true });
         window.setInterval(keepLast, 1500);
       }

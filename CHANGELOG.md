@@ -28,6 +28,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — SEP field scrape, alamat lintas-section & print self-healing (`5cfbd9a`)
 - **mKlaimPrint** — RM.07 ambil Ruangan/Poli, Tanggal, Jam dari detail klaim (`4dc4416`)
 - **mKlaimPrint** — RM.07 lengkapi data pasien/dokter & samakan grid telaahResepPrint (`02c7a16`)
 - **mKlaimPrint** — kirim HTML ke background (hindari Extension context invalidated) (`a0000a8`)
@@ -44,6 +45,7 @@
 
 ### 🧹 chore
 
+- **dist** — sync mKlaimPrint — SEP BPJS + formulir RM dedicated (`60e1b39`)
 - **mKlaimPrint** — sync dist setelah rebase (Pengkajian IGD) (`25d7426`)
 - hapus fitur CPPT Search & Filter (`f08e87a`)
 
@@ -2166,4 +2168,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: edb42739c3e74302aa4f4c3a1b1e54cb27ffcc06 -->
+<!-- changelog-upto: 5cfbd9a043235695a736c2cae42ddb83600540a0 -->
