@@ -889,13 +889,13 @@ ${kop("RM. 02")}
         const name = c[2] || "-";
         const key = name.toUpperCase().replace(/\s+/g, " ").trim();
         const frek = parseInt(c[4], 10) || 1;
-        const jaminan = parseFloat((c[7] || "0").replace(/\./g, "").replace(",", ".")) || 0;
+        const jaminan2 = parseFloat((c[7] || "0").replace(/\./g, "").replace(",", ".")) || 0;
         const prev = tindakan.get(key);
         if (prev) {
           prev.frek += frek;
-          prev.jaminan += jaminan;
+          prev.jaminan += jaminan2;
         } else {
-          tindakan.set(key, { name, petugas: c[3] || "-", frek, tarif: c[5] || "-", jaminan });
+          tindakan.set(key, { name, petugas: c[3] || "-", frek, tarif: c[5] || "-", jaminan: jaminan2 });
         }
       }
       const obatTable = tables.find((t) => /nama\s*obat/i.test(t.rows[0]?.textContent || ""));
@@ -907,17 +907,42 @@ ${kop("RM. 02")}
         const name = c[1].replace(/^\d+\s*/, "").trim() || "-";
         const key = name.toUpperCase().replace(/\s+/g, " ").trim();
         const qty = parseFloat(c[2].replace(",", ".")) || 0;
-        const jaminan = parseFloat((c[5] || "0").replace(/\./g, "").replace(",", ".")) || 0;
+        const jaminan2 = parseFloat((c[5] || "0").replace(/\./g, "").replace(",", ".")) || 0;
         const prev = obat.get(key);
         if (prev) {
           prev.qty += qty;
-          prev.jaminan += jaminan;
+          prev.jaminan += jaminan2;
         } else {
-          obat.set(key, { name, qty, jaminan });
+          obat.set(key, { name, qty, jaminan: jaminan2 });
         }
       }
     }
+    const summary = (re) => {
+      if (!doc) return 0;
+      for (const tr of Array.from(doc.querySelectorAll("tr"))) {
+        const c = Array.from(tr.cells).map(
+          (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
+        );
+        if (!c.some((x) => re.test(x))) continue;
+        for (const x of c.slice(1)) {
+          const num = parseFloat(x.replace(/\./g, "").replace(",", "."));
+          if (Number.isFinite(num) && num !== 0) return num;
+        }
+      }
+      return 0;
+    };
+    const jasa = summary(/^Total Jasa Rp/i);
+    const resep = summary(/^Total Resep/i);
+    const jasaPelayanan = summary(/^Jasa Pelayanan/i);
+    const administrasi = summary(/^Biaya Administrasi/i);
+    const materai = summary(/^Biaya Materai/i);
+    const diskon = summary(/^Diskon/i);
+    const pembulatan = summary(/^Pembulatan/i);
+    const jaminan = summary(/^Total Biaya/i);
+    const totalTagihan = jasa + resep + jasaPelayanan;
+    const tanggungan = Math.max(0, totalTagihan - jaminan);
     const rupiah = (n) => n.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    const sumLine = (label, value, bold = false) => `<div class="rm-sum-line"${bold ? ' style="font-weight:bold;border-top:1px solid #000;"' : ""}><span>${esc(label)}</span><span class="rm-sum-dots"></span><span>${esc(value)}</span></div>`;
     const tindakanRows = Array.from(tindakan.values()).map(
       (r, i) => `<tr><td class="center">${i + 1}</td><td>${esc(r.name)}</td><td>${esc(r.petugas)}</td><td class="center">${r.frek}</td><td class="num">${esc(r.tarif)}</td><td class="num">${rupiah(r.jaminan)}</td></tr>`
     ).join("");
@@ -971,6 +996,24 @@ ${kop("RM. 05")}
   </tr></thead>
   <tbody>${obatRows}</tbody>
 </table>
+
+<div class="rm-summary">
+  ${sumLine("Sub Total Layanan Medis / Tindakan", rupiah(jasa))}
+  ${sumLine("Sub Total Penjualan (Farmasi/Obat)", rupiah(resep))}
+  ${sumLine("Jasa Pelayanan (Jasa Medis/Paramudis)", rupiah(jasaPelayanan))}
+  ${sumLine("Jasa Sarana", "0")}
+  ${sumLine("Biaya Administrasi", rupiah(administrasi))}
+  ${sumLine("Biaya Materai", rupiah(materai))}
+  ${sumLine("Diskon", rupiah(diskon))}
+  ${sumLine("Pembulatan", rupiah(pembulatan))}
+  ${sumLine("TOTAL TAGIHAN (KOTOR)", rupiah(totalTagihan), true)}
+  ${sumLine("Ditanggung Jaminan / Klaim BPJS", rupiah(jaminan))}
+  ${sumLine("TANGGUNGAN PASIEN (Sisa yang harus dibayar)", rupiah(tanggungan))}
+  ${sumLine("Uang Muka / Deposit", "0")}
+  ${sumLine("Bayar (Tunai/Non-Tunai)", rupiah(tanggungan))}
+  ${sumLine("Kembali", "0")}
+  ${sumLine("Status", tanggungan === 0 ? "Lunas" : "-")}
+</div>
 
 <div class="rm-signature-block">
   <div class="rm-sig-box">
@@ -1698,6 +1741,9 @@ ${kop(m.code)}
 
 /* \u2500\u2500 Tambahan generator: komponen hasil scrape & fokus keyboard \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
 .kop-logo{object-fit:contain;object-position:center}
+.rm-summary{margin:8px 0 10px;font-size:8.5pt}
+.rm-sum-line{display:flex;align-items:baseline;gap:6px;padding:1px 0}
+.rm-sum-line .rm-sum-dots{flex:1;border-bottom:1px dotted #000;transform:translateY(-3px)}
 .rm-checkbox:focus-visible,.vbox:focus-visible,.toolbar-btn:focus-visible,.toolbar-select:focus-visible,.tab-btn:focus-visible{outline:2px solid #000000;outline-offset:2px}
 .vbox{appearance:none;-webkit-appearance:none;width:11px;height:11px;margin:0;border:1px solid #000000;border-radius:0;background-color:#FFFFFF;display:inline-grid;place-content:center;vertical-align:middle;cursor:pointer}
 .vbox::before{content:"\u2713";font-size:9px;font-weight:bold;line-height:1;color:#000000;transform:scale(0)}

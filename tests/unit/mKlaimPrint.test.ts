@@ -121,6 +121,16 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(bill).toContain('prev.frek += frek');
     expect(bill).toContain('prev.qty += qty');
     expect(src).toContain('return buildBillingSection(sections);');
+    // Footer ringkasan ala contoh billing BPJS.
+    for (const label of [
+      'TOTAL TAGIHAN (KOTOR)',
+      'Ditanggung Jaminan / Klaim BPJS',
+      'TANGGUNGAN PASIEN',
+      'Bayar (Tunai/Non-Tunai)',
+      'Status',
+    ]) {
+      expect(bill).toContain(label);
+    }
   });
 
   it('memakai ID field produksi & kode section referensi', () => {
