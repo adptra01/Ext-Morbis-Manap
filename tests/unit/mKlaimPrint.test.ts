@@ -191,7 +191,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.08 (Radiologi): hasil pemeriksaan terstruktur', () => {
     const rad = src.slice(
       src.indexOf('function buildRadiologiSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildTriageSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-08">',
@@ -206,6 +206,31 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       expect(rad).toContain(marker);
     }
     expect(src).toContain('return buildRadiologiSection(sections);');
+  });
+
+  it('Triage IGD: pengkajian awal terstruktur, data scrape + pick()', () => {
+    const tri = src.slice(
+      src.indexOf('function buildTriageSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="triage">',
+      'TRIAGE TERINTEGRASI &amp; PENGKAJIAN AWAL IGD',
+      'Jam Datang',
+      'Jam Registrasi',
+      'Status Triage',
+      'ANAMNESA &amp; RIWAYAT',
+      'Keluhan Utama',
+      'TANDA VITAL &amp; PEMERIKSAAN',
+      'Tekanan Darah (mmHg)',
+      'Dokter yang Memeriksa',
+    ]) {
+      expect(tri).toContain(marker);
+    }
+    expect(tri).toContain("pick('norm', 'rekam_medis')");
+    expect(tri).toContain('Dokter yang memeriksa\\s*\\(([^)]+)\\)');
+    expect(src).toContain("id: 'triage'");
+    expect(src).toContain('return buildTriageSection(sections);');
   });
 
   it('memakai ID field produksi & kode section referensi', () => {

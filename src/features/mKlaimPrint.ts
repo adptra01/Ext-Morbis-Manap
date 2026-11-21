@@ -440,6 +440,15 @@ const KOP_LOGO = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAIAAAAB
 /** Pemetaan judul section hasil scrape ke kode/ID formulir referensi. */
 const RM_META: Array<[RegExp, { id: string; code: string; tab: string; option: string }]> = [
   [
+    /^Triage/i,
+    {
+      id: 'triage',
+      code: 'TRIAGE',
+      tab: 'Triage IGD',
+      option: 'Triage — Pengkajian Awal IGD',
+    },
+  ],
+  [
     /^SEP$/i,
     {
       id: 'rm-01',
@@ -1596,6 +1605,126 @@ ${kop('RM. 08')}
 </section>`;
 }
 
+/** SECTION — TRIAGE TERINTEGRASI (PENGKAJIAN AWAL IGD).
+ *  Tidak ada nomor RM baku di referensi; memakai kop "TRIAGE". Data diambil dari
+ *  tabel label ':' section hasil scrape, field halaman lewat pick(), fallback '-'. */
+function buildTriageSection(sections: Section[]): string {
+  const tri = sections.find((s) => /^Triage/i.test(s.title));
+  const doc = tri ? new DOMParser().parseFromString(tri.html, 'text/html') : null;
+  const fields = new Map<string, string>();
+  let dokterPemeriksa = '-';
+
+  if (doc) {
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const c = Array.from(tr.cells).map((td) =>
+        (td.innerHTML || '')
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/[ \t]+/g, ' ')
+          .trim(),
+      );
+      for (let i = 0; i < c.length - 2; i++) {
+        const label = c[i].replace(/:$/, '').trim();
+        if (c[i + 1] !== ':') continue;
+        if (label && c[i + 2] && !fields.has(label)) fields.set(label, c[i + 2]);
+      }
+      for (const cell of c) {
+        const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+        // Lewati sel gabungan (mis. T0 "Cara Datang : Diantar Polisi : No. ID :
+        // Tanggal : ...") — nilainya mengandung ':' / terlalu panjang.
+        if (!m || m[2].includes(':') || m[2].length > 120) continue;
+        if (!fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
+      }
+    }
+    const dm = (doc.textContent || '')
+      .replace(/\s+/g, ' ')
+      .match(/Dokter yang memeriksa\s*\(([^)]+)\)/i);
+    if (dm) dokterPemeriksa = dm[1].trim();
+  }
+  const f = (...res: RegExp[]): string => {
+    for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
+    return '-';
+  };
+
+  const norm =
+    pick('norm', 'rekam_medis') !== '-' ? pick('norm', 'rekam_medis') : f(/^No\.?\s*RM/i);
+  const nama = pick('nama') !== '-' ? pick('nama') : f(/^Nama$/i);
+  const tanggal = f(/^Tanggal$/i);
+  const jamDatang = f(/^Jam Datang/i);
+  const jamRegistrasi = f(/^Jam Registrasi/i);
+  const caraDatang = f(/^Cara Datang/i);
+  const diantarPolisi = f(/^Diantar Polisi/i);
+  const noId = f(/^No\.?\s*ID/i);
+  const pengantar = f(/^Pengantar Pasien/i);
+  const riwayat = f(/^Riwayat Penyakit Dahulu/i);
+  const keluhan = f(/^Keluhan Utama/i);
+  const keadaanUmum = f(/^Keadaan Umum/i);
+  const suhu = f(/^Suhu/i);
+  const nadi = f(/^Nadi/i);
+  const rr = f(/^RR$/i);
+  const td = f(/^Tekanan Darah/i);
+  const jam = f(/^Jam$/i);
+  const noAntrian = f(/^No\.?\s*Antrian/i);
+  const status = f(/^Status/i);
+
+  return `<section class="rm-page" id="triage">
+${kop('TRIAGE')}
+<div class="rm-form-title">TRIAGE TERINTEGRASI &amp; PENGKAJIAN AWAL IGD</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. Rekam Medis', norm, true)}
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('Tanggal', tanggal)}
+    ${idRow('Jam Datang', jamDatang)}
+    ${idRow('Jam Registrasi', jamRegistrasi)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Cara Datang', caraDatang)}
+    ${idRow('Diantar Polisi', diantarPolisi)}
+    ${idRow('No. ID', noId)}
+    ${idRow('Pengantar Pasien', pengantar)}
+    ${idRow('Status Triage', status, true)}
+  </table></div>
+</div>
+
+<div class="sub-heading-rm">ANAMNESA &amp; RIWAYAT</div>
+<table class="rm-grid-table"><tbody>
+  ${idRow('Riwayat Penyakit Dahulu', riwayat)}
+  ${idRow('Keluhan Utama', keluhan)}
+</tbody></table>
+
+<div class="sub-heading-rm">TANDA VITAL &amp; PEMERIKSAAN</div>
+<div class="id-box-borderless">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Keadaan Umum', keadaanUmum)}
+    ${idRow('Suhu (°C)', suhu)}
+    ${idRow('Nadi (x/menit)', nadi)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('RR (x/menit)', rr)}
+    ${idRow('Tekanan Darah (mmHg)', td)}
+    ${idRow('Jam', jam)}
+    ${idRow('No. Antrian', noAntrian)}
+  </table></div>
+</div>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box left-align">
+    <div>Status Triage : ${esc(status)}</div>
+    <div>No. Antrian : ${esc(noAntrian)}</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(tanggal)}</div>
+    <div>Dokter yang Memeriksa</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(dokterPemeriksa)} )</div>
+  </div>
+</div>
+</section>`;
+}
+
 function buildHtml(sections: Section[], inventory: InventoryRow[]): string {
   const checks = runChecks(sections, inventory);
 
@@ -1739,6 +1868,7 @@ ${checksHtml}
       if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
       if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
       if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections);
+      if (/^Triage/i.test(s.title)) return buildTriageSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}

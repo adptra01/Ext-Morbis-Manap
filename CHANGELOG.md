@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign RM.08 Radiologi — hasil pemeriksaan terstruktur (`d874b61`)
 - **mKlaimPrint** — redesign RM.07 Telaah ikut format telaahResepPrint (data scrape) (`aaf9239`)
 - **mKlaimPrint** — redesign Section RM.06 (Resume) — ringkasan pulang (`849b335`)
 - **mKlaimPrint** — buka dossier via extension page print-berkas-klaim (tahan refresh) (`9aee17d`)
@@ -24,6 +25,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — RM.07 ambil Ruangan/Poli, Tanggal, Jam dari detail klaim (`4dc4416`)
 - **mKlaimPrint** — RM.07 lengkapi data pasien/dokter & samakan grid telaahResepPrint (`02c7a16`)
 - **mKlaimPrint** — kirim HTML ke background (hindari Extension context invalidated) (`a0000a8`)
 - **mKlaimPrint** — buka dossier lewat background tabs.create (Brave ERR_BLOCKED_BY_CLIENT) (`53948dd`)
@@ -2160,4 +2162,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 02c7a16c0dcb91a0da74fa5294b29a4ce1a08c1f -->
+<!-- changelog-upto: d874b61b1667fd86f8081c84e2c7bfe9be486bac -->
