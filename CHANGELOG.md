@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — logo BPJS resmi & satukan margin @page A4 portrait 12mm (`11f6f1d`)
 - **mKlaimPrint** — alternatif tab dossier via blob: & document.write (`4807f59`)
 - **mKlaimPrint** — sheet SEP BPJS VClaim + 14 formulir RM dedicated (`edb4273`)
 - **mKlaimPrint** — redesign Pengkajian IGD — triase, FLACC, risiko jatuh, tindakan (`4f55ab8`)
@@ -29,6 +30,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — grid() terima string baris — perbaiki body.join is not a function (`c1de84a`)
 - **mKlaimPrint** — fallback dossier lokal via iframe saat background gagal (`cf74d63`)
 - **mKlaimPrint** — SEP field scrape, alamat lintas-section & print self-healing (`5cfbd9a`)
 - **mKlaimPrint** — RM.07 ambil Ruangan/Poli, Tanggal, Jam dari detail klaim (`4dc4416`)
@@ -2177,4 +2179,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9580894b2361f267a2c6f24a2eacaef81105e550 -->
+<!-- changelog-upto: 11f6f1d287ebd587cd147059b02e9c5ab5036af4 -->

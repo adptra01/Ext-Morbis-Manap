@@ -59,15 +59,14 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'class="sep-signatures"',
       'class="sep-sig-line"',
       'Petugas<br/>BPJS Kesehatan',
-      // Blok INA-CBG tetap dipertahankan di bawah sheet.
-      'BERKAS KLAIM INDIVIDUAL PASIEN (E-KLAIM INA-CBG)',
-      'id-box-borderless',
-      'DESKRIPSI DIAGNOSA (ICD-10) / PROSEDUR (ICD-9-CM)',
-      'HASIL GROUPING INA-CBG (Generated: E-Klaim 5.10.9)',
-      '<tr class="total-row">',
     ]) {
       expect(sep).toContain(marker);
     }
+    // SEP hanya sheet BPJS — blok INA-CBG dihapus, nama tidak dobel di ttd.
+    expect(sep).not.toContain('BERKAS KLAIM INDIVIDUAL PASIEN');
+    expect(sep).not.toContain('HASIL GROUPING INA-CBG');
+    expect(sep).not.toContain('codeRows');
+    expect(sep.match(/Nama Peserta/g)?.length).toBe(1);
     // Logo resmi BPJS (bukan SVG buatan sendiri) dari situs resmi, di-embed.
     expect(src).toContain('const BPJS_LOGO = `data:image/svg+xml;base64,');
     expect(sep).toContain('src="${BPJS_LOGO}"');

@@ -555,12 +555,7 @@ var __morbis_feature = (() => {
     const kelas = pick("kelas").replace(/^Kelas\s*/i, "");
     const lahirRaw = pick("tgl_lahir", "tglLahir").replace(/^:\s*/, "");
     const lahir = lahirRaw.split(/\s*\/\s*/)[0]?.trim() || "-";
-    const masuk = pick("tanggalAwal", "tgl_masuk", "tgl");
-    const keluar = pick("tanggalAkhir", "keluar", "tgl_keluar");
     const dokter = pick("dokter", "dpjp");
-    const cbgCode = grab(/(E-\d+-\d+-\d+)/i);
-    const cbgDesc = grab(/(?:GROUP|INA-CBG)\s+([A-Z][A-Z0-9\s\-(),.]+?)(?:\s+Rp|\s+2\.930|$)/i);
-    const cbgTarif = grab(/(?:TARIF|Rp\.?)\s*([\d.]+(?:,\d{2})?)/i);
     const kartu = pick("kartu", "no_kartu", "noka");
     const mr = pick("norm", "rekam_medis");
     const km = kartu.match(/^(.*?)\s*\(MR\.?\s*([^)]+)\)$/i);
@@ -577,28 +572,6 @@ var __morbis_feature = (() => {
     const printMeta = cetakan !== "-" ? `<div class="sep-print-meta">Cetakan ke ${esc(cetakan)}</div>` : "";
     const kv = (label, value, cls = "", right = false) => `<tr><td class="lbl${right ? " right" : ""}">${label}</td><td class="sep">:</td><td class="val${cls ? " " + cls : ""}">${value}</td></tr>`;
     const spacer = '<tr><td colspan="3">&nbsp;</td></tr>';
-    const codeRows = [];
-    if (sepSection) {
-      const doc = new DOMParser().parseFromString(sepSection.html, "text/html");
-      doc.querySelectorAll("tr").forEach((tr) => {
-        const cells = Array.from(tr.cells).map(
-          (c) => c.textContent?.replace(/\s+/g, " ").trim() || ""
-        );
-        if (cells.length < 3) return;
-        const code = cells.find((c) => /^[A-Z]?\d{2}(?:\.\d+)?$/.test(c));
-        if (!code) return;
-        const desc = cells[cells.length - 1] === code ? "-" : cells[cells.length - 1];
-        const jenis = cells[0] === code ? "-" : cells[0];
-        codeRows.push(
-          `<tr><td>${esc(jenis)}</td><td class="center"><strong>${esc(code)}</strong></td><td>${esc(desc)}</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi ${esc(code)}"></td></tr>`
-        );
-      });
-    }
-    if (!codeRows.length) {
-      codeRows.push(
-        '<tr><td>Diagnosa Utama</td><td class="center">-</td><td>-</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi Diagnosa Utama"></td></tr>'
-      );
-    }
     const kelasTeks = kelas !== "-" ? `Kelas ${esc(kelas)}` : "-";
     return `<section class="rm-page sep-page" id="rm-01">
  <section class="bpjs-sep-sheet">
@@ -643,7 +616,7 @@ var __morbis_feature = (() => {
    <div class="sep-sig-box">
      <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
      <div class="sep-sig-space"></div>
-     <div class="sep-sig-line">${esc(pick("nama"))}</div>
+     <div class="sep-sig-line">&nbsp;</div>
    </div>
    <div class="sep-sig-box">
      <div class="sep-sig-role">Petugas<br/>BPJS Kesehatan</div>
@@ -652,43 +625,6 @@ var __morbis_feature = (() => {
    </div>
  </div>
  </section>
-
-<div class="sub-heading-rm">BERKAS KLAIM INDIVIDUAL PASIEN (E-KLAIM INA-CBG)</div>
-
-<div class="id-box-borderless">
-  <div class="id-col"><table class="id-table">
-    ${idRow("Kode / Kelas RS", "-")}
-    ${idRow("Tanggal Masuk", masuk)}
-    ${idRow("Tanggal Keluar", keluar)}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow("Umur Tahun / Hari", "-")}
-    ${idRow("Lama Rawat (LOS)", "-")}
-    ${idRow("Cara Pulang", "-")}
-  </table></div>
-</div>
-
-<table class="rm-grid-table">
-  <thead><tr>
-    <th style="width: 120px;">JENIS KODING</th>
-    <th style="width: 72px;">KODE</th>
-    <th>DESKRIPSI DIAGNOSA (ICD-10) / PROSEDUR (ICD-9-CM)</th>
-    <th style="width: 56px;">VER (&#10003;)</th>
-  </tr></thead>
-  <tbody>${codeRows.join("")}</tbody>
-</table>
-
-<table class="rm-grid-table">
-  <thead>
-    <tr><th colspan="3">HASIL GROUPING INA-CBG (Generated: E-Klaim 5.10.9)</th></tr>
-    <tr><th style="width: 110px;">KODE INA-CBG</th><th>DESKRIPSI GROUP</th><th class="num" style="width: 140px;">TARIF (Rp)</th></tr>
-  </thead>
-  <tbody>
-    <tr><td class="center"><strong>${esc(cbgCode)}</strong></td><td>${esc(cbgDesc)}</td><td class="num">${esc(cbgTarif)}</td></tr>
-    <tr><td class="center">-</td><td>Sub Acute / Chronic / Special CMG</td><td class="num">0,00</td></tr>
-    <tr class="total-row"><td colspan="2" style="text-align: right;">TOTAL TARIF INA-CBG :</td><td class="num">Rp ${esc(cbgTarif)}</td></tr>
-  </tbody>
-</table>
 </section>`;
   }
   function buildSpriSection(sections) {
