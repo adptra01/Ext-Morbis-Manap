@@ -147,6 +147,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(sbpk).toContain(marker);
     }
+    // Tanggal "Kota Jambi, ..." tidak ditampilkan di blok TTD SBPK.
+    expect(sbpk).not.toContain('Kota Jambi, ${esc(masuk)}');
     // Data diagnosa & dokter penanggung diambil dari tabel asli SBPK.
     expect(sbpk).toContain('const diagRows:');
     // Guard regresi: pakai `cells`, bukan `c` yang tidak terdefinisi.

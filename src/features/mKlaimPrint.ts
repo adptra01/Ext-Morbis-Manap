@@ -1113,7 +1113,6 @@ ${kop('RM. 02')}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
-    <div>Kota Jambi, ${esc(masuk)}</div>
     <div>Dokter Penanggung Jawab Pelayanan (DPJP)</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( ${esc(dokter)} )</div>

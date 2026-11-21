@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — SBPK pakai diagnosa & dokter penanggung dari tabel asli (`3c16d67`)
 - **mKlaimPrint** — lengkapi SEP — QR code, kelamin & item kunjungan terpisah (`ccd5a9f`)
 - **mKlaimPrint** — logo BPJS resmi & satukan margin @page A4 portrait 12mm (`11f6f1d`)
 - **mKlaimPrint** — alternatif tab dossier via blob: & document.write (`4807f59`)
@@ -31,6 +32,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — SBPK pakai cells (ReferenceError c tidak terdefinisi) (`22adc21`)
 - **mKlaimPrint** — expertise radiologi pertahankan baris baru asli (`fab8f3b`)
 - **mKlaimPrint** — peserta SEP tak menelan seluruh teks dari judul (`0e84800`)
 - **mKlaimPrint** — field Peserta tidak menangkap Nama Peserta di SEP (`99b413a`)
@@ -2187,4 +2189,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ccd5a9ffbe709edace5bc4fdfecaa8d5c4d27d3b -->
+<!-- changelog-upto: 22adc21300150608fdefb0abf6903bb7cca2d326 -->
