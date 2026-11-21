@@ -107,7 +107,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.05 (Rincian Biaya): tanpa tanggal/VER, obat sama dijumlah Qty', () => {
     const bill = src.slice(
       src.indexOf('function buildBillingSection'),
-      src.indexOf('function buildHtml'),
+      src.indexOf('function buildResumeSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-05">',
@@ -186,6 +186,26 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain('const medicationRows = [');
     expect(src).not.toContain("'Propanolol Tablet 10 mg'");
     expect(src).toContain('return buildTelaahSection(sections);');
+  });
+
+  it('RM.08 (Radiologi): hasil pemeriksaan terstruktur', () => {
+    const rad = src.slice(
+      src.indexOf('function buildRadiologiSection'),
+      src.indexOf('function buildHtml'),
+    );
+    for (const marker of [
+      '<section class="rm-page" id="rm-08">',
+      'HASIL PEMERIKSAAN RADIOLOGI',
+      'No. Rontgen',
+      'Tanggal Periksa',
+      'JENIS PEMERIKSAAN',
+      'URAIAN EXPERTISE &amp; KESAN RADIOGRAFI TORAKS',
+      'Kode Prosedur ICD-9-CM : 87.44',
+      'Dokter Spesialis Radiologi Penilai',
+    ]) {
+      expect(rad).toContain(marker);
+    }
+    expect(src).toContain('return buildRadiologiSection(sections);');
   });
 
   it('memakai ID field produksi & kode section referensi', () => {

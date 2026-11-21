@@ -1171,6 +1171,102 @@ ${kop("RM. 07")}
 <div class="footnote-rm">Obat tidak boleh diganti tanpa sepengetahuan Dokter.</div>
 </section>`;
   }
+  function buildRadiologiSection(sections) {
+    const rad = sections.find((s) => /^Radiologi/i.test(s.title));
+    const doc = rad ? new DOMParser().parseFromString(rad.html, "text/html") : null;
+    const fields = /* @__PURE__ */ new Map();
+    const exams = [];
+    let expertise = "";
+    const cellText = (tr) => (tr.textContent || "").replace(/\s+/g, " ").trim();
+    if (doc) {
+      for (const tr of Array.from(doc.querySelectorAll("tr"))) {
+        const c = Array.from(tr.cells).map(
+          (td) => (td.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim()
+        );
+        for (const cell of c) {
+          const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+          if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
+        }
+        if (c.length >= 4 && /^\d+$/.test(c[0]) && c[1]) exams.push(c[1]);
+        if (/expertise/i.test(cellText(tr))) expertise = cellText(tr);
+      }
+    }
+    const f = (...res) => {
+      for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
+      return "-";
+    };
+    const noRontgen = f(/^No\.? RONTGEN/i);
+    const tglPeriksa = f(/^Tanggal Periksa/i);
+    const umur = f(/^Umur/i);
+    const norm = pick("norm", "rekam_medis") !== "-" ? pick("norm", "rekam_medis") : f(/^No\.? RM/i);
+    const nama = pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i);
+    const jkRaw = pick("jenis_kelamin", "jk").replace(/^:\s*/, "") || f(/^Jenis Kelamin/i);
+    const jkShort = /perempuan|^p$/i.test(jkRaw) ? "P" : /laki|^l$/i.test(jkRaw) ? "L" : jkRaw;
+    const alamat = pick("alamat") !== "-" ? pick("alamat") : f(/^Alamat/i);
+    const ruang = f(/^Bed|^Ruang/i);
+    const status = f(/^Status/i);
+    const dokterPengirim = f(/^dr\.? Pengirim|^Dokter Pengirim/i);
+    const dokterDpjp = f(/^dr\.? DPJP|^Dokter DPJP/i);
+    const diagnosa = f(/^Diagnosa Klinis/i);
+    const diagnosaIcd = f(/^Diagnosa ICD/i);
+    const golongan = exams.length ? "RONTGEN" : "-";
+    const examRows = exams.length ? exams.map(
+      (name, i) => `<tr><td class="center">${i + 1}</td><td><strong>${esc(name)}</strong></td><td class="center">${esc(golongan)}</td><td class="center">Tanpa Kontras</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi Radiologi ${i + 1}"></td></tr>`
+    ).join("") : '<tr><td class="center">-</td><td>Tidak ada jenis pemeriksaan tercatat.</td><td class="center">-</td><td class="center">-</td><td class="center">-</td></tr>';
+    const expertiseHtml = expertise ? expertise.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => `<div>${esc(l)}</div>`).join("") : "<div>Tidak ada expertise tercatat pada halaman.</div>";
+    return `<section class="rm-page" id="rm-08">
+${kop("RM. 08")}
+<div class="rm-form-title">HASIL PEMERIKSAAN RADIOLOGI</div>
+
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow("No. Rontgen", noRontgen, true)}
+    ${idRow("Tanggal Periksa", tglPeriksa)}
+    ${idRow("No. Rekam Medis", norm)}
+    ${idRow("Nama Pasien", nama, true)}
+    ${idRow("Jenis Kelamin", jkShort !== "-" ? `Laki-laki / Perempuan (${jkShort})` : "-")}
+    ${idRow("Alamat", alamat)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow("Umur / Tgl. Lahir", umur)}
+    ${idRow("Ruang / Asal", ruang !== "-" && status !== "-" ? `${ruang} (Status: ${status})` : ruang)}
+    ${idRow("Dokter Pengirim", dokterPengirim)}
+    ${idRow("Dokter DPJP Rad", dokterDpjp)}
+    ${idRow("Diagnosa Klinis", diagnosa !== "-" && diagnosaIcd !== "-" ? `${diagnosa} (${diagnosaIcd})` : diagnosa)}
+    ${idRow("Golongan / Jenis", `${golongan} \u2014 Tanpa Kontras`)}
+  </table></div>
+</div>
+
+<table class="rm-grid-table">
+  <thead><tr>
+    <th style="width: 32px;">NO</th>
+    <th>JENIS PEMERIKSAAN</th>
+    <th style="width: 110px;">GOLONGAN</th>
+    <th style="width: 110px;">KONTRAS</th>
+    <th class="center" style="width: 56px;">VER (&#10003;)</th>
+  </tr></thead>
+  <tbody>${examRows}</tbody>
+</table>
+
+<table class="rm-grid-table">
+  <thead><tr><th>URAIAN EXPERTISE &amp; KESAN RADIOGRAFI TORAKS</th></tr></thead>
+  <tbody><tr><td style="padding: 8px 10px; line-height: 1.5;">${expertiseHtml}</td></tr></tbody>
+</table>
+
+<div class="rm-signature-block">
+  <div class="rm-sig-box left-align">
+    <div>No. Rontgen : ${esc(noRontgen)}</div>
+    <div>Kode Prosedur ICD-9-CM : 87.44</div>
+  </div>
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(tglPeriksa)}</div>
+    <div>Dokter Spesialis Radiologi Penilai</div>
+    <div class="rm-sig-space"></div>
+    <div class="rm-sig-name">( ${esc(dokterDpjp)} )</div>
+  </div>
+</div>
+</section>`;
+  }
   function buildHtml(sections, inventory) {
     const checks = runChecks(sections, inventory);
     const sep = pick("no_sep", "sep");
@@ -1303,6 +1399,7 @@ ${checksHtml}
       if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
       if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
       if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
+      if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections);
       const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}
