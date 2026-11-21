@@ -68,7 +68,14 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(sep).toContain(marker);
     }
-    expect(src).toContain('const SEP_LOGO_SVG');
+    // Logo resmi BPJS (bukan SVG buatan sendiri) dari situs resmi, di-embed.
+    expect(src).toContain('const BPJS_LOGO = `data:image/svg+xml;base64,');
+    expect(sep).toContain('src="${BPJS_LOGO}"');
+    expect(src).toContain('.sep-logo{flex:0 0 215px');
+    // Satu @page A4 portrait 12mm — tidak ada override margin di blok SEP.
+    expect(src.match(/@page\s*\{/g)?.length).toBe(1);
+    expect(src).toContain('size: A4 portrait;');
+    expect(src).toContain('margin: 12mm;');
     expect(src).toContain('const sepNorm');
     expect(sep).not.toContain("kop('RM. 01')");
     expect(sep).not.toContain('SAMPLE_SEP_DATA');
