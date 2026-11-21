@@ -510,7 +510,6 @@ var __morbis_feature = (() => {
   var ANTRL_URL = "/v2/antrol/search";
   var ANTRL_SUB = "sub=update_v2";
   var LIST_URL = "/public/antrian-farmasi-v2/list-antrian-v2";
-  var _hideNoAntrianInterval = null;
   var _sweepInterval = null;
   if (window.__extPenerimaanAntrol) {
     throw new Error("skip double inject penerimaanAntrolCetak");
@@ -695,46 +694,13 @@ var __morbis_feature = (() => {
     g.no_antrian = wrapped;
     void orig;
   }
-  function hideNoAntrianColumn() {
-    try {
-      document.querySelectorAll("table").forEach((table) => {
-        const ths = Array.from(table.querySelectorAll("th"));
-        let idx = -1;
-        ths.forEach((th, i) => {
-          if (/no\.?\s*antrian|nomor\s*antrian/i.test((th.textContent || "").trim())) {
-            idx = i;
-          }
-        });
-        if (idx < 0) return;
-        ths.forEach((th, i) => {
-          if (i === idx) th.style.display = "none";
-        });
-        table.querySelectorAll("tr").forEach((tr) => {
-          const td = tr.children[idx];
-          if (td) td.style.display = "none";
-        });
-      });
-    } catch {
-    }
-  }
   if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      () => {
-        wrapNoAntrian();
-        hideNoAntrianColumn();
-      },
-      { once: true }
-    );
+    document.addEventListener("DOMContentLoaded", wrapNoAntrian, { once: true });
   } else {
     wrapNoAntrian();
-    hideNoAntrianColumn();
   }
   window.setTimeout(wrapNoAntrian, 1e3);
   window.setTimeout(wrapNoAntrian, 3e3);
-  window.setTimeout(hideNoAntrianColumn, 1e3);
-  window.setTimeout(hideNoAntrianColumn, 3e3);
-  _hideNoAntrianInterval = window.setInterval(hideNoAntrianColumn, 3e3);
   function sweepCetakUlang() {
     try {
       document.querySelectorAll("tr[id]").forEach((tr) => {
@@ -759,7 +725,6 @@ var __morbis_feature = (() => {
     });
   });
   window.addEventListener("beforeunload", () => {
-    if (_hideNoAntrianInterval !== null) clearInterval(_hideNoAntrianInterval);
     if (_sweepInterval !== null) clearInterval(_sweepInterval);
   });
 })();

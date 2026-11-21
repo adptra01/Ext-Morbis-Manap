@@ -28,8 +28,7 @@ const ANTRL_SUB = 'sub=update_v2';
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
 // Guard anti double-inject (SPA/navigasi parsial MORBIS bisa inject 2x).
-// FIX: simpan interval refs untuk cleanup pas unload/page navigate
-let _hideNoAntrianInterval: number | null = null;
+// FIX: simpan interval ref untuk cleanup pas unload/page navigate
 let _sweepInterval: number | null = null;
 
 if ((window as unknown as { __extPenerimaanAntrol?: boolean }).__extPenerimaanAntrol) {
@@ -279,56 +278,14 @@ function wrapNoAntrian(): void {
   void orig; // tombol native lama tidak dipakai lagi — perilaku diganti penuh
 }
 
-/** Sembunyikan kolom "No Antrian" — antrian kini diterbitkan dari halaman
- *  DETAIL (tombol racik/tunggal), bukan dari list. Header MORBIS bisa `<thead>`
- *  atau `<tr><th>` langsung; cari th berteks "No Antrian" di SEMUA tabel, lalu
- *  sembunyikan th + semua td pada index yang sama (style langsung, bukan CSS
- *  sheet — tahan struktur apapun). Tabel di-render ulang via AJAX → jalankan
- *  berkala. */
-function hideNoAntrianColumn(): void {
-  try {
-    document.querySelectorAll('table').forEach((table) => {
-      const ths = Array.from(table.querySelectorAll('th'));
-      let idx = -1;
-      ths.forEach((th, i) => {
-        if (/no\.?\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) {
-          idx = i;
-        }
-      });
-      if (idx < 0) return;
-      ths.forEach((th, i) => {
-        if (i === idx) (th as HTMLElement).style.display = 'none';
-      });
-      table.querySelectorAll('tr').forEach((tr) => {
-        const td = tr.children[idx] as HTMLElement | undefined;
-        if (td) td.style.display = 'none';
-      });
-    });
-  } catch {
-    /* tabel belum siap */
-  }
-}
-
 if (document.readyState === 'loading') {
-  document.addEventListener(
-    'DOMContentLoaded',
-    () => {
-      wrapNoAntrian();
-      hideNoAntrianColumn();
-    },
-    { once: true },
-  );
+  document.addEventListener('DOMContentLoaded', wrapNoAntrian, { once: true });
 } else {
   wrapNoAntrian();
-  hideNoAntrianColumn();
 }
 // MORBIS bisa render ulang tabel setelah AJAX; pastikan wrap tetap aktif.
 window.setTimeout(wrapNoAntrian, 1000);
 window.setTimeout(wrapNoAntrian, 3000);
-window.setTimeout(hideNoAntrianColumn, 1000);
-window.setTimeout(hideNoAntrianColumn, 3000);
-// FIX: simpan interval ID agar bisa di-clear pas unload
-_hideNoAntrianInterval = window.setInterval(hideNoAntrianColumn, 3000);
 
 /** Pass pembersihan: baris yang kolom No Antrian-nya sudah berisi nomor
  *  (data-ext-code dari sesi ini ATAU native UT-xxx hasil antri sebelumnya)
@@ -362,6 +319,5 @@ whenFeatureEnabled('penerimaanExport', () => {
 
 // FIX: cleanup semua interval saat page unload/navigate
 window.addEventListener('beforeunload', () => {
-  if (_hideNoAntrianInterval !== null) clearInterval(_hideNoAntrianInterval);
   if (_sweepInterval !== null) clearInterval(_sweepInterval);
 });
