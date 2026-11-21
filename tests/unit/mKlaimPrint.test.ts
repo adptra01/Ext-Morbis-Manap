@@ -64,6 +64,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       expect(spr).toContain(marker);
     }
     expect(src).toContain('return buildSpriSection(sections);');
+    // Baris baru pada value tidak boleh di-esc() langsung (jadi sambung).
+    expect(spr).toContain("esc(s).replace(/\\r?\\n/g, '<br/>')");
+    expect(spr).not.toContain('esc(fisik)');
+    expect(spr).not.toContain('esc(catatan)');
+    expect(spr).not.toContain('esc(diit)');
   });
 
   it('RM.02 (SBPK): redesign efisien (2 pass, tanpa formatSbpkActions)', () => {

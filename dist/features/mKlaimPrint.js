@@ -686,7 +686,7 @@ ${kop("RM. 01")}
     const dokter = pick("dokter", "dpjp");
     const lahirSplit = pick("tgl_lahir", "tglLahir").split(/\s*\/\s*/);
     const umurTeks = lahirSplit.length > 1 ? `${lahirSplit[1]} (${lahirSplit[0]})` : lahirSplit[0] || "-";
-    const nl2br = (s) => esc(s).replace(/\n/g, "<br/>");
+    const nl2br = (s) => esc(s).replace(/\r?\n/g, "<br/>");
     return `<section class="rm-page" id="rm-03">
 ${kop("RM. 03")}
 <div class="rm-form-title">SURAT PENGANTAR RAWAT INAP (SPRI)</div>
@@ -728,10 +728,10 @@ ${kop("RM. 03")}
     <tr><td style="width: 175px;"><strong>ANAMNESIS</strong></td><td>${nl2br(field(/^Anamnesis$/i))}</td></tr>
     <tr><td><strong>RIWAYAT PENYAKIT KELUARGA</strong></td><td>${nl2br(field(/^Riwayat Penyakit Keluarga$/i))}</td></tr>
     <tr><td><strong>RIWAYAT ALERGI</strong></td><td>${nl2br(field(/^Riwayat Alergi$/i))}</td></tr>
-    <tr><td><strong>PEMERIKSAAN FISIK / CATATAN</strong></td><td>${fisik !== "-" ? `<strong>${esc(fisik)}</strong>` : "-"}${catatan !== "-" ? `<br/>${esc(catatan)}` : ""}</td></tr>
+    <tr><td><strong>PEMERIKSAAN FISIK / CATATAN</strong></td><td>${fisik !== "-" ? `<strong>${nl2br(fisik)}</strong>` : "-"}${catatan !== "-" ? `<br/>${nl2br(catatan)}` : ""}</td></tr>
     <tr><td><strong>PEMERIKSAAN PENUNJANG AWAL</strong></td><td>${nl2br(field(/^Pemeriksaan Penunjang$/i))}</td></tr>
-    <tr><td><strong>DIAGNOSA KERJA</strong></td><td><strong>${esc(field(/^Diagnosa Kerja$/i))}</strong></td></tr>
-    <tr><td><strong>TERAPI &amp; DIIT AWAL</strong></td><td>${nl2br(terapi)}${diit !== "-" ? `<br/><strong>Diit :</strong> ${esc(diit)}` : ""}</td></tr>
+    <tr><td><strong>DIAGNOSA KERJA</strong></td><td><strong>${nl2br(field(/^Diagnosa Kerja$/i))}</strong></td></tr>
+    <tr><td><strong>TERAPI &amp; DIIT AWAL</strong></td><td>${nl2br(terapi)}${diit !== "-" ? `<br/><strong>Diit :</strong> ${nl2br(diit)}` : ""}</td></tr>
   </tbody>
 </table>
 
