@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-11-21
+
+### 🐛 fix
+
+- **penerimaan** — tampilkan kembali kolom No Antrian di daftar resep (`52e8515`)
+
+### 🧹 chore
+
+- hapus fitur CPPT Search & Filter (`f08e87a`)
+
 ## 2026-11-20
 
 ### ✨ feat
@@ -2126,4 +2136,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 38f92818f819c8758309302e085bbf956d04aaef -->
+<!-- changelog-upto: f08e87aa9ae8c72a616415770be4bbd66f02cad9 -->

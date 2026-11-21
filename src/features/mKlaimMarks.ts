@@ -74,11 +74,17 @@ let cssInjected = false;
 function ensureCss(): void {
   if (cssInjected) return;
   cssInjected = true;
+  const rgba = (hex: string, a: number): string =>
+    `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${a})`;
   const rules = CONFIGS.map(
     (c) => `
-    .ext-mk-btn[data-ext-mk="${c.mark}"] { border-color:${c.border}; background:#f8fafc; color:#475569; }
-    .ext-mk-btn[data-ext-mk="${c.mark}"]:hover { border-color:${c.color}; color:${c.color}; }
-    .ext-mk-btn[data-ext-mk="${c.mark}"].active { background:${c.color}; border-color:${c.color}; color:#fff; }
+    .ext-mk-btn[data-ext-mk="${c.mark}"].active {
+      background:${c.color} !important;border-color:${c.color} !important;color:#ffffff !important;
+      font-weight:700;box-shadow:0 2px 6px ${rgba(c.color, 0.35)};
+    }
+    .ext-mk-btn[data-ext-mk="${c.mark}"].active:hover {
+      background:${c.color} !important;border-color:${c.color} !important;
+    }
     .ext-mk-badge[data-ext-mk="${c.mark}"] { background:${c.bg}; color:${c.color}; border-color:${c.border}; }
     tr[data-ext-mk-marked="${c.mark}=true"] { box-shadow: inset 3px 0 0 ${c.color} !important; }
   `,
@@ -86,13 +92,15 @@ function ensureCss(): void {
   injectCSS(
     'ext-marks-styles',
     `@media print { .ext-mk-btn, .ext-mk-badge { display:none !important; } }
+    /* Sama persis dengan tombol kecil Pre-op / Verif / Telaah / Detail. */
     .ext-mk-btn {
       display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;
       font-size:11px;font-weight:600;line-height:1.4;border-radius:6px;border:1px solid #cbd5e1;
-      cursor:pointer;margin-left:4px;vertical-align:middle;user-select:none;text-decoration:none !important;
-      transition:all .15s ease;
+      background:#f8fafc;color:#475569;cursor:pointer;transition:all .15s ease;
+      margin-left:4px;vertical-align:middle;user-select:none;text-decoration:none !important;
     }
-    .ext-mk-btn:disabled { opacity:.6;cursor:wait; }
+    .ext-mk-btn:hover { background:#f1f5f9;border-color:#94a3b8;color:#1e293b;transform:translateY(-1px); }
+    .ext-mk-btn:disabled { opacity:.65;cursor:wait;transform:none; }
     .ext-mk-btn.pending { border-style:dashed;animation:ext-mk-pulse 1s ease-in-out infinite; }
     @keyframes ext-mk-pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
     .ext-mk-badge {
