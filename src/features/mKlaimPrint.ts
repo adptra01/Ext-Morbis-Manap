@@ -961,6 +961,8 @@ function buildSbpkSection(sections: Section[]): string {
   const doc = sbpk ? new DOMParser().parseFromString(sbpk.html, 'text/html') : null;
   const fields = new Map<string, string>();
   const actions = new Map<string, number>();
+  const diagRows: Array<{ unit: string; diag: string; icd: string; dokter: string }> = [];
+  let penanggung = '-';
 
   if (doc) {
     // Pass 1 — field: pasangan sel [label, ':', nilai] dalam satu baris.
@@ -977,14 +979,27 @@ function buildSbpkSection(sections: Section[]): string {
           .trim();
         if (label && value && !fields.has(label)) fields.set(label, value);
       }
+      // Baris diagnosa asli: POLIKLINIK | DIAGNOSA | ICD X | ... | DOKTER.
+      if (c.length >= 5 && /^[A-Z]\d{2}(?:\.\d+)?$/.test(c[2].trim()) && c[0] && c[1]) {
+        diagRows.push({
+          unit: c[0],
+          diag: c[1],
+          icd: c[2].trim(),
+          dokter: c[4] || '-',
+        });
+      }
     }
     // Pass 2 — tindakan: <li> (sudah di-flatten jadi teks oleh clean()).
+    // Item diagnosa berkode ICD bukan tindakan — lewati.
     for (const li of Array.from(doc.querySelectorAll('li'))) {
       const t = (li.textContent || '').replace(/\s+/g, ' ').trim();
-      if (!t) continue;
+      if (!t || /\([A-Z]\d{2}(?:\.\d+)?\)$/i.test(t)) continue;
       const key = t.toUpperCase();
       actions.set(key, (actions.get(key) || 0) + 1);
     }
+    const tables = Array.from(doc.querySelectorAll('table'));
+    const pm = (tables[tables.length - 1]?.textContent || '').match(/\((dr\.[^)]+)\)/i);
+    if (pm) penanggung = pm[1].trim();
   }
 
   const f = (re: RegExp): string => {
@@ -1001,9 +1016,20 @@ function buildSbpkSection(sections: Section[]): string {
   const jk = /^L$/i.test(jkRaw) ? 'Laki-laki (L)' : /^P$/i.test(jkRaw) ? 'Perempuan (P)' : jkRaw;
   const masuk = f(/^Tgl\.? Masuk RS$/i);
   const bayi = f(/^Berat badan/i);
-  const unit = f(/^Unit Pelayanan|^Poliklinik/i);
+  const unit = diagRows[0]?.unit || f(/^Unit Pelayanan|^Poliklinik/i);
   const anamnesis = f(/^ANAMNESE$/i);
-  const dokter = pick('dokter', 'dpjp');
+  const dokter = penanggung !== '-' ? penanggung : pick('dokter', 'dpjp');
+
+  const diagBody = diagRows.length
+    ? diagRows
+        .map(
+          (r) =>
+            `<tr><td>${esc(r.unit)}</td><td>Diagnosa</td><td><strong>${esc(r.diag)}</strong></td>` +
+            `<td class="center">${esc(r.icd)}</td><td>${esc(r.dokter)}</td></tr>`,
+        )
+        .join('')
+    : `<tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+       <tr><td>${nl2br(unit)}</td><td>Diagnosa Tambahan</td><td>${nl2br(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>`;
 
   const actionRows = Array.from(actions.entries())
     .map(
@@ -1057,10 +1083,7 @@ ${kop('RM. 02')}
     <th style="width: 65px;">ICD X</th>
     <th style="width: 165px;">DOKTER / PETUGAS</th>
   </tr></thead>
-  <tbody>
-    <tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
-    <tr><td>${nl2br(unit)}</td><td>Diagnosa Tambahan</td><td>${nl2br(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
-  </tbody>
+  <tbody>${diagBody}</tbody>
 </table>
 
 <table class="rm-grid-table">

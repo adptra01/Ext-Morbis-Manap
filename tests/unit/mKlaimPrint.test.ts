@@ -147,6 +147,12 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(sbpk).toContain(marker);
     }
+    // Data diagnosa & dokter penanggung diambil dari tabel asli SBPK.
+    expect(sbpk).toContain('const diagRows:');
+    expect(sbpk).toContain('/^[A-Z]\\d{2}(?:\\.\\d+)?$/');
+    expect(sbpk).toContain('${diagBody}');
+    expect(sbpk).toContain('let penanggung');
+    expect(sbpk).toContain('penanggung = pm[1].trim()');
     expect(src).toContain('return buildSbpkSection(sections);');
     expect(src).not.toContain('formatSbpkActions');
   });

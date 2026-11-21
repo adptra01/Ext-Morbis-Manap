@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — lengkapi SEP — QR code, kelamin & item kunjungan terpisah (`ccd5a9f`)
 - **mKlaimPrint** — logo BPJS resmi & satukan margin @page A4 portrait 12mm (`11f6f1d`)
 - **mKlaimPrint** — alternatif tab dossier via blob: & document.write (`4807f59`)
 - **mKlaimPrint** — sheet SEP BPJS VClaim + 14 formulir RM dedicated (`edb4273`)
@@ -30,6 +31,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — expertise radiologi pertahankan baris baru asli (`fab8f3b`)
 - **mKlaimPrint** — peserta SEP tak menelan seluruh teks dari judul (`0e84800`)
 - **mKlaimPrint** — field Peserta tidak menangkap Nama Peserta di SEP (`99b413a`)
 - **mKlaimPrint** — SEP hanya sheet BPJS — hapus blok INA-CBG & nama ganda di ttd (`bf9188c`)
@@ -2185,4 +2187,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 2847f3a77ecbeef13f86558add11157fbbd6c9c1 -->
+<!-- changelog-upto: ccd5a9ffbe709edace5bc4fdfecaa8d5c4d27d3b -->

@@ -59,7 +59,7 @@ var __morbis_feature = (() => {
           return;
         }
         const v2 = (el.value || "").trim();
-        const human = v2.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
+        const human = v2.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c2) => c2.toUpperCase());
         el.replaceWith(span(human ? "\u2713 " + human : "\u2713"));
         return;
       }
@@ -105,7 +105,7 @@ var __morbis_feature = (() => {
       if (rows.length < 6 || cols < 4 || table.querySelector(".vcol")) return;
       rows.forEach((tr, idx) => {
         const cells = Array.from(tr.cells);
-        if (!cells.length || cells.some((c) => c.colSpan >= 3)) return;
+        if (!cells.length || cells.some((c2) => c2.colSpan >= 3)) return;
         if (idx === 0) {
           const th = document.createElement("th");
           th.className = "vcol";
@@ -143,9 +143,9 @@ var __morbis_feature = (() => {
     }
   }
   function clean(section, withVer = false) {
-    const c = section.cloneNode(true);
+    const c2 = section.cloneNode(true);
     const sourceCanvas = Array.from(section.querySelectorAll("canvas"));
-    const cloneCanvas = Array.from(c.querySelectorAll("canvas"));
+    const cloneCanvas = Array.from(c2.querySelectorAll("canvas"));
     sourceCanvas.forEach((cv, i) => {
       const target = cloneCanvas[i];
       if (!target) return;
@@ -165,9 +165,9 @@ var __morbis_feature = (() => {
         target.replaceWith(note);
       }
     });
-    flattenControls(c);
-    REMOVE.forEach((sel) => c.querySelectorAll(sel).forEach((el) => el.remove()));
-    c.querySelectorAll("tr").forEach((tr) => {
+    flattenControls(c2);
+    REMOVE.forEach((sel) => c2.querySelectorAll(sel).forEach((el) => el.remove()));
+    c2.querySelectorAll("tr").forEach((tr) => {
       const cells = Array.from(tr.cells);
       for (let i = cells.length - 1; i >= 0; i--) {
         const cell = cells[i];
@@ -176,7 +176,7 @@ var __morbis_feature = (() => {
         cell.remove();
       }
     });
-    c.querySelectorAll("[style]").forEach((el) => {
+    c2.querySelectorAll("[style]").forEach((el) => {
       const s = el.getAttribute("style") || "";
       const keep = (s.match(/(?:text-align|width|vertical-align|white-space)\s*:[^;]+/gi) || []).join(
         ";"
@@ -184,15 +184,15 @@ var __morbis_feature = (() => {
       if (keep) el.setAttribute("style", keep);
       else el.removeAttribute("style");
     });
-    c.removeAttribute("id");
-    c.removeAttribute("class");
-    c.removeAttribute("style");
-    c.querySelectorAll("div").forEach((el) => {
+    c2.removeAttribute("id");
+    c2.removeAttribute("class");
+    c2.removeAttribute("style");
+    c2.querySelectorAll("div").forEach((el) => {
       if (!el.children.length && !(el.textContent || "").trim()) el.remove();
     });
-    stripOriginalLetterhead(c);
-    if (withVer) addVerColumns(c);
-    return c.innerHTML.trim();
+    stripOriginalLetterhead(c2);
+    if (withVer) addVerColumns(c2);
+    return c2.innerHTML.trim();
   }
   function titleOf(section, i) {
     const head = section.querySelector(".panel-heading, .panel-title, legend, h4");
@@ -229,15 +229,15 @@ var __morbis_feature = (() => {
   }
   var esc = (s) => s.replace(
     /[&<>"']/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+    (c2) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c2]
   );
   var nl2br = (s) => esc(s).replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").replace(/\n/g, "<br/>");
   var plainText = (html) => (new DOMParser().parseFromString(html.replace(/src="data:[^"]*"/g, ""), "text/html").body.textContent || "").replace(/\s+/g, " ").trim();
   var isoDate = (raw) => {
     const p = raw.split(/[-/]/).map((x) => x.trim());
     if (p.length !== 3) return raw;
-    const [a, b, c] = p;
-    return a.length === 4 ? `${a}-${b.padStart(2, "0")}-${c.padStart(2, "0")}` : `${c}-${b.padStart(2, "0")}-${a.padStart(2, "0")}`;
+    const [a, b, c2] = p;
+    return a.length === 4 ? `${a}-${b.padStart(2, "0")}-${c2.padStart(2, "0")}` : `${c2}-${b.padStart(2, "0")}-${a.padStart(2, "0")}`;
   };
   var RE_MASUK = /(?:Tgl|Tanggal)\.?\s*Masuk(?:\s*RS)?\s*[:.]?\s*(\d{1,4}[-/]\d{1,2}[-/]\d{1,4})/gi;
   var RE_KELUAR = /(?:Tgl|Tanggal)\.?\s*(?:Keluar|Pulang)(?:\s*RS)?\s*[:.]?\s*(\d{1,4}[-/]\d{1,2}[-/]\d{1,4})/gi;
@@ -739,6 +739,8 @@ ${kop("RM. 03")}
     const doc = sbpk ? new DOMParser().parseFromString(sbpk.html, "text/html") : null;
     const fields = /* @__PURE__ */ new Map();
     const actions = /* @__PURE__ */ new Map();
+    const diagRows = [];
+    let penanggung = "-";
     if (doc) {
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
         const cells = Array.from(tr.cells);
@@ -748,13 +750,24 @@ ${kop("RM. 03")}
           const value = (cells[i + 2].innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
           if (label && value && !fields.has(label)) fields.set(label, value);
         }
+        if (c.length >= 5 && /^[A-Z]\d{2}(?:\.\d+)?$/.test(c[2].trim()) && c[0] && c[1]) {
+          diagRows.push({
+            unit: c[0],
+            diag: c[1],
+            icd: c[2].trim(),
+            dokter: c[4] || "-"
+          });
+        }
       }
       for (const li of Array.from(doc.querySelectorAll("li"))) {
         const t = (li.textContent || "").replace(/\s+/g, " ").trim();
-        if (!t) continue;
+        if (!t || /\([A-Z]\d{2}(?:\.\d+)?\)$/i.test(t)) continue;
         const key = t.toUpperCase();
         actions.set(key, (actions.get(key) || 0) + 1);
       }
+      const tables = Array.from(doc.querySelectorAll("table"));
+      const pm = (tables[tables.length - 1]?.textContent || "").match(/\((dr\.[^)]+)\)/i);
+      if (pm) penanggung = pm[1].trim();
     }
     const f = (re) => {
       for (const [k, v] of fields) if (re.test(k)) return v;
@@ -770,9 +783,13 @@ ${kop("RM. 03")}
     const jk = /^L$/i.test(jkRaw) ? "Laki-laki (L)" : /^P$/i.test(jkRaw) ? "Perempuan (P)" : jkRaw;
     const masuk = f(/^Tgl\.? Masuk RS$/i);
     const bayi = f(/^Berat badan/i);
-    const unit = f(/^Unit Pelayanan|^Poliklinik/i);
+    const unit = diagRows[0]?.unit || f(/^Unit Pelayanan|^Poliklinik/i);
     const anamnesis = f(/^ANAMNESE$/i);
-    const dokter = pick("dokter", "dpjp");
+    const dokter = penanggung !== "-" ? penanggung : pick("dokter", "dpjp");
+    const diagBody = diagRows.length ? diagRows.map(
+      (r) => `<tr><td>${esc(r.unit)}</td><td>Diagnosa</td><td><strong>${esc(r.diag)}</strong></td><td class="center">${esc(r.icd)}</td><td>${esc(r.dokter)}</td></tr>`
+    ).join("") : `<tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
+       <tr><td>${nl2br(unit)}</td><td>Diagnosa Tambahan</td><td>${nl2br(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>`;
     const actionRows = Array.from(actions.entries()).map(
       ([name, frek], i) => `<tr><td class="center">${i + 1}</td><td>${esc(name)}</td><td>${esc(dokter)}</td><td class="center">${frek}</td><td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi SBPK Item ${i + 1}"></td></tr>`
     ).join("");
@@ -821,10 +838,7 @@ ${kop("RM. 02")}
     <th style="width: 65px;">ICD X</th>
     <th style="width: 165px;">DOKTER / PETUGAS</th>
   </tr></thead>
-  <tbody>
-    <tr><td>${nl2br(unit)}</td><td>Diagnosa Utama</td><td><strong>${nl2br(f(/^Diagnosa utama/i))}</strong></td><td class="center">-</td><td>${esc(dokter)}</td></tr>
-    <tr><td>${nl2br(unit)}</td><td>Diagnosa Tambahan</td><td>${nl2br(f(/^Diagnosa tambahan/i))}</td><td class="center">-</td><td>${esc(dokter)}</td></tr>
-  </tbody>
+  <tbody>${diagBody}</tbody>
 </table>
 
 <table class="rm-grid-table">
@@ -866,32 +880,32 @@ ${kop("RM. 02")}
       const tables = Array.from(doc.querySelectorAll("table"));
       const tindakanTable = tables.find((t) => /frek/i.test(t.rows[0]?.textContent || ""));
       for (const tr of Array.from(tindakanTable?.rows ?? [])) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
         );
-        if (c.length < 6 || !/^\d+\.?$/.test(c[0])) continue;
-        const name = c[2] || "-";
+        if (c2.length < 6 || !/^\d+\.?$/.test(c2[0])) continue;
+        const name = c2[2] || "-";
         const key = name.toUpperCase().replace(/\s+/g, " ").trim();
-        const frek = parseInt(c[4], 10) || 1;
-        const jaminan2 = parseFloat((c[7] || "0").replace(/\./g, "").replace(",", ".")) || 0;
+        const frek = parseInt(c2[4], 10) || 1;
+        const jaminan2 = parseFloat((c2[7] || "0").replace(/\./g, "").replace(",", ".")) || 0;
         const prev = tindakan.get(key);
         if (prev) {
           prev.frek += frek;
           prev.jaminan += jaminan2;
         } else {
-          tindakan.set(key, { name, petugas: c[3] || "-", frek, tarif: c[5] || "-", jaminan: jaminan2 });
+          tindakan.set(key, { name, petugas: c2[3] || "-", frek, tarif: c2[5] || "-", jaminan: jaminan2 });
         }
       }
       const obatTable = tables.find((t) => /nama\s*obat/i.test(t.rows[0]?.textContent || ""));
       for (const tr of Array.from(obatTable?.rows ?? [])) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
         );
-        if (c.length < 5 || !/^\d+(\.\d+)?$/.test(c[2])) continue;
-        const name = c[1].replace(/^\d+\s*/, "").trim() || "-";
+        if (c2.length < 5 || !/^\d+(\.\d+)?$/.test(c2[2])) continue;
+        const name = c2[1].replace(/^\d+\s*/, "").trim() || "-";
         const key = name.toUpperCase().replace(/\s+/g, " ").trim();
-        const qty = parseFloat(c[2].replace(",", ".")) || 0;
-        const jaminan2 = parseFloat((c[5] || "0").replace(/\./g, "").replace(",", ".")) || 0;
+        const qty = parseFloat(c2[2].replace(",", ".")) || 0;
+        const jaminan2 = parseFloat((c2[5] || "0").replace(/\./g, "").replace(",", ".")) || 0;
         const prev = obat.get(key);
         if (prev) {
           prev.qty += qty;
@@ -904,11 +918,11 @@ ${kop("RM. 02")}
     const summary = (re) => {
       if (!doc) return 0;
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
         );
-        if (!c.some((x) => re.test(x))) continue;
-        for (const x of c.slice(1)) {
+        if (!c2.some((x) => re.test(x))) continue;
+        for (const x of c2.slice(1)) {
           const num = parseFloat(x.replace(/\./g, "").replace(",", "."));
           if (Number.isFinite(num) && num !== 0) return num;
         }
@@ -1131,28 +1145,28 @@ ${lanjutan}`.trim())}
     const adminHeads = [];
     if (doc) {
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim()
         );
-        for (let i = 0; i < c.length - 2; i++) {
-          const label = c[i].replace(/:$/, "").trim();
-          if (c[i + 1] !== ":") continue;
-          if (label && c[i + 2] && !fields.has(label)) fields.set(label, c[i + 2]);
+        for (let i = 0; i < c2.length - 2; i++) {
+          const label = c2[i].replace(/:$/, "").trim();
+          if (c2[i + 1] !== ":") continue;
+          if (label && c2[i + 2] && !fields.has(label)) fields.set(label, c2[i + 2]);
         }
-        for (const cell of c) {
+        for (const cell of c2) {
           const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
           if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
         }
       }
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
         );
-        if (c.length < 2 || !/^R\/\d+$/i.test(c[0])) continue;
-        const m = c[1].match(/^(.*?)\s*Jml:\s*(\S+)/i);
+        if (c2.length < 2 || !/^R\/\d+$/i.test(c2[0])) continue;
+        const m = c2[1].match(/^(.*?)\s*Jml:\s*(\S+)/i);
         meds.push({
-          no: c[0],
-          name: m ? m[1].trim() : c[1],
+          no: c2[0],
+          name: m ? m[1].trim() : c2[1],
           jml: m ? m[2] : "-"
         });
       }
@@ -1161,11 +1175,11 @@ ${lanjutan}`.trim())}
         if (!/^(Telaah Resep|Telaah Obat|Edukasi)/i.test(head)) continue;
         const rows = [];
         for (const tr of Array.from(table.rows).slice(1)) {
-          const c = Array.from(tr.cells).map(
+          const c2 = Array.from(tr.cells).map(
             (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
           );
-          if (c.length < 2 || !/^\d+$/.test(c[0])) continue;
-          rows.push([c[0], c[1]]);
+          if (c2.length < 2 || !/^\d+$/.test(c2[0])) continue;
+          rows.push([c2[0], c2[1]]);
         }
         if (rows.length) checklists.push({ title: head.split(/\s{2,}/)[0] || head, rows });
       }
@@ -1274,16 +1288,16 @@ ${kop("RM. 07")}
     let expertise = "";
     if (doc) {
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim()
         );
-        for (const cell of c) {
+        for (const cell of c2) {
           const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
           if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
           const em = cell.match(/^expertise\s*:\s*([\s\S]+)$/i);
           if (em && !expertise) expertise = em[1].trim();
         }
-        if (c.length >= 4 && /^\d+$/.test(c[0]) && c[1]) exams.push(c[1]);
+        if (c2.length >= 4 && /^\d+$/.test(c2[0]) && c2[1]) exams.push(c2[1]);
       }
     }
     const f = (...res) => {
@@ -1369,15 +1383,15 @@ ${kop("RM. 08")}
     let dokterPemeriksa = "-";
     if (doc) {
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td2) => (td2.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim()
         );
-        for (let i = 0; i < c.length - 2; i++) {
-          const label = c[i].replace(/:$/, "").trim();
-          if (c[i + 1] !== ":") continue;
-          if (label && c[i + 2] && !fields.has(label)) fields.set(label, c[i + 2]);
+        for (let i = 0; i < c2.length - 2; i++) {
+          const label = c2[i].replace(/:$/, "").trim();
+          if (c2[i + 1] !== ":") continue;
+          if (label && c2[i + 2] && !fields.has(label)) fields.set(label, c2[i + 2]);
         }
-        for (const cell of c) {
+        for (const cell of c2) {
           const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
           if (!m || m[2].includes(":") || m[2].length > 120) continue;
           if (!fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
@@ -1497,8 +1511,8 @@ ${kop("TRIAGE")}
     };
     const triaseRows = triase.slice(1).map((r) => {
       const on = (r[0] || "").includes("\u2713");
-      const c = on ? r.slice(1) : r;
-      return `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ""}>` + c.map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>";
+      const c2 = on ? r.slice(1) : r;
+      return `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ""}>` + c2.map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>";
     }).join("");
     const nyeriRows = nyeri.slice(1).map(
       (r) => "<tr>" + r.map((x, i) => `<td${i === 0 ? "" : ' class="center"'}>${esc(x || "-")}</td>`).join("") + "</tr>"
@@ -1615,13 +1629,13 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     for (const s of ordered) {
       const doc = new DOMParser().parseFromString(s.html, "text/html");
       for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-        const c = Array.from(tr.cells).map(
+        const c2 = Array.from(tr.cells).map(
           (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
         );
-        for (let i = 0; i < c.length - 2; i++) {
-          if (labelRe.test(c[i]) && c[i + 1] === ":" && c[i + 2]) return c[i + 2];
+        for (let i = 0; i < c2.length - 2; i++) {
+          if (labelRe.test(c2[i]) && c2[i + 1] === ":" && c2[i + 2]) return c2[i + 2];
         }
-        for (const cell of c) {
+        for (const cell of c2) {
           const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
           if (m && labelRe.test(m[1].trim()) && m[2] && !m[2].includes(":") && m[2].length <= 160)
             return m[2].trim();
@@ -1641,15 +1655,15 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     const out = /* @__PURE__ */ new Map();
     if (!doc) return out;
     for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-      const c = Array.from(tr.cells).map(
+      const c2 = Array.from(tr.cells).map(
         (td) => (td.innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim()
       );
-      for (let i = 0; i < c.length - 2; i++) {
-        const label = c[i].replace(/^[-:\s]+|[\s:]+$/g, "");
-        if (!label || c[i + 1] !== ":" || !c[i + 2] || out.has(label)) continue;
-        out.set(label, c[i + 2]);
+      for (let i = 0; i < c2.length - 2; i++) {
+        const label = c2[i].replace(/^[-:\s]+|[\s:]+$/g, "");
+        if (!label || c2[i + 1] !== ":" || !c2[i + 2] || out.has(label)) continue;
+        out.set(label, c2[i + 2]);
       }
-      for (const cell of c) {
+      for (const cell of c2) {
         const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
         if (m && !m[2].includes(":") && m[2].length <= 120 && !out.has(m[1].trim()))
           out.set(m[1].trim(), m[2].trim());
@@ -1667,8 +1681,8 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     if (!doc) return [];
     const out = [];
     for (const tr of Array.from(doc.querySelectorAll("tr"))) {
-      const c = Array.from(tr.cells).map((td) => (td.textContent || "").replace(/\s+/g, " ").trim());
-      if (c.length && c.some(Boolean)) out.push(c);
+      const c2 = Array.from(tr.cells).map((td) => (td.textContent || "").replace(/\s+/g, " ").trim());
+      if (c2.length && c2.some(Boolean)) out.push(c2);
       if (out.length >= limit) break;
     }
     return out;
@@ -2248,7 +2262,7 @@ ${sig(
     <tr><th style="width: 32px;">NO</th><th style="width: 170px;">JENIS KETIDAKSESUAIAN</th><th>URAIAN TEMUAN VERIFIKASI</th></tr>
   </thead>
   <tbody>${checks.map(
-      (c, i) => `<tr><td class="center">${i + 1}</td><td><strong>${esc(c.title)}</strong></td><td>${esc(c.detail)}</td></tr>`
+      (c2, i) => `<tr><td class="center">${i + 1}</td><td><strong>${esc(c2.title)}</strong></td><td>${esc(c2.detail)}</td></tr>`
     ).join("")}</tbody>
 </table>`;
     const cover = `<section class="rm-page" id="rm-00">
