@@ -16,6 +16,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — triage tidak dirender section ganda — gabung penuh ke IGD (`c71c2a1`)
 - **mKlaimPrint** — Triage/Konsul/Radiologi TTD, hapus Kota Jambi, QR tagihan (`4c5878f`)
 
 ### ⚡ perf
@@ -24,6 +25,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri redesign IGD & triase (`38d1c8d`)
 - **changelog** — sync entri mKlaimPrint (feat multi-entri + perf canvas) (`9ba2079`)
 
 ## 2026-11-21
@@ -2220,4 +2222,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9633f71311415315599c30e43763b755d7b9e5a3 -->
+<!-- changelog-upto: c71c2a1f56d9d188d37ea9f642c48d1be5b95ae6 -->
