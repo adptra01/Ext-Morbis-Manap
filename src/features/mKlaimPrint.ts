@@ -2725,130 +2725,142 @@ const sig = (left: string[], right: string[]): string =>
   '</div>';
 
 /** FORM — PERSETUJUAN TINDAKAN KEDOKTERAN (RM 19 A).
- *  Design mengikuti tata letak RM.02: tabel full-grid rm-table + sec-hdr,
- *  pilihan bercentang estat di kolom TANDA, kutipe identitas pasien dan
- *  deskripsi yang panjang di kumpulan tengah, serta blok saksi pihak. */
+ *  Parse 4 tabel asli: pemberi informasi, checklist informasi, pernyataan
+ *  pemberi/penerima (QR), dan lembar persetujuan + saksi. */
 function buildKonsentSection(sections: Section[]): string {
-  const fields = formFields(sections, /^Persetujuan Tindakan/i);
-  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  const src = sections.find((s) => /^Persetujuan Tindakan/i.test(s.title));
+  const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
+  const tables = doc ? Array.from(doc.querySelectorAll('table')) : [];
+  const txt = (td: Element): string =>
+    decodeEntities(
+      (td.innerHTML || '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .trim(),
+    );
+  const rowsOf = (t?: HTMLTableElement): string[][] =>
+    t ? Array.from(t.rows).map((tr) => Array.from(tr.cells).map(txt)) : [];
+  const qrOf = (td: Element | undefined): string =>
+    td?.querySelector('img[src*="qrserver"], img[src*="qr-code"]')?.getAttribute('src') || '';
+
+  const infoT = tables.find((t) => /PEMBERIAN INFORMASI/i.test(t.rows[0]?.textContent || ''));
+  const checkT = tables.find((t) => /JENIS INFORMASI/i.test(t.rows[0]?.textContent || ''));
+  const stmtT = tables.find((t) =>
+    /Dengan ini menyatakan bahwa saya dokter/i.test(t.rows[0]?.textContent || ''),
+  );
+  const consentT = tables.find((t) =>
+    /PERSETUJUAN TINDAKAN KEDOKTERAN/i.test(t.rows[0]?.textContent || ''),
+  );
+  const infoRows = rowsOf(infoT)
+    .slice(1)
+    .map((r) => [r[0] || '-', (r[1] || r[2] || '-').replace(/^:\s*/, '')]);
+  const checkRows = rowsOf(checkT)
+    .slice(1)
+    .map((r) => ({
+      no: r[0] || '-',
+      label: r[1] || '-',
+      isi: r[2] || '-',
+      centang: (r[3] || '').includes('✓'),
+    }));
+  const stmtRows = (stmtT ? Array.from(stmtT.rows) : []).map((tr) => ({
+    teks: txt(tr.cells[0]),
+    ttd: tr.cells[1] ? txt(tr.cells[1]) : '',
+    qr: qrOf(tr.cells[1]),
+  }));
+  const consentRows = rowsOf(consentT);
+  const consentIdentity = consentRows[2]?.join(' ') || '-';
+  const consentParagraf = consentRows[3]?.join(' ') || '-';
+  const saksiCells = consentT ? Array.from(consentT.rows[4]?.cells || []) : [];
+  const saksi = saksiCells.map((td, i) => ({
+    teks: txt(td),
+    qr: i === 2 ? qrOf(td) : '',
+  }));
+
   const nama = pick('nama');
-  const dokter = pick('dokter', 'dpjp');
-  const umur = pick('tgl_lahir', 'tglLahir');
-
-  // Daftar jenis informasi ke yang disetujui — dari field asli jika ada,
-  // kalau tidak pakai passthrough tetap tampil dengan kotak ✓.
-  const infoList = [
-    ['Diagnosis (WD &amp; DD)', f(/^Diagnosis \(WD/i)],
-    ['Dasar Diagnosa', f(/^Dasar Diagnosa/i)],
-    ['Tindakan Kedokteran', f(/^Tindakan Kedokteran|^Prosedur YANG AKAN DILAKUKAN/i)],
-    ['Indikasi Tindakan', f(/^Indikasi Tindakan/i)],
-    ['Tata Cara', f(/^Tata Cara/i)],
-    ['Tujuan', f(/^Tujuan/i)],
-    ['Resiko', f(/^Resiko/i)],
-    ['Komplikasi', f(/^Komplikasi/i)],
-    ['Prognosis', f(/^Prognosis/i)],
-    ['Alternatif', f(/^Alternatif/i)],
-    ['Lain-lain', f(/^Lain-lain/i)],
-  ]
-    .filter(([, v]) => v !== '-')
-    .map(
-      ([k, v], i) =>
-        `<tr><td class="center" style="width:28px;">${i + 1}</td><td>${esc(k)}</td><td>${nl2br(v)}</td><td class="center">&#10003;</td></tr>`,
-    )
-    .join('');
-  const infoTableEmpty =
-    infoList ||
-    `<tr><td colspan="4">* Jika ada item informasi yang belum dipilih, sisakan itemnya.</td></tr>`;
-
-  const termsParagraph = f(/^Dengan ini/i) || '';
-  const qrDokter = sectionQrs(sections, /^Persetujuan Tindakan/i)[0] ?? '';
 
   return `<section class="rm-page" id="form-konsent">
 ${kop('RM. 19A')}
-<div class="rm-form-title">PERSETUJUAN TINDAKAN KEDOKTERAN</div>
+<div class="rm-form-title">PERSETUJUAN TINDAKAN KEDOKTERAN (RM 19 A)</div>
 
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
     ${idRow('Nama Pasien', nama, true)}
-    ${idRow('Umur', umur)}
+    ${idRow('Umur', pick('tgl_lahir', 'tglLahir'))}
     ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
     ${idRow('Alamat', patientAlamat(sections))}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow('Nama Pemberi Informasi', dokter, true)}
-    ${idRow('Penerima Informasi / Pemberi Persetujuan', nama, true)}
+    ${infoRows
+      .map(([k, v]) => idRow(k, v, k === 'Penerima Informasi / Pemberi Persetujuan'))
+      .join('')}
   </table></div>
 </div>
 
 <table class="rm-table">
   <thead>
-    <tr class="sec-hdr"><td colspan="4">PEMBERIAN INFORMASI &amp; PERSETUJUAN</td></tr>
-    <tr><th style="width:28px;">NO</th><th>JENIS INFORMASI</th><th>ISI INFORMASI</th><th>TANDA (&#10003;)</th></tr>
+    <tr class="sec-hdr"><td colspan="4">I. PEMBERIAN INFORMASI</td></tr>
+    <tr><th style="width:28px;">NO</th><th>JENIS INFORMASI</th><th>ISI INFORMASI</th><th style="width:70px;">TANDA (&#10003;)</th></tr>
   </thead>
   <tbody>
-    <tr><td class="center">1</td><td>Diagnosis (WD &amp; DD)</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">2</td><td>Dasar Diagnosa</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">3</td><td>Tindakan Kedokteran</td><td>${nl2br(f(/^Tindakan Kedokteran/i))}</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">4</td><td>Indikasi Tindakan</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">5</td><td>Tata Cara</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">6</td><td>Tujuan</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">7</td><td>Resiko</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">8</td><td>Komplikasi</td><td>&#10003;</td><td class="center">&#10003;</td></tr>
-    <tr><td class="center">9</td><td>Prognosis</td><td>&nbsp;</td><td class="center">&nbsp;</td></tr>
-    <tr><td class="center">10</td><td>Alternatif</td><td>&nbsp;</td><td class="center">&nbsp;</td></tr>
-    ${infoTableEmpty}
+    ${
+      checkRows.length
+        ? checkRows
+            .map(
+              (r) =>
+                `<tr><td class="center">${esc(r.no)}</td><td>${esc(r.label)}</td><td>${nl2br(r.isi)}</td><td class="center">${
+                  r.centang ? '&#10003;' : '&nbsp;'
+                }</td></tr>`,
+            )
+            .join('')
+        : '<tr><td colspan="4">-</td></tr>'
+    }
   </tbody>
 </table>
 
 <table class="rm-table">
-  <thead>
-    <tr class="sec-hdr"><td colspan="4">UJI PEMAHAMAN — TINDAKAN KEDOKTERAN</td></tr>
-  </thead>
+  <thead><tr class="sec-hdr"><td colspan="4">II. PERNYATAAN PEMBERI &amp; PENERIMA INFORMASI</td></tr></thead>
   <tbody>
-    <tr>
-      <td colspan="4" style="width: 175px;">
-        <strong>1.</strong> ${nl2br(termsParagraph || 'Saya memahami perlunya dan manfaat tindakan tsb sebagaimana telah dijelaskan, termasuk resiko dan komplikasi yang mungkin timbul.')}
-      </td>
-    </tr>
-    <tr>
-      <td colspan="4">
-        <strong>2.</strong> ${nl2br(f(/^Saya juga menyadari bahwa karena ilmu kedokteran bukanlah ilmu pasti/i) || 'Saya juga menyadari bahwa karena ilmu kedokteran bukanlah ilmu pasti, maka keberhasilan tindakan kedokteran bukanlah keniscayaan, melainkan sangat bergantung kepada izin Tuhan Yang Maha Esa.')}
-      </td>
-    </tr>
-    <tr>
-      <td colspan="4"><strong>3.</strong> ${nl2br(f(/^Saya bertanggung jawab secara penuh/i) || 'Saya bertanggung jawab secara penuh atas segala akibat yang timbul akibat tindakan kedokteran tersebut.')}</td>
-    </tr>
+    ${
+      stmtRows.length
+        ? stmtRows
+            .map(
+              (r) =>
+                `<tr><td colspan="3">${nl2br(r.teks)}</td><td style="text-align:center;vertical-align:top;">${
+                  r.qr
+                    ? `<img class="rm-sig-qr" src="${esc(r.qr)}" alt="QR tanda tangan" width="80" height="80" /><br/>`
+                    : ''
+                }${esc(r.ttd)}</td></tr>`,
+            )
+            .join('')
+        : '<tr><td colspan="4">-</td></tr>'
+    }
+    <tr><td colspan="4">* Bila pasien tidak kompeten atau tidak mau menerima informasi, maka penerima informasi adalah wali atau keluarga terdekat.</td></tr>
   </tbody>
 </table>
 
 <table class="rm-table">
-  <thead>
-    <tr class="sec-hdr"><td colspan="4">SKEMA TANDA TANGAN</td></tr>
-  </thead>
+  <thead><tr class="sec-hdr"><td colspan="3">III. PERSETUJUAN TINDAKAN KEDOKTERAN</td></tr></thead>
   <tbody>
+    <tr><td colspan="3" style="text-align:center;">Yang bertandatangan di bawah ini Saya,</td></tr>
+    <tr><td colspan="3">${nl2br(consentIdentity)}</td></tr>
+    <tr><td colspan="3" style="text-align:justify;">${nl2br(consentParagraf)}</td></tr>
     <tr>
-      <td class="center" style="width: 22px;">I</td>
-      <td style="width: 210px;"><strong>Nama Pasien / Keluarga Pasien</strong></td>
-      <td class="center" style="width: 22px;">II</td>
-      <td style="width: 210px;"><strong>Nama Penerima Informasi / Pemberi Persetujuan</strong></td>
-    </tr>
-    <tr>
-      <td class="center"><span class="chk-box">&#10003;</span></td>
-      <td class="center">( ${esc(nama)} )</td>
-      <td class="center"><span class="chk-box">&#10003;</span></td>
-      <td class="center">( ${esc(f(/^Reizky Salban Saputra/i) || f(/^Nama Pasien/i) || 'Reizky Salban Saputra')} )</td>
-    </tr>
-    <tr>
-      <td class="center"><span class="chk-box">&#10003;</span></td>
-      <td style="text-align: center;"><img class="rm-sig-qr" src="${esc(qrDokter)}" alt="QR dokter penanggung jawab tindakan kedokteran" width="80" height="80" /></td>
-      <td class="center"><span class="chk-box">&#10003;</span></td>
-      <td style="text-align: center;"><img class="rm-sig-qr" src="${esc(qrDokter)} alt="QR penerima informasi" width="80" height="80" /></td>
-    </tr>
-    <tr>
-      <td class="center">*</td>
-      <td><strong>Bila pasien tidak kompeten atau tidak mau menerima informasi, maka penerima informasi adalah wali atau keluarga terdekat.</strong></td>
-      <td class="center">&#10003;</td>
-      <td class="center">&#10003;</td>
+      ${
+        saksi.length
+          ? saksi
+              .map(
+                (s) =>
+                  `<td style="text-align:center;vertical-align:top;width:33%;">${
+                    s.qr
+                      ? `<img class="rm-sig-qr" src="${esc(s.qr)}" alt="QR saksi rumah sakit" width="80" height="80" /><br/>`
+                      : ''
+                  }${esc(s.teks)}</td>`,
+              )
+              .join('')
+          : '<td colspan="3">-</td>'
+      }
     </tr>
   </tbody>
 </table>

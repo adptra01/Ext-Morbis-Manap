@@ -418,10 +418,10 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         'form-konsent',
         [
           'PERSETUJUAN TINDAKAN KEDOKTERAN',
-          'PEMBERIAN INFORMASI &amp; PERSETUJUAN',
-          'UJI PEMAHAMAN',
-          'SKEMA TANDA TANGAN',
-          'Dasar Diagnosa',
+          'I. PEMBERIAN INFORMASI',
+          'II. PERNYATAAN PEMBERI &amp; PENERIMA INFORMASI',
+          'III. PERSETUJUAN TINDAKAN KEDOKTERAN',
+          'JENIS INFORMASI',
         ],
       ],
       [
