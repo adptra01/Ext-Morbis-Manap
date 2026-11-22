@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — pisahkan kembali Triage & Pengkajian IGD, redesign IGD tanpa gambar (RM.02) (`5f61c0b`)
+- **mKlaimPrint** — IGD redesign ulang mengikuti RM.02/IGD (TTV banding, anamnesis, Morse) (`9d5ca2d`)
 - **mKlaimPrint** — redesign RM.19A Persetujuan Tindakan Kedoksteran (`aea54f0`)
 - **mKlaimPrint** — redesign RM.02 IGD & triase, konsul/radiologi multi-lembar (`9633f71`)
 - **mKlaimPrint** — konsul & radiologi multi-entri terpisah, redesign pengkajian IGD (`ded436d`)
@@ -2228,4 +2230,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 48d07b9bb574e9cbff6bac5a0cb7b123dba88e9d -->
+<!-- changelog-upto: 5f61c0bccb29878be3db639c1825ed4bd6f62542 -->
