@@ -1904,10 +1904,29 @@ ${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
 
 <table class="rm-table">
   <thead><tr class="sec-hdr"><td colspan="2">X. PLANNING / TERAPI TERINTEGRASI</td></tr></thead>
-  <tbody><tr>
-    <td style="width:165px;vertical-align:top;"><strong>PLANNING / TERAPI</strong></td>
-    <td>${nl2br(planningText).replace(/(Konsul dr\.?[^<]*?)(?=<br\/>|$)/gi, "<strong>$1</strong>").replace(/(Plan\s*:|Terapi\s*:|Dx\s*:|Masalah\s*:)/gi, "<strong>$1</strong>")}</td>
-  </tr></tbody>
+  <tbody>
+    <tr>
+      <td style="width:165px;vertical-align:top;"><strong>Tatalaksana Awal (A)</strong></td>
+      <td>${nl2br(planningText.split(/Konsul dr\./i)[0].trim() || "-")}</td>
+    </tr>
+    ${planningText.split(/(?=Konsul dr\.)/i).slice(1).map((blok, i) => {
+      const nama = blok.match(/^Konsul (dr\.?[^:\n]+)/i)?.[1]?.trim() || "-";
+      const plan = blok.match(/Plan\s*:\s*([\s\S]*?)(?=Terapi\s*:|Konsul dr\.|$)/i)?.[1]?.trim() || "-";
+      const terapi = blok.match(/Terapi\s*:\s*([\s\S]*?)(?=Konsul dr\.|$)/i)?.[1]?.trim() || "-";
+      const dx = blok.match(/Dx\s*:\s*([\s\S]*?)(?=Masalah\s*:|Terapi\s*:|Konsul dr\.|$)/i)?.[1]?.trim() || "-";
+      const masalah = blok.match(/Masalah\s*:\s*([\s\S]*?)(?=Terapi\s*:|Konsul dr\.|$)/i)?.[1]?.trim() || "-";
+      const huruf = String.fromCharCode(66 + i);
+      return `<tr>
+          <td style="width:165px;vertical-align:top;"><strong>Advis ( ${huruf} ) \u2014 ${esc(nama)}</strong></td>
+          <td>
+            ${dx !== "-" ? `<strong>Dx:</strong> ${nl2br(dx)}<br/>` : ""}
+            ${masalah !== "-" ? `<strong>Masalah:</strong> ${nl2br(masalah)}<br/>` : ""}
+            ${plan !== "-" ? `<strong>Visite Plan:</strong> ${nl2br(plan)}<br/>` : ""}
+            ${terapi !== "-" ? `<strong>Terapi:</strong> ${nl2br(terapi)}` : ""}
+          </td>
+        </tr>`;
+    }).join("")}
+  </tbody>
 </table>
 
 <table class="rm-table">
