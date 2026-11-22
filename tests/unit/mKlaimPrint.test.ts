@@ -263,13 +263,13 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       src.indexOf('function buildTriageSection'),
     );
     for (const marker of [
-      '<section class="rm-page" id="rm-08">',
+      'id="${esc(id)}"',
       'HASIL PEMERIKSAAN RADIOLOGI',
       'No. Rontgen',
       'Tanggal Periksa',
       'JENIS PEMERIKSAAN',
-      'URAIAN EXPERTISE &amp; KESAN RADIOGRAFI TORAKS',
-      'Kode Prosedur ICD-9-CM : 87.44',
+      'URAIAN EXPERTISE &amp; KESAN PEMERIKSAAN',
+      'Jenis Pemeriksaan :',
       'Dokter Penilai',
     ]) {
       expect(rad).toContain(marker);
@@ -279,7 +279,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(rad).toContain('/^expertise\\s*:\\s*([\\s\\S]+)$/i');
     expect(rad).toContain('expertise = em[1].trim()');
     expect(rad).not.toContain('cellText(tr)');
-    expect(src).toContain('return buildRadiologiSection(sections);');
+    expect(src).toContain('return buildRadiologiSection(sections, s, m.id);');
   });
 
   it('Triage IGD: pengkajian awal terstruktur, data scrape + pick()', () => {
@@ -296,7 +296,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'ANAMNESA &amp; RIWAYAT',
       'Keluhan Utama',
       'TANDA VITAL &amp; PEMERIKSAAN',
-      'Tekanan Darah (mmHg)',
+      'TEKANAN DARAH (mmHg)',
       'Dokter yang Memeriksa',
     ]) {
       expect(tri).toContain(marker);
@@ -346,6 +346,16 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     }
     expect(src).toContain("id: 'pengkajian-igd'");
     expect(src).toContain('return buildPengkajianIgdSection(sections);');
+    // Gambar asli MORBIS (skala Wong Baker & gambar objektif) ikut tercetak.
+    expect(igd).toContain('const igdImage =');
+    expect(igd).toContain('/nyeri_baru/i');
+    expect(igd).toContain('/clipboard/i');
+    expect(igd).toContain('class="rm-figure"');
+    expect(igd).toContain('ASESMEN NYERI — WONG BAKER / NRS');
+    expect(igd).toContain('KONDISI SAAT PINDAH / PULANG DARI IGD');
+    expect(igd).toContain("pick('pengkajian_keperawatan')");
+    expect(igd).toContain('planningText');
+    expect(src).toContain('.rm-figure-row {');
   });
 
   it('memakai ID field produksi & kode section referensi', () => {
@@ -463,7 +473,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         'buildKonsulSection',
         'buildBonMakanSection',
         'rm-10',
-        ['id="rm-10"', 'BAGIAN I : KEPADA YTH. KONSULEN', 'S (SUBJEKTIF)'],
+        ['id="${esc(id)}"', 'BAGIAN I : KEPADA YTH. KONSULEN', 'S (SUBJEKTIF)'],
       ],
       [
         'buildBonMakanSection',
@@ -486,7 +496,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       expect(b, fn).toBeGreaterThan(a);
       const body = src.slice(a, b);
       for (const m of markers) expect(body, `${fn}: ${m}`).toContain(m);
-      expect(src, fn).toContain(`return ${fn}(sections);`);
+      expect(src, fn).toContain(`return ${fn}(`);
       expect(src, fn).toContain(`id: '${id}'`);
     }
     // Parser sekali pass + fallback '-' — bukan data contoh referensi.
@@ -531,7 +541,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     for (const [fn, marker] of [
       ['buildSpriSection', 'qrSpri'],
       ['buildResumeSection', 'qrResume'],
-      ['buildRadiologiSection', 'qrRad'],
+      ['buildRadiologiSheet', 'qrRad'],
       ['buildTriageSection', 'qrTriage'],
       ['buildSbpkSection', 'qrDpjp'],
       ['buildBillingSection', 'qrPasien'],
@@ -592,6 +602,59 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('old?.remove()');
     expect(src).toContain('btn?.dataset.extBuild !== BUILD_TAG');
     expect(src).toContain('new MutationObserver(() => keepLast())');
+  });
+
+  it('radiologi: satu section per lembar di dalam satu .isidalam', () => {
+    // MORBIS menggabungkan beberapa hasil pemeriksaan dalam satu block
+    // #cetak-preview, dipisah oleh judul HASIL PEMERIKSAAN RADIOLOGI.
+    expect(src).toContain('const RAD_HEAD =');
+    expect(src).toContain("splitByHeader(rad?.html ?? '', RAD_HEAD)");
+    expect(src).toContain('function splitByHeader(');
+    // Tabel MORBIS pakai sel `Label | : nilai` — parser lama hanya baca
+    // `Label : nilai` dalam satu sel sehingga semua field jadi '-'.
+    expect(src).toContain('const RAD_LABEL =');
+    expect(src).toContain('function pairFields(');
+    expect(src).toContain('function cellText(');
+    expect(src).toContain("replace(/<!--[\\s\\S]*?-->/g, '')");
+    // QR payload "…dr. X tgl … jam…" harus dipotong sebelum tgl/jam.
+    expect(src).toContain('.split(/\\s+(?:tgl|jam)\\b/i)[0]');
+    // entity &nbsp; / &amp;nbsp; tidak boleh tampil literal di dossier.
+    expect(src).toContain('const esc = (s: string): string =>\n  decodeEntities(s)');
+  });
+
+  it('konsul: tiap entri diparse dari tabel permintaan + jawaban', () => {
+    // MORBIS menggabungkan beberapa konsul dalam satu #cetak-konsul; penanda
+    // entri adalah <b>Konsul Ke: …</b>, bukan judul section.
+    expect(src).toContain("/^\\s*Konsul Ke\\s*:/i.test(b.textContent || '')");
+    expect(src).toContain("/Jawaban Konsultasi/i.test(t.textContent || '')");
+    expect(src).toContain('function parseKonsulSheet(');
+    expect(src).toContain("/^Penemuan Klinis/i.test(row[0] || '')");
+    // SOAP diambil dari baris "Subjektif: …" dst, bukan parser `Label : nilai`
+    // lama yang mengira sel <p> pembuka sebagai field.
+    expect(src).toContain(
+      '/^(Subjektif|Objektif|Assesmen|Planning|Instruksi)\\s*:\\s*([\\s\\S]*)$/i',
+    );
+    expect(src).toContain("soap[m[1].toLowerCase()] = m[2].trim() || '-'");
+    // Nama konsulen diambil dari tanda tangan jawaban; pengirim dari permintaan.
+    expect(src).toContain("firstDoctor(a[a.length - 1]?.[1] || '')");
+    expect(src).toContain("firstDoctor(r[r.length - 1]?.[1] || '')");
+    expect(src).toContain("['PERMINTAAN KONSULTASI', data.permintaan]");
+    expect(src).toContain("['INSTRUKSI', data.instruksi]");
+  });
+
+  it('konsul & radiologi multi-entri: satu lembar per section', () => {
+    // Dedup judul dulu menelan semua konsul/radiologi setelah yang pertama.
+    expect(src).toContain('const MULTI_DOC = /^(Konsul|Radiologi)/i;');
+    expect(src).toContain('if (!MULTI_DOC.test(title) && seen.has(title)) return;');
+    // Builder diikat ke section entri-nya, bukan find() pertama.
+    expect(src).toContain('const rad = src ?? sections.find');
+    expect(src).toContain('const target = src ?? sections.find');
+    expect(src).toContain('return buildRadiologiSection(sections, s, m.id);');
+    expect(src).toContain('return buildKonsulSection(sections, s, m.id);');
+    // ID unik per instance supaya tab & <select> tidak selalu menunjuk yang pertama.
+    expect(src).toContain('const metas = sections.map((s, i) => {');
+    expect(src).toContain('id: `${m.id}-${n}`');
+    expect(src).toContain('return `<section class="rm-page" id="${esc(id)}">');
   });
 
   it('toolbar mempertahankan ID yang dipakai handler', () => {

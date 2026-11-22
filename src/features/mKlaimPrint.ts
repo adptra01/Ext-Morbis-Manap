@@ -268,6 +268,11 @@ function titleOf(section: HTMLElement, i: number): string {
   return t || `Berkas ${String(i + 1).padStart(2, '0')}`;
 }
 
+/** Berkas yang boleh muncul berkali-kali: satu lembar per konsultasi /
+ *  permintaan radiologi. Judulnya sama persis, jadi dedup judul akan
+ *  menelan semua entri setelah yang pertama. */
+const MULTI_DOC = /^(Konsul|Radiologi)/i;
+
 function collectSections(): { sections: Section[]; inventory: InventoryRow[] } {
   const nodes = Array.from(document.querySelectorAll<HTMLElement>('.isidalam'));
   const seen = new Set<string>();
@@ -278,7 +283,7 @@ function collectSections(): { sections: Section[]; inventory: InventoryRow[] } {
     // Dedup oleh JUDUL (unique per berkas). Dedup by potongan HTML salah
     // kaprah: beberapa dokumen punya pembuka <div width:100%> yang sama
     // persis → section besar (mis. Pengkajian IGD) ikut terbuang.
-    if (seen.has(title)) return;
+    if (!MULTI_DOC.test(title) && seen.has(title)) return;
     seen.add(title);
     const html = clean(node, VER_DOCS.test(title));
     if (html.length < 20) {
@@ -299,8 +304,10 @@ function collectSections(): { sections: Section[]; inventory: InventoryRow[] } {
   return { sections, inventory };
 }
 
+/** Decode dulu entity hasil scrape supaya `&nbsp;` / `&amp;nbsp;` tidak tampil
+ *  literal di dossier, baru escape untuk HTML. */
 const esc = (s: string): string =>
-  s.replace(
+  decodeEntities(s).replace(
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
   );
@@ -1667,35 +1674,40 @@ ${kop('RM. 07')}
 }
 
 /** SECTION RM.08 — HASIL PEMERIKSAAN RADIOLOGI.
- *  Parser label ': nilai' satu pass; expertise & dokter penilai pakai fallback
- *  '-' bila halaman tidak mengisinya. */
-function buildRadiologiSection(sections: Section[]): string {
-  const rad = sections.find((s) => /^Radiologi/i.test(s.title));
-  const qrRad = sectionQrs(sections, /^Radiologi/i)[0] ?? '';
-  const doc = rad ? new DOMParser().parseFromString(rad.html, 'text/html') : null;
-  const fields = new Map<string, string>();
-  const exams: string[] = [];
+ *  Satu `.isidalam` MORBIS bisa memuat beberapa lembar: potong per judul
+ *  "HASIL PEMERIKSAAN RADIOLOGI", lalu parse tiap lembar sendiri-sendiri
+ *  (field, expertise, QR & dokter penilai tidak boleh tumpang tindih). */
+const RAD_LABEL =
+  /^(No\.?\s*(RONTGEN|RM)|Umur|Tanggal Periksa|Bed|Status|Nama Pasien|Jenis Kelamin|Alamat|dr\.?\s*(Pengirim|DPJP)|Dokter (Pengirim|DPJP)|Diagnosa (Klinis|ICD))/i;
+const RAD_HEAD =
+  /<div[^>]*class="[^"]*head-cetak-instansi[^"]*"[^>]*>\s*HASIL PEMERIKSAAN RADIOLOGI/i;
+
+function buildRadiologiSection(sections: Section[], src?: Section, id = 'rm-08'): string {
+  const rad = src ?? sections.find((s) => /^Radiologi/i.test(s.title));
+  return splitByHeader(rad?.html ?? '', RAD_HEAD)
+    .map((part, i) => {
+      const qr = sectionQrs([{ title: 'Radiologi', html: part }], /Radiologi/i)[0] ?? '';
+      return buildRadiologiSheet(sections, part, qr, i ? `${id}-${i + 1}` : id);
+    })
+    .join('');
+}
+
+function buildRadiologiSheet(sections: Section[], html: string, qrRad: string, id: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const fields = pairFields(doc, RAD_LABEL);
+  const exams: Array<{ name: string; golongan: string; kontras: string }> = [];
   let expertise = '';
 
-  if (doc) {
-    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
-      const c = Array.from(tr.cells).map((td) =>
-        (td.innerHTML || '')
-          .replace(/<br\s*\/?>/gi, '\n')
-          .replace(/<[^>]+>/g, '')
-          .replace(/&nbsp;/gi, ' ')
-          .replace(/[ \t]+/g, ' ')
-          .trim(),
-      );
-      for (const cell of c) {
-        const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
-        if (m && !fields.has(m[1].trim())) fields.set(m[1].trim(), m[2].trim());
-        // c[] sudah mengubah <br> jadi \n — pakai ini, BUKAN textContent
-        // (textContent menggabungkan semua baris jadi satu spasi).
-        const em = cell.match(/^expertise\s*:\s*([\s\S]+)$/i);
-        if (em && !expertise) expertise = em[1].trim();
-      }
-      if (c.length >= 4 && /^\d+$/.test(c[0]) && c[1]) exams.push(c[1]);
+  for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+    const c = Array.from(tr.cells).map(cellText);
+    for (const cell of c) {
+      // c[] sudah mengubah <br> jadi \n — pakai ini, BUKAN textContent
+      // (textContent menggabungkan semua baris jadi satu spasi).
+      const em = cell.match(/^expertise\s*:\s*([\s\S]+)$/i);
+      if (em && !expertise) expertise = em[1].trim();
+    }
+    if (c.length >= 4 && /^\d+$/.test(c[0]) && c[1]) {
+      exams.push({ name: c[1], golongan: c[2], kontras: c[3] });
     }
   }
   const f = (...res: RegExp[]): string => {
@@ -1715,17 +1727,23 @@ function buildRadiologiSection(sections: Section[]): string {
   const status = f(/^Status/i);
   const dokterPengirim = f(/^dr\.? Pengirim|^Dokter Pengirim/i);
   const dokterDpjpRaw = f(/^dr\.? DPJP|^Dokter DPJP/i);
-  const dokterDpjp = dokterDpjpRaw !== '-' ? dokterDpjpRaw : doctorFromQr(qrRad);
+  const sigDoctor =
+    (doc.body.textContent || '')
+      .replace(/\s+/g, ' ')
+      .match(/\(\s*(dr\.[^)]+)\s*\)/i)?.[1]
+      ?.trim() || '-';
+  const dokterDpjp =
+    dokterDpjpRaw !== '-' ? dokterDpjpRaw : sigDoctor !== '-' ? sigDoctor : doctorFromQr(qrRad);
   const diagnosa = f(/^Diagnosa Klinis/i);
   const diagnosaIcd = f(/^Diagnosa ICD/i);
-  const golongan = exams.length ? 'RONTGEN' : '-';
+  const golongan = exams.length ? exams[0].golongan || '-' : '-';
 
   const examRows = exams.length
     ? exams
         .map(
-          (name, i) =>
-            `<tr><td class="center">${i + 1}</td><td><strong>${esc(name)}</strong></td>` +
-            `<td class="center">${esc(golongan)}</td><td class="center">Tanpa Kontras</td>` +
+          (ex, i) =>
+            `<tr><td class="center">${i + 1}</td><td><strong>${esc(ex.name)}</strong></td>` +
+            `<td class="center">${esc(ex.golongan || '-')}</td><td class="center">${esc(ex.kontras || '-')}</td>` +
             `<td class="center"><input type="checkbox" class="rm-checkbox" aria-label="Verifikasi Radiologi ${i + 1}"></td></tr>`,
         )
         .join('')
@@ -1735,6 +1753,7 @@ function buildRadiologiSection(sections: Section[]): string {
   // jarak antar bagian expertise mengikuti value asli.
   const expertiseHtml = expertise
     ? expertise
+        .replace(/^\s*\d+\.\s*/, '')
         .replace(/^\n+|\n+$/g, '')
         .split('\n')
         .map((l) => l.trim())
@@ -1742,7 +1761,7 @@ function buildRadiologiSection(sections: Section[]): string {
         .join('')
     : '<div>Tidak ada expertise tercatat pada halaman.</div>';
 
-  return `<section class="rm-page" id="rm-08">
+  return `<section class="rm-page" id="${esc(id)}">
 ${kop('RM. 08')}
 <div class="rm-form-title">HASIL PEMERIKSAAN RADIOLOGI</div>
 
@@ -1763,7 +1782,7 @@ ${kop('RM. 08')}
     ${idRow('Diagnosa Klinis', diagnosa)}
     ${idRow('Diagnosa ICD', diagnosaIcd)}
     ${idRow('Status Pasien', status)}
-    ${idRow('Golongan / Jenis', `${golongan} — Tanpa Kontras`)}
+    ${idRow('Golongan / Jenis', `${golongan} — ${exams[0]?.kontras || '-'}`)}
   </table></div>
 </div>
 
@@ -1779,14 +1798,14 @@ ${kop('RM. 08')}
 </table>
 
 <table class="rm-grid-table">
-  <thead><tr><th>URAIAN EXPERTISE &amp; KESAN RADIOGRAFI TORAKS</th></tr></thead>
+  <thead><tr><th>URAIAN EXPERTISE &amp; KESAN PEMERIKSAAN</th></tr></thead>
   <tbody><tr><td style="padding: 8px 10px; line-height: 1.5;">${expertiseHtml}</td></tr></tbody>
 </table>
 
 <div class="rm-signature-block">
   <div class="rm-sig-box left-align">
     <div>No. Rontgen : ${esc(noRontgen)}</div>
-    <div>Kode Prosedur ICD-9-CM : 87.44</div>
+    <div>Jenis Pemeriksaan : ${esc(golongan)}</div>
   </div>
   <div class="rm-sig-box">
     <div>Dokter Penilai</div>
@@ -1879,30 +1898,52 @@ ${kop('TRIAGE')}
     ${idRow('Diantar Polisi', diantarPolisi)}
     ${idRow('No. ID', noId)}
     ${idRow('Pengantar Pasien', pengantar)}
-    ${idRow('Status Triage', status, true)}
+    ${idRow('No. Antrian', noAntrian)}
   </table></div>
 </div>
 
 <div class="sub-heading-rm">ANAMNESA &amp; RIWAYAT</div>
-<table class="rm-grid-table"><tbody>
-  ${idRow('Riwayat Penyakit Dahulu', riwayat)}
-  ${idRow('Keluhan Utama', keluhan)}
-</tbody></table>
-
-<div class="sub-heading-rm">TANDA VITAL &amp; PEMERIKSAAN</div>
 <div class="id-box-borderless">
   <div class="id-col"><table class="id-table">
+    ${idRow('Keluhan Utama', keluhan, true)}
+    ${idRow('Riwayat Penyakit Dahulu', riwayat)}
     ${idRow('Keadaan Umum', keadaanUmum)}
-    ${idRow('Suhu (°C)', suhu)}
-    ${idRow('Nadi (x/menit)', nadi)}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow('RR (x/menit)', rr)}
-    ${idRow('Tekanan Darah (mmHg)', td)}
-    ${idRow('Jam', jam)}
-    ${idRow('No. Antrian', noAntrian)}
   </table></div>
 </div>
+
+<div class="sub-heading-rm">TANDA VITAL &amp; PEMERIKSAAN</div>
+<table class="rm-grid-table">
+  <thead><tr>
+    <th>TEKANAN DARAH (mmHg)</th>
+    <th>NADI (x/menit)</th>
+    <th>PERNAPASAN (x/menit)</th>
+    <th>SUHU (&deg;C)</th>
+    <th>JAM PERIKSA</th>
+  </tr></thead>
+  <tbody><tr>
+    <td class="center"><strong>${esc(normVital(td))}</strong></td>
+    <td class="center"><strong>${esc(nadi)}</strong></td>
+    <td class="center"><strong>${esc(rr)}</strong></td>
+    <td class="center"><strong>${esc(suhu)}</strong></td>
+    <td class="center"><strong>${esc(jam)}</strong></td>
+  </tr></tbody>
+</table>
+
+<table class="rm-grid-table"><tbody>
+  <tr class="section-banner"><td colspan="4">STATUS TRIASE &amp; WAKTU LAYANAN</td></tr>
+  <tr>
+    <td style="width: 118px;">Status Triage</td>
+    <td><strong>${esc(status)}</strong></td>
+    <td style="width: 118px;">Jam Datang</td>
+    <td>${esc(jamDatang)}</td>
+  </tr>
+  <tr>
+    <td>No. Antrian</td>
+    <td>${esc(noAntrian)}</td>
+    <td>Jam Registrasi</td>
+    <td>${esc(jamRegistrasi)}</td>
+  </tr>
+</tbody></table>
 
 <div class="rm-signature-block">
   <div class="rm-sig-box left-align">
@@ -2050,6 +2091,35 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     .join('');
   const perawatVal = perawat.slice(1).flat().filter(Boolean).join(' · ');
 
+  // Gambar asli MORBIS harus tetap tampil di dossier (bukan cuma teks).
+  const igdImage = (re: RegExp): string =>
+    Array.from(doc?.querySelectorAll('img') || [])
+      .map((im) => im.getAttribute('src') || '')
+      .find((s) => re.test(s)) || '';
+  const figure = (url: string, caption: string): string =>
+    url
+      ? `<figure class="rm-figure"><img src="${esc(url)}" alt="${esc(caption)}">` +
+        `<figcaption>${esc(caption)}</figcaption></figure>`
+      : '';
+  const wongFigure = figure(igdImage(/nyeri_baru/i), 'Skala Nyeri Wong Baker');
+  const objekFigure = figure(igdImage(/clipboard/i), 'Gambar Pemeriksaan Objektif');
+  const checked = (name: string): string =>
+    document.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value || '-';
+  const afterLabel = (re: RegExp): string => {
+    const label = Array.from(doc?.querySelectorAll('label') || []).find((l) =>
+      re.test((l.textContent || '').replace(/\s+/g, ' ').trim()),
+    );
+    return (label?.nextElementSibling?.textContent || '').replace(/\s+/g, ' ').trim() || '-';
+  };
+  const planningText = ((): string => {
+    const marker = Array.from(doc?.querySelectorAll('div') || []).find((d) =>
+      /^Planning\s*:\s*Terapy/i.test((d.textContent || '').trim().slice(0, 80)),
+    );
+    return (marker?.nextElementSibling?.textContent || '').replace(/[ \t]+/g, ' ').trim() || '-';
+  })();
+  const radioTeks = (name: string, teks: string): string =>
+    checked(name) === 'ya' ? pick(teks) : checked(name) === 'tidak' ? 'Tidak' : '-';
+
   return `<section class="rm-page" id="pengkajian-igd">
 ${kop('PENGKAJIAN IGD')}
 <div class="rm-form-title">LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT</div>
@@ -2070,6 +2140,26 @@ ${kop('PENGKAJIAN IGD')}
     ${idRow('Pukul Diperiksa', pick('pukul_diperiksa'))}
     ${idRow('Status Spiritual', pick('status_spiritual'))}
     ${idRow('Indikasi Rawat', pick('tindak_lanjut_indikasi_ranap'))}
+  </table></div>
+</div>
+
+<div class="sub-heading-rm">KONDISI AWAL &amp; RIWAYAT</div>
+<div class="id-box-borderless">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Prosedur Masuk', checked('kaji[prosedur_masuk]'))}
+    ${idRow('Cara Masuk', checked('kaji[cara_masuk]'))}
+    ${idRow('Status Alergi', radioTeks('kaji[status_alergi]', 'status_alergi_text'))}
+    ${idRow('Status Psikologi', checked('kaji[status_psikologi]'))}
+    ${idRow('Status Sosial', checked('kaji[status_sosial]'))}
+    ${idRow('Status Ekonomi', checked('kaji[status_ekonomi]'))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nutrisi (BB/TB)', `${pick('nutrisi_bb')} kg / ${pick('nutrisi_tb')} cm`)}
+    ${idRow('Kognitif', checked('kaji[fungsi_kognitif]'))}
+    ${idRow('Motorik', checked('kaji[fungsi_motorik]'))}
+    ${idRow('Hambatan Pembelajaran', radioTeks('kaji[hambatan_pembelajaran]', 'terhambat_pembelajaran_text'))}
+    ${idRow('Kebutuhan Edukasi', checked('kaji[kebutuhan_edukasi]'))}
+    ${idRow('Penerjemah', radioTeks('kaji[dibutuhkan_penerjemah]', 'penerjemah_text'))}
   </table></div>
 </div>
 
@@ -2094,8 +2184,44 @@ ${grid(
   ],
 )}
 
+<div class="sub-heading-rm">KONDISI SAAT PINDAH / PULANG DARI IGD</div>
+${grid(
+  ['PUKUL', 'TEKANAN DARAH', 'NADI', 'PERNAPASAN', 'SUHU', 'SpO2', 'GCS', 'KESADARAN'],
+  [
+    '<tr>' +
+      [
+        pick('waktu_pasien_pulang'),
+        normVital(pick('kondisi_pasien_td')),
+        pick('kondisi_pasien_nadi'),
+        pick('kondisi_pasien_nafas'),
+        pick('kondisi_pasien_suhu'),
+        pick('kondisi_pasien_spo'),
+        pick('kondisi_pasien_gcs'),
+        pick('kondisi_pasien_kesadaran'),
+      ]
+        .map((x) => `<td class="center">${esc(x)}</td>`)
+        .join('') +
+      '</tr>',
+  ],
+)}
+
 <div class="sub-heading-rm">TRIASE (DIISI OLEH DOKTER)</div>
 ${grid(['SKALA TRIASE', 'KETERANGAN', 'RESPON TIME'], triaseRows)}
+
+<div class="sub-heading-rm">ASESMEN NYERI — WONG BAKER / NRS</div>
+<div class="rm-figure-row">
+  ${wongFigure || '<div>Skala nyeri tidak tersedia pada halaman asal.</div>'}
+  ${kvTable([
+    ['Skala Wong Baker', pick('emo_wong')],
+    ['(P) Faktor Pencetus', pick('faktor_pencetus')],
+    ['(Q) Kualitas', checked('kaji[qualitas]')],
+    ['(R) Lokasi', pick('lokasi_nyeri')],
+    ['Menjalar', checked('kaji[nyeri_menjalar]')],
+    ['(S) Skala Nyeri', pick('skala_nyeri')],
+    ['Frekuensi', checked('kaji[nyeri_frekwensi]')],
+    ['(T) Lamanya', pick('lamanya_nyeri')],
+  ])}
+</div>
 
 <div class="sub-heading-rm">PENGKAJIAN NYERI (FLACC)</div>
 ${grid(['PENGKAJIAN', '0', '1', '2', 'NILAI'], nyeriRows)}
@@ -2107,13 +2233,29 @@ ${grid(['NO', 'PARAMETER', 'KRITERIA', 'NILAI', 'SKOR'], skorRows(jatuh1))}
 ${grid(['NO', 'PARAMETER', 'KRITERIA', 'NILAI', 'SKOR'], skorRows(jatuh2))}
 
 <div class="sub-heading-rm">PEMERIKSAAN OBJEKTIF</div>
-${grid(['OBJEKTIF', 'KELAINAN'], objektifRows)}
+<div class="rm-figure-row">
+  ${objekFigure}
+  ${grid(['OBJEKTIF', 'KELAINAN'], objektifRows)}
+</div>
 
 <div class="sub-heading-rm">DIAGNOSA &amp; TINDAKAN</div>
 <table class="rm-grid-table"><tbody>
   ${diagnosaRows}
   <tr><td style="width:180px;"><strong>TINDAKAN</strong></td><td>${esc(tindakanVal)}</td></tr>
 </tbody></table>
+
+<div class="sub-heading-rm">PEMERIKSAAN PENUNJANG</div>
+${kvTable([
+  ['EKG', afterLabel(/^EKG$/i)],
+  ['Radiologi', afterLabel(/^Radiologi$/i)],
+  ['Laboratorium', afterLabel(/^Laboratorium$/i)],
+])}
+
+<div class="sub-heading-rm">PENGKAJIAN KEPERAWATAN &amp; MEDIS</div>
+<div class="rm-note">${nl2br(pick('pengkajian_keperawatan'))}</div>
+
+<div class="sub-heading-rm">PLANNING / TERAPI</div>
+<div class="rm-note">${nl2br(planningText)}</div>
 
 <div class="sub-heading-rm">OBAT / TERAPI IGD</div>
 ${grid(['PUKUL', 'NAMA OBAT', 'DOSIS / RUTE', 'TANDA TANGAN'], obatRows)}
@@ -2186,12 +2328,19 @@ const sectionQrs = (sections: Section[], titleRe: RegExp): string[] => {
     .filter((url) => /qr|barcode/i.test(url));
 };
 
-/** Nama dokter dari isi QR — dipakai bila teks halaman tidak menyediakannya. */
+/** Nama dokter dari isi QR. Payload MORBIS: "…approvedr. X tgl 16 / 10 / 2026
+ *  jam09:08:42" — potong sebelum tgl/jam kalau tidak nama yang keluar. */
 const doctorFromQr = (url: string): string => {
   if (!url) return '-';
   try {
     const decoded = decodeURIComponent(url.replace(/\+/g, ' '));
-    return decoded.match(/(dr\.[^&]+)/i)?.[1]?.trim() || '-';
+    const m = decoded.match(/(dr\.[^&]+)/i)?.[1] || '';
+    return (
+      m
+        .split(/\s+(?:tgl|jam)\b/i)[0]
+        .replace(/\s+/g, ' ')
+        .trim() || '-'
+    );
   } catch {
     return '-';
   }
@@ -2238,7 +2387,50 @@ const decodeEntities = (s: string): string =>
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&');
+    .replace(/&amp;/gi, '&')
+    .replace(/&nbsp;/gi, ' '); // &amp;nbsp; → &nbsp; → spasi
+
+/** Teks satu sel hasil scrape: buang komentar HTML MORBIS (hasil radiologi
+ *  menyimpan versi lama expertise di dalam <!-- -->), <br> → baris baru. */
+function cellText(td: Element): string {
+  return decodeEntities(
+    (td.innerHTML || '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/[ \t]+/g, ' ')
+      .trim(),
+  );
+}
+
+/** Satu section `.isidalam` radiologi bisa berisi beberapa lembar pemeriksaan,
+ *  masing-masing diawali judul "HASIL PEMERIKSAAN RADIOLOGI". Potong per judul
+ *  supaya tiap lembar jadi section tersendiri. */
+function splitByHeader(html: string, headerRe: RegExp): string[] {
+  const re = new RegExp(
+    headerRe.source,
+    headerRe.flags.includes('g') ? headerRe.flags : headerRe.flags + 'g',
+  );
+  const marks = Array.from(html.matchAll(re)).map((m) => m.index ?? 0);
+  if (marks.length < 2) return [html];
+  return marks.map((at, i) => html.slice(at, i + 1 < marks.length ? marks[i + 1] : html.length));
+}
+
+/** Pasangan sel `Label | : nilai` (format tabel MORBIS) → Map label→nilai. */
+function pairFields(doc: Document, labelRe: RegExp): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+    const c = Array.from(tr.cells).map(cellText);
+    for (let i = 0; i < c.length - 1; i++) {
+      const label = c[i].replace(/^[-:\s]+|[\s:]+$/g, '').trim();
+      if (!labelRe.test(label) || out.has(label)) continue;
+      const value = c[i + 1].replace(/^:\s*/, '').trim();
+      if (value) out.set(label, value);
+    }
+  }
+  return out;
+}
 
 /** Ambil nilai field dengan fallback '-'. */
 const fieldValue = (fields: Map<string, string>, ...res: RegExp[]): string => {
@@ -2735,47 +2927,147 @@ ${sig(
 </section>`;
 }
 
-/** FORM RM.10 — LEMBAR KONSULTASI ANTAR-SPESIALIS (S-O-A-P). */
-function buildKonsulSection(sections: Section[]): string {
-  const fields = formFields(sections, /Konsul/i);
-  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
-  const qrKonsul = sectionQrs(sections, /Konsul/i)[0] ?? '';
-  const konsulenRaw = f(/konsulen|konsul/i);
-  const konsulenDariField =
-    konsulenRaw !== '-'
-      ? konsulenRaw
+/** FORM RM.10 — LEMBAR KONSULTASI ANTAR-SPESIALIS (S-O-A-P).
+ *  MORBIS menggabungkan beberapa konsul dalam SATU `.isidalam#cetak-konsul`.
+ *  Tiap entri = tabel permintaan + tabel jawaban, dipisah <hr>; keduanya
+ *  diparse sendiri supaya jawaban konsul ke-2 tidak menimpa konsul ke-1. */
+
+interface KonsulSheetData {
+  konsulen: string;
+  pengirim: string;
+  tanggal: string;
+  jam: string;
+  jenis: string;
+  permintaan: string;
+  penemuan: string;
+  dugaan: string;
+  subjektif: string;
+  objektif: string;
+  asesmen: string;
+  planning: string;
+  instruksi: string;
+  keputusan: string;
+  tglJawaban: string;
+  jamJawaban: string;
+}
+
+const tableRows = (t: Element | null): string[][] =>
+  t ? Array.from(t.rows).map((tr) => Array.from(tr.cells).map(cellText)) : [];
+
+const dateJam = (s: string): [string, string] => [
+  s.match(/(\d{1,2}\/\d{1,2}\/\d{4})/)?.[1] ?? '-',
+  s.match(/Pukul\s*([\d:]+)/i)?.[1] ?? '-',
+];
+
+const firstDoctor = (s: string): string => s.match(/dr\.[^\n]+/i)?.[0]?.trim() ?? '-';
+
+function parseKonsulSheet(el: HTMLElement): KonsulSheetData {
+  const tables = Array.from(el.querySelectorAll('table'));
+  const req = tables[0] ?? null;
+  const ans = tables.find((t) => /Jawaban Konsultasi/i.test(t.textContent || '')) ?? null;
+  const r = tableRows(req);
+  const a = tableRows(ans);
+  const head = r[0] ?? [];
+  const intro = r[1]?.[0] || '';
+  const penemuanIdx = r.findIndex((row) => /^Penemuan Klinis/i.test(row[0] || ''));
+  const [tanggal, jam] = dateJam(head[1] || '');
+  const [tglJawaban, jamJawaban] = dateJam(a[1]?.[1] || '');
+
+  const soap: Record<string, string> = {};
+  for (const row of a.slice(2)) {
+    for (const cell of row) {
+      const m = cell.match(/^(Subjektif|Objektif|Assesmen|Planning|Instruksi)\s*:\s*([\s\S]*)$/i);
+      if (m) soap[m[1].toLowerCase()] = m[2].trim() || '-';
+    }
+  }
+  const konsulenKe = (head[0] || '')
+    .replace(/^\s*Konsul Ke\s*:\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const dokterJawab = firstDoctor(a[a.length - 1]?.[1] || '');
+
+  return {
+    konsulen: dokterJawab !== '-' ? dokterJawab : konsulenKe || '-',
+    pengirim: firstDoctor(r[r.length - 1]?.[1] || ''),
+    tanggal,
+    jam,
+    jenis: intro.match(/Mohon\s+Konsultasi\s+([^\s:]+)/i)?.[1] ?? '-',
+    permintaan: intro || '-',
+    penemuan: (penemuanIdx >= 0 ? r[penemuanIdx + 1]?.[0] : '') || '-',
+    dugaan:
+      r
+        .flat()
+        .find((x) => /^Dugaan\s*:/i.test(x))
+        ?.replace(/^Dugaan\s*:\s*/i, '')
+        .trim() || '-',
+    subjektif: soap.subjektif || '-',
+    objektif: soap.objektif || '-',
+    asesmen: soap.asesmen || '-',
+    planning: soap.planning || '-',
+    instruksi: soap.instruksi || '-',
+    keputusan: a.flat().find((x) => /Konsultasi selesai tanggal/i.test(x)) || '-',
+    tglJawaban,
+    jamJawaban,
+  };
+}
+
+function buildKonsulSection(sections: Section[], src?: Section, id = 'rm-10'): string {
+  const target = src ?? sections.find((s) => /Konsul/i.test(s.title));
+  if (!target) return '';
+  const doc = new DOMParser().parseFromString(target.html, 'text/html');
+  const entries = Array.from(doc.querySelectorAll('b'))
+    .filter((b) => /^\s*Konsul Ke\s*:/i.test(b.textContent || ''))
+    .map((b) => b.closest('table')?.parentElement)
+    .filter((el): el is HTMLElement => !!el);
+  const qrs = sectionQrs([target], /Konsul/i);
+  return entries
+    .map((el, i) => buildKonsulSheet(parseKonsulSheet(el), qrs[i] ?? '', i ? `${id}-${i + 1}` : id))
+    .join('');
+}
+
+function buildKonsulSheet(data: KonsulSheetData, qrKonsul: string, id: string): string {
+  const pengirim = pick('dokter', 'dpjp');
+  const konsulen =
+    data.konsulen !== '-'
+      ? data.konsulen
       : pick('dokter_konsulen') !== '-'
         ? pick('dokter_konsulen')
         : doctorFromQr(qrKonsul);
-  const konsulen = konsulenDariField;
-  return `<section class="rm-page" id="rm-10">
+  return `<section class="rm-page" id="${esc(id)}">
 ${kop('RM. 10')}
 <div class="rm-form-title">LEMBAR KONSULTASI</div>
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
     ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'), true)}
     ${idRow('Nama Pasien', pick('nama'), true)}
+    ${idRow('Tanggal Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow('Tanggal Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
     ${idRow('Jenis Kunjungan', [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-')}
+    ${idRow('Tanggal Permintaan', `${data.tanggal} ${data.jam}`.trim())}
+    ${idRow('Tanggal Jawaban', `${data.tglJawaban} ${data.jamJawaban}`.trim())}
   </table></div>
 </div>
 ${kvTable([
   ['BAGIAN I : KEPADA YTH. KONSULEN', konsulen],
-  ['JENIS PERMOHONAN', f(/^Jenis Permohonan|^Permohonan/i)],
-  ['PENEMUAN KLINIS TERPENTING', f(/^Penemuan|^Keluhan/i)],
-  ['DUGAAN DIAGNOSA', f(/^Dugaan|^Diagnosa/i)],
+  ['JENIS PERMOHONAN', data.jenis],
+  ['PERMINTAAN KONSULTASI', data.permintaan],
+  ['PENEMUAN KLINIS TERPENTING', data.penemuan],
+  ['DUGAAN DIAGNOSA', data.dugaan],
 ])}
 ${kvTable([
-  ['S (SUBJEKTIF)', f(/^S \(Subjektif\)|^Subjektif/i)],
-  ['O (OBJEKTIF)', f(/^O \(Objektif\)|^Objektif/i)],
-  ['A (ASSESMEN)', f(/^A \(Assesmen\)|^Assesmen/i)],
-  ['P (PLANNING &amp; INSTRUKSI)', f(/^P \(Planning|^Planning|^Instruksi/i)],
-  ['KEPUTUSAN KONSULTASI', f(/^Keputusan/i)],
+  ['S (SUBJEKTIF)', data.subjektif],
+  ['O (OBJEKTIF)', data.objektif],
+  ['A (ASSESMEN)', data.asesmen],
+  ['P (PLANNING)', data.planning],
+  ['INSTRUKSI', data.instruksi],
+  ['KEPUTUSAN KONSULTASI', data.keputusan],
 ])}
 ${sig(
-  ['Dokter Pemohon Konsultasi', `( ${esc(pick('dokter', 'dpjp'))} )`],
+  [
+    'Dokter Pemohon Konsultasi',
+    pengirim !== '-' ? `( ${esc(pengirim)} )` : `( ${esc(data.pengirim)} )`,
+  ],
   [
     'Dokter Konsulen',
     qrKonsul
@@ -2995,20 +3287,33 @@ ${checksHtml}
 </div>
 </section>`;
 
+  // ID section harus unik walau judul berkasnya berulang (pasien dengan
+  // beberapa lembar konsul / hasil radiologi).
+  const metaCount = new Map<string, number>();
+  const metas = sections.map((s, i) => {
+    const m = metaFor(s.title, i);
+    const n = (metaCount.get(m.id) ?? 0) + 1;
+    metaCount.set(m.id, n);
+    return n === 1
+      ? m
+      : { ...m, id: `${m.id}-${n}`, tab: `${m.tab} (${n})`, option: `${m.option} (${n})` };
+  });
+
   const docs = sections
     .map((s, i) => {
+      const m = metas[i];
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
       if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
       if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
       if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
       if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
-      if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections);
+      if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections, s, m.id);
       if (/^Triage/i.test(s.title)) return buildTriageSection(sections);
       if (/PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title))
         return buildPengkajianIgdSection(sections);
       if (/^Laboratorium/i.test(s.title)) return buildLaboratoriumSection(sections);
-      if (/Konsul/i.test(s.title)) return buildKonsulSection(sections);
+      if (/Konsul/i.test(s.title)) return buildKonsulSection(sections, s, m.id);
       if (/^Persetujuan Tindakan/i.test(s.title)) return buildKonsentSection(sections);
       if (/^Anestesi/i.test(s.title)) return buildAnestesiSection(sections);
       if (/^Fisioterapi/i.test(s.title)) return buildFisioterapiSection(sections);
@@ -3021,7 +3326,6 @@ ${checksHtml}
       if (/^Laporan Tindakan/i.test(s.title)) return buildLaporanTindakanSection(sections);
       if (/^Bon Makan/i.test(s.title)) return buildBonMakanSection(sections);
       if (/^PEMERIKSAAN$/i.test(s.title)) return buildPemeriksaanSection(sections);
-      const m = metaFor(s.title, i);
       return `<section class="rm-page" id="${m.id}">
 ${kop(m.code)}
 <div class="rm-form-title">${esc(s.title)}</div>
@@ -3034,7 +3338,7 @@ ${kop(m.code)}
     `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
     `<button type="button" class="tab-btn" data-target="rm-00">RM. 00 Kendali</button>`,
     ...sections.map((s, i) => {
-      const m = metaFor(s.title, i);
+      const m = metas[i];
       return `<button type="button" class="tab-btn" data-target="${m.id}">${m.tab}</button>`;
     }),
   ].join('');
@@ -3042,7 +3346,7 @@ ${kop(m.code)}
     `<option value="all">Semua Formulir RM</option>`,
     `<option value="rm-00">RM. 00 — Lembar Kendali &amp; Verifikasi</option>`,
     ...sections.map((s, i) => {
-      const m = metaFor(s.title, i);
+      const m = metas[i];
       return `<option value="${m.id}">${m.option}</option>`;
     }),
   ].join('');
@@ -3676,6 +3980,17 @@ ${kop(m.code)}
 .img-tools{display:flex;gap:6px;justify-content:flex-end;margin:0 0 5px}
 .img-tools button{font-family:inherit;font-size:10px;padding:3px 9px;border:1px solid #000000;background-color:#FFFFFF;cursor:pointer}
 </style></head><body>
+<style>
+    /* IGD: gambar asal MORBIS (skala nyeri Wong Baker & gambar objektif)
+       ikut tercetak, dirapikan sebagai figure + keterangan. */
+    .rm-figure { margin: 0 0 8px; break-inside: avoid; text-align: center; }
+    .rm-figure img { max-width: 100%; height: auto; border: 1px solid #000000; }
+    .rm-figure figcaption { margin-top: 3px; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.04em; }
+    .rm-figure-row { display: flex; gap: 10px; align-items: flex-start; break-inside: avoid; }
+    .rm-figure-row .rm-figure { flex: 0 0 46%; margin: 0; }
+    .rm-figure-row .rm-grid-table { flex: 1; min-width: 0; }
+    .rm-note { border: 1px solid #000000; padding: 6px 8px; margin-bottom: 8px; font-size: 8.2pt; line-height: 1.4; break-inside: avoid; }
+</style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
 <div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>
 <div class="toolbar-group"><span class="toolbar-counter">Tanda Verifikator (&#10003;): <strong id="checkCounter">0 / 0</strong></span>
