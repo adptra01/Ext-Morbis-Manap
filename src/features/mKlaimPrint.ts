@@ -1982,8 +1982,13 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     return rows(t);
   };
 
-  const riskAnak = tables.find((tb) => /HUMPTY DUMPTY/i.test(tb.textContent || ''));
-  const riskDewasa = tables.find((tb) => /MORSE FALL SCALE/i.test(tb.textContent || ''));
+  // Judul HUMPTY/MORSE ada di <p> di LUAR tabel, jadi cari dari baris data pertama.
+  const riskAnak = tables.find((tb) =>
+    /^Usia$/i.test((tb.rows[1]?.cells[1]?.textContent || '').trim()),
+  );
+  const riskDewasa = tables.find((tb) =>
+    /^Riwayat Jatuh$/i.test((tb.rows[1]?.cells[1]?.textContent || '').trim()),
+  );
   const renderRiskTable = (t?: HTMLTableElement): string => {
     if (!t) return '<tr><td colspan="5">-</td></tr>';
     return Array.from(t.rows)

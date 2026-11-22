@@ -1585,8 +1585,12 @@ ${kop("TRIAGE")}
       const t = tables.find((tb2) => re.test(tb2.textContent || ""));
       return rows(t);
     };
-    const riskAnak = tables.find((tb2) => /HUMPTY DUMPTY/i.test(tb2.textContent || ""));
-    const riskDewasa = tables.find((tb2) => /MORSE FALL SCALE/i.test(tb2.textContent || ""));
+    const riskAnak = tables.find(
+      (tb2) => /^Usia$/i.test((tb2.rows[1]?.cells[1]?.textContent || "").trim())
+    );
+    const riskDewasa = tables.find(
+      (tb2) => /^Riwayat Jatuh$/i.test((tb2.rows[1]?.cells[1]?.textContent || "").trim())
+    );
     const renderRiskTable = (t) => {
       if (!t) return '<tr><td colspan="5">-</td></tr>';
       return Array.from(t.rows).map((tr, ri) => {
