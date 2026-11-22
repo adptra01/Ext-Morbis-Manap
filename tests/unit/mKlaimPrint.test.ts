@@ -441,7 +441,13 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         'buildKonsentSection',
         'buildAnestesiSection',
         'form-konsent',
-        ['PERSETUJUAN TINDAKAN KEDOKTERAN (RM 19 A)', 'TUJUAN TINDAKAN', 'RISIKO &amp; KOMPLIKASI'],
+        [
+          'PERSETUJUAN TINDAKAN KEDOKTERAN',
+          'PEMBERIAN INFORMASI &amp; PERSETUJUAN',
+          'UJI PEMAHAMAN',
+          'SKEMA TANDA TANGAN',
+          'Dasar Diagnosa',
+        ],
       ],
       [
         'buildAnestesiSection',
