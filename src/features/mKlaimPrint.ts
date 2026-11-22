@@ -2019,12 +2019,21 @@ function buildPengkajianIgdSection(sections: Section[]): string {
 
   const nyeriRows = nyeri
     .slice(1)
-    .map(
-      (r) =>
-        '<tr>' +
-        r.map((x, i) => `<td${i === 0 ? '' : ' class="center"'}>${esc(x || '-')}</td>`).join('') +
-        '</tr>',
-    )
+    .map((r) => {
+      const isTotal = r.some((x) => /^TOTAL$/i.test((x || '').trim()));
+      return (
+        `<tr${isTotal ? ' style="font-weight:bold;"' : ''}>` +
+        r
+          .map(
+            (x, i) =>
+              `<td${i === 0 ? '' : ' class="center"'}${isTotal && i === r.length - 1 ? ' style="font-weight:bold;"' : ''}>${esc(
+                x || '-',
+              )}</td>`,
+          )
+          .join('') +
+        '</tr>'
+      );
+    })
     .join('');
 
   const skorRows = (data: string[][]): string =>
@@ -2257,7 +2266,18 @@ ${grid(
 )}
 
 <div class="sub-heading-rm">TRIASE (DIISI OLEH DOKTER)</div>
-${grid(['SKALA TRIASE', 'KETERANGAN', 'RESPON TIME'], triaseRows)}
+<table class="rm-table">
+  <thead>
+    <tr><th style="width:34px;">PILIH</th><th style="width:95px;">SKALA TRIASE</th><th>KATEGORI &amp; KETERANGAN KLINIS</th><th style="width:105px;">RESPON TIME</th></tr>
+  </thead>
+  <tbody>${triaseRows
+    .map((r) => {
+      const on = (r[0] || '').includes('✓');
+      const cells = on ? r.slice(1, 4) : r.slice(0, 3);
+      return `<tr${on ? ' style="font-weight:bold;"' : ''}><td class="center"><span class="chk-box">${on ? '&#10003;' : '&nbsp;'}</span></td>${cells.map((x) => `<td>${esc(x || '-')}</td>`).join('')}</tr>`;
+    })
+    .join('')}</tbody>
+</table>
 
 <table class="rm-table">
   <thead><tr class="sec-hdr"><td colspan="2">II. PENGKAJIAN PSIKOSOSIAL, SPIRITUAL, EKONOMI, NUTRISI &amp; FUNGSIONAL</td></tr></thead>
