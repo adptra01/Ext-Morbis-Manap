@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign risiko jatuh anak/dewasa mengikuti tabel asli (rowspan) (`6c5d03b`)
 - **mKlaimPrint** — loading state pada tombol Cetak Rapi M-KLAIM (`f1f7fd7`)
 - **mKlaimPrint** — redesign X. Planning / Terapi terintegrasi (parse advis Kardiologi/Paru) (`0a60868`)
 - **mKlaimPrint** — redesign section X. Planning / Terapi terintegrasi (`a6522e9`)
@@ -39,6 +40,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr fix triase kolom (`245adb2`)
 - **changelog** — sync entr trim planning/header (`b0e0cd4`)
 - **changelog** — sync entr fix triase rows (`5969022`)
 - **changelog** — sync entr loading print klaim (`9f5b7d1`)
@@ -2248,4 +2250,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 7e75f119ee097f19fa5e6c50da55826d3fd87ab7 -->
+<!-- changelog-upto: 6c5d03bbd72a58969b601938fb4236d17fb6f7e2 -->
