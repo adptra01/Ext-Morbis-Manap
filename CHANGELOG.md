@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — loading state pada tombol Cetak Rapi M-KLAIM (`f1f7fd7`)
 - **mKlaimPrint** — redesign X. Planning / Terapi terintegrasi (parse advis Kardiologi/Paru) (`0a60868`)
 - **mKlaimPrint** — redesign section X. Planning / Terapi terintegrasi (`a6522e9`)
 - **printDossier** — tambah tombol scroll naik/turun; radiologi/konsul tab tampilkan semua entri (`79019cb`)
@@ -35,6 +36,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr kolom triase/flacc (`a4468a0`)
 - **changelog** — sync entr redesign planning/terapi (`d1f143d`)
 - **changelog** — sync entr redesign planning/terapi (`490d1d4`)
 - **changelog** — sync entr scroll & tab filter (`00419ae`)
@@ -2240,4 +2242,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f06863379dd5c44cb5cfedd9f01f73c2cb547941 -->
+<!-- changelog-upto: f1f7fd7c8c385f464c5be2e4f3b189cb9cf40a4f -->
