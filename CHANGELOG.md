@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — rm.19A QR tanda tangan pakai src dengan quote benar (`15294a9`)
 - **mKlaimPrint** — triage tidak dirender section ganda — gabung penuh ke IGD (`c71c2a1`)
 - **mKlaimPrint** — Triage/Konsul/Radiologi TTD, hapus Kota Jambi, QR tagihan (`4c5878f`)
 
@@ -26,6 +27,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr RM.19A redesign (`fa7f0f9`)
 - **changelog** — sync entri gabung triage-IGD (`9468d3d`)
 - **changelog** — sync entri redesign IGD & triase (`38d1c8d`)
 - **changelog** — sync entri mKlaimPrint (feat multi-entri + perf canvas) (`9ba2079`)
@@ -2224,4 +2226,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: aea54f0e1b9ff26e2ceec0ec0db95d102b6af427 -->
+<!-- changelog-upto: 15294a94ac20aea8adc3e36134f4cb4a1ce2cefa -->
