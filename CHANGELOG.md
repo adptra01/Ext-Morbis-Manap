@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign section X. Planning / Terapi terintegrasi (`a6522e9`)
 - **printDossier** — tambah tombol scroll naik/turun; radiologi/konsul tab tampilkan semua entri (`79019cb`)
 - **mKlaimPrint** — IGD checkbox -> nilai terpilih, kolom rapi, planning/disposisi terpisah (`1821e8f`)
 - **mKlaimPrint** — IGD checkbox -> nilai terpilih, kolom rapi, planning/disposisi terpisah (`a292de8`)
@@ -32,6 +33,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr scroll & tab filter (`00419ae`)
 - **changelog** — sync entr pemisahan triage-IGD (`8cd04cd`)
 - bump versi 1.5.258 (RM.19A redesign + TRIASE-IGD merge) (`48d07b9`)
 - **changelog** — sync entr rm.19A QR fix (`5101f66`)
@@ -2234,4 +2236,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 79019cb41db17f487072351b6825971d65afd501 -->
+<!-- changelog-upto: a6522e935fc07a9f58f6bbbb62a8edd7a97a6129 -->
