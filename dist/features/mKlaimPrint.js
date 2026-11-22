@@ -2137,7 +2137,7 @@ ${kop("RM. 19A")}
     </tr>
     <tr>
       <td class="center"><span class="chk-box">&#10003;</span></td>
-      <td style="text-align: center;"><img class="rm-sig-qr" src="${esc(qrDokter)} alt="QR dokter penanggung jawab tindakan kedokteran" width="80" height="80" /></td>
+      <td style="text-align: center;"><img class="rm-sig-qr" src="${esc(qrDokter)}" alt="QR dokter penanggung jawab tindakan kedokteran" width="80" height="80" /></td>
       <td class="center"><span class="chk-box">&#10003;</span></td>
       <td style="text-align: center;"><img class="rm-sig-qr" src="${esc(qrDokter)} alt="QR penerima informasi" width="80" height="80" /></td>
     </tr>
