@@ -1818,19 +1818,6 @@ ${kop('RM. 08')}
 
 /** Skala triase IGD → palet klinis (merah gawat → hijau tidak darurat).
  *  Dipakai hanya di lembar Triage supaya status pasien langsung terbaca. */
-const triaseWarna = (teks: string): { bg: string; fg: string; label: string } => {
-  const t = teks.toLowerCase();
-  if (/resusitasi|skala\s*1|\bp1\b/.test(t))
-    return { bg: '#FBE2E2', fg: '#7F1D1D', label: 'MERAH' };
-  if (/emergency|gawat darurat|skala\s*2|\bp2\b/.test(t))
-    return { bg: '#FBE8CF', fg: '#7C3F08', label: 'ORANYE' };
-  if (/urgent|darurat|skala\s*3|\bp3\b/.test(t))
-    return { bg: '#FCF2C7', fg: '#6B5400', label: 'KUNING' };
-  if (/semi darurat|tidak darurat|skala\s*[45]|\bp[45]\b/.test(t))
-    return { bg: '#E4F0DC', fg: '#1F5224', label: 'HIJAU' };
-  return { bg: '#EFEFEF', fg: '#222222', label: '-' };
-};
-
 /** Ambil skala triase yang dicentang dari lembar Pengkajian IGD. */
 const triaseRowsDariIgd = (sections: Section[]): string[][] => {
   for (const s of sections) {
@@ -1849,15 +1836,7 @@ const triaseRowsDariIgd = (sections: Section[]): string[][] => {
   return [];
 };
 
-const triaseTerpilih = (sections: Section[]): string => {
-  const row = triaseRowsDariIgd(sections).find((r) => (r[0] || '').includes('✓'));
-  return row ? `${row[1]} — ${row[2]}` : '';
-};
-
-/** BLOK TRIAGE — disisipkan ke lembar Pengkajian IGD pada bagian TRIASE.
- *  Data diambil dari tabel label ':' section hasil scrape + field halaman
- *  lewat pick(), fallback '-'. Tidak lagi jadi section berdiri sendiri. */
-function buildTriageBlock(sections: Section[]): string {
+function buildTriageSection(sections: Section[]): string {
   const tri = sections.find((s) => /^Triage/i.test(s.title));
   const qrTriage = sectionQrs(sections, /^Triage/i)[0] ?? '';
   const doc = tri ? new DOMParser().parseFromString(tri.html, 'text/html') : null;
@@ -1897,6 +1876,9 @@ function buildTriageBlock(sections: Section[]): string {
     return '-';
   };
 
+  const norm =
+    pick('norm', 'rekam_medis') !== '-' ? pick('norm', 'rekam_medis') : f(/^No\.?\s*RM/i);
+  const nama = pick('nama') !== '-' ? pick('nama') : f(/^Nama$/i);
   const tanggal = f(/^Tanggal$/i);
   const jamDatang = f(/^Jam Datang/i);
   const jamRegistrasi = f(/^Jam Registrasi/i);
@@ -1914,70 +1896,48 @@ function buildTriageBlock(sections: Section[]): string {
   const jam = f(/^Jam$/i);
   const noAntrian = f(/^No\.?\s*Antrian/i);
   const status = f(/^Status/i);
-  const triaseTeks = triaseTerpilih(sections) || status;
-  const warna = triaseWarna(triaseTeks);
-  // Tabel triase asli dari lembar Pengkajian IGD digabung ke sini.
-  const triaseHtml = triaseRowsDariIgd(sections)
-    .map((r) => {
-      const on = (r[0] || '').includes('✓');
-      const cells = [0, 1, 2, 3].map((i) => r[on ? i + 1 : i] || '-');
-      return (
-        `<tr${on ? ` style="background-color: ${warna.bg}; color: ${warna.fg}; font-weight: bold;"` : ''}>` +
-        `<td class="center"><span class="chk-box">${on ? '&#10003;' : '&nbsp;'}</span></td>` +
-        cells
-          .map((x, i) => `<td${i === 0 || i === 3 ? ' class="center"' : ''}>${esc(x)}</td>`)
-          .join('') +
-        '</tr>'
-      );
-    })
-    .join('');
 
-  return `<table class="rm-table">
-  <thead>
-    <tr class="sec-hdr"><td colspan="4">I. TRIASE INSTALASI GAWAT DARURAT (DIISI OLEH DOKTER)</td></tr>
-    <tr>
-      <th style="width: 34px;">PILIH</th>
-      <th style="width: 95px;">SKALA TRIASE</th>
-      <th>KATEGORI &amp; KETERANGAN KLINIS</th>
-      <th style="width: 105px;">RESPON TIME</th>
-    </tr>
-  </thead>
-  <tbody>${triaseHtml || '<tr><td colspan="4">Tidak ada data triase pada Pengkajian IGD.</td></tr>'}</tbody>
-</table>
+  return `<section class="rm-page" id="triage">
+${kop('TRIAGE')}
+<div class="rm-form-title">TRIAGE TERINTEGRASI &amp; PENGKAJIAN AWAL IGD</div>
 
-<table class="rm-table"><tbody>
-  <tr class="sec-hdr"><td colspan="4">WAKTU LAYANAN &amp; PENANGGUNG JAWAB IGD</td></tr>
-  <tr>
-    <td style="width: 118px;">Status Triage</td>
-    <td style="background-color: ${warna.bg}; color: ${warna.fg};"><strong>${esc(triaseTeks)}</strong></td>
-    <td style="width: 118px;">Jam Datang</td>
-    <td>${esc(jamDatang)}</td>
-  </tr>
-  <tr>
-    <td>No. Antrian</td><td>${esc(noAntrian)}</td>
-    <td>Jam Registrasi</td><td>${esc(jamRegistrasi)}</td>
-  </tr>
-  <tr>
-    <td>Tanggal</td><td>${esc(tanggal)}</td>
-    <td>Cara Datang</td><td>${esc(caraDatang)}</td>
-  </tr>
-  <tr>
-    <td>Diantar Polisi</td><td>${esc(diantarPolisi)}</td>
-    <td>No. ID</td><td>${esc(noId)}</td>
-  </tr>
-  <tr>
-    <td>Pengantar</td><td>${esc(pengantar)}</td>
-    <td>Keluhan Utama</td><td>${esc(keluhan)}</td>
-  </tr>
-  <tr>
-    <td>Riwayat Penyakit Dahulu</td><td>${esc(riwayat)}</td>
-    <td>Keadaan Umum</td><td>${esc(keadaanUmum)}</td>
-  </tr>
-  <tr>
-    <td>Tanda Vital</td>
-    <td colspan="3">TD ${esc(normVital(td))} &nbsp;|&nbsp; Nadi ${esc(nadi)} &nbsp;|&nbsp; RR ${esc(rr)} &nbsp;|&nbsp; Suhu ${esc(suhu)} &nbsp;|&nbsp; Jam ${esc(jam)}</td>
-  </tr>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('No. Rekam Medis', norm, true)}
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('Tanggal', tanggal)}
+    ${idRow('Jam Datang', jamDatang)}
+    ${idRow('Jam Registrasi', jamRegistrasi)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Cara Datang', caraDatang)}
+    ${idRow('Diantar Polisi', diantarPolisi)}
+    ${idRow('No. ID', noId)}
+    ${idRow('Pengantar Pasien', pengantar)}
+    ${idRow('Status Triage', status, true)}
+  </table></div>
+</div>
+
+<div class="sub-heading-rm">ANAMNESA &amp; RIWAYAT</div>
+<table class="rm-grid-table"><tbody>
+  ${idRow('Riwayat Penyakit Dahulu', riwayat)}
+  ${idRow('Keluhan Utama', keluhan)}
 </tbody></table>
+
+<div class="sub-heading-rm">TANDA VITAL &amp; PEMERIKSAAN</div>
+<div class="id-box-borderless">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Keadaan Umum', keadaanUmum)}
+    ${idRow('Suhu (°C)', suhu)}
+    ${idRow('Nadi (x/menit)', nadi)}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('RR (x/menit)', rr)}
+    ${idRow('Tekanan Darah (mmHg)', td)}
+    ${idRow('Jam', jam)}
+    ${idRow('No. Antrian', noAntrian)}
+  </table></div>
+</div>
 
 <div class="rm-signature-block">
   <div class="rm-sig-box left-align">
@@ -1990,7 +1950,8 @@ function buildTriageBlock(sections: Section[]): string {
     ${qrTriage ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokterPemeriksa !== '-' ? dokterPemeriksa : doctorFromQr(qrTriage))} )</div>
   </div>
-</div>`;
+</div>
+</section>`;
 }
 
 /** SECTION — LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT.
@@ -2021,6 +1982,7 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     return rows(t);
   };
 
+  const triase = find(/^Triase/i);
   const nyeri = find(/^Pengkajian\s*0\s*1\s*2\s*Nilai/i);
   const jatuh1 = byText(/HUMPTY DUMPTY/i);
   const jatuh2 = byText(/MORSE FALL SCALE/i);
@@ -2041,6 +2003,19 @@ function buildPengkajianIgdSection(sections: Section[]): string {
       '</tbody></table>'
     );
   };
+
+  const triaseRows = triase
+    .slice(1)
+    .map((r) => {
+      const on = (r[0] || '').includes('✓');
+      const c = on ? r.slice(1) : r;
+      return (
+        `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ''}>` +
+        c.map((x) => `<td>${esc(x || '-')}</td>`).join('') +
+        '</tr>'
+      );
+    })
+    .join('');
 
   const nyeriRows = nyeri
     .slice(1)
@@ -2127,19 +2102,6 @@ function buildPengkajianIgdSection(sections: Section[]): string {
         ? 'RISIKO JATUH SEDANG (25–44)'
         : 'RISIKO JATUH RENDAH (0–24)';
 
-  // Gambar asli MORBIS harus tetap tampil di dossier (bukan cuma teks).
-  const igdImage = (re: RegExp): string =>
-    Array.from(doc?.querySelectorAll('img') || [])
-      .map((im) => im.getAttribute('src') || '')
-      .find((s) => re.test(s)) || '';
-  const figure = (url: string, alt: string, caption = alt): string =>
-    url
-      ? `<figure class="rm-figure"><img src="${esc(url)}" alt="${esc(alt)}">` +
-        (caption ? `<figcaption>${esc(caption)}</figcaption>` : '') +
-        '</figure>'
-      : '';
-  const wongFigure = figure(igdImage(/nyeri_baru/i), 'Skala Nyeri Wong Baker', '');
-  const objekFigure = figure(igdImage(/clipboard/i), 'Gambar Pemeriksaan Objektif');
   const checked = (name: string): string =>
     document.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value || '-';
   const afterLabel = (re: RegExp): string => {
@@ -2271,7 +2233,8 @@ ${grid(
   ],
 )}
 
-${buildTriageBlock(sections)}
+<div class="sub-heading-rm">TRIASE (DIISI OLEH DOKTER)</div>
+${grid(['SKALA TRIASE', 'KETERANGAN', 'RESPON TIME'], triaseRows)}
 
 <table class="rm-table">
   <thead><tr class="sec-hdr"><td colspan="2">II. PENGKAJIAN PSIKOSOSIAL, SPIRITUAL, EKONOMI, NUTRISI &amp; FUNGSIONAL</td></tr></thead>
@@ -2312,7 +2275,7 @@ ${buildTriageBlock(sections)}
   <tbody>
     <tr>
       <td style="width:165px;"><strong>Skala Wong Baker</strong></td>
-      <td>${wongFigure || '<span class="filter-note">Skala nyeri tidak tersedia pada halaman asal.</span>'}</td>
+      <td><span class="filter-note">Skala nyeri Wong Baker (0–5) — lihat halaman asal; di dossier ini tidak ditampilkan sebagai gambar.</span></td>
     </tr>
     <tr><td><strong>(P) Faktor Pencetus</strong></td><td>${esc(pick('faktor_pencetus'))}</td></tr>
     <tr>
@@ -2388,7 +2351,6 @@ ${buildTriageBlock(sections)}
     </table>
   </div>
   <div class="col-half">
-    ${objekFigure}
     <table class="rm-table" style="margin-bottom: 0;">
       <thead>
         <tr class="sec-hdr"><td colspan="2">VI-B. PEMERIKSAAN FISIK LOKALIS &amp; PENUNJANG</td></tr>
@@ -3565,10 +3527,9 @@ ${checksHtml}
 
   // ID section harus unik walau judul berkasnya berulang (pasien dengan
   // beberapa lembar konsul / hasil radiologi).
-  // Berkas Triage hanya jadi SUMBER data untuk blok TRIASE di lembar IGD —
-  // jangan dirender sebagai section terpisah (fallback generik akan menghasilkan
-  // duplikat id="triage" dengan HTML mentah).
-  const renderSections = sections.filter((s) => !/^Triage/i.test(s.title));
+  // Semua berkas hasil scrape dirender sebagai section sendiri; Triage kembali
+  // jadi lembar terpisah (sesuai permintaan) sebelum digabung di IGD.
+  const renderSections = sections;
 
   const metaCount = new Map<string, number>();
   const metas = renderSections.map((s, i) => {
@@ -3590,6 +3551,7 @@ ${checksHtml}
       if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
       if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
       if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections, s, m.id);
+      if (/^Triage/i.test(s.title)) return buildTriageSection(sections);
       if (/PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title))
         return buildPengkajianIgdSection(sections);
       if (/^Laboratorium/i.test(s.title)) return buildLaboratoriumSection(sections);

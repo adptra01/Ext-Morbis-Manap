@@ -282,46 +282,29 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildRadiologiSection(sections, s, m.id);');
   });
 
-  it('Triage: blok digabung ke Pengkajian IGD (bukan section sendiri)', () => {
+  it('Triage IGD: pengkajian awal terstruktur, data scrape + pick()', () => {
     const tri = src.slice(
-      src.indexOf('function buildTriageBlock'),
+      src.indexOf('function buildTriageSection'),
       src.indexOf('function buildPengkajianIgdSection'),
     );
     for (const marker of [
+      '<section class="rm-page" id="triage">',
+      'TRIAGE',
       'Jam Datang',
       'Jam Registrasi',
       'Status Triage',
+      'ANAMNESA &amp; RIWAYAT',
       'Keluhan Utama',
-      'Tanda Vital',
       'Dokter yang Memeriksa',
-      'TRIASE INSTALASI GAWAT DARURAT (DIISI OLEH DOKTER)',
-      '>PILIH</th>',
-      '>SKALA TRIASE</th>',
-      'KATEGORI &amp; KETERANGAN KLINIS',
-      'WAKTU LAYANAN &amp; PENANGGUNG JAWAB IGD',
+      'TRIAGE TERINTEGRASI &amp; PENGKAJIAN AWAL IGD',
     ]) {
       expect(tri).toContain(marker);
     }
-    expect(tri).not.toContain('<section class="rm-page"');
-    expect(tri).not.toContain("kop('TRIAGE')");
+    expect(tri).toContain("pick('norm', 'rekam_medis')");
     expect(tri).toContain('Dokter yang memeriksa\\s*\\(([^)]+)\\)');
-    expect(src).toContain('${buildTriageBlock(sections)}');
-    expect(src).not.toContain('return buildTriageSection(sections);');
-    // Triage tidak dirender sebagai section kedua — hanya jadi sumber data.
-    expect(src).toContain(
-      'const renderSections = sections.filter((s) => !/^Triage/i.test(s.title));',
-    );
-    expect(src).toContain('const docs = renderSections');
-    expect(src).toContain('...renderSections.map((s, i) => {');
-    // Warna status triase (merah→hijau) dari skala yang dicentang di IGD.
-    expect(tri).toContain('const warna = triaseWarna(triaseTeks)');
-    expect(tri).toContain('style="background-color: ${warna.bg}; color: ${warna.fg};"');
-    expect(src).toContain('const triaseWarna =');
-    expect(src).toContain('const triaseTerpilih =');
+    expect(src).toContain("id: 'triage'");
+    expect(src).toContain('return buildTriageSection(sections);');
     expect(src).toContain('const triaseRowsDariIgd =');
-    expect(tri).toContain('triaseRowsDariIgd(sections)');
-    expect(src).toContain("bg: '#FBE2E2'");
-    expect(src).toContain("bg: '#E4F0DC'");
   });
 
   it('Pengkajian IGD: triase, FLACC, risiko jatuh & tindakan terstruktur', () => {
@@ -335,7 +318,6 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       '<section class="rm-page" id="pengkajian-igd">',
       'LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT',
       'TANDA VITAL SAAT MASUK',
-      '${buildTriageBlock(sections)}',
       'triaseRowsDariIgd(sections)',
       'PENGKAJIAN NYERI (FLACC)',
       'SKRINING RISIKO JATUH — PARAMETER PERTAMA',
@@ -347,8 +329,6 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(igd).toContain(marker);
     }
-    // Regresi: variabel lokal `triase` sudah dihapus saat blok triase digabung.
-    expect(igd).not.toMatch(/\btriase\s*\.slice\(1\)/);
     for (const id of [
       'vital_td',
       'vital_nadi',
@@ -365,11 +345,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain("id: 'pengkajian-igd'");
     expect(src).toContain('return buildPengkajianIgdSection(sections);');
     // Gambar asli MORBIS (skala Wong Baker & gambar objektif) ikut tercetak.
-    expect(igd).toContain('const igdImage =');
-    expect(igd).toContain('/nyeri_baru/i');
-    expect(igd).toContain('/clipboard/i');
-    expect(igd).toContain('class="rm-figure"');
-    expect(igd).toContain("figure(igdImage(/nyeri_baru/i), 'Skala Nyeri Wong Baker', '')");
+    // Gambar asli MORBIS tidak lagi ditampilkan di dossier (sesuai prototipe RM.02).
+    expect(igd).not.toContain('const igdImage =');
+    expect(igd).not.toContain('class="rm-figure"');
     expect(igd).toContain('ASESMEN NYERI — WONG BAKER / NRS');
     expect(igd).toContain('KONDISI SAAT PINDAH / PULANG DARI IGD');
     expect(igd).toContain("pick('pengkajian_keperawatan')");
@@ -587,7 +565,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       ['buildSpriSection', 'qrSpri'],
       ['buildResumeSection', 'qrResume'],
       ['buildRadiologiSheet', 'qrRad'],
-      ['buildTriageBlock', 'qrTriage'],
+      ['buildTriageSection', 'qrTriage'],
       ['buildSbpkSection', 'qrDpjp'],
       ['buildBillingSection', 'qrPasien'],
     ] as const) {
