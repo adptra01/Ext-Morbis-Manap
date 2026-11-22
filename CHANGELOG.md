@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **printDossier** — tambah tombol scroll naik/turun; radiologi/konsul tab tampilkan semua entri (`79019cb`)
+- **mKlaimPrint** — IGD checkbox -> nilai terpilih, kolom rapi, planning/disposisi terpisah (`1821e8f`)
 - **mKlaimPrint** — IGD checkbox -> nilai terpilih, kolom rapi, planning/disposisi terpisah (`a292de8`)
 - **mKlaimPrint** — pisahkan kembali Triage & Pengkajian IGD, redesign IGD tanpa gambar (RM.02) (`5f61c0b`)
 - **mKlaimPrint** — IGD redesign ulang mengikuti RM.02/IGD (TTV banding, anamnesis, Morse) (`9d5ca2d`)
@@ -2232,4 +2234,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a292de80e8c45b2931030989d243bb6fd7cadde5 -->
+<!-- changelog-upto: 79019cb41db17f487072351b6825971d65afd501 -->
