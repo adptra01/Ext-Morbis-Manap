@@ -1982,9 +1982,32 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     return rows(t);
   };
 
+  const riskAnak = tables.find((tb) => /HUMPTY DUMPTY/i.test(tb.textContent || ''));
+  const riskDewasa = tables.find((tb) => /MORSE FALL SCALE/i.test(tb.textContent || ''));
+  const renderRiskTable = (t?: HTMLTableElement): string => {
+    if (!t) return '<tr><td colspan="5">-</td></tr>';
+    return Array.from(t.rows)
+      .map((tr, ri) => {
+        const cells = Array.from(tr.cells)
+          .map((c) => {
+            const txt = cellText(c);
+            const rowspan = c.rowSpan > 1 ? ` rowspan="${c.rowSpan}"` : '';
+            const colspan = c.colSpan > 1 ? ` colspan="${c.colSpan}"` : '';
+            const isTotal = /JUMLAH SKOR|Keterangan Hasil|Catatan/i.test(txt);
+            const selected = txt.includes('✓');
+            const tag = ri === 0 ? 'th' : 'td';
+            return `<${tag}${rowspan}${colspan}${isTotal ? ' style="font-weight:bold;text-align:right;"' : ''}>${
+              selected ? `<strong>${esc(txt)}</strong>` : esc(txt || '-')
+            }</${tag}>`;
+          })
+          .join('');
+        return `<tr${ri === 0 ? ' class="sec-hdr"' : ''}>${cells}</tr>`;
+      })
+      .join('');
+  };
+
   const triase = find(/^Triase/i);
   const nyeri = find(/^Pengkajian\s*0\s*1\s*2\s*Nilai/i);
-  const jatuh1 = byText(/HUMPTY DUMPTY/i);
   const jatuh2 = byText(/MORSE FALL SCALE/i);
   const objektif = find(/^Objektif\s*Kelainan/i);
   const diagnosaUtama = find(/^Diagnosa Utama$/i);
@@ -2022,30 +2045,6 @@ function buildPengkajianIgdSection(sections: Section[]): string {
       );
     })
     .join('');
-
-  const skorRows = (data: string[][]): string =>
-    data
-      .slice(1)
-      .map((r) => {
-        if (/^(JUMLAH SKOR|Keterangan Hasil|Catatan)$/i.test(r[0] || '')) {
-          return (
-            '<tr><td colspan="5"><strong>' +
-            esc(r[0]) +
-            '</strong> : ' +
-            esc(r.slice(1).filter(Boolean).join(' ') || '-') +
-            '</td></tr>'
-          );
-        }
-        const last = r[r.length - 1] || '';
-        const selected = /^\d+$/.test(last);
-        const cells = r.length >= 5 ? r : ['', '', r[0] || '', r[1] || '', ''];
-        return (
-          `<tr${selected ? ' style="font-weight:bold;"' : ''}>` +
-          cells.map((x) => `<td>${esc(x || '&nbsp;')}</td>`).join('') +
-          '</tr>'
-        );
-      })
-      .join('');
 
   const objektifRows = objektif
     .slice(1)
@@ -2090,14 +2089,6 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     const angka = skor?.slice(1).filter(Boolean).join(' ') || '-';
     return simpulan ? `${angka} · ${simpulan.slice(1).filter(Boolean).join(' ')}` : angka;
   };
-  const morseScore = Number((skorRingkas(jatuh2).match(/\d+/) || ['0'])[0]);
-  const morseKet =
-    morseScore >= 45
-      ? 'RISIKO JATUH TINGGI (≥45)'
-      : morseScore >= 25
-        ? 'RISIKO JATUH SEDANG (25–44)'
-        : 'RISIKO JATUH RENDAH (0–24)';
-
   const checked = (name: string): string =>
     document.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value || '-';
   const afterLabel = (re: RegExp): string => {
@@ -2309,23 +2300,13 @@ ${grid(
 </table>
 
 <table class="rm-table">
-  <thead>
-    <tr class="sec-hdr"><td colspan="5">V. SKRINING RISIKO JATUH — PARAMETER PERTAMA (HUMPTY DUMPTY)</td></tr>
-    <tr><th>NO</th><th>PARAMETER</th><th>KRITERIA</th><th>NILAI</th><th>SKOR</th></tr>
-  </thead>
-  <tbody>${skorRows(jatuh1)}</tbody>
+  <thead><tr class="sec-hdr"><td colspan="5">V. ASESMEN AWAL RESIKO JATUH PADA ANAK (HUMPTY DUMPTY)</td></tr></thead>
+  <tbody>${renderRiskTable(riskAnak)}</tbody>
 </table>
 
 <table class="rm-table">
-  <thead>
-    <tr class="sec-hdr"><td colspan="5">VI. SKRINING RISIKO JATUH — PARAMETER KEDUA (MORSE FALL SCALE)</td></tr>
-    <tr><th>NO</th><th>PARAMETER</th><th>KRITERIA PENILAIAN</th><th>NILAI</th><th>SKOR PASIEN</th></tr>
-  </thead>
-  <tbody>
-    ${skorRows(jatuh2)}
-    <tr><td colspan="4" style="text-align: right;"><strong>TOTAL SKOR MORSE</strong></td><td class="center"><strong>${esc(skorRingkas(jatuh2))}</strong></td></tr>
-    <tr><td colspan="5"><strong>INTERPRETASI &amp; PROTOKOL:</strong> ${esc(morseKet)} — pasang gelang identitas risiko jatuh, side rail &amp; kunci roda, edukasi pencegahan jatuh.</td></tr>
-  </tbody>
+  <thead><tr class="sec-hdr"><td colspan="5">VI. ASESMEN AWAL RESIKO JATUH PADA DEWASA (MORSE FALL SCALE)</td></tr></thead>
+  <tbody>${renderRiskTable(riskDewasa)}</tbody>
 </table>
 
 <div class="two-col-grid">
