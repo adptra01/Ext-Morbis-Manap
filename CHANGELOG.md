@@ -26,6 +26,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — temukan tabel risiko jatuh dari baris data (bukan judul di luar tabel) (`ddd0a94`)
 - **mKlaimPrint** — FLACC baris TOTAL span 4 kolom, angka sejajar NILAI (`c53b161`)
 - **mKlaimPrint** — TRIASE parse kolom PILIH/SKALA/KET/RESPON sejajar (`7e75f11`)
 - **mKlaimPrint** — trim planning text, hapus header berulang halaman 2 (`cb97827`)
@@ -41,6 +42,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr FLACC total span (`364364d`)
 - **changelog** — sync entr redesign risiko jatuh (`369249c`)
 - **changelog** — sync entr fix triase kolom (`245adb2`)
 - **changelog** — sync entr trim planning/header (`b0e0cd4`)
@@ -2252,4 +2254,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c53b1617b531e064e5383d6fc2e56f3aad4e373f -->
+<!-- changelog-upto: ddd0a94bb361c6d20a56b2a2edee933e1489c169 -->
