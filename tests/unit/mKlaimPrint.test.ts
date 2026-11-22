@@ -520,6 +520,13 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(lab).toContain('passthrough-separator');
   });
 
+  it('canvas blank: baca sampel di canvas kecil milik sendiri, bukan pdf.js', () => {
+    expect(src).toContain("const probe = document.createElement('canvas')");
+    expect(src).toContain("probe.getContext('2d', { willReadFrequently: true })");
+    expect(src).toContain('ctx.drawImage(cv, 0, 0, size, size)');
+    expect(src).not.toContain("cv.getContext('2d', { willReadFrequently: true })");
+  });
+
   it('QR TTD: pakai QR asli yang ditemukan, tanpa baris kosong pengganti ttd', () => {
     for (const [fn, marker] of [
       ['buildSpriSection', 'qrSpri'],

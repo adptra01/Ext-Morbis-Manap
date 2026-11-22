@@ -125,17 +125,20 @@ var __morbis_feature = (() => {
   }
   function isBlankCanvas(cv) {
     try {
-      const ctx = cv.getContext("2d", { willReadFrequently: true });
-      if (!ctx || !cv.width || !cv.height) return true;
-      const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
-      const step = 4 * 97;
+      if (!cv.width || !cv.height) return true;
+      const size = 64;
+      const probe = document.createElement("canvas");
+      probe.width = size;
+      probe.height = size;
+      const ctx = probe.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return false;
+      ctx.drawImage(cv, 0, 0, size, size);
+      const d = ctx.getImageData(0, 0, size, size).data;
       let sum = 0;
-      let n = 0;
-      for (let i = 0; i < d.length; i += step) {
+      for (let i = 0; i < d.length; i += 4) {
         sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
-        n++;
       }
-      const avg = sum / Math.max(n, 1);
+      const avg = sum / (size * size);
       return avg < 8 || avg > 250;
     } catch {
       return false;

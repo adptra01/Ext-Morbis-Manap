@@ -115,23 +115,29 @@ function flattenControls(root: HTMLElement): void {
   });
 }
 
-/** Canvas gelap total / putih total = gagal render, bukan berkas asli. */
+/** Canvas gelap total / putih total = gagal render, bukan berkas asli.
+ *  Sampel dilakukan di canvas kecil milik kita yang dibuat dengan
+ *  willReadFrequently — canvas pdf.js asli TIDAK pernah dibaca via
+ *  getImageData (itu yang memicu warning Canvas2D berulang). */
 function isBlankCanvas(cv: HTMLCanvasElement): boolean {
   try {
-    const ctx = cv.getContext('2d', { willReadFrequently: true });
-    if (!ctx || !cv.width || !cv.height) return true;
-    const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
-    const step = 4 * 97; // sampel jarang — cukup untuk rata-rata kasar
+    if (!cv.width || !cv.height) return true;
+    const size = 64;
+    const probe = document.createElement('canvas');
+    probe.width = size;
+    probe.height = size;
+    const ctx = probe.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return false;
+    ctx.drawImage(cv, 0, 0, size, size);
+    const d = ctx.getImageData(0, 0, size, size).data;
     let sum = 0;
-    let n = 0;
-    for (let i = 0; i < d.length; i += step) {
+    for (let i = 0; i < d.length; i += 4) {
       sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
-      n++;
     }
-    const avg = sum / Math.max(n, 1);
+    const avg = sum / (size * size);
     return avg < 8 || avg > 250;
   } catch {
-    return false; // getImageData gagal (tainted) → biarkan, toDataURL juga akan gagal
+    return false; // drawImage/getImageData gagal → biarkan canvas tampil
   }
 }
 

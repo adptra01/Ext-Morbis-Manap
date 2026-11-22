@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-11-22
+
+### 🐛 fix
+
+- **mKlaimPrint** — Triage/Konsul/Radiologi TTD, hapus Kota Jambi, QR tagihan (`4c5878f`)
+
 ## 2026-11-21
 
 ### ✨ feat
@@ -34,6 +40,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — rapikan TTD/QR banyak section, entity & format radiologi/lab/konsul (`dd83992`)
 - **shortcutButtons** — fallback tombol Cetak Rapi di halaman detail (`dedaf7e`)
 - **mKlaimPrint** — SBPK pakai cells (ReferenceError c tidak terdefinisi) (`22adc21`)
 - **mKlaimPrint** — expertise radiologi pertahankan baris baru asli (`fab8f3b`)
@@ -2200,4 +2207,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c3fd523cc4ad257272b656391935f1bd3a2dc390 -->
+<!-- changelog-upto: 4c5878f2abc911c4935f29ec59a901f997054144 -->
