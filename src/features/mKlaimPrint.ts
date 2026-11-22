@@ -2267,7 +2267,7 @@ ${grid(
     .slice(1)
     .map((r) => {
       const on = (r[0] || '').includes('✓');
-      const cells = on ? r.slice(1, 4) : r.slice(0, 3);
+      const cells = r.length >= 4 ? r.slice(1, 4) : r.slice(0, 3);
       return `<tr${on ? ' style="font-weight:bold;"' : ''}><td class="center"><span class="chk-box">${on ? '&#10003;' : '&nbsp;'}</span></td>${cells.map((x) => `<td>${esc(x || '-')}</td>`).join('')}</tr>`;
     })
     .join('')}</tbody>
