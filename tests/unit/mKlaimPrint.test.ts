@@ -260,7 +260,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('RM.08 (Radiologi): hasil pemeriksaan terstruktur', () => {
     const rad = src.slice(
       src.indexOf('function buildRadiologiSection'),
-      src.indexOf('function buildTriageSection'),
+      src.indexOf('function buildTriageBlock'),
     );
     for (const marker of [
       'id="${esc(id)}"',
@@ -282,29 +282,40 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildRadiologiSection(sections, s, m.id);');
   });
 
-  it('Triage IGD: pengkajian awal terstruktur, data scrape + pick()', () => {
+  it('Triage: blok digabung ke Pengkajian IGD (bukan section sendiri)', () => {
     const tri = src.slice(
-      src.indexOf('function buildTriageSection'),
+      src.indexOf('function buildTriageBlock'),
       src.indexOf('function buildPengkajianIgdSection'),
     );
     for (const marker of [
-      '<section class="rm-page" id="triage">',
-      'TRIAGE TERINTEGRASI &amp; PENGKAJIAN AWAL IGD',
       'Jam Datang',
       'Jam Registrasi',
       'Status Triage',
-      'ANAMNESA &amp; RIWAYAT',
       'Keluhan Utama',
-      'TANDA VITAL &amp; PEMERIKSAAN',
-      'TEKANAN DARAH (mmHg)',
+      'Tanda Vital',
       'Dokter yang Memeriksa',
+      'TRIASE INSTALASI GAWAT DARURAT (DIISI OLEH DOKTER)',
+      '>PILIH</th>',
+      '>SKALA TRIASE</th>',
+      'KATEGORI &amp; KETERANGAN KLINIS',
+      'WAKTU LAYANAN &amp; PENANGGUNG JAWAB IGD',
     ]) {
       expect(tri).toContain(marker);
     }
-    expect(tri).toContain("pick('norm', 'rekam_medis')");
+    expect(tri).not.toContain('<section class="rm-page"');
+    expect(tri).not.toContain("kop('TRIAGE')");
     expect(tri).toContain('Dokter yang memeriksa\\s*\\(([^)]+)\\)');
-    expect(src).toContain("id: 'triage'");
-    expect(src).toContain('return buildTriageSection(sections);');
+    expect(src).toContain('${buildTriageBlock(sections)}');
+    expect(src).not.toContain('return buildTriageSection(sections);');
+    // Warna status triase (merah→hijau) dari skala yang dicentang di IGD.
+    expect(tri).toContain('const warna = triaseWarna(triaseTeks)');
+    expect(tri).toContain('style="background-color: ${warna.bg}; color: ${warna.fg};"');
+    expect(src).toContain('const triaseWarna =');
+    expect(src).toContain('const triaseTerpilih =');
+    expect(src).toContain('const triaseRowsDariIgd =');
+    expect(tri).toContain('triaseRowsDariIgd(sections)');
+    expect(src).toContain("bg: '#FBE2E2'");
+    expect(src).toContain("bg: '#E4F0DC'");
   });
 
   it('Pengkajian IGD: triase, FLACC, risiko jatuh & tindakan terstruktur', () => {
@@ -319,8 +330,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT',
       'TANDA VITAL SAAT MASUK',
       "['TEKANAN DARAH', 'NADI', 'PERNAPASAN', 'SUHU', 'SpO2', 'GCS', 'GCS (E/V/M)', 'KESADARAN']",
-      'TRIASE (DIISI OLEH DOKTER)',
-      'find(/^Triase/i)',
+      '${buildTriageBlock(sections)}',
+      'triaseRowsDariIgd(sections)',
       'PENGKAJIAN NYERI (FLACC)',
       'SKRINING RISIKO JATUH — PARAMETER PERTAMA',
       'SKRINING RISIKO JATUH — PARAMETER KEDUA',
@@ -331,6 +342,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(igd).toContain(marker);
     }
+    // Regresi: variabel lokal `triase` sudah dihapus saat blok triase digabung.
+    expect(igd).not.toMatch(/\btriase\s*\.slice\(1\)/);
     for (const id of [
       'vital_td',
       'vital_nadi',
@@ -351,11 +364,32 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(igd).toContain('/nyeri_baru/i');
     expect(igd).toContain('/clipboard/i');
     expect(igd).toContain('class="rm-figure"');
+    expect(igd).toContain("figure(igdImage(/nyeri_baru/i), 'Skala Nyeri Wong Baker', '')");
     expect(igd).toContain('ASESMEN NYERI — WONG BAKER / NRS');
     expect(igd).toContain('KONDISI SAAT PINDAH / PULANG DARI IGD');
     expect(igd).toContain("pick('pengkajian_keperawatan')");
     expect(igd).toContain('planningText');
     expect(src).toContain('.rm-figure-row {');
+    // Editorial clinical: kepala pasien, ringkasan kritis, nomor bagian otomatis.
+    expect(igd).toContain('class="igd-masthead"');
+    expect(igd).toContain('class="igd-summary"');
+    expect(igd).toContain('skorRingkas(jatuh2)');
+    expect(igd).toContain('/MORSE FALL SCALE/i');
+    expect(src).toContain('counter-increment: igdsec');
+    expect(src).toContain('content: counter(igdsec, decimal-leading-zero)');
+    // Range nyeri→planning mengikuti bahasa visual RM.02/IGD referensi.
+    expect(igd).toContain('class="rm-table"');
+    expect(igd).toContain('class="sec-hdr"');
+    expect(igd).toContain('class="chk-box"');
+    expect(igd).toContain('MORSE FALL SCALE');
+    expect(igd).toContain('class="two-col-grid"');
+    expect(igd).toContain('II. PENGKAJIAN PSIKOSOSIAL');
+    expect(igd).toContain('V. PENGKAJIAN MEDIS DOKTER IGD');
+    expect(igd).toContain('class="rm-top-meta"');
+    expect(igd).toContain('class="running-header-box"');
+    expect(igd).toContain('idOpt(');
+    expect(src).toContain('.rm-table tr.sec-hdr td {');
+    expect(src).toContain('.chk-box {');
   });
 
   it('memakai ID field produksi & kode section referensi', () => {
@@ -542,7 +576,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       ['buildSpriSection', 'qrSpri'],
       ['buildResumeSection', 'qrResume'],
       ['buildRadiologiSheet', 'qrRad'],
-      ['buildTriageSection', 'qrTriage'],
+      ['buildTriageBlock', 'qrTriage'],
       ['buildSbpkSection', 'qrDpjp'],
       ['buildBillingSection', 'qrPasien'],
     ] as const) {
@@ -618,6 +652,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain("replace(/<!--[\\s\\S]*?-->/g, '')");
     // QR payload "…dr. X tgl … jam…" harus dipotong sebelum tgl/jam.
     expect(src).toContain('.split(/\\s+(?:tgl|jam)\\b/i)[0]');
+    // Placeholder "DOKTER TIDAK DI TEMUKAN" bukan "dr. ..." juga harus terbaca.
+    expect(src).toContain('approve\\s*([\\s\\S]*?)\\s+tgl\\b');
+    expect(src).toContain('.match(/\\(\\s*([^)]{3,80})\\s*\\)/)');
     // entity &nbsp; / &amp;nbsp; tidak boleh tampil literal di dossier.
     expect(src).toContain('const esc = (s: string): string =>\n  decodeEntities(s)');
   });

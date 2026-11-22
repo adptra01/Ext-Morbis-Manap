@@ -1071,7 +1071,6 @@ ${kop("RM. 05")}
     ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ""}
     <div>Yang Menerima (Petugas Billing / Kasir)</div>
     ${qrPenerima ? "" : '<div class="rm-sig-space"></div>'}
-    <div class="rm-sig-name">( .................................................. )</div>
   </div>
 </div>
 </section>`;
@@ -1371,7 +1370,7 @@ ${kop("RM. 07")}
     const status = f(/^Status/i);
     const dokterPengirim = f(/^dr\.? Pengirim|^Dokter Pengirim/i);
     const dokterDpjpRaw = f(/^dr\.? DPJP|^Dokter DPJP/i);
-    const sigDoctor = (doc.body.textContent || "").replace(/\s+/g, " ").match(/\(\s*(dr\.[^)]+)\s*\)/i)?.[1]?.trim() || "-";
+    const sigDoctor = (doc.body.textContent || "").replace(/\s+/g, " ").match(/\(\s*([^)]{3,80})\s*\)/)?.[1]?.trim() || "-";
     const dokterDpjp = dokterDpjpRaw !== "-" ? dokterDpjpRaw : sigDoctor !== "-" ? sigDoctor : doctorFromQr(qrRad);
     const diagnosa = f(/^Diagnosa Klinis/i);
     const diagnosaIcd = f(/^Diagnosa ICD/i);
@@ -1435,7 +1434,35 @@ ${kop("RM. 08")}
 </div>
 </section>`;
   }
-  function buildTriageSection(sections) {
+  var triaseWarna = (teks) => {
+    const t = teks.toLowerCase();
+    if (/resusitasi|skala\s*1|\bp1\b/.test(t))
+      return { bg: "#FBE2E2", fg: "#7F1D1D", label: "MERAH" };
+    if (/emergency|gawat darurat|skala\s*2|\bp2\b/.test(t))
+      return { bg: "#FBE8CF", fg: "#7C3F08", label: "ORANYE" };
+    if (/urgent|darurat|skala\s*3|\bp3\b/.test(t))
+      return { bg: "#FCF2C7", fg: "#6B5400", label: "KUNING" };
+    if (/semi darurat|tidak darurat|skala\s*[45]|\bp[45]\b/.test(t))
+      return { bg: "#E4F0DC", fg: "#1F5224", label: "HIJAU" };
+    return { bg: "#EFEFEF", fg: "#222222", label: "-" };
+  };
+  var triaseRowsDariIgd = (sections) => {
+    for (const s of sections) {
+      if (!/PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title)) continue;
+      const d = new DOMParser().parseFromString(s.html, "text/html");
+      for (const t of Array.from(d.querySelectorAll("table"))) {
+        const head = Array.from(t.rows[0]?.cells || []).map((td) => cellText(td)).join(" ");
+        if (!/^Triase/i.test(head)) continue;
+        return Array.from(t.rows).slice(1).map((tr) => Array.from(tr.cells).map(cellText));
+      }
+    }
+    return [];
+  };
+  var triaseTerpilih = (sections) => {
+    const row = triaseRowsDariIgd(sections).find((r) => (r[0] || "").includes("\u2713"));
+    return row ? `${row[1]} \u2014 ${row[2]}` : "";
+  };
+  function buildTriageBlock(sections) {
     const tri = sections.find((s) => /^Triage/i.test(s.title));
     const qrTriage = sectionQrs(sections, /^Triage/i)[0] ?? "";
     const doc = tri ? new DOMParser().parseFromString(tri.html, "text/html") : null;
@@ -1464,8 +1491,6 @@ ${kop("RM. 08")}
       for (const [k, v] of fields) if (res.some((r) => r.test(k))) return v;
       return "-";
     };
-    const norm = pick("norm", "rekam_medis") !== "-" ? pick("norm", "rekam_medis") : f(/^No\.?\s*RM/i);
-    const nama = pick("nama") !== "-" ? pick("nama") : f(/^Nama$/i);
     const tanggal = f(/^Tanggal$/i);
     const jamDatang = f(/^Jam Datang/i);
     const jamRegistrasi = f(/^Jam Registrasi/i);
@@ -1483,67 +1508,57 @@ ${kop("RM. 08")}
     const jam = f(/^Jam$/i);
     const noAntrian = f(/^No\.?\s*Antrian/i);
     const status = f(/^Status/i);
-    return `<section class="rm-page" id="triage">
-${kop("TRIAGE")}
-<div class="rm-form-title">TRIAGE TERINTEGRASI &amp; PENGKAJIAN AWAL IGD</div>
-
-<div class="id-box-bordered">
-  <div class="id-col"><table class="id-table">
-    ${idRow("No. Rekam Medis", norm, true)}
-    ${idRow("Nama Pasien", nama, true)}
-    ${idRow("Tanggal", tanggal)}
-    ${idRow("Jam Datang", jamDatang)}
-    ${idRow("Jam Registrasi", jamRegistrasi)}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow("Cara Datang", caraDatang)}
-    ${idRow("Diantar Polisi", diantarPolisi)}
-    ${idRow("No. ID", noId)}
-    ${idRow("Pengantar Pasien", pengantar)}
-    ${idRow("No. Antrian", noAntrian)}
-  </table></div>
-</div>
-
-<div class="sub-heading-rm">ANAMNESA &amp; RIWAYAT</div>
-<div class="id-box-borderless">
-  <div class="id-col"><table class="id-table">
-    ${idRow("Keluhan Utama", keluhan, true)}
-    ${idRow("Riwayat Penyakit Dahulu", riwayat)}
-    ${idRow("Keadaan Umum", keadaanUmum)}
-  </table></div>
-</div>
-
-<div class="sub-heading-rm">TANDA VITAL &amp; PEMERIKSAAN</div>
-<table class="rm-grid-table">
-  <thead><tr>
-    <th>TEKANAN DARAH (mmHg)</th>
-    <th>NADI (x/menit)</th>
-    <th>PERNAPASAN (x/menit)</th>
-    <th>SUHU (&deg;C)</th>
-    <th>JAM PERIKSA</th>
-  </tr></thead>
-  <tbody><tr>
-    <td class="center"><strong>${esc(normVital(td))}</strong></td>
-    <td class="center"><strong>${esc(nadi)}</strong></td>
-    <td class="center"><strong>${esc(rr)}</strong></td>
-    <td class="center"><strong>${esc(suhu)}</strong></td>
-    <td class="center"><strong>${esc(jam)}</strong></td>
-  </tr></tbody>
+    const triaseTeks = triaseTerpilih(sections) || status;
+    const warna = triaseWarna(triaseTeks);
+    const triaseHtml = triaseRowsDariIgd(sections).map((r) => {
+      const on = (r[0] || "").includes("\u2713");
+      const cells = [0, 1, 2, 3].map((i) => r[on ? i + 1 : i] || "-");
+      return `<tr${on ? ` style="background-color: ${warna.bg}; color: ${warna.fg}; font-weight: bold;"` : ""}><td class="center"><span class="chk-box">${on ? "&#10003;" : "&nbsp;"}</span></td>` + cells.map((x, i) => `<td${i === 0 || i === 3 ? ' class="center"' : ""}>${esc(x)}</td>`).join("") + "</tr>";
+    }).join("");
+    return `<table class="rm-table">
+  <thead>
+    <tr class="sec-hdr"><td colspan="4">I. TRIASE INSTALASI GAWAT DARURAT (DIISI OLEH DOKTER)</td></tr>
+    <tr>
+      <th style="width: 34px;">PILIH</th>
+      <th style="width: 95px;">SKALA TRIASE</th>
+      <th>KATEGORI &amp; KETERANGAN KLINIS</th>
+      <th style="width: 105px;">RESPON TIME</th>
+    </tr>
+  </thead>
+  <tbody>${triaseHtml || '<tr><td colspan="4">Tidak ada data triase pada Pengkajian IGD.</td></tr>'}</tbody>
 </table>
 
-<table class="rm-grid-table"><tbody>
-  <tr class="section-banner"><td colspan="4">STATUS TRIASE &amp; WAKTU LAYANAN</td></tr>
+<table class="rm-table"><tbody>
+  <tr class="sec-hdr"><td colspan="4">WAKTU LAYANAN &amp; PENANGGUNG JAWAB IGD</td></tr>
   <tr>
     <td style="width: 118px;">Status Triage</td>
-    <td><strong>${esc(status)}</strong></td>
+    <td style="background-color: ${warna.bg}; color: ${warna.fg};"><strong>${esc(triaseTeks)}</strong></td>
     <td style="width: 118px;">Jam Datang</td>
     <td>${esc(jamDatang)}</td>
   </tr>
   <tr>
-    <td>No. Antrian</td>
-    <td>${esc(noAntrian)}</td>
-    <td>Jam Registrasi</td>
-    <td>${esc(jamRegistrasi)}</td>
+    <td>No. Antrian</td><td>${esc(noAntrian)}</td>
+    <td>Jam Registrasi</td><td>${esc(jamRegistrasi)}</td>
+  </tr>
+  <tr>
+    <td>Tanggal</td><td>${esc(tanggal)}</td>
+    <td>Cara Datang</td><td>${esc(caraDatang)}</td>
+  </tr>
+  <tr>
+    <td>Diantar Polisi</td><td>${esc(diantarPolisi)}</td>
+    <td>No. ID</td><td>${esc(noId)}</td>
+  </tr>
+  <tr>
+    <td>Pengantar</td><td>${esc(pengantar)}</td>
+    <td>Keluhan Utama</td><td>${esc(keluhan)}</td>
+  </tr>
+  <tr>
+    <td>Riwayat Penyakit Dahulu</td><td>${esc(riwayat)}</td>
+    <td>Keadaan Umum</td><td>${esc(keadaanUmum)}</td>
+  </tr>
+  <tr>
+    <td>Tanda Vital</td>
+    <td colspan="3">TD ${esc(normVital(td))} &nbsp;|&nbsp; Nadi ${esc(nadi)} &nbsp;|&nbsp; RR ${esc(rr)} &nbsp;|&nbsp; Suhu ${esc(suhu)} &nbsp;|&nbsp; Jam ${esc(jam)}</td>
   </tr>
 </tbody></table>
 
@@ -1558,8 +1573,7 @@ ${kop("TRIAGE")}
     ${qrTriage ? "" : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokterPemeriksa !== "-" ? dokterPemeriksa : doctorFromQr(qrTriage))} )</div>
   </div>
-</div>
-</section>`;
+</div>`;
   }
   function buildPengkajianIgdSection(sections) {
     const src = sections.find((s) => /PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title));
@@ -1569,18 +1583,17 @@ ${kop("TRIAGE")}
     const rows = (t) => t ? Array.from(t.rows).map((tr) => Array.from(tr.cells).map(cell)) : [];
     const find = (re) => {
       const t = tables.find(
-        (tb) => re.test((tb.rows[0]?.textContent || "").replace(/\s+/g, " ").trim())
+        (tb2) => re.test((tb2.rows[0]?.textContent || "").replace(/\s+/g, " ").trim())
       );
       return rows(t);
     };
     const byText = (re) => {
-      const t = tables.find((tb) => re.test(tb.textContent || ""));
+      const t = tables.find((tb2) => re.test(tb2.textContent || ""));
       return rows(t);
     };
-    const triase = find(/^Triase/i);
     const nyeri = find(/^Pengkajian\s*0\s*1\s*2\s*Nilai/i);
-    const jatuh1 = byText(/Usia/i);
-    const jatuh2 = byText(/Riwayat Jatuh/i);
+    const jatuh1 = byText(/HUMPTY DUMPTY/i);
+    const jatuh2 = byText(/MORSE FALL SCALE/i);
     const objektif = find(/^Objektif\s*Kelainan/i);
     const diagnosaUtama = find(/^Diagnosa Utama$/i);
     const diagnosaBanding = find(/^Diagnosa Banding$/i);
@@ -1591,11 +1604,6 @@ ${kop("TRIAGE")}
       const rows2 = Array.isArray(body) ? body.join("") : body;
       return '<table class="rm-grid-table"><thead><tr>' + head.map((h) => `<th>${esc(h)}</th>`).join("") + "</tr></thead><tbody>" + (rows2 || '<tr><td colspan="' + head.length + '">-</td></tr>') + "</tbody></table>";
     };
-    const triaseRows = triase.slice(1).map((r) => {
-      const on = (r[0] || "").includes("\u2713");
-      const c = on ? r.slice(1) : r;
-      return `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ""}>` + c.map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>";
-    }).join("");
     const nyeriRows = nyeri.slice(1).map(
       (r) => "<tr>" + r.map((x, i) => `<td${i === 0 ? "" : ' class="center"'}>${esc(x || "-")}</td>`).join("") + "</tr>"
     ).join("");
@@ -1622,9 +1630,16 @@ ${kop("TRIAGE")}
       (r) => "<tr>" + r.slice(0, 4).map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>"
     ).join("");
     const perawatVal = perawat.slice(1).flat().filter(Boolean).join(" \xB7 ");
+    const triasePilih = triaseRowsDariIgd(sections).find((r) => (r[0] || "").includes("\u2713"))?.slice(1) || [];
+    const skorRingkas = (data) => {
+      const skor = data.find((r) => /^JUMLAH SKOR/i.test(r[0] || ""));
+      const simpulan = data.find((r) => /^Keterangan Hasil/i.test(r[0] || ""));
+      const angka = skor?.slice(1).filter(Boolean).join(" ") || "-";
+      return simpulan ? `${angka} \xB7 ${simpulan.slice(1).filter(Boolean).join(" ")}` : angka;
+    };
     const igdImage = (re) => Array.from(doc?.querySelectorAll("img") || []).map((im) => im.getAttribute("src") || "").find((s) => re.test(s)) || "";
-    const figure = (url, caption) => url ? `<figure class="rm-figure"><img src="${esc(url)}" alt="${esc(caption)}"><figcaption>${esc(caption)}</figcaption></figure>` : "";
-    const wongFigure = figure(igdImage(/nyeri_baru/i), "Skala Nyeri Wong Baker");
+    const figure = (url, alt, caption = alt) => url ? `<figure class="rm-figure"><img src="${esc(url)}" alt="${esc(alt)}">` + (caption ? `<figcaption>${esc(caption)}</figcaption>` : "") + "</figure>" : "";
+    const wongFigure = figure(igdImage(/nyeri_baru/i), "Skala Nyeri Wong Baker", "");
     const objekFigure = figure(igdImage(/clipboard/i), "Gambar Pemeriksaan Objektif");
     const checked = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value || "-";
     const afterLabel = (re) => {
@@ -1639,28 +1654,55 @@ ${kop("TRIAGE")}
       );
       return (marker?.nextElementSibling?.textContent || "").replace(/[ \t]+/g, " ").trim() || "-";
     })();
+    const uraian = pick("pengkajian_keperawatan");
+    const [rps, rpd, rpo] = (() => {
+      const bagian = uraian.split(/\n\s*RPD\s*:/i);
+      const keluhan = bagian[0].replace(/^\s*Subjektif\s*:\s*/i, "").trim() || "-";
+      const sisa = (bagian[1] || "").split(/\n\s*RPO\s*:/i);
+      return [keluhan, sisa[0]?.trim() || "-", sisa[1]?.trim() || "-"];
+    })();
     const radioTeks = (name, teks) => checked(name) === "ya" ? pick(teks) : checked(name) === "tidak" ? "Tidak" : "-";
+    const opt = (value, label, current) => `<span class="opt-item"><span class="chk-box">${value === current ? "&#10003;" : "&nbsp;"}</span> ${label}</span>`;
+    const idOpt = (label, html) => `<tr><td class="lbl">${label}</td><td class="col">:</td><td class="val">${html}</td></tr>`;
+    const bb = Number(pick("nutrisi_bb"));
+    const tb = Number(pick("nutrisi_tb")) / 100;
+    const imt = bb > 0 && tb > 0 ? (bb / (tb * tb)).toFixed(1).replace(".", ",") : "-";
     return `<section class="rm-page" id="pengkajian-igd">
 ${kop("PENGKAJIAN IGD")}
 <div class="rm-form-title">LEMBAR PENGKAJIAN INSTALASI GAWAT DARURAT</div>
 
+<div class="igd-masthead">
+  <div class="igd-masthead-label">Pasien \xB7 Instalasi Gawat Darurat</div>
+  <div class="igd-masthead-name">${esc(pick("nama"))}</div>
+</div>
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
     ${idRow("Nama Pasien", pick("nama"), true)}
     ${idRow("No. Rekam Medis", pick("norm", "rekam_medis"), true)}
     ${idRow("Tgl. Lahir / Umur", pick("tgl_lahir", "tglLahir"))}
-    ${idRow("Jenis Kelamin", pick("jenis_kelamin", "jk"))}
-    ${idRow("No. Telepon", pick("no_hp", "telepon"))}
+    ${idRow("Jenis Kelamin", /perempuan|^p$/i.test(pick("jenis_kelamin", "jk")) ? "Perempuan (P)" : "Laki-laki (L)")}
+    ${idRow("Agama / Suku", `${afterLabel(/^Agama/i)} / ${afterLabel(/^Suku/i)}`)}
     ${idRow("Pekerjaan", pick("pekerjaan"))}
+    ${idRow("No. Telp / HP", pick("no_hp", "telepon"))}
+    ${idRow("Nama Orangtua / Pasangan", `${pick("nama_orangtua")} / ${pick("nama_pasangan")}`)}
   </table></div>
   <div class="id-col"><table class="id-table">
     ${idRow("Tanggal Masuk", pick("tgl_masuk"))}
-    ${idRow("Cara Masuk", pick("cara_masuk_text"))}
-    ${idRow("Tiba di RS", `${pick("tiba_di_rs_tanggal")} ${pick("pukul_tiba_di_rs")}`.trim())}
-    ${idRow("Pukul Diperiksa", pick("pukul_diperiksa"))}
-    ${idRow("Status Spiritual", pick("status_spiritual"))}
-    ${idRow("Indikasi Rawat", pick("tindak_lanjut_indikasi_ranap"))}
+    ${idRow("Tiba di IGD / Diperiksa", `Pukul ${pick("pukul_tiba_di_rs")} / Diperiksa Pukul ${pick("pukul_diperiksa")}`)}
+    ${idOpt("Prosedur Masuk", opt("Rujukan", "Rujukan", checked("kaji[prosedur_masuk]")) + opt("Non Rujukan", "<strong>Non Rujukan</strong>", checked("kaji[prosedur_masuk]")))}
+    ${idOpt("Cara Masuk", opt("tanpa_bantuan", "Jalan Tanpa Bantuan", checked("kaji[cara_masuk]")) + opt("kursi_roda", "Kursi Roda", checked("kaji[cara_masuk]")) + opt("tempat_tidur", "Brankar", checked("kaji[cara_masuk]")))}
+    ${idOpt("Penyebab Cedera", opt("tidak_ada", "Tidak mengalami cedera", checked("kaji[penyebab_cedera]")) + opt("lantas", "KLL", checked("kaji[penyebab_cedera]")) + opt("lainnya", "Lainnya", checked("kaji[penyebab_cedera]")))}
+    ${idOpt("Status Alergi", checked("kaji[status_alergi]") === "ya" ? `<span class="chk-box">&#10003;</span> <strong>Ya</strong>: ${esc(radioTeks("kaji[status_alergi]", "status_alergi_text"))}` : '<span class="chk-box">&#10003;</span> <strong>Tidak ada alergi</strong>')}
+    ${idOpt("Gangguan Perilaku", checked("kaji[gangguan_perilaku]") === "ya" ? '<span class="chk-box">&#10003;</span> <strong>Ada Gangguan</strong>' : '<span class="chk-box">&#10003;</span> <strong>Tidak Terganggu</strong>')}
+    ${idOpt("Status Kehamilan", /perempuan|^p$/i.test(pick("jenis_kelamin", "jk")) ? esc(pick("status_kehamilan")) : '<span class="filter-note">Tidak berlaku (Pasien Laki-laki \u2014 disaring otomatis)</span>')}
   </table></div>
+</div>
+
+<div class="igd-summary">
+  <div><span>Triase</span><b>${esc(triasePilih[0] || "-")} ${esc(triasePilih[1] || "")}</b></div>
+  <div><span>GCS / Kesadaran</span><b>${esc(pick("vital_gcs"))} \xB7 ${esc(pick("vital_kesadaran"))}</b></div>
+  <div><span>SpO2 / Nadi</span><b>${esc(pick("vital_spo"))} \xB7 ${esc(pick("vital_nadi"))}</b></div>
+  <div><span>Risiko Jatuh (Morse)</span><b>${esc(skorRingkas(jatuh2))}</b></div>
 </div>
 
 <div class="sub-heading-rm">KONDISI AWAL &amp; RIWAYAT</div>
@@ -1715,57 +1757,139 @@ ${grid(
       ]
     )}
 
-<div class="sub-heading-rm">TRIASE (DIISI OLEH DOKTER)</div>
-${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
+${buildTriageBlock(sections)}
 
-<div class="sub-heading-rm">ASESMEN NYERI \u2014 WONG BAKER / NRS</div>
-<div class="rm-figure-row">
-  ${wongFigure || "<div>Skala nyeri tidak tersedia pada halaman asal.</div>"}
-  ${kvTable([
-      ["Skala Wong Baker", pick("emo_wong")],
-      ["(P) Faktor Pencetus", pick("faktor_pencetus")],
-      ["(Q) Kualitas", checked("kaji[qualitas]")],
-      ["(R) Lokasi", pick("lokasi_nyeri")],
-      ["Menjalar", checked("kaji[nyeri_menjalar]")],
-      ["(S) Skala Nyeri", pick("skala_nyeri")],
-      ["Frekuensi", checked("kaji[nyeri_frekwensi]")],
-      ["(T) Lamanya", pick("lamanya_nyeri")]
-    ])}
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">II. PENGKAJIAN PSIKOSOSIAL, SPIRITUAL, EKONOMI, NUTRISI &amp; FUNGSIONAL</td></tr></thead>
+  <tbody>
+    ${idOpt(
+      "Status Psikologi",
+      ["Senang", "Tenang", "Cemas", "Takut", "Sedih"].map((v) => opt(v, v, checked("kaji[status_psikologi]"))).join("")
+    )}
+    ${idOpt(
+      "Status Sosial &amp; Spiritual",
+      `Hubungan keluarga: ${opt("Baik", "Baik", checked("kaji[status_sosial]"))}${opt("Tidak Baik", "Tidak Baik", checked("kaji[status_sosial]"))} | Kegiatan keagamaan: ${esc(pick("status_spiritual"))}`
+    )}
+    ${idOpt(
+      "Status Pembiayaan",
+      ["Bpjs", "Dinas", "Biaya Sendiri", "Perusahaan", "Lainnya"].map((v) => opt(v, v === "Bpjs" ? "BPJS Kesehatan" : v, checked("kaji[status_ekonomi]"))).join("")
+    )}
+    ${idOpt(
+      "Antropometri &amp; Nutrisi",
+      `BB: <strong>${esc(pick("nutrisi_bb"))} Kg</strong> | TB: <strong>${esc(pick("nutrisi_tb"))} Cm</strong> | IMT: <strong>${imt} kg/m&sup2;</strong> | Konsul Gizi: ${opt("ya", "Ya", checked("kaji[nutrisi_konsul]"))}${opt("tidak", "Tidak", checked("kaji[nutrisi_konsul]"))}`
+    )}
+    ${idOpt(
+      "Status Fungsional",
+      `<strong>Kognitif:</strong> ${checked("kaji[fungsi_kognitif]")} &nbsp;|&nbsp; <strong>Motorik:</strong> ${checked("kaji[fungsi_motorik]")}`
+    )}
+    ${idOpt(
+      "Komunikasi &amp; Edukasi",
+      `Hambatan: ${radioTeks("kaji[hambatan_pembelajaran]", "terhambat_pembelajaran_text")} | Penerjemah: ${radioTeks("kaji[dibutuhkan_penerjemah]", "penerjemah_text")}<br/><strong>Kebutuhan Edukasi:</strong> ${checked("kaji[kebutuhan_edukasi]")}`
+    )}
+  </tbody>
+</table>
+
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">III. ASESMEN NYERI \u2014 WONG BAKER / NRS (PQRST)</td></tr></thead>
+  <tbody>
+    <tr>
+      <td style="width:165px;"><strong>Skala Wong Baker</strong></td>
+      <td>${wongFigure || '<span class="filter-note">Skala nyeri tidak tersedia pada halaman asal.</span>'}</td>
+    </tr>
+    <tr><td><strong>(P) Faktor Pencetus</strong></td><td>${esc(pick("faktor_pencetus"))}</td></tr>
+    <tr>
+      <td><strong>(Q) Kualitas Nyeri</strong></td>
+      <td>${opt("tumpul", "Tumpul", checked("kaji[qualitas]"))}${opt("tajam", "Tajam", checked("kaji[qualitas]"))}${opt("panas", "Panas / Terbakar", checked("kaji[qualitas]"))}</td>
+    </tr>
+    <tr>
+      <td><strong>(R) Lokasi &amp; Penjalaran</strong></td>
+      <td>${esc(pick("lokasi_nyeri"))} &nbsp;|&nbsp; <strong>Menjalar:</strong> ${opt("tidak", "Tidak", checked("kaji[nyeri_menjalar]"))}${opt("ya", "Ya", checked("kaji[nyeri_menjalar]"))}</td>
+    </tr>
+    <tr>
+      <td><strong>(S) Skala Nyeri (NRS 0\u201310)</strong></td>
+      <td>${esc(pick("skala_nyeri"))} &nbsp;|&nbsp; Wong Baker: ${esc(pick("emo_wong"))}</td>
+    </tr>
+    <tr>
+      <td><strong>(T) Waktu &amp; Frekuensi</strong></td>
+      <td>${esc(pick("lamanya_nyeri"))} &nbsp;|&nbsp; ${checked("kaji[nyeri_frekwensi]")}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="rm-table">
+  <thead>
+    <tr class="sec-hdr"><td colspan="5">IV. PENGKAJIAN NYERI (FLACC)</td></tr>
+    <tr><th>PENGKAJIAN</th><th>0</th><th>1</th><th>2</th><th>NILAI</th></tr>
+  </thead>
+  <tbody>${nyeriRows || '<tr><td colspan="5">-</td></tr>'}</tbody>
+</table>
+
+<table class="rm-table">
+  <thead>
+    <tr class="sec-hdr"><td colspan="5">V. SKRINING RISIKO JATUH \u2014 PARAMETER PERTAMA (HUMPTY DUMPTY)</td></tr>
+    <tr><th>NO</th><th>PARAMETER</th><th>KRITERIA</th><th>NILAI</th><th>SKOR</th></tr>
+  </thead>
+  <tbody>${skorRows(jatuh1)}</tbody>
+</table>
+
+<table class="rm-table">
+  <thead>
+    <tr class="sec-hdr"><td colspan="5">VI. SKRINING RISIKO JATUH \u2014 PARAMETER KEDUA (MORSE FALL SCALE)</td></tr>
+    <tr><th>NO</th><th>PARAMETER</th><th>KRITERIA PENILAIAN</th><th>NILAI</th><th>SKOR PASIEN</th></tr>
+  </thead>
+  <tbody>
+    ${skorRows(jatuh2)}
+    <tr><td colspan="4" style="text-align: right;"><strong>TOTAL SKOR MORSE</strong></td><td class="center"><strong>${esc(skorRingkas(jatuh2))}</strong></td></tr>
+  </tbody>
+</table>
+
+<div class="two-col-grid">
+  <div class="col-half">${objekFigure}</div>
+  <div class="col-half">
+    <table class="rm-table" style="margin-bottom: 0;">
+      <thead>
+        <tr class="sec-hdr"><td colspan="2">VII. PEMERIKSAAN OBJEKTIF</td></tr>
+        <tr><th>OBJEKTIF</th><th>KELAINAN</th></tr>
+      </thead>
+      <tbody>${objektifRows}</tbody>
+    </table>
+  </div>
 </div>
 
-<div class="sub-heading-rm">PENGKAJIAN NYERI (FLACC)</div>
-${grid(["PENGKAJIAN", "0", "1", "2", "NILAI"], nyeriRows)}
-
-<div class="sub-heading-rm">SKRINING RISIKO JATUH \u2014 PARAMETER PERTAMA</div>
-${grid(["NO", "PARAMETER", "KRITERIA", "NILAI", "SKOR"], skorRows(jatuh1))}
-
-<div class="sub-heading-rm">SKRINING RISIKO JATUH \u2014 PARAMETER KEDUA</div>
-${grid(["NO", "PARAMETER", "KRITERIA", "NILAI", "SKOR"], skorRows(jatuh2))}
-
-<div class="sub-heading-rm">PEMERIKSAAN OBJEKTIF</div>
-<div class="rm-figure-row">
-  ${objekFigure}
-  ${grid(["OBJEKTIF", "KELAINAN"], objektifRows)}
+<div class="rm-top-meta">
+  <span>Halaman 2 dari 2 (Lanjutan Pengkajian Medis &amp; Terapi IGD)</span>
+  <span>RM. 02 / IGD</span>
+</div>
+<div class="running-header-box">
+  <div><strong>RSUD H. ABDUL MANAP KOTA JAMBI</strong></div>
+  <div>Nama: <strong>${esc(pick("nama"))}</strong></div>
+  <div>No. RM: <strong>${esc(pick("norm", "rekam_medis"))}</strong></div>
+  <div>Tgl. Lahir / Umur: <strong>${esc(pick("tgl_lahir", "tglLahir"))}</strong></div>
+  <div>Tgl. Masuk IGD: <strong>${esc(pick("tgl_masuk"))}</strong></div>
 </div>
 
-<div class="sub-heading-rm">DIAGNOSA &amp; TINDAKAN</div>
-<table class="rm-grid-table"><tbody>
-  ${diagnosaRows}
-  <tr><td style="width:180px;"><strong>TINDAKAN</strong></td><td>${esc(tindakanVal)}</td></tr>
-</tbody></table>
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">V. PENGKAJIAN MEDIS DOKTER IGD \u2014 ANAMNESIS (SUBJEKTIF)</td></tr></thead>
+  <tbody>
+    <tr><td style="width:155px;"><strong>(a) Keluhan Utama &amp; RPS</strong></td><td>${nl2br(rps)}</td></tr>
+    <tr><td><strong>(b) Riwayat Penyakit Dahulu (RPD)</strong></td><td>${nl2br(rpd)}</td></tr>
+    <tr><td><strong>(c) Riwayat Penggunaan Obat (RPO)</strong></td><td>${nl2br(rpo)}</td></tr>
+  </tbody>
+</table>
 
-<div class="sub-heading-rm">PEMERIKSAAN PENUNJANG</div>
-${kvTable([
-      ["EKG", afterLabel(/^EKG$/i)],
-      ["Radiologi", afterLabel(/^Radiologi$/i)],
-      ["Laboratorium", afterLabel(/^Laboratorium$/i)]
-    ])}
-
-<div class="sub-heading-rm">PENGKAJIAN KEPERAWATAN &amp; MEDIS</div>
-<div class="rm-note">${nl2br(pick("pengkajian_keperawatan"))}</div>
-
-<div class="sub-heading-rm">PLANNING / TERAPI</div>
-<div class="rm-note">${nl2br(planningText)}</div>
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">VI. DIAGNOSA &amp; TINDAKAN & PLANNING TERINTEGRASI</td></tr></thead>
+  <tbody>
+    ${diagnosaRows}
+    <tr><td style="width:165px;"><strong>TINDAKAN</strong></td><td>${esc(tindakanVal)}</td></tr>
+    <tr>
+      <td><strong>PEMERIKSAAN PENUNJANG</strong></td>
+      <td>EKG: ${esc(afterLabel(/^EKG$/i))} &nbsp;|&nbsp; Radiologi: ${esc(afterLabel(/^Radiologi$/i))} &nbsp;|&nbsp; Laboratorium: ${esc(afterLabel(/^Laboratorium$/i))}</td>
+    </tr>
+    <tr><td><strong>PENGKAJIAN KEPERAWATAN &amp; MEDIS</strong></td><td>${nl2br(pick("pengkajian_keperawatan"))}</td></tr>
+    <tr><td><strong>PLANNING / TERAPI</strong></td><td>${nl2br(planningText)}</td></tr>
+  </tbody>
+</table>
 
 <div class="sub-heading-rm">OBAT / TERAPI IGD</div>
 ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
@@ -1825,7 +1949,7 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     if (!url) return "-";
     try {
       const decoded = decodeURIComponent(url.replace(/\+/g, " "));
-      const m = decoded.match(/(dr\.[^&]+)/i)?.[1] || "";
+      const m = decoded.match(/approve\s*([\s\S]*?)\s+tgl\b/i)?.[1] || decoded.match(/(dr\.[^&]+)/i)?.[1] || "";
       return m.split(/\s+(?:tgl|jam)\b/i)[0].replace(/\s+/g, " ").trim() || "-";
     } catch {
       return "-";
@@ -2614,7 +2738,6 @@ ${checksHtml}
       if (/^Resume/i.test(s.title)) return buildResumeSection(sections);
       if (/^Telaah/i.test(s.title)) return buildTelaahSection(sections);
       if (/^Radiologi/i.test(s.title)) return buildRadiologiSection(sections, s, m.id);
-      if (/^Triage/i.test(s.title)) return buildTriageSection(sections);
       if (/PENGKAJIAN INSTALASI GAWAT DARURAT/i.test(s.title))
         return buildPengkajianIgdSection(sections);
       if (/^Laboratorium/i.test(s.title)) return buildLaboratoriumSection(sections);
@@ -3292,6 +3415,60 @@ ${kop(m.code)}
     .rm-figure-row .rm-figure { flex: 0 0 46%; margin: 0; }
     .rm-figure-row .rm-grid-table { flex: 1; min-width: 0; }
     .rm-note { border: 1px solid #000000; padding: 6px 8px; margin-bottom: 8px; font-size: 8.2pt; line-height: 1.4; break-inside: avoid; }
+
+    /* Bahasa visual RM baku: banner bagian bernomor, tabel full-grid, kotak
+       centang statis \u2014 mengikuti prototipe referensi RM.02/IGD. */
+    .rm-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; line-height: 1.28; }
+    .rm-table th, .rm-table td { border: 1px solid #000000; padding: 3px 5px; vertical-align: top; }
+    .rm-table th { font-weight: bold; text-align: center; vertical-align: middle; }
+    .rm-table tr.sec-hdr td { font-weight: bold; font-size: 8.5pt; text-transform: uppercase; padding: 4px 5px; letter-spacing: 0.01em; }
+    .chk-box { display: inline-block; width: 9.5px; height: 9.5px; border: 1px solid #000000; text-align: center; line-height: 8.5px; font-size: 7.5pt; font-weight: bold; margin-right: 3px; vertical-align: middle; }
+    .opt-item { display: inline-block; margin-right: 10px; white-space: nowrap; }
+    .filter-note { font-size: 7.3pt; font-style: italic; }
+    .two-col-grid { display: flex; gap: 6px; margin-bottom: 8px; align-items: stretch; }
+    .two-col-grid > .col-half { flex: 1; min-width: 0; }
+    .rm-top-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; font-size: 8.5pt; font-weight: bold; }
+    .running-header-box { border: 1px solid #000000; padding: 4px 8px; margin-bottom: 6px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 7.8pt; }
+
+    /* Editorial clinical: nomor urut otomatis, kepala pasien, dan ringkasan
+       data kritis \u2014 tetap tinta hitam di atas kertas A4. */
+    #pengkajian-igd { counter-reset: igdsec; }
+    #pengkajian-igd .sub-heading-rm {
+      counter-increment: igdsec;
+      position: relative;
+      padding: 3px 0 3px 30px;
+      border-bottom: 1px solid #000000;
+    }
+    #pengkajian-igd .sub-heading-rm::before {
+      content: counter(igdsec, decimal-leading-zero);
+      position: absolute;
+      left: 0;
+      top: 3px;
+      font-size: 7pt;
+      font-weight: normal;
+      letter-spacing: 0.08em;
+    }
+    .igd-masthead { margin-bottom: 9px; }
+    .igd-masthead-label { font-size: 7pt; letter-spacing: 0.14em; text-transform: uppercase; }
+    .igd-masthead-name {
+      font-size: 17pt;
+      font-weight: bold;
+      line-height: 1.15;
+      margin: 2px 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .igd-summary {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr 1.4fr;
+      border-top: 2px solid #000000;
+      border-bottom: 1px solid #000000;
+      margin: 0 0 9px;
+    }
+    .igd-summary > div { padding: 5px 8px; border-left: 1px solid #000000; }
+    .igd-summary > div:first-child { border-left: 0; padding-left: 0; }
+    .igd-summary span { display: block; font-size: 6.5pt; letter-spacing: 0.1em; text-transform: uppercase; }
+    .igd-summary b { display: block; font-size: 11pt; line-height: 1.25; margin-top: 2px; }
+    .igd-band-value { font-size: 11pt !important; font-weight: bold; }
 </style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
 <div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>
