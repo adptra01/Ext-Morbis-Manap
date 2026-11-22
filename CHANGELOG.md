@@ -25,6 +25,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — TRIASE parse kolom PILIH/SKALA/KET/RESPON sejajar (`7e75f11`)
 - **mKlaimPrint** — trim planning text, hapus header berulang halaman 2 (`cb97827`)
 - **mKlaimPrint** — TRIASE tabel pakai triase rows (bukan string) agar tidak crash (`d4b520e`)
 - **mKlaimPrint** — kolom TRIASE & FLACC total rapi (header/body sejajar) (`f068633`)
@@ -38,6 +39,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr trim planning/header (`b0e0cd4`)
 - **changelog** — sync entr fix triase rows (`5969022`)
 - **changelog** — sync entr loading print klaim (`9f5b7d1`)
 - **changelog** — sync entr kolom triase/flacc (`a4468a0`)
@@ -2246,4 +2248,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: cb978272543bb8ae3e46a5ba317a38e39c151875 -->
+<!-- changelog-upto: 7e75f119ee097f19fa5e6c50da55826d3fd87ab7 -->
