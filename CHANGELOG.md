@@ -7,6 +7,12 @@
 
 ---
 
+## 2026-11-23
+
+### ✨ feat
+
+- **mKlaimPrint** — redesign RM.19A dari 4 tabel asli (info, checklist, pernyataan, saksi) (`d9d06d2`)
+
 ## 2026-11-22
 
 ### ✨ feat
@@ -43,6 +49,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr ringkasan risiko jatuh (`b34e861`)
 - **changelog** — sync entr fix tabel risiko jatuh (`9212d8a`)
 - **changelog** — sync entr FLACC total span (`364364d`)
 - **changelog** — sync entr redesign risiko jatuh (`369249c`)
@@ -2256,4 +2263,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 655280537d32077f96d31d4915bdd7c66a78e2e4 -->
+<!-- changelog-upto: d9d06d2777117cc378e4a77d3df75fddf092fde4 -->
