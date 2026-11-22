@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign RM.02 IGD & triase, konsul/radiologi multi-lembar (`9633f71`)
 - **mKlaimPrint** — konsul & radiologi multi-entri terpisah, redesign pengkajian IGD (`ded436d`)
 
 ### 🐛 fix
@@ -20,6 +21,10 @@
 ### ⚡ perf
 
 - **mKlaimPrint** — sampel canvas kosong di probe sendiri, hindari warning Canvas2D (`3eba7e4`)
+
+### 🧹 chore
+
+- **changelog** — sync entri mKlaimPrint (feat multi-entri + perf canvas) (`9ba2079`)
 
 ## 2026-11-21
 
@@ -2215,4 +2220,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ded436d27eb01d3840dd0a96b3eda14d951fca8d -->
+<!-- changelog-upto: 9633f71311415315599c30e43763b755d7b9e5a3 -->
