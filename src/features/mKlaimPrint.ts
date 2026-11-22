@@ -2110,7 +2110,13 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     const marker = Array.from(doc?.querySelectorAll('div') || []).find((d) =>
       /^Planning\s*:\s*Terapy/i.test((d.textContent || '').trim().slice(0, 80)),
     );
-    return (marker?.nextElementSibling?.textContent || '').replace(/[ \t]+/g, ' ').trim() || '-';
+    return (
+      (marker?.nextElementSibling?.textContent || '')
+        .split(/TINDAK LANJUT/i)[0]
+        .split(/Kondisi Pasien Saat Pindah/i)[0]
+        .replace(/[ \t]+/g, ' ')
+        .trim() || '-'
+    );
   })();
   const uraian = pick('pengkajian_keperawatan');
   const [rps, rpd, rpo] = ((): [string, string, string] => {
@@ -2356,18 +2362,6 @@ ${grid(
       <tbody>${objektifRows}</tbody>
     </table>
   </div>
-</div>
-
-<div class="rm-top-meta">
-  <span>Halaman 2 dari 2 (Lanjutan Pengkajian Medis &amp; Terapi IGD)</span>
-  <span>RM. 02 / IGD</span>
-</div>
-<div class="running-header-box">
-  <div><strong>RSUD H. ABDUL MANAP KOTA JAMBI</strong></div>
-  <div>Nama: <strong>${esc(pick('nama'))}</strong></div>
-  <div>No. RM: <strong>${esc(pick('norm', 'rekam_medis'))}</strong></div>
-  <div>Tgl. Lahir / Umur: <strong>${esc(pick('tgl_lahir', 'tglLahir'))}</strong></div>
-  <div>Tgl. Masuk IGD: <strong>${esc(pick('tgl_masuk'))}</strong></div>
 </div>
 
 <table class="rm-table">

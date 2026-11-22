@@ -367,8 +367,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(igd).toContain('class="two-col-grid"');
     expect(igd).toContain('II. PENGKAJIAN PSIKOSOSIAL');
     expect(igd).toContain('V. PENGKAJIAN MEDIS DOKTER IGD');
-    expect(igd).toContain('class="rm-top-meta"');
-    expect(igd).toContain('class="running-header-box"');
+
     expect(igd).toContain('idOpt(');
     expect(src).toContain('.rm-table tr.sec-hdr td {');
     expect(src).toContain('.chk-box {');
