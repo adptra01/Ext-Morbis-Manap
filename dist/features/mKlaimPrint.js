@@ -2722,14 +2722,15 @@ ${checksHtml}
   </div>
 </div>
 </section>`;
+    const renderSections = sections.filter((s) => !/^Triage/i.test(s.title));
     const metaCount = /* @__PURE__ */ new Map();
-    const metas = sections.map((s, i) => {
+    const metas = renderSections.map((s, i) => {
       const m = metaFor(s.title, i);
       const n = (metaCount.get(m.id) ?? 0) + 1;
       metaCount.set(m.id, n);
       return n === 1 ? m : { ...m, id: `${m.id}-${n}`, tab: `${m.tab} (${n})`, option: `${m.option} (${n})` };
     });
-    const docs = sections.map((s, i) => {
+    const docs = renderSections.map((s, i) => {
       const m = metas[i];
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
@@ -2763,7 +2764,7 @@ ${kop(m.code)}
     const tabs = [
       `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
       `<button type="button" class="tab-btn" data-target="rm-00">RM. 00 Kendali</button>`,
-      ...sections.map((s, i) => {
+      ...renderSections.map((s, i) => {
         const m = metas[i];
         return `<button type="button" class="tab-btn" data-target="${m.id}">${m.tab}</button>`;
       })
@@ -2771,7 +2772,7 @@ ${kop(m.code)}
     const opts = [
       `<option value="all">Semua Formulir RM</option>`,
       `<option value="rm-00">RM. 00 \u2014 Lembar Kendali &amp; Verifikasi</option>`,
-      ...sections.map((s, i) => {
+      ...renderSections.map((s, i) => {
         const m = metas[i];
         return `<option value="${m.id}">${m.option}</option>`;
       })

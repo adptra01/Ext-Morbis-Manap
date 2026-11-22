@@ -307,6 +307,12 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(tri).toContain('Dokter yang memeriksa\\s*\\(([^)]+)\\)');
     expect(src).toContain('${buildTriageBlock(sections)}');
     expect(src).not.toContain('return buildTriageSection(sections);');
+    // Triage tidak dirender sebagai section kedua — hanya jadi sumber data.
+    expect(src).toContain(
+      'const renderSections = sections.filter((s) => !/^Triage/i.test(s.title));',
+    );
+    expect(src).toContain('const docs = renderSections');
+    expect(src).toContain('...renderSections.map((s, i) => {');
     // Warna status triase (merah→hijau) dari skala yang dicentang di IGD.
     expect(tri).toContain('const warna = triaseWarna(triaseTeks)');
     expect(tri).toContain('style="background-color: ${warna.bg}; color: ${warna.fg};"');
@@ -689,7 +695,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildRadiologiSection(sections, s, m.id);');
     expect(src).toContain('return buildKonsulSection(sections, s, m.id);');
     // ID unik per instance supaya tab & <select> tidak selalu menunjuk yang pertama.
-    expect(src).toContain('const metas = sections.map((s, i) => {');
+    expect(src).toContain('const metas = renderSections.map((s, i) => {');
     expect(src).toContain('id: `${m.id}-${n}`');
     expect(src).toContain('return `<section class="rm-page" id="${esc(id)}">');
   });

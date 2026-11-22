@@ -3439,8 +3439,13 @@ ${checksHtml}
 
   // ID section harus unik walau judul berkasnya berulang (pasien dengan
   // beberapa lembar konsul / hasil radiologi).
+  // Berkas Triage hanya jadi SUMBER data untuk blok TRIASE di lembar IGD —
+  // jangan dirender sebagai section terpisah (fallback generik akan menghasilkan
+  // duplikat id="triage" dengan HTML mentah).
+  const renderSections = sections.filter((s) => !/^Triage/i.test(s.title));
+
   const metaCount = new Map<string, number>();
-  const metas = sections.map((s, i) => {
+  const metas = renderSections.map((s, i) => {
     const m = metaFor(s.title, i);
     const n = (metaCount.get(m.id) ?? 0) + 1;
     metaCount.set(m.id, n);
@@ -3449,7 +3454,7 @@ ${checksHtml}
       : { ...m, id: `${m.id}-${n}`, tab: `${m.tab} (${n})`, option: `${m.option} (${n})` };
   });
 
-  const docs = sections
+  const docs = renderSections
     .map((s, i) => {
       const m = metas[i];
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
@@ -3486,7 +3491,7 @@ ${kop(m.code)}
   const tabs = [
     `<button type="button" class="tab-btn active" data-target="all">Semua</button>`,
     `<button type="button" class="tab-btn" data-target="rm-00">RM. 00 Kendali</button>`,
-    ...sections.map((s, i) => {
+    ...renderSections.map((s, i) => {
       const m = metas[i];
       return `<button type="button" class="tab-btn" data-target="${m.id}">${m.tab}</button>`;
     }),
@@ -3494,7 +3499,7 @@ ${kop(m.code)}
   const opts = [
     `<option value="all">Semua Formulir RM</option>`,
     `<option value="rm-00">RM. 00 — Lembar Kendali &amp; Verifikasi</option>`,
-    ...sections.map((s, i) => {
+    ...renderSections.map((s, i) => {
       const m = metas[i];
       return `<option value="${m.id}">${m.option}</option>`;
     }),
