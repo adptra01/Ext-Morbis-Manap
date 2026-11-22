@@ -27,6 +27,8 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.258 (RM.19A redesign + TRIASE-IGD merge) (`48d07b9`)
+- **changelog** — sync entr rm.19A QR fix (`5101f66`)
 - **changelog** — sync entr RM.19A redesign (`fa7f0f9`)
 - **changelog** — sync entri gabung triage-IGD (`9468d3d`)
 - **changelog** — sync entri redesign IGD & triase (`38d1c8d`)
@@ -2226,4 +2228,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 15294a94ac20aea8adc3e36134f4cb4a1ce2cefa -->
+<!-- changelog-upto: 48d07b9bb574e9cbff6bac5a0cb7b123dba88e9d -->

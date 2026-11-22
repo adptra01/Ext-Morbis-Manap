@@ -2119,6 +2119,13 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     const angka = skor?.slice(1).filter(Boolean).join(' ') || '-';
     return simpulan ? `${angka} · ${simpulan.slice(1).filter(Boolean).join(' ')}` : angka;
   };
+  const morseScore = Number((skorRingkas(jatuh2).match(/\d+/) || ['0'])[0]);
+  const morseKet =
+    morseScore >= 45
+      ? 'RISIKO JATUH TINGGI (≥45)'
+      : morseScore >= 25
+        ? 'RISIKO JATUH SEDANG (25–44)'
+        : 'RISIKO JATUH RENDAH (0–24)';
 
   // Gambar asli MORBIS harus tetap tampil di dossier (bukan cuma teks).
   const igdImage = (re: RegExp): string =>
@@ -2351,15 +2358,40 @@ ${buildTriageBlock(sections)}
   <tbody>
     ${skorRows(jatuh2)}
     <tr><td colspan="4" style="text-align: right;"><strong>TOTAL SKOR MORSE</strong></td><td class="center"><strong>${esc(skorRingkas(jatuh2))}</strong></td></tr>
+    <tr><td colspan="5"><strong>INTERPRETASI &amp; PROTOKOL:</strong> ${esc(morseKet)} — pasang gelang identitas risiko jatuh, side rail &amp; kunci roda, edukasi pencegahan jatuh.</td></tr>
   </tbody>
 </table>
 
 <div class="two-col-grid">
-  <div class="col-half">${objekFigure}</div>
   <div class="col-half">
+    <table class="rm-table" style="margin-bottom: 0; height: 100%;">
+      <thead>
+        <tr class="sec-hdr"><td colspan="3">VI-A. PERBANDINGAN TANDA VITAL (OBJEKTIF)</td></tr>
+        <tr><th>PARAMETER</th><th style="width: 108px;">AWAL IGD</th><th style="width: 108px;">PINDAH HCU</th></tr>
+      </thead>
+      <tbody>
+        ${[
+          ['Tekanan Darah (TD)', pick('vital_td'), pick('kondisi_pasien_td')],
+          ['Nadi (HR)', pick('vital_nadi'), pick('kondisi_pasien_nadi')],
+          ['Pernapasan (RR)', pick('vital_nafas'), pick('kondisi_pasien_nafas')],
+          ['Suhu Aksila', pick('vital_suhu'), pick('kondisi_pasien_suhu')],
+          ['Saturasi Oksigen (SpO2)', pick('vital_spo'), pick('kondisi_pasien_spo')],
+          ['Kesadaran', pick('vital_kesadaran'), pick('kondisi_pasien_kesadaran')],
+          ['Skor GCS', pick('vital_gcs'), pick('kondisi_pasien_gcs')],
+        ]
+          .map(
+            ([k, a, b]) =>
+              `<tr><td><strong>${esc(k)}</strong></td><td class="center">${esc(a)}</td><td class="center">${esc(b)}</td></tr>`,
+          )
+          .join('')}
+      </tbody>
+    </table>
+  </div>
+  <div class="col-half">
+    ${objekFigure}
     <table class="rm-table" style="margin-bottom: 0;">
       <thead>
-        <tr class="sec-hdr"><td colspan="2">VII. PEMERIKSAAN OBJEKTIF</td></tr>
+        <tr class="sec-hdr"><td colspan="2">VI-B. PEMERIKSAAN FISIK LOKALIS &amp; PENUNJANG</td></tr>
         <tr><th>OBJEKTIF</th><th>KELAINAN</th></tr>
       </thead>
       <tbody>${objektifRows}</tbody>
