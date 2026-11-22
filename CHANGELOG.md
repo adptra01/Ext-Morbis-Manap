@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign risiko jatuh — ringkasan skor terpilih + kategori (`6552805`)
 - **mKlaimPrint** — redesign risiko jatuh anak/dewasa mengikuti tabel asli (rowspan) (`6c5d03b`)
 - **mKlaimPrint** — loading state pada tombol Cetak Rapi M-KLAIM (`f1f7fd7`)
 - **mKlaimPrint** — redesign X. Planning / Terapi terintegrasi (parse advis Kardiologi/Paru) (`0a60868`)
@@ -42,6 +43,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr fix tabel risiko jatuh (`9212d8a`)
 - **changelog** — sync entr FLACC total span (`364364d`)
 - **changelog** — sync entr redesign risiko jatuh (`369249c`)
 - **changelog** — sync entr fix triase kolom (`245adb2`)
@@ -2254,4 +2256,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ddd0a94bb361c6d20a56b2a2edee933e1489c169 -->
+<!-- changelog-upto: 655280537d32077f96d31d4915bdd7c66a78e2e4 -->
