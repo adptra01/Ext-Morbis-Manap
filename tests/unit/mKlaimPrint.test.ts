@@ -363,7 +363,6 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // Range nyeri→planning mengikuti bahasa visual RM.02/IGD referensi.
     expect(igd).toContain('class="rm-table"');
     expect(igd).toContain('class="sec-hdr"');
-    expect(igd).toContain('class="chk-box"');
     expect(igd).toContain('MORSE FALL SCALE');
     expect(igd).toContain('class="two-col-grid"');
     expect(igd).toContain('II. PENGKAJIAN PSIKOSOSIAL');

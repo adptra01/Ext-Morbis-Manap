@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — IGD checkbox -> nilai terpilih, kolom rapi, planning/disposisi terpisah (`a292de8`)
 - **mKlaimPrint** — pisahkan kembali Triage & Pengkajian IGD, redesign IGD tanpa gambar (RM.02) (`5f61c0b`)
 - **mKlaimPrint** — IGD redesign ulang mengikuti RM.02/IGD (TTV banding, anamnesis, Morse) (`9d5ca2d`)
 - **mKlaimPrint** — redesign RM.19A Persetujuan Tindakan Kedoksteran (`aea54f0`)
@@ -29,6 +30,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr pemisahan triage-IGD (`8cd04cd`)
 - bump versi 1.5.258 (RM.19A redesign + TRIASE-IGD merge) (`48d07b9`)
 - **changelog** — sync entr rm.19A QR fix (`5101f66`)
 - **changelog** — sync entr RM.19A redesign (`fa7f0f9`)
@@ -2230,4 +2232,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 5f61c0bccb29878be3db639c1825ed4bd6f62542 -->
+<!-- changelog-upto: a292de80e8c45b2931030989d243bb6fd7cadde5 -->
