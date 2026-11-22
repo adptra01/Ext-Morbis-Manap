@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign RM.19A Persetujuan Tindakan Kedoksteran (`aea54f0`)
 - **mKlaimPrint** — redesign RM.02 IGD & triase, konsul/radiologi multi-lembar (`9633f71`)
 - **mKlaimPrint** — konsul & radiologi multi-entri terpisah, redesign pengkajian IGD (`ded436d`)
 
@@ -25,6 +26,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri gabung triage-IGD (`9468d3d`)
 - **changelog** — sync entri redesign IGD & triase (`38d1c8d`)
 - **changelog** — sync entri mKlaimPrint (feat multi-entri + perf canvas) (`9ba2079`)
 
@@ -2222,4 +2224,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c71c2a1f56d9d188d37ea9f642c48d1be5b95ae6 -->
+<!-- changelog-upto: aea54f0e1b9ff26e2ceec0ec0db95d102b6af427 -->
