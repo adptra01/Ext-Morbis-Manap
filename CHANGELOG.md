@@ -26,6 +26,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — FLACC baris TOTAL span 4 kolom, angka sejajar NILAI (`c53b161`)
 - **mKlaimPrint** — TRIASE parse kolom PILIH/SKALA/KET/RESPON sejajar (`7e75f11`)
 - **mKlaimPrint** — trim planning text, hapus header berulang halaman 2 (`cb97827`)
 - **mKlaimPrint** — TRIASE tabel pakai triase rows (bukan string) agar tidak crash (`d4b520e`)
@@ -40,6 +41,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr redesign risiko jatuh (`369249c`)
 - **changelog** — sync entr fix triase kolom (`245adb2`)
 - **changelog** — sync entr trim planning/header (`b0e0cd4`)
 - **changelog** — sync entr fix triase rows (`5969022`)
@@ -2250,4 +2252,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6c5d03bbd72a58969b601938fb4236d17fb6f7e2 -->
+<!-- changelog-upto: c53b1617b531e064e5383d6fc2e56f3aad4e373f -->
