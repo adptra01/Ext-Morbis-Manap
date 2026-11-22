@@ -1641,7 +1641,25 @@ ${kop("TRIAGE")}
       return [keluhan, sisa[0]?.trim() || "-", sisa[1]?.trim() || "-"];
     })();
     const radioTeks = (name, teks) => checked(name) === "ya" ? pick(teks) : checked(name) === "tidak" ? "Tidak" : "-";
-    const opt = (value, label, current) => `<span class="opt-item"><span class="chk-box">${value === current ? "&#10003;" : "&nbsp;"}</span> ${label}</span>`;
+    const checkedAll = (name) => {
+      const vals = Array.from(
+        document.querySelectorAll(`input[name="${name}"]:checked`)
+      ).map((x) => x.value).filter(Boolean);
+      return vals.length ? vals.join(", ") : "-";
+    };
+    const labelOf = (v) => ({
+      tanpa_bantuan: "Jalan Tanpa Bantuan",
+      kursi_roda: "Kursi Roda",
+      tempat_tidur: "Brankar",
+      dengan_bantuan: "Dengan Bantuan",
+      tidak_ada: "Tidak mengalami cedera",
+      lantas: "KLL",
+      lainnya: "Lainnya",
+      tidak: "Tidak Terganggu",
+      ya: "Ada Gangguan",
+      Bpjs: "BPJS Kesehatan"
+    })[v] || v || "-";
+    const igdRow = (label, html) => `<tr><td style="width:175px;"><strong>${label}</strong></td><td>${html}</td></tr>`;
     const idOpt = (label, html) => `<tr><td class="lbl">${label}</td><td class="col">:</td><td class="val">${html}</td></tr>`;
     const bb = Number(pick("nutrisi_bb"));
     const tb = Number(pick("nutrisi_tb")) / 100;
@@ -1668,11 +1686,11 @@ ${kop("PENGKAJIAN IGD")}
   <div class="id-col"><table class="id-table">
     ${idRow("Tanggal Masuk", pick("tgl_masuk"))}
     ${idRow("Tiba di IGD / Diperiksa", `Pukul ${pick("pukul_tiba_di_rs")} / Diperiksa Pukul ${pick("pukul_diperiksa")}`)}
-    ${idOpt("Prosedur Masuk", opt("Rujukan", "Rujukan", checked("kaji[prosedur_masuk]")) + opt("Non Rujukan", "<strong>Non Rujukan</strong>", checked("kaji[prosedur_masuk]")))}
-    ${idOpt("Cara Masuk", opt("tanpa_bantuan", "Jalan Tanpa Bantuan", checked("kaji[cara_masuk]")) + opt("kursi_roda", "Kursi Roda", checked("kaji[cara_masuk]")) + opt("tempat_tidur", "Brankar", checked("kaji[cara_masuk]")))}
-    ${idOpt("Penyebab Cedera", opt("tidak_ada", "Tidak mengalami cedera", checked("kaji[penyebab_cedera]")) + opt("lantas", "KLL", checked("kaji[penyebab_cedera]")) + opt("lainnya", "Lainnya", checked("kaji[penyebab_cedera]")))}
-    ${idOpt("Status Alergi", checked("kaji[status_alergi]") === "ya" ? `<span class="chk-box">&#10003;</span> <strong>Ya</strong>: ${esc(radioTeks("kaji[status_alergi]", "status_alergi_text"))}` : '<span class="chk-box">&#10003;</span> <strong>Tidak ada alergi</strong>')}
-    ${idOpt("Gangguan Perilaku", checked("kaji[gangguan_perilaku]") === "ya" ? '<span class="chk-box">&#10003;</span> <strong>Ada Gangguan</strong>' : '<span class="chk-box">&#10003;</span> <strong>Tidak Terganggu</strong>')}
+    ${idRow("Prosedur Masuk", labelOf(checked("kaji[prosedur_masuk]")))}
+    ${idRow("Cara Masuk", labelOf(checked("kaji[cara_masuk]")))}
+    ${idRow("Penyebab Cedera", labelOf(checked("kaji[penyebab_cedera]")))}
+    ${idRow("Status Alergi", radioTeks("kaji[status_alergi]", "status_alergi_text"))}
+    ${idRow("Gangguan Perilaku", labelOf(checked("kaji[gangguan_perilaku]")))}
     ${idOpt("Status Kehamilan", /perempuan|^p$/i.test(pick("jenis_kelamin", "jk")) ? esc(pick("status_kehamilan")) : '<span class="filter-note">Tidak berlaku (Pasien Laki-laki \u2014 disaring otomatis)</span>')}
   </table></div>
 </div>
@@ -1742,30 +1760,12 @@ ${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
 <table class="rm-table">
   <thead><tr class="sec-hdr"><td colspan="2">II. PENGKAJIAN PSIKOSOSIAL, SPIRITUAL, EKONOMI, NUTRISI &amp; FUNGSIONAL</td></tr></thead>
   <tbody>
-    ${idOpt(
-      "Status Psikologi",
-      ["Senang", "Tenang", "Cemas", "Takut", "Sedih"].map((v) => opt(v, v, checked("kaji[status_psikologi]"))).join("")
-    )}
-    ${idOpt(
-      "Status Sosial &amp; Spiritual",
-      `Hubungan keluarga: ${opt("Baik", "Baik", checked("kaji[status_sosial]"))}${opt("Tidak Baik", "Tidak Baik", checked("kaji[status_sosial]"))} | Kegiatan keagamaan: ${esc(pick("status_spiritual"))}`
-    )}
-    ${idOpt(
-      "Status Pembiayaan",
-      ["Bpjs", "Dinas", "Biaya Sendiri", "Perusahaan", "Lainnya"].map((v) => opt(v, v === "Bpjs" ? "BPJS Kesehatan" : v, checked("kaji[status_ekonomi]"))).join("")
-    )}
-    ${idOpt(
-      "Antropometri &amp; Nutrisi",
-      `BB: <strong>${esc(pick("nutrisi_bb"))} Kg</strong> | TB: <strong>${esc(pick("nutrisi_tb"))} Cm</strong> | IMT: <strong>${imt} kg/m&sup2;</strong> | Konsul Gizi: ${opt("ya", "Ya", checked("kaji[nutrisi_konsul]"))}${opt("tidak", "Tidak", checked("kaji[nutrisi_konsul]"))}`
-    )}
-    ${idOpt(
-      "Status Fungsional",
-      `<strong>Kognitif:</strong> ${checked("kaji[fungsi_kognitif]")} &nbsp;|&nbsp; <strong>Motorik:</strong> ${checked("kaji[fungsi_motorik]")}`
-    )}
-    ${idOpt(
-      "Komunikasi &amp; Edukasi",
-      `Hambatan: ${radioTeks("kaji[hambatan_pembelajaran]", "terhambat_pembelajaran_text")} | Penerjemah: ${radioTeks("kaji[dibutuhkan_penerjemah]", "penerjemah_text")}<br/><strong>Kebutuhan Edukasi:</strong> ${checked("kaji[kebutuhan_edukasi]")}`
-    )}
+    ${igdRow("Status Psikologi", checked("kaji[status_psikologi]") || "-")}
+    ${igdRow("Status Sosial &amp; Spiritual", `Hubungan keluarga: ${checked("kaji[status_sosial]") || "-"} | Kegiatan keagamaan: ${esc(pick("status_spiritual"))}`)}
+    ${igdRow("Status Pembiayaan", labelOf(checked("kaji[status_ekonomi]")))}
+    ${igdRow("Antropometri &amp; Nutrisi", `BB: <strong>${esc(pick("nutrisi_bb"))} Kg</strong> | TB: <strong>${esc(pick("nutrisi_tb"))} Cm</strong> | IMT: <strong>${imt} kg/m&sup2;</strong> | Konsul Gizi: ${checked("kaji[nutrisi_konsul]") || "-"}`)}
+    ${igdRow("Status Fungsional", `Kognitif: ${checked("kaji[fungsi_kognitif]") || "-"} | Motorik: ${checked("kaji[fungsi_motorik]") || "-"}`)}
+    ${igdRow("Komunikasi &amp; Edukasi", `Hambatan: ${radioTeks("kaji[hambatan_pembelajaran]", "terhambat_pembelajaran_text")} | Penerjemah: ${radioTeks("kaji[dibutuhkan_penerjemah]", "penerjemah_text")} | Kebutuhan Edukasi: ${checkedAll("kaji[kebutuhan_edukasi]")}`)}
   </tbody>
 </table>
 
@@ -1777,22 +1777,10 @@ ${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
       <td><span class="filter-note">Skala nyeri Wong Baker (0\u20135) \u2014 lihat halaman asal; di dossier ini tidak ditampilkan sebagai gambar.</span></td>
     </tr>
     <tr><td><strong>(P) Faktor Pencetus</strong></td><td>${esc(pick("faktor_pencetus"))}</td></tr>
-    <tr>
-      <td><strong>(Q) Kualitas Nyeri</strong></td>
-      <td>${opt("tumpul", "Tumpul", checked("kaji[qualitas]"))}${opt("tajam", "Tajam", checked("kaji[qualitas]"))}${opt("panas", "Panas / Terbakar", checked("kaji[qualitas]"))}</td>
-    </tr>
-    <tr>
-      <td><strong>(R) Lokasi &amp; Penjalaran</strong></td>
-      <td>${esc(pick("lokasi_nyeri"))} &nbsp;|&nbsp; <strong>Menjalar:</strong> ${opt("tidak", "Tidak", checked("kaji[nyeri_menjalar]"))}${opt("ya", "Ya", checked("kaji[nyeri_menjalar]"))}</td>
-    </tr>
-    <tr>
-      <td><strong>(S) Skala Nyeri (NRS 0\u201310)</strong></td>
-      <td>${esc(pick("skala_nyeri"))} &nbsp;|&nbsp; Wong Baker: ${esc(pick("emo_wong"))}</td>
-    </tr>
-    <tr>
-      <td><strong>(T) Waktu &amp; Frekuensi</strong></td>
-      <td>${esc(pick("lamanya_nyeri"))} &nbsp;|&nbsp; ${checked("kaji[nyeri_frekwensi]")}</td>
-    </tr>
+    <tr><td><strong>(Q) Kualitas Nyeri</strong></td><td>${checked("kaji[qualitas]") || "-"}</td></tr>
+    <tr><td><strong>(R) Lokasi &amp; Penjalaran</strong></td><td>${esc(pick("lokasi_nyeri"))} &nbsp;|&nbsp; <strong>Menjalar:</strong> ${checked("kaji[nyeri_menjalar]") || "-"}</td></tr>
+    <tr><td><strong>(S) Skala Nyeri (NRS 0\u201310)</strong></td><td>${esc(pick("skala_nyeri"))} &nbsp;|&nbsp; Wong Baker: ${esc(pick("emo_wong"))}</td></tr>
+    <tr><td><strong>(T) Waktu &amp; Frekuensi</strong></td><td>${esc(pick("lamanya_nyeri"))} &nbsp;|&nbsp; ${checked("kaji[nyeri_frekwensi]") || "-"}</td></tr>
   </tbody>
 </table>
 
@@ -1887,8 +1875,26 @@ ${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
       <td><strong>PEMERIKSAAN PENUNJANG</strong></td>
       <td>EKG: ${esc(afterLabel(/^EKG$/i))} &nbsp;|&nbsp; Radiologi: ${esc(afterLabel(/^Radiologi$/i))} &nbsp;|&nbsp; Laboratorium: ${esc(afterLabel(/^Laboratorium$/i))}</td>
     </tr>
-    <tr><td><strong>PENGKAJIAN KEPERAWATAN &amp; MEDIS</strong></td><td>${nl2br(pick("pengkajian_keperawatan"))}</td></tr>
-    <tr><td><strong>PLANNING / TERAPI</strong></td><td>${nl2br(planningText)}</td></tr>
+  </tbody>
+</table>
+
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">IX. PENGKAJIAN KEPERAWATAN &amp; MEDIS</td></tr></thead>
+  <tbody><tr><td style="width:165px;"><strong>PENGKAJIAN KEPERAWATAN</strong></td><td>${nl2br(pick("pengkajian_keperawatan"))}</td></tr></tbody>
+</table>
+
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">X. PLANNING / TERAPI</td></tr></thead>
+  <tbody><tr><td style="width:165px;"><strong>PLANNING / TERAPI</strong></td><td>${nl2br(planningText)}</td></tr></tbody>
+</table>
+
+<table class="rm-table">
+  <thead><tr class="sec-hdr"><td colspan="2">XI. DISPOSISI TINDAK LANJUT</td></tr></thead>
+  <tbody>
+    <tr><td style="width:165px;"><strong>Tindak Lanjut</strong></td><td>${checked("medis[tindak_lanjut]") || "-"}</td></tr>
+    <tr><td><strong>Ruangan Rawat Inap</strong></td><td>${esc(pick("tindak_lanjut_ruangan_ranap"))} \u2014 Indikasi: ${esc(pick("tindak_lanjut_indikasi_ranap"))}</td></tr>
+    <tr><td><strong>Pukul Pindah / Pulang</strong></td><td>${esc(pick("waktu_pasien_pulang"))}</td></tr>
+    <tr><td><strong>Kondisi Pasien Saat Pindah</strong></td><td>TD ${esc(normVital(pick("kondisi_pasien_td")))} | Nadi ${esc(pick("kondisi_pasien_nadi"))} | RR ${esc(pick("kondisi_pasien_nafas"))} | Suhu ${esc(pick("kondisi_pasien_suhu"))} | SpO2 ${esc(pick("kondisi_pasien_spo"))} | GCS ${esc(pick("kondisi_pasien_gcs"))} | Kesadaran ${esc(pick("kondisi_pasien_kesadaran"))}</td></tr>
   </tbody>
 </table>
 
