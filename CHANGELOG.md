@@ -25,6 +25,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — TRIASE tabel pakai triase rows (bukan string) agar tidak crash (`d4b520e`)
 - **mKlaimPrint** — kolom TRIASE & FLACC total rapi (header/body sejajar) (`f068633`)
 - **mKlaimPrint** — rm.19A QR tanda tangan pakai src dengan quote benar (`15294a9`)
 - **mKlaimPrint** — triage tidak dirender section ganda — gabung penuh ke IGD (`c71c2a1`)
@@ -36,6 +37,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr loading print klaim (`9f5b7d1`)
 - **changelog** — sync entr kolom triase/flacc (`a4468a0`)
 - **changelog** — sync entr redesign planning/terapi (`d1f143d`)
 - **changelog** — sync entr redesign planning/terapi (`490d1d4`)
@@ -2242,4 +2244,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f1f7fd7c8c385f464c5be2e4f3b189cb9cf40a4f -->
+<!-- changelog-upto: d4b520ebad45355bde8ac72a5d0db066777f6b00 -->
