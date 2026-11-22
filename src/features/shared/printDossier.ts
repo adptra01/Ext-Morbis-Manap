@@ -101,9 +101,10 @@ export function installDossierHandlers(win: Window): void {
   const filter = (target: string): void => {
     if (sel) sel.value = target;
     tabs.forEach((b) => b.classList.toggle('active', b.dataset.target === target));
-    pages.forEach((pg) =>
-      pg.classList.toggle('hidden-section', target !== 'all' && pg.id !== target),
-    );
+    pages.forEach((pg) => {
+      const show = target === 'all' || pg.id === target || pg.id.startsWith(`${target}-`);
+      pg.classList.toggle('hidden-section', !show);
+    });
     win.scrollTo({ top: 0, behavior: 'smooth' });
   };
   sel?.addEventListener('change', (ev) => filter((ev.target as HTMLSelectElement).value));
@@ -124,6 +125,30 @@ export function installDossierHandlers(win: Window): void {
     syncCount();
   });
   syncCount();
+
+  // Tombol scroll naik/turun cepat di layar dossier (tidak ikut tercetak).
+  const scrollBtn = (label: string, onClick: () => void): HTMLButtonElement => {
+    const b = d.createElement('button');
+    b.type = 'button';
+    b.className = 'ext-scroll-btn no-print';
+    b.textContent = label;
+    b.addEventListener('click', onClick);
+    return b;
+  };
+  const btnUp = scrollBtn('↑', () => win.scrollTo({ top: 0, behavior: 'smooth' }));
+  const btnDown = scrollBtn('↓', () =>
+    win.scrollTo({ top: d.documentElement.scrollHeight, behavior: 'smooth' }),
+  );
+  const style = d.createElement('style');
+  style.textContent =
+    '.ext-scroll-btn{position:fixed;right:14px;width:34px;height:34px;' +
+    'border:1px solid #000;background:#fff;font-size:16px;font-weight:bold;' +
+    'cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center}' +
+    '.ext-scroll-btn:first-of-type{bottom:56px}.ext-scroll-btn:last-of-type{bottom:14px}';
+  d.head.appendChild(style);
+  d.body.appendChild(btnUp);
+  d.body.appendChild(btnDown);
+
   win.addEventListener('afterprint', () => {
     if (win.confirm('Apakah menu print ini akan ditutup?')) win.close();
   });
