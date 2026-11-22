@@ -9,9 +9,17 @@
 
 ## 2026-11-22
 
+### ✨ feat
+
+- **mKlaimPrint** — konsul & radiologi multi-entri terpisah, redesign pengkajian IGD (`ded436d`)
+
 ### 🐛 fix
 
 - **mKlaimPrint** — Triage/Konsul/Radiologi TTD, hapus Kota Jambi, QR tagihan (`4c5878f`)
+
+### ⚡ perf
+
+- **mKlaimPrint** — sampel canvas kosong di probe sendiri, hindari warning Canvas2D (`3eba7e4`)
 
 ## 2026-11-21
 
@@ -2207,4 +2215,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4c5878f2abc911c4935f29ec59a901f997054144 -->
+<!-- changelog-upto: ded436d27eb01d3840dd0a96b3eda14d951fca8d -->
