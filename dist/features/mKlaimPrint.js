@@ -1617,11 +1617,13 @@ ${kop("TRIAGE")}
     };
     const nyeriRows = nyeri.slice(1).map((r) => {
       const isTotal = r.some((x) => /^TOTAL$/i.test((x || "").trim()));
-      return `<tr${isTotal ? ' style="font-weight:bold;"' : ""}>` + r.map(
-        (x, i) => `<td${i === 0 ? "" : ' class="center"'}${isTotal && i === r.length - 1 ? ' style="font-weight:bold;"' : ""}>${esc(
-          x || "-"
-        )}</td>`
-      ).join("") + "</tr>";
+      if (isTotal) {
+        const angka = r[r.length - 1] || "-";
+        return `<tr style="font-weight:bold;"><td colspan="4" style="text-align:right;"><strong>TOTAL</strong></td><td class="center"><strong>${esc(
+          angka
+        )}</strong></td></tr>`;
+      }
+      return "<tr>" + r.map((x, i) => `<td${i === 0 ? "" : ' class="center"'}>${esc(x || "-")}</td>`).join("") + "</tr>";
     }).join("");
     const objektifRows = objektif.slice(1).map(
       (r) => `<tr><td>${esc(r[0] || "-")}</td><td>${esc(r.slice(1).filter(Boolean).join(" ") || "-")}</td></tr>`
