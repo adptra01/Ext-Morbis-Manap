@@ -994,7 +994,9 @@ ${kop("RM. 02")}
     const ruang = [pick("jenis"), pick("kelas", "ruang")].filter((v) => v !== "-").join(" / ") || "-";
     const awal = pick("tanggalAwal", "tgl_masuk", "tgl");
     const akhir = pick("tanggalAkhir", "keluar", "tgl_keluar");
-    const [qrPasien, qrPenerima] = sectionQrs(sections, /^Rincian Biaya/i);
+    const qrsBill = sectionQrs(sections, /^Rincian Biaya/i);
+    const qrPasien = qrsBill.find((url) => /pasien/i.test(decodeURIComponent(url))) ?? qrsBill[0] ?? "";
+    const qrPenerima = qrsBill.find((url) => /penerima/i.test(decodeURIComponent(url))) ?? qrsBill[1] ?? "";
     return `<section class="rm-page" id="rm-05">
 ${kop("RM. 05")}
 <div class="rm-form-title">RINCIAN BIAYA PELAYANAN RAWAT INAP &amp; FARMASI</div>
@@ -1173,8 +1175,7 @@ ${lanjutan}`.trim())}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
-    <div>Kota Jambi, ${esc(keluar)}</div>
-    <div>Yang Membuat : DPJP</div>
+    <div>Yang Membuat</div>
     ${qrResume ? `<img class="rm-sig-qr" src="${esc(qrResume)}" alt="QR tanda tangan DPJP" width="80" height="80" />` : ""}
     ${qrResume ? "" : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
@@ -1362,7 +1363,8 @@ ${kop("RM. 07")}
     const ruang = f(/^Bed|^Ruang/i);
     const status = f(/^Status/i);
     const dokterPengirim = f(/^dr\.? Pengirim|^Dokter Pengirim/i);
-    const dokterDpjp = f(/^dr\.? DPJP|^Dokter DPJP/i);
+    const dokterDpjpRaw = f(/^dr\.? DPJP|^Dokter DPJP/i);
+    const dokterDpjp = dokterDpjpRaw !== "-" ? dokterDpjpRaw : doctorFromQr(qrRad);
     const diagnosa = f(/^Diagnosa Klinis/i);
     const diagnosaIcd = f(/^Diagnosa ICD/i);
     const golongan = exams.length ? "RONTGEN" : "-";
@@ -1417,7 +1419,6 @@ ${kop("RM. 08")}
     <div>Kode Prosedur ICD-9-CM : 87.44</div>
   </div>
   <div class="rm-sig-box">
-    <div>Kota Jambi, ${esc(tglPeriksa)}</div>
     <div>Dokter Penilai</div>
     ${qrRad ? `<img class="rm-sig-qr" src="${esc(qrRad)}" alt="QR tanda tangan radiolog" width="80" height="80" />` : ""}
     ${qrRad ? "" : '<div class="rm-sig-space"></div>'}
@@ -1522,11 +1523,10 @@ ${kop("TRIAGE")}
     <div>No. Antrian : ${esc(noAntrian)}</div>
   </div>
   <div class="rm-sig-box">
-    <div>Kota Jambi, ${esc(tanggal)}</div>
-    ${qrTriage ? `<img class="rm-sig-qr" src="${esc(qrTriage)}" alt="QR tanda tangan dokter" width="80" height="80" />` : ""}
     <div>Dokter yang Memeriksa</div>
+    ${qrTriage ? `<img class="rm-sig-qr" src="${esc(qrTriage)}" alt="QR tanda tangan dokter" width="80" height="80" />` : ""}
     ${qrTriage ? "" : '<div class="rm-sig-space"></div>'}
-    <div class="rm-sig-name">( ${esc(dokterPemeriksa)} )</div>
+    <div class="rm-sig-name">( ${esc(dokterPemeriksa !== "-" ? dokterPemeriksa : doctorFromQr(qrTriage))} )</div>
   </div>
 </div>
 </section>`;
@@ -1663,7 +1663,6 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     <div>Perawat Ruangan : ${esc(pick("perawat_ruangan"))}</div>
   </div>
   <div class="rm-sig-box">
-    <div>Kota Jambi, ${esc(pick("tgl_masuk"))}</div>
     <div>Dokter IGD</div>
     <div class="rm-sig-space"></div>
     <div class="rm-sig-name">( ${esc(pick("dokter_igd", "dokter"))} )</div>
@@ -1705,6 +1704,15 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     if (!src) return [];
     const doc = new DOMParser().parseFromString(src.html, "text/html");
     return Array.from(doc.querySelectorAll("img")).map((img) => img.getAttribute("src") || "").filter((url) => /qr|barcode/i.test(url));
+  };
+  var doctorFromQr = (url) => {
+    if (!url) return "-";
+    try {
+      const decoded = decodeURIComponent(url.replace(/\+/g, " "));
+      return decoded.match(/(dr\.[^&]+)/i)?.[1]?.trim() || "-";
+    } catch {
+      return "-";
+    }
   };
   var normVital = (v) => /\d/.test(v) ? v : "-";
   function formFields(sections, titleRe) {
@@ -1791,7 +1799,7 @@ ${kvTable([
 <div class="footnote-rm">Dengan tanda tangan di bawah ini saya menyatakan telah mendapat penjelasan dan menyetujui tindakan kedokteran tersebut di atas.</div>
 ${sig(
       [`Pasien / Keluarga Pasien`, `( ${esc(nama)} )`],
-      [`Kota Jambi, ${esc(f(/^Tanggal/i))}`, `Dokter Penanggung Jawab`, `( ${esc(dokter)} )`]
+      [`Dokter Penanggung Jawab`, `( ${esc(dokter)} )`]
     )}
 </section>`;
   }
@@ -2156,7 +2164,9 @@ ${sig(
     const fields = formFields(sections, /Konsul/i);
     const f = (...r) => fieldValue(fields, ...r);
     const qrKonsul = sectionQrs(sections, /Konsul/i)[0] ?? "";
-    const konsulen = f(/konsulen|konsul/i) !== "-" ? f(/konsulen|konsul/i) : pick("dokter_konsulen");
+    const konsulenRaw = f(/konsulen|konsul/i);
+    const konsulenDariField = konsulenRaw !== "-" ? konsulenRaw : pick("dokter_konsulen") !== "-" ? pick("dokter_konsulen") : doctorFromQr(qrKonsul);
+    const konsulen = konsulenDariField;
     return `<section class="rm-page" id="rm-10">
 ${kop("RM. 10")}
 <div class="rm-form-title">LEMBAR KONSULTASI</div>

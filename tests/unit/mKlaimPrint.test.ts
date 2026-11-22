@@ -189,9 +189,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(bill).toContain('prev.frek += frek');
     expect(bill).toContain('prev.qty += qty');
     // QR persetujuan pasien & penerima dari section Rincian Biaya.
-    expect(bill).toContain(
-      'const [qrPasien, qrPenerima] = sectionQrs(sections, /^Rincian Biaya/i)',
-    );
+    expect(bill).toContain('const qrsBill = sectionQrs(sections, /^Rincian Biaya/i)');
     expect(bill).toContain('QR persetujuan pasien');
     expect(bill).toContain('QR penerima');
     expect(src).toContain('return buildBillingSection(sections);');
@@ -219,7 +217,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'HASIL PEMERIKSAAN DIAGNOSTIK',
       'TINDAKAN / PROSEDUR (ICD-9-CM)',
       'KONDISI &amp; CARA PULANG',
-      'Yang Membuat : DPJP',
+      'Yang Membuat',
     ]) {
       expect(res).toContain(marker);
     }
@@ -426,7 +424,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         [
           'id="rm-09"',
           'HASIL PEMERIKSAAN LABORATORIUM PATOLOGI KLINIK',
-          'querySelectorAll("img")',
+          "querySelectorAll('img')",
           'LAMPIRAN HASIL LABORATORIUM (LIS)',
           'raw-upload-frame',
         ],
