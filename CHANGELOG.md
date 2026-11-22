@@ -24,6 +24,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — kolom TRIASE & FLACC total rapi (header/body sejajar) (`f068633`)
 - **mKlaimPrint** — rm.19A QR tanda tangan pakai src dengan quote benar (`15294a9`)
 - **mKlaimPrint** — triage tidak dirender section ganda — gabung penuh ke IGD (`c71c2a1`)
 - **mKlaimPrint** — Triage/Konsul/Radiologi TTD, hapus Kota Jambi, QR tagihan (`4c5878f`)
@@ -34,6 +35,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr redesign planning/terapi (`d1f143d`)
 - **changelog** — sync entr redesign planning/terapi (`490d1d4`)
 - **changelog** — sync entr scroll & tab filter (`00419ae`)
 - **changelog** — sync entr pemisahan triage-IGD (`8cd04cd`)
@@ -2238,4 +2240,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0a60868ec2e56713dd4b9595bff9bb389ceb14fd -->
+<!-- changelog-upto: f06863379dd5c44cb5cfedd9f01f73c2cb547941 -->
