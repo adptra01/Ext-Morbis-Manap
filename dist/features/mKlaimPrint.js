@@ -1599,11 +1599,6 @@ ${kop("TRIAGE")}
       const rows2 = Array.isArray(body) ? body.join("") : body;
       return '<table class="rm-grid-table"><thead><tr>' + head.map((h) => `<th>${esc(h)}</th>`).join("") + "</tr></thead><tbody>" + (rows2 || '<tr><td colspan="' + head.length + '">-</td></tr>') + "</tbody></table>";
     };
-    const triaseRows = triase.slice(1).map((r) => {
-      const on = (r[0] || "").includes("\u2713");
-      const c = on ? r.slice(1) : r;
-      return `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ""}>` + c.map((x) => `<td>${esc(x || "-")}</td>`).join("") + "</tr>";
-    }).join("");
     const nyeriRows = nyeri.slice(1).map((r) => {
       const isTotal = r.some((x) => /^TOTAL$/i.test((x || "").trim()));
       return `<tr${isTotal ? ' style="font-weight:bold;"' : ""}>` + r.map(
@@ -1783,7 +1778,7 @@ ${grid(
   <thead>
     <tr><th style="width:34px;">PILIH</th><th style="width:95px;">SKALA TRIASE</th><th>KATEGORI &amp; KETERANGAN KLINIS</th><th style="width:105px;">RESPON TIME</th></tr>
   </thead>
-  <tbody>${triaseRows.map((r) => {
+  <tbody>${triase.slice(1).map((r) => {
       const on = (r[0] || "").includes("\u2713");
       const cells = on ? r.slice(1, 4) : r.slice(0, 3);
       return `<tr${on ? ' style="font-weight:bold;"' : ""}><td class="center"><span class="chk-box">${on ? "&#10003;" : "&nbsp;"}</span></td>${cells.map((x) => `<td>${esc(x || "-")}</td>`).join("")}</tr>`;

@@ -2004,19 +2004,6 @@ function buildPengkajianIgdSection(sections: Section[]): string {
     );
   };
 
-  const triaseRows = triase
-    .slice(1)
-    .map((r) => {
-      const on = (r[0] || '').includes('✓');
-      const c = on ? r.slice(1) : r;
-      return (
-        `<tr${on ? ' style="font-weight:bold;background-color:#F0F0F0;"' : ''}>` +
-        c.map((x) => `<td>${esc(x || '-')}</td>`).join('') +
-        '</tr>'
-      );
-    })
-    .join('');
-
   const nyeriRows = nyeri
     .slice(1)
     .map((r) => {
@@ -2270,7 +2257,8 @@ ${grid(
   <thead>
     <tr><th style="width:34px;">PILIH</th><th style="width:95px;">SKALA TRIASE</th><th>KATEGORI &amp; KETERANGAN KLINIS</th><th style="width:105px;">RESPON TIME</th></tr>
   </thead>
-  <tbody>${triaseRows
+  <tbody>${triase
+    .slice(1)
     .map((r) => {
       const on = (r[0] || '').includes('✓');
       const cells = on ? r.slice(1, 4) : r.slice(0, 3);
