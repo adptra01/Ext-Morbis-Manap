@@ -25,6 +25,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — trim planning text, hapus header berulang halaman 2 (`cb97827`)
 - **mKlaimPrint** — TRIASE tabel pakai triase rows (bukan string) agar tidak crash (`d4b520e`)
 - **mKlaimPrint** — kolom TRIASE & FLACC total rapi (header/body sejajar) (`f068633`)
 - **mKlaimPrint** — rm.19A QR tanda tangan pakai src dengan quote benar (`15294a9`)
@@ -37,6 +38,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr fix triase rows (`5969022`)
 - **changelog** — sync entr loading print klaim (`9f5b7d1`)
 - **changelog** — sync entr kolom triase/flacc (`a4468a0`)
 - **changelog** — sync entr redesign planning/terapi (`d1f143d`)
@@ -2244,4 +2246,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d4b520ebad45355bde8ac72a5d0db066777f6b00 -->
+<!-- changelog-upto: cb978272543bb8ae3e46a5ba317a38e39c151875 -->
