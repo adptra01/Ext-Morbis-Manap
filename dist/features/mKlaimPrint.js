@@ -3651,43 +3651,58 @@ ${kop(m.code)}
     }
   }
   async function handleMklaimPrint() {
-    await waitForPartials();
-    let { sections, inventory } = collectSections();
-    if (sections.length < 3) {
-      await new Promise((r) => window.setTimeout(r, 800));
-      ({ sections, inventory } = collectSections());
+    const btn = document.getElementById("ext-mklaim-print-btn");
+    const original = btn?.textContent || "Cetak Rapi M-KLAIM";
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Memproses\u2026";
+      btn.style.opacity = "0.7";
     }
-    if (!sections.length) {
-      window.alert("Tidak ada section berkas yang bisa dicetak.");
-      return;
-    }
-    const html = buildHtml(sections, inventory);
-    if (openDirectTab(html)) return;
-    let lastErr;
-    for (const delay of [0, 300, 600]) {
-      if (delay) await new Promise((r) => window.setTimeout(r, delay));
-      try {
-        const res = await chrome.runtime.sendMessage({
-          type: "OPEN_PRINT_DOSSIER",
-          html
-        });
-        if (!res?.success) throw new Error("background menolak membuka tab");
-        return;
-      } catch (e) {
-        lastErr = e;
-        const msg = e instanceof Error ? e.message : String(e);
-        if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
+    try {
+      await waitForPartials();
+      let { sections, inventory } = collectSections();
+      if (sections.length < 3) {
+        await new Promise((r) => window.setTimeout(r, 800));
+        ({ sections, inventory } = collectSections());
       }
-    }
-    const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || "");
-    if (!chrome.runtime?.id) {
-      window.alert(
-        "Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi."
-      );
-    } else {
-      window.alert(
-        `Gagal membuka dossier: ${reason || "tidak diketahui"}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`
-      );
+      if (!sections.length) {
+        window.alert("Tidak ada section berkas yang bisa dicetak.");
+        return;
+      }
+      const html = buildHtml(sections, inventory);
+      if (openDirectTab(html)) return;
+      let lastErr;
+      for (const delay of [0, 300, 600]) {
+        if (delay) await new Promise((r) => window.setTimeout(r, delay));
+        try {
+          const res = await chrome.runtime.sendMessage({
+            type: "OPEN_PRINT_DOSSIER",
+            html
+          });
+          if (!res?.success) throw new Error("background menolak membuka tab");
+          return;
+        } catch (e) {
+          lastErr = e;
+          const msg = e instanceof Error ? e.message : String(e);
+          if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
+        }
+      }
+      const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || "");
+      if (!chrome.runtime?.id) {
+        window.alert(
+          "Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi."
+        );
+      } else {
+        window.alert(
+          `Gagal membuka dossier: ${reason || "tidak diketahui"}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`
+        );
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = original;
+        btn.style.opacity = "1";
+      }
     }
   }
   function anchorForButton() {

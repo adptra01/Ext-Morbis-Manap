@@ -4389,51 +4389,66 @@ function openDirectTab(html: string): boolean {
 }
 
 async function handleMklaimPrint(): Promise<void> {
-  await waitForPartials();
-  let { sections, inventory } = collectSections();
-  // Partial masih datang → satu kali collect ulang setelah jeda singkat.
-  if (sections.length < 3) {
-    await new Promise((r) => window.setTimeout(r, 800));
-    ({ sections, inventory } = collectSections());
+  const btn = document.getElementById('ext-mklaim-print-btn') as HTMLButtonElement | null;
+  const original = btn?.textContent || 'Cetak Rapi M-KLAIM';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Memproses…';
+    btn.style.opacity = '0.7';
   }
-  if (!sections.length) {
-    window.alert('Tidak ada section berkas yang bisa dicetak.');
-    return;
-  }
-
-  // Kirim HTML ke background: background yang simpan ke storage & buka tab.
-  // Content script TIDAK memanggil chrome.storage langsung — kalau ekstensi
-  // baru di-reload, konteks content script lama invalid.
-  const html = buildHtml(sections, inventory);
-  // Coba dulu jalur cepat (langsung dari klik). Kalau popup diblokir, baru
-  // jalur background di bawah.
-  if (openDirectTab(html)) return;
-
-  let lastErr: unknown;
-  for (const delay of [0, 300, 600]) {
-    if (delay) await new Promise((r) => window.setTimeout(r, delay));
-    try {
-      const res = (await chrome.runtime.sendMessage({
-        type: 'OPEN_PRINT_DOSSIER',
-        html,
-      })) as { success?: boolean } | undefined;
-      if (!res?.success) throw new Error('background menolak membuka tab');
-      return;
-    } catch (e) {
-      lastErr = e;
-      const msg = e instanceof Error ? e.message : String(e);
-      if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
+  try {
+    await waitForPartials();
+    let { sections, inventory } = collectSections();
+    // Partial masih datang → satu kali collect ulang setelah jeda singkat.
+    if (sections.length < 3) {
+      await new Promise((r) => window.setTimeout(r, 800));
+      ({ sections, inventory } = collectSections());
     }
-  }
-  const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || '');
-  if (!chrome.runtime?.id) {
-    window.alert(
-      'Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi.',
-    );
-  } else {
-    window.alert(
-      `Gagal membuka dossier: ${reason || 'tidak diketahui'}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`,
-    );
+    if (!sections.length) {
+      window.alert('Tidak ada section berkas yang bisa dicetak.');
+      return;
+    }
+
+    // Kirim HTML ke background: background yang simpan ke storage & buka tab.
+    // Content script TIDAK memanggil chrome.storage langsung — kalau ekstensi
+    // baru di-reload, konteks content script lama invalid.
+    const html = buildHtml(sections, inventory);
+    // Coba dulu jalur cepat (langsung dari klik). Kalau popup diblokir, baru
+    // jalur background di bawah.
+    if (openDirectTab(html)) return;
+
+    let lastErr: unknown;
+    for (const delay of [0, 300, 600]) {
+      if (delay) await new Promise((r) => window.setTimeout(r, delay));
+      try {
+        const res = (await chrome.runtime.sendMessage({
+          type: 'OPEN_PRINT_DOSSIER',
+          html,
+        })) as { success?: boolean } | undefined;
+        if (!res?.success) throw new Error('background menolak membuka tab');
+        return;
+      } catch (e) {
+        lastErr = e;
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!/Receiving end does not exist|Extension context invalidated/i.test(msg)) break;
+      }
+    }
+    const reason = lastErr instanceof Error ? lastErr.message : String(lastErr || '');
+    if (!chrome.runtime?.id) {
+      window.alert(
+        'Ekstensi diperbarui, refresh halaman M-KLAIM (Ctrl+Shift+R) lalu klik lagi Cetak Rapi.',
+      );
+    } else {
+      window.alert(
+        `Gagal membuka dossier: ${reason || 'tidak diketahui'}. Refresh halaman M-KLAIM (Ctrl+Shift+R) lalu coba lagi.`,
+      );
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = original;
+      btn.style.opacity = '1';
+    }
   }
 }
 
