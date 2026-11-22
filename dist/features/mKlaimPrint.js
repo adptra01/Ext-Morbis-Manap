@@ -1591,6 +1591,19 @@ ${kop("TRIAGE")}
     const riskDewasa = tables.find(
       (tb2) => /^Riwayat Jatuh$/i.test((tb2.rows[1]?.cells[1]?.textContent || "").trim())
     );
+    const riskScore = (names) => names.reduce((sum, name) => {
+      const v = checked(name);
+      const n = v === "-" ? 0 : Number(v);
+      return sum + (Number.isFinite(n) ? n : 0);
+    }, 0);
+    const riskKategori = (skor, dewasa) => {
+      if (dewasa) return skor >= 45 ? "TINGGI" : skor >= 25 ? "SEDANG" : "RENDAH";
+      return skor >= 12 ? "TINGGI" : skor >= 6 ? "SEDANG" : "RENDAH";
+    };
+    const riskRingkas = (names, dewasa) => {
+      const skor = riskScore(names);
+      return `${skor} \u2014 ${riskKategori(skor, dewasa)}`;
+    };
     const renderRiskTable = (t) => {
       if (!t) return '<tr><td colspan="5">-</td></tr>';
       return Array.from(t.rows).map((tr, ri) => {
@@ -1833,12 +1846,45 @@ ${grid(
 
 <table class="rm-table">
   <thead><tr class="sec-hdr"><td colspan="5">V. ASESMEN AWAL RESIKO JATUH PADA ANAK (HUMPTY DUMPTY)</td></tr></thead>
-  <tbody>${renderRiskTable(riskAnak)}</tbody>
+  <tbody>
+    <tr>
+      <td colspan="2"><strong>SKOR TERPILIH</strong></td>
+      <td colspan="3"><strong>${riskRingkas(
+      [
+        "kaji[arja_usia]",
+        "kaji[arja_jenis_kelamin]",
+        "kaji[arja_diagnosis]",
+        "kaji[arja_gangguan_kognitif]",
+        "kaji[arja_faktor_lingkungan]",
+        "kaji[arja_respon_pembedahan]",
+        "kaji[arja_medikamentosa]"
+      ],
+      false
+    )}</strong></td>
+    </tr>
+    ${renderRiskTable(riskAnak)}
+  </tbody>
 </table>
 
 <table class="rm-table">
   <thead><tr class="sec-hdr"><td colspan="5">VI. ASESMEN AWAL RESIKO JATUH PADA DEWASA (MORSE FALL SCALE)</td></tr></thead>
-  <tbody>${renderRiskTable(riskDewasa)}</tbody>
+  <tbody>
+    <tr>
+      <td colspan="2"><strong>SKOR TERPILIH</strong></td>
+      <td colspan="3"><strong>${riskRingkas(
+      [
+        "kaji[arja_dewasa_jatuh]",
+        "kaji[arja_dewasa_diagnosa]",
+        "kaji[arja_dewasa_alat]",
+        "kaji[arja_dewasa_infus]",
+        "kaji[arja_dewasa_carajalan]",
+        "kaji[arja_dewasa_mental]"
+      ],
+      true
+    )}</strong></td>
+    </tr>
+    ${renderRiskTable(riskDewasa)}
+  </tbody>
 </table>
 
 <div class="two-col-grid">
