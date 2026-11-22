@@ -1903,8 +1903,11 @@ ${grid(["SKALA TRIASE", "KETERANGAN", "RESPON TIME"], triaseRows)}
 </table>
 
 <table class="rm-table">
-  <thead><tr class="sec-hdr"><td colspan="2">X. PLANNING / TERAPI</td></tr></thead>
-  <tbody><tr><td style="width:165px;"><strong>PLANNING / TERAPI</strong></td><td>${nl2br(planningText)}</td></tr></tbody>
+  <thead><tr class="sec-hdr"><td colspan="2">X. PLANNING / TERAPI TERINTEGRASI</td></tr></thead>
+  <tbody><tr>
+    <td style="width:165px;vertical-align:top;"><strong>PLANNING / TERAPI</strong></td>
+    <td>${nl2br(planningText).replace(/(Konsul dr\.?[^<]*?)(?=<br\/>|$)/gi, "<strong>$1</strong>").replace(/(Plan\s*:|Terapi\s*:|Dx\s*:|Masalah\s*:)/gi, "<strong>$1</strong>")}</td>
+  </tr></tbody>
 </table>
 
 <table class="rm-table">
