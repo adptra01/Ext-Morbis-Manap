@@ -601,9 +601,9 @@ const RM_META: Array<[RegExp, { id: string; code: string; tab: string; option: s
     /^Operasi/i,
     {
       id: 'form-operasi',
-      code: 'OPERASI',
-      tab: 'Operasi',
-      option: 'Operasi — Laporan Pelaksanaan',
+      code: 'RM. 20',
+      tab: 'RM. 20 Operasi',
+      option: 'RM. 20 — Laporan Pelaksanaan Operasi',
     },
   ],
   [
@@ -3222,42 +3222,203 @@ ${sig(
 </section>`;
 }
 
-/** FORM — LAPORAN OPERASI / PEMELAKSANAAN OPERASI. */
+/** FORM — LAPORAN OPERASI / PEMELAKSANAAN OPERASI.
+ *
+ *-grid RM baku: identitas, TIM OPERASI + waktu (2 kolom), diagnosis &
+ * klasifikasi, uraian bernomor, PA + perdarahan (2 kolom), TTD QR.
+ * Semua nilai diambil dari hasil scrape section; kosong → '-'.
+ */
 function buildOperasiSection(sections: Section[]): string {
+  const src = sections.find((s) => /^Operasi/i.test(s.title));
+  const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
   const fields = formFields(sections, /^Operasi/i);
-  const rows = formRows(sections, /^Operasi/i);
   const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  /** Perbaikan ejaan klinis dari form SIMRS (tanpa mengubah makna). */
+  const op = (s: string): string =>
+    decodeEntities(s)
+      .replace(/\bantispetik\b/gi, 'antiseptik')
+      .replace(/\bincisi\b/gi, 'insisi')
+      .replace(/\bfacia\b/gi, 'fasia')
+      .replace(/\bdaryantul\b/gi, 'daryantulle')
+      .replace(/\bPendarahan\b/g, 'Perdarahan')
+      .replace(/\bTranfusi\b/g, 'Transfusi')
+      .replace(/\bEFEKTIF\b/g, 'Elektif')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const val = (...r: RegExp[]): string => {
+    const v = op(f(...r));
+    return v && v !== '-' ? v : '-';
+  };
+  const pageOr = (ids: string[], re: RegExp): string => {
+    for (const id of ids) {
+      const v = pick(id);
+      if (v !== '-') return op(v);
+    }
+    return val(re);
+  };
+
+  /** Uraian: baris setelah judul "Uraian Pembedahan" (atau sel terpanjang). */
+  const narasi = ((): { persiapan: string; langkah: string[] } => {
+    if (!doc) return { persiapan: '-', langkah: [] };
+    const trs = Array.from(doc.querySelectorAll('tr'));
+    const at = trs.findIndex((tr) => /Uraian Pembedahan/i.test(tr.textContent || ''));
+    let raw = at >= 0 ? trs[at + 1]?.cells[0]?.textContent || '' : '';
+    if (!raw.trim()) {
+      raw =
+        Array.from(doc.querySelectorAll('td'))
+          .map((td) => (td.textContent || '').trim())
+          .sort((a, b) => b.length - a.length)[0] || '';
+    }
+    const lines = raw
+      .split(/\n+/)
+      .map((x) => op(x))
+      .filter(Boolean);
+    if (!lines.length) return { persiapan: '-', langkah: [] };
+    const cut = lines.findIndex((l) => /Diputuskan|sebagai berikut/i.test(l));
+    const head = cut >= 0 ? cut + 1 : Math.min(4, lines.length);
+    return { persiapan: lines.slice(0, head).join(' '), langkah: lines.slice(head) };
+  })();
+
+  /** Klasifikasi dari pilihan yang tercantum di tabel asli. */
+  const klasTeks = doc
+    ? Array.from(doc.querySelectorAll('td'))
+        .map((td) => (td.textContent || '').replace(/\s+/g, ' ').trim())
+        .filter((t) => /^-?\s*(MAYOR|MINOR|EFEKTIF|ELEKTIF|EMERGENSI|CITO|SEDANG|KHUSUS)$/i.test(t))
+        .join(' ')
+    : '';
+  const pilih = (re: RegExp): string => (re.test(klasTeks) ? '&#10003;' : '&nbsp;');
+
+  /** Komplikasi kosong di form SIMRS = tidak ada komplikasi tercatat. */
+  const komplikasi = val(/^Komplikasi/i);
+  const komplikasiHtml =
+    komplikasi === '-'
+      ? '<span class="chk-box">&#10003;</span> Tidak ada komplikasi &nbsp;&nbsp; ' +
+        '<span class="chk-box">&nbsp;</span> Ada, sebutkan: ..............................'
+      : '<span class="chk-box">&nbsp;</span> Tidak ada komplikasi &nbsp;&nbsp; ' +
+        '<span class="chk-box">&#10003;</span> Ada: <strong>' +
+        esc(komplikasi) +
+        '</strong>';
+
+  const pakaiImplan = val(/^Penggunaan Implan/i);
+  const implanHtml = /^Ya/i.test(pakaiImplan)
+    ? '<span class="chk-box">&nbsp;</span> Tidak &nbsp; <span class="chk-box">&#10003;</span> Ya' +
+      ` — Jenis: ${esc(val(/^Jenis Implan/i))} | No. Seri: ${esc(val(/^Nomor Implan/i))}`
+    : '<span class="chk-box">&#10003;</span> Tidak &nbsp; <span class="chk-box">&nbsp;</span> Ya';
+
+  const tglBedah = val(/^Tanggal Bedah/i);
+  const operator = pageOr(['dokter_operator', 'operator'], /^Dokter Operator|^Operator/i);
+  const qrOperasi = sectionQrs(sections, /^Operasi/i)[0] ?? '';
+  const jkRaw = pick('jenis_kelamin', 'jk') || val(/^Jenis Kelamin/i);
+  const jk = /perempuan|^p$/i.test(jkRaw)
+    ? 'Perempuan (P)'
+    : /laki|^l$/i.test(jkRaw)
+      ? 'Laki-laki (L)'
+      : jkRaw;
+  const tglCetak = tglBedah !== '-' ? panjangTanggal(tglBedah) : '-';
+
+  const kv = (label: string, value: string, cls = ''): string =>
+    `<tr><td class="k${cls}">${label}</td><td class="c">:</td><td class="v">${value}</td></tr>`;
+  const head = (judul: string, span = 2): string =>
+    `<tr><th class="rm-sec-head" colspan="${span}" style="text-align:left;">${judul}</th></tr>`;
+  const persiapanHtml = narasi.persiapan !== '-' ? esc(narasi.persiapan) : '-';
+  const langkahHtml = narasi.langkah.length
+    ? '<ol class="op-steps">' + narasi.langkah.map((s) => `<li>${esc(s)}</li>`).join('') + '</ol>'
+    : '<div>-</div>';
+
   return `<section class="rm-page" id="form-operasi">
-${kop('OPERASI')}
+${kop('RM. 20')}
 <div class="rm-form-title">LAPORAN PELAKSANAAN OPERASI</div>
-<div class="id-box-bordered">
-  <div class="id-col"><table class="id-table">
-    ${idRow('Nama Pasien', pick('nama'), true)}
-    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
-    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
-    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
+
+<div class="id-box-borderless">
+  <div class="id-col"><table class="op-kv">
+    ${kv('Nama Pasien', `<strong>${esc(pageOr(['nama'], /^Nama Pasien/i))}</strong>`)}
+    ${kv('Tanggal Lahir / Umur', `${esc(pageOr(['tgl_lahir', 'tglLahir'], /^Tanggal Lahir|^Tgl Lahir/i))} (${esc(pick('umur') || val(/^Umur/i))})`)}
   </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow('Tanggal Operasi', f(/^Tanggal/i))}
-    ${idRow('Diagnosa Pra Operasi', f(/^Diagnosa Pra|^Diagnosa Awal/i))}
-    ${idRow('Diagnosa Pasca Operasi', f(/^Diagnosa Pasca|^Diagnosa Akhir/i))}
-    ${idRow('Tindakan / ICD-9-CM', f(/^Tindakan|^Prosedur/i))}
+  <div class="id-col"><table class="op-kv">
+    ${kv('No. Rekam Medis', `<strong>${esc(pageOr(['norm', 'rekam_medis'], /^No\.? RM/i))}</strong>`)}
+    ${kv('Jenis Kelamin', esc(jk))}
   </table></div>
 </div>
-${kvTable([
-  ['JENIS ANESTESI &amp; ASA', f(/^Anestesi|^ASA/i)],
-  ['TIM OPERASI (OPERATOR / ASISTEN / ANASTESI)', f(/^Operator|^Asisten|^Tim Operasi/i)],
-  ['ALAT / BAHAN &amp; IMPLAN', f(/^Alat|^Bahan|^Implan/i)],
-  ['URAIAN PROSEDUR &amp; TEMUAN', f(/^Uraian|^Prosedur|^Temuan/i)],
-  ['KOMPLIKASI INTRA OPERASI', f(/^Komplikasi/i)],
-  ['KEADAAN PASIEN SELESAI OPERASI', f(/^Keadaan|^Kondisi/i)],
-])}
-<div class="sub-heading-rm">RINCIAN TINDAKAN</div>
-${dataTable(['NO', 'TINDAKAN / PROSEDUR', 'WAKTU', 'PELAKSANA'], rows, true)}
-${sig(
-  ['Asisten Operasi', '-'],
-  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Dokter Operator', `( ${esc(f(/^Operator/i))} )`],
-)}
+
+<table class="rm-grid-table"><tbody>
+  ${head('I. TIM OPERASI &amp; WAKTU PEMBEDAHAN')}
+  <tr>
+    <td style="width:54%;">
+      <table class="op-kv">
+        ${kv('Dokter Operator', `<strong>${esc(operator)}</strong>`)}
+        ${kv('Asisten / Dr. Anestesi', esc(val(/^Asisten/i)))}
+        ${kv('Perawat Instrumen', esc(val(/^Perawat Instrumen/i)))}
+      </table>
+    </td>
+    <td>
+      <table class="op-kv">
+        ${kv('Tanggal Bedah', `<strong>${esc(tglBedah)}</strong>`)}
+        ${kv('Jam Mulai – Selesai', `${esc(val(/^Jam Mulai/i))} – ${esc(val(/^Jam Selesai/i))}`)}
+        ${kv('Lama Waktu Bedah', `<strong>${esc(val(/^Waktu Bedah/i))}</strong>`)}
+      </table>
+    </td>
+  </tr>
+</tbody></table>
+
+<table class="rm-grid-table"><tbody>
+  ${head('II. DIAGNOSIS, KLASIFIKASI &amp; TINDAKAN / ICD-9-CM')}
+  <tr>
+    <td style="width:54%;">
+      <table class="op-kv">
+        ${kv('Diagnosis Pra Bedah', esc(val(/^Diagnosis Pra Bedah|^Diagnosa Pra/i)))}
+        ${kv('Diagnosis Pasca Bedah', `<strong>${esc(val(/^Diagnosis Pasca Bedah|^Diagnosa Pasca/i))}</strong>`)}
+        ${kv('Nama / Macam Operasi', `<strong>${esc(val(/^Nama Macam Operasi|^Tindakan|^Prosedur/i))}</strong>`)}
+      </table>
+    </td>
+    <td>
+      <table class="op-kv">
+        <tr><td class="k">Kategori Operasi</td><td class="c">:</td><td class="v"><span class="chk-box">${pilih(/MAYOR/i)}</span> Mayor &nbsp; <span class="chk-box">${pilih(/SEDANG|MINOR/i)}</span> Sedang &nbsp; <span class="chk-box">${pilih(/KHUSUS/i)}</span> Khusus</td></tr>
+        <tr><td class="k">Sifat Operasi</td><td class="c">:</td><td class="v"><span class="chk-box">${pilih(/ELEKTIF|EFEKTIF/i)}</span> Elektif &nbsp; <span class="chk-box">${pilih(/CITO|EMERGENSI/i)}</span> Cito / Emergensi</td></tr>
+        ${kv('Jaringan Dieksisi', esc(val(/^Jaringan yang Dieksisi|^Jaringan Dieksisi/i)))}
+        <tr><td class="k">Penggunaan Implan</td><td class="c">:</td><td class="v">${implanHtml}</td></tr>
+      </table>
+    </td>
+  </tr>
+</tbody></table>
+
+<table class="rm-grid-table"><tbody>
+  ${head('III. URAIAN PEMBEDAHAN')}
+  <tr><td class="op-narrative">
+    <div class="op-preface"><strong>Persiapan &amp; Evaluasi Awal:</strong> ${persiapanHtml}</div>
+    <div><strong>Langkah-Langkah Tindakan:</strong></div>
+    ${langkahHtml}
+  </td></tr>
+  <tr><td><strong>IV. Komplikasi Intraoperatif:</strong> &nbsp; ${komplikasiHtml}</td></tr>
+</tbody></table>
+
+<table class="rm-grid-table"><tbody>
+  <tr>
+    <th class="rm-sec-head" style="width:50%;text-align:left;">V. PEMERIKSAAN PATOLOGI ANATOMI (PA)</th>
+    <th class="rm-sec-head" style="text-align:left;">VI. PERDARAHAN, TRANSFUSI &amp; DRAINASE</th>
+  </tr>
+  <tr>
+    <td><table class="op-kv">
+      ${kv('Jaringan ke PA', `<strong>${esc(val(/^Jaringan ke Patologi/i))}</strong>`)}
+      ${kv('Dikirim Untuk', esc(val(/^Dikirim Untuk/i)))}
+      ${kv('Jenis Jaringan', esc(val(/^Jenis Jaringan/i)))}
+      ${kv('Tanggal Pengiriman', esc(val(/^Tanggal Jaringan/i)))}
+    </table></td>
+    <td><table class="op-kv">
+      ${kv('Perkiraan Perdarahan', `<strong>${esc(val(/^Perkiraan Pendarahan|^Perkiraan Perdarahan/i))}</strong>`)}
+      ${kv('Transfusi Darah', esc(val(/^Tranfusi Darah|^Transfusi Darah/i)))}
+      ${kv('Pemakaian Drain', esc(val(/^Pemakaian Drain/i)))}
+    </table></td>
+  </tr>
+</tbody></table>
+
+<div class="rm-signature-block" style="justify-content:flex-end;">
+  <div class="rm-sig-box">
+    <div>Jambi, ${esc(tglCetak)}</div>
+    <div>Dokter Operator,</div>
+    ${qrOperasi ? `<img class="rm-sig-qr" src="${esc(qrOperasi)}" alt="QR TTE dokter operator" width="80" height="80" />` : '<div class="rm-sig-space"></div>'}
+    <div class="rm-sig-name">( ${esc(operator)} )</div>
+  </div>
+</div>
 </section>`;
 }
 
@@ -4590,6 +4751,18 @@ ${kop(m.code)}
     .igd-summary span { display: block; font-size: 6.5pt; letter-spacing: 0.1em; text-transform: uppercase; }
     .igd-summary b { display: block; font-size: 11pt; line-height: 1.25; margin-top: 2px; }
     .igd-band-value { font-size: 11pt !important; font-weight: bold; }
+
+    /* Laporan Operasi (RM.20) — tabel label:nilai tanpa garis di dalam kotak,
+       narasi pembedahan dipecah jadi langkah bernomor. */
+    #form-operasi .op-kv { width: 100%; border-collapse: collapse; }
+    #form-operasi .op-kv td { border: none; padding: 1.5px 0; vertical-align: top; font-size: 8.2pt; line-height: 1.3; }
+    #form-operasi .op-kv td.k { width: 132px; white-space: nowrap; }
+    #form-operasi .op-kv td.c { width: 10px; text-align: center; }
+    #form-operasi .op-kv td.v { overflow-wrap: anywhere; }
+    #form-operasi .op-narrative { padding: 6px 8px; line-height: 1.45; }
+    #form-operasi .op-preface { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px dashed #666666; }
+    #form-operasi .op-steps { margin: 3px 0 0; padding-left: 18px; }
+    #form-operasi .op-steps li { margin-bottom: 2px; }
 </style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
 <div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>

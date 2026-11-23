@@ -662,6 +662,38 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain('sep-sig-line');
   });
 
+  it('Operasi (RM.20): grid 2 kolom, uraian bernomor, ejaan klinis dibetulkan', () => {
+    const op = src.slice(
+      src.indexOf('function buildOperasiSection'),
+      src.indexOf('function buildLaboratoriumSection'),
+    );
+    for (const marker of [
+      "${kop('RM. 20')}",
+      'LAPORAN PELAKSANAAN OPERASI',
+      'I. TIM OPERASI &amp; WAKTU PEMBEDAHAN',
+      'II. DIAGNOSIS, KLASIFIKASI &amp; TINDAKAN / ICD-9-CM',
+      'III. URAIAN PEMBEDAHAN',
+      'op-kv',
+      'op-steps',
+      'Persiapan &amp; Evaluasi Awal',
+      'Langkah-Langkah Tindakan',
+      'IV. Komplikasi Intraoperatif',
+      'V. PEMERIKSAAN PATOLOGI ANATOMI (PA)',
+      'VI. PERDARAHAN, TRANSFUSI &amp; DRAINASE',
+      'Tidak ada komplikasi',
+      'QR TTE dokter operator',
+    ]) {
+      expect(op).toContain(marker);
+    }
+    // Typo SIMRS diperbaiki di titik normalisasi.
+    for (const fix of ['antiseptik', 'daryantulle', 'Perdarahan', 'Transfusi', 'Elektif']) {
+      expect(op).toContain(fix);
+    }
+    // Tidak ada data contoh prototipe yang di-hardcode.
+    expect(op).not.toContain('TEMU JAYANTI');
+    expect(op).not.toContain('00054438');
+  });
+
   it('RM.05: label TTD di atas QR, nama di bawah QR (bukan sebaliknya)', () => {
     const bill = src.slice(
       src.indexOf('function buildBillingSection'),
