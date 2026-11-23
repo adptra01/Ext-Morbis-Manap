@@ -2714,6 +2714,7 @@ const doctorFromQr = (url: string): string => {
     // "…di approve<NAMA> tgl … jam…" — nama bisa placeholder
     // "DOKTER TIDAK DI TEMUKAN", jadi jangan cuma cari "dr.".
     const m =
+      decoded.match(/oleh\s*:\s*([^&]+)/i)?.[1] ||
       decoded.match(/approve\s*([\s\S]*?)\s+tgl\b/i)?.[1] ||
       decoded.match(/(dr\.[^&]+)/i)?.[1] ||
       '';
@@ -2756,10 +2757,12 @@ function formFields(sections: Section[], titleRe: RegExp): Map<string, string> {
         out.set(label, c[i + 1].replace(/^:\s*/, '').trim());
     }
     for (const cell of c) {
-      const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
-      // Nilai boleh mengandung ':' (jam 10:15:00, "GCS: 15", dll.) — dulu
-      // ditolak, bikin field Anestesi kosong semua.
-      if (m && m[2].length <= 120 && !out.has(m[1].trim())) out.set(m[1].trim(), m[2].trim());
+      // Satu sel bisa memuat beberapa pasangan dipisah newline
+      // (mis. "Lokasi Tusukan : L3-L4\nAnalgesia setinggi segmen : T10").
+      for (const part of cell.split(/\n+/)) {
+        const m = part.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
+        if (m && m[2].length <= 120 && !out.has(m[1].trim())) out.set(m[1].trim(), m[2].trim());
+      }
     }
   }
   return out;
@@ -3148,10 +3151,13 @@ function buildAnestesiSection(sections: Section[]): string {
           .join(' '),
       ),
     );
-  // Radio SIMRS bisa sebelum ATAU sesudah label — cek dua arah.
-  const cek = (label: string): string => {
+  /** Arah ✓ berbeda per grup: ASA `label <input>` (after), Rencana `<input>label`
+   *  (before). Cek dua arah akan mencentang tetangga (ASA II→III, Spinal→Umum). */
+  const cek = (label: string, arah: 'after' | 'before' = 'after'): string => {
     const L = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`${L}\\s*✓|✓\\s*${L}`, 'i').test(teks) ? '&#10003;' : '&nbsp;';
+    return new RegExp(arah === 'after' ? `${L}\\s*✓` : `✓\\s*${L}`, 'i').test(teks)
+      ? '&#10003;'
+      : '&nbsp;';
   };
   /** Demografi pasien sering cuma ada di SBPK/Resume, bukan disection Anestesi. */
   const anywhere = (...res: RegExp[]): string => {
@@ -3252,9 +3258,11 @@ function buildAnestesiSection(sections: Section[]): string {
 
   // Grafik monitoring: kanvas sudah diubah jadi <img> data-URL oleh clean().
   const chartImgs = Array.from(doc?.querySelectorAll('img') || []).filter((img) => {
-    const s = img.getAttribute('src') || '';
-    const cls = img.getAttribute('class') || '';
-    return !!s && !/logo|kars|qr|barcode/i.test(s) && !/logo/i.test(cls);
+    const src = img.getAttribute('src') || '';
+    if (!src.startsWith('data:image')) return false; // logo/kars/QR = URL remote
+    // Jangan cocokkan 'qr' pada base64 — teks acak hampir selalu mengandungnya.
+    const label = `${img.id} ${img.getAttribute('class') || ''} ${img.alt || ''}`.toLowerCase();
+    return !/logo|kars|qr|barcode/.test(label);
   });
   const chart = (img?: Element): string =>
     img
@@ -3265,18 +3273,12 @@ function buildAnestesiSection(sections: Section[]): string {
 
   // TTE: 3 QR asli berurutan dari halaman.
   const qrs = sectionQrs(sections, /^Anestesi/i);
+  // Urutan QR asli SIMRS: Dokter Anestesi → Penata/Perawat RR → Perawat Ruangan.
+  // Tidak ada QR Dokter Operator — jangan memetakan qrs[1] ke peran itu.
   const ttd: Array<[string, string, string]> = [
-    [
-      'Dokter Spesialis Anestesiologi',
-      qrs[0] || '',
-      dokterAnestesi !== '-' ? dokterAnestesi : doctorFromQr(qrs[0]),
-    ],
-    [
-      'Dokter Operator',
-      qrs[1] || '',
-      dokterOperator !== '-' ? dokterOperator : doctorFromQr(qrs[1]),
-    ],
-    ['Penata / Perawat Anestesi', qrs[2] || '', penata !== '-' ? penata : doctorFromQr(qrs[2])],
+    ['Dokter Spesialis Anestesiologi', qrs[0] || '', dokterAnestesi],
+    ['Penata / Perawat Anestesi', qrs[1] || '', penata],
+    ['Perawat Ruangan', qrs[2] || '', doctorFromQr(qrs[2])],
   ];
   const tteHtml = ttd
     .map(
@@ -3293,9 +3295,11 @@ function buildAnestesiSection(sections: Section[]): string {
 
   // Skor pemulihan: dewasa + regional → Aldrete & Bromage; anak → Steward.
   const anak = umur > 0 && umur < 18;
-  const spinal = /spinal|subarachnoid|regional/i.test(
-    [val(/^Rencana Anestesi/i), val(/^Teknik/i), teks].join(' '),
-  );
+  const spinal =
+    cek('Spinal', 'before') === '&#10003;' ||
+    cek('Epidural', 'before') === '&#10003;' ||
+    cek('Kaudal', 'before') === '&#10003;' ||
+    /subarachnoid/i.test(teks);
   const skorHtml = anak
     ? '<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak; skor diisi di halaman asal.</td></tr>'
     : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas · Pernapasan · Sirkulasi · Kesadaran · Warna — skor diisi di halaman asal.</td></tr>
@@ -3353,14 +3357,14 @@ ${kop('RM. 21')}
   ${kv('Dokter Operator', esc(dokterOperator))}
   ${kv('Asisten Bedah', esc(val(/^Asisten Bedah|^Asisten/i)))}
   ${kv('Instrumen Bedah', esc(val(/^Instrumen Bedah|^Perawat Instrumen/i)))}
-  ${kv('Rencana Anestesi', `${cek('Anestesi Umum')} Umum &nbsp; ${cek('Spinal')} Spinal &nbsp; ${cek('Epidural')} Epidural &nbsp; ${cek('Kaudal')} Kaudal`)}
+  ${kv('Rencana Anestesi', `${cek('Anestesi Umum', 'before')} Umum &nbsp; ${cek('Spinal', 'before')} Spinal &nbsp; ${cek('Epidural', 'before')} Epidural &nbsp; ${cek('Kaudal', 'before')} Kaudal`)}
 </table>
 <div class="an-risk"><strong>Riwayat Penyakit &amp; Faktor Risiko:</strong><div class="an-grid-3">${penyakitHtml}</div></div>
 </td></tr></tbody></table>
 
 <table class="rm-grid-table"><tbody>${head('C. INDUKSI &amp; MONITORING ANESTESI')}
 <tr><td><table class="an-kv">
-  ${kv('Teknik / Lokasi Tusukan', `${esc(val(/^Teknik :|^Lokasi Tusukan/i))} ${esc(val(/^Analgesia setinggi/i))}`)}
+  ${kv('Teknik / Lokasi Tusukan', esc(val(/^Lokasi Tusukan/i)))}
   ${kv('Anestesi Lokal', esc(val(/^Anestesi lokal/i)))}
   ${kv('ASA', `${cek(' I ')} I &nbsp; ${cek(' II ')} II &nbsp; ${cek(' III ')} III &nbsp; ${cek(' IV ')} IV &nbsp; ${cek(' V ')} V &nbsp; ${cek(' E ')} E`)}
 </table></td></tr>
@@ -5068,6 +5072,9 @@ ${kop(m.code)}
     #form-anestesi .chart-frame { padding: 4px; text-align: center; border: 1px solid #000000; break-inside: avoid; page-break-inside: avoid; }
     #form-anestesi .chart-frame img { max-width: 100%; height: auto; }
     #form-anestesi .an-page-break { page-break-before: always; break-before: page; }
+    #form-anestesi { break-after: auto; page-break-after: auto; }
+    #form-anestesi + .rm-page { break-before: page; page-break-before: always; }
+    #form-anestesi .an-tte .tte-qr img { width: 100%; height: auto; max-width: 48px; }
     #form-anestesi .an-running { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; border-bottom: 1.5px solid #000000; padding-bottom: 4px; margin: 0 0 7px; font-size: 8pt; }
     #form-anestesi .an-instruksi { margin: 0; padding-left: 18px; line-height: 1.4; font-size: 8.2pt; }
     #form-anestesi .an-tte-note { font-size: 7.6pt; margin-top: 4px; }
