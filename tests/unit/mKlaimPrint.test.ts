@@ -660,6 +660,23 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain('sep-sig-line');
   });
 
+  it('RM.05: label TTD di atas QR, nama di bawah QR (bukan sebaliknya)', () => {
+    const bill = src.slice(
+      src.indexOf('function buildBillingSection'),
+      src.indexOf('function buildResumeSection'),
+    );
+    const label = bill.indexOf('<div>Yang Menyerahkan,</div>');
+    const qr = bill.indexOf('QR persetujuan pasien', label);
+    const nama = bill.indexOf('<div class="rm-sig-name">', label);
+    expect(label).toBeGreaterThan(-1);
+    expect(qr).toBeGreaterThan(label);
+    expect(nama).toBeGreaterThan(qr);
+
+    const terima = bill.indexOf('<div>Yang Menerima (Petugas Billing / Kasir)</div>');
+    const qrTerima = bill.indexOf('QR penerima', terima);
+    expect(qrTerima).toBeGreaterThan(terima);
+  });
+
   it('fix audit: field SEP scrape, alamat lintas-section, vital & tanggal lahir', () => {
     const sep = src.slice(
       src.indexOf('function buildSepSection'),

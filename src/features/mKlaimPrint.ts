@@ -1474,15 +1474,15 @@ ${kop('RM. 05')}
 
 <div class="rm-signature-block">
   <div class="rm-sig-box">
-    ${qrPasien ? `<img class="rm-sig-qr" src="${esc(qrPasien)}" alt="QR persetujuan pasien" width="80" height="80" />` : ''}
     <div>Yang Menyerahkan,</div>
     <div>Pasien / Keluarga Pasien</div>
+    ${qrPasien ? `<img class="rm-sig-qr" src="${esc(qrPasien)}" alt="QR persetujuan pasien" width="80" height="80" />` : ''}
     ${qrPasien ? '' : '<div class="rm-sig-space"></div>'}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
-    ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ''}
     <div>Yang Menerima (Petugas Billing / Kasir)</div>
+    ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ''}
     ${qrPenerima ? '' : '<div class="rm-sig-space"></div>'}
   </div>
 </div>
