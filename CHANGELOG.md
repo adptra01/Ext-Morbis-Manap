@@ -48,6 +48,7 @@
 
 ### ♻️ refactor
 
+- **mKlaimPrint** — hapus kode formulir kanan atas (RM.20 dll) yang penomorannya salah (`bac9729`)
 - **mKlaimPrint** — Konsultasi — hapus footer TTD (QR tidak pernah ada) (`3d2d7de`)
 - **mKlaimPrint** — Operasi — hapus tebakan pemisah uraian, semua baris jadi langkah bernomor (`a46e504`)
 - **mKlaimMarks** — 1 tombol + popover + multi-chip untuk ke-6 mark (`bb5c06f`)
@@ -59,6 +60,7 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — Anestesi & Konsul — rapikan header span-2, TTE tanpa kotak/underline (`ad300d2`)
 - **mKlaimMarks** — micro-polish mark bar — label count, chip ramping, popover anti-potong (`65d5b93`)
 
 ### 🧹 chore
@@ -2352,4 +2354,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 10af06a1d075e22ab401d0ab912db3882b2af8f6 -->
+<!-- changelog-upto: ad300d25aa31dd76117558f28a9b30b21e1d86be -->

@@ -558,7 +558,11 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         'buildUjiFungsiSection',
         'buildPartografSection',
         'form-uji-fungsi',
-        ['LEMBAR UJI FUNGSI', 'PARAMETER FUNGSI'],
+        [
+          'LEMBAR PEMERIKSAAN REHABILITASI MEDIK',
+          'TATA LAKSANA KFR (ICD-9)',
+          'SUSPEK PENYAKIT AKIBAT KERJA',
+        ],
       ],
       [
         'buildPartografSection',
@@ -582,7 +586,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         'buildBonMakanSection',
         'buildPemeriksaanSection',
         'form-bon-makan',
-        ['BON MAKAN PASIEN / PENDAMPING', 'Jumlah Porsi'],
+        ['BON MAKANAN', 'NO REGISTRASI', 'DIET', 'Dokter Jaga'],
       ],
       [
         'buildPemeriksaanSection',

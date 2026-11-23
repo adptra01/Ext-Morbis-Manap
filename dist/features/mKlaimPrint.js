@@ -2953,74 +2953,96 @@ ${sig(
 </section>`;
   }
   function buildTerapiSection(sections) {
+    const src = sections.find((s) => /^Permintaan Terapi/i.test(s.title));
+    const doc = src ? new DOMParser().parseFromString(src.html, "text/html") : null;
     const fields = formFields(sections, /^Permintaan Terapi/i);
-    const rows = formRows(sections, /^Permintaan Terapi/i);
     const f = (...r) => fieldValue(fields, ...r);
+    const cell = (re) => {
+      if (!doc) return "-";
+      for (const tr of Array.from(doc.querySelectorAll("tr"))) {
+        const c = Array.from(tr.cells).map((td) => cellText(td));
+        if (c.length >= 2 && re.test(c[0]) && c[1]) return c[1];
+      }
+      return "-";
+    };
+    const norm = cell(/^No\.?\s*RM/i);
+    const nama = cell(/^Nama Pasien/i);
+    const diagnosa = cell(/^Diagnosa/i) !== "-" ? cell(/^Diagnosa/i) : pick("diagnosa");
+    const permintaan = doc ? Array.from(doc.querySelectorAll("td")).find((td) => /Permintaan\s+Terapi\s*:/i.test(td.textContent || ""))?.innerHTML.split(/<hr\s*\/?>|\n|<br\s*\/?>/i).map((x) => decodeEntities(x.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim()).filter((x) => x && !/Permintaan\s+Terapi/i.test(x)) ?? [] : [];
+    const programTable = Array.from(doc?.querySelectorAll("table") || []).find((t) => {
+      const h = (t.rows[0]?.textContent || "").replace(/\s+/g, " ");
+      return /PROGRAM/i.test(h) && /TANGGAL/i.test(h) && /TTD/i.test(h);
+    });
+    const sesi = programTable ? Array.from(programTable.rows).slice(1).map((tr) => Array.from(tr.cells).map((td) => cellText(td))).filter((r) => r[0] || r[1] || r[3] || r[4]) : [];
+    const sesiHtml = sesi.length ? sesi.map(
+      (r, i) => `<tr><td class="center">${i + 1}</td><td>${esc(r[1] || "-")}</td><td>${nl2br(r[0] || "-")}</td><td>${esc(r[3] || "-")}</td><td>${esc(r[4] || "-")}</td><td class="center"><input type="checkbox" class="rm-checkbox"></td></tr>`
+    ).join("") : '<tr><td colspan="6">-</td></tr>';
     return `<section class="rm-page" id="form-terapi">
 ${kop("TERAPI")}
 <div class="rm-form-title">PERMINTAAN TERAPI REHABILITASI MEDIK</div>
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
-    ${idRow("Nama Pasien", pick("nama"), true)}
-    ${idRow("No. Rekam Medis", pick("norm", "rekam_medis"))}
+    ${idRow("Nama Pasien", nama !== "-" ? nama : pick("nama"), true)}
+    ${idRow("No. RM", norm !== "-" ? norm : pick("norm", "rekam_medis"))}
     ${idRow("Tgl. Lahir", pick("tgl_lahir", "tglLahir"))}
     ${idRow("Jenis Kelamin", pick("jenis_kelamin", "jk"))}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow("Tanggal Permintaan", f(/^Tanggal/i))}
-    ${idRow("Ruangan / Unit Asal", f(/^Ruang|^Unit/i))}
-    ${idRow("Dokter Pengirim", f(/^Dokter Pengirim/i))}
-    ${idRow("Diagnosa", f(/^Diagnosa/i))}
+    ${idRow("Tanggal Permintaan", sesi[0]?.[1] || f(/^Tanggal/i))}
+    ${idRow("Ruangan / Unit Asal", pick("jenis", "kelas", "ruang"))}
+    ${idRow("Dokter Pengirim", sesi[0]?.[3] || "-")}
+    ${idRow("Diagnosa", diagnosa)}
   </table></div>
 </div>
-${kvTable([
-      ["JENIS TERAPI YANG DIMINTA", f(/^Jenis Terapi|^Terapi/i)],
-      ["TUJUAN TERAPI", f(/^Tujuan/i)],
-      ["FREKUENSI / RENCANA", f(/^Frekuensi|^Rencana/i)],
-      ["CATATAN KLINIS", f(/^Catatan/i)]
-    ])}
+${kvTable([["PERMINTAAN TERAPI", permintaan.length ? permintaan.map((x) => `&bull; ${esc(x)}`).join("<br/>") : "-"]])}
 <div class="sub-heading-rm">RINCIAN PERMINTAAN</div>
-${dataTable(["NO", "TERAPI / MODALITAS", "FREKUENSI", "KETERANGAN"], rows, true)}
+<table class="rm-grid-table"><thead><tr>
+  <th>NO</th><th>TANGGAL</th><th>PROGRAM / MODALITAS</th><th>DOKTER</th><th>TERAPIS</th><th>VER (&#10003;)</th>
+</tr></thead><tbody>${sesiHtml}</tbody></table>
 ${sig(
-      ["Pasien / Keluarga Pasien", `( ${esc(pick("nama"))} )`],
-      ["Kota Jambi, " + esc(f(/^Tanggal/i)), "Dokter Pengirim", `( ${esc(f(/^Dokter Pengirim/i))} )`]
+      ["Pasien / Keluarga Pasien", `( ${esc(nama !== "-" ? nama : pick("nama"))} )`],
+      ["Kota Jambi, " + esc(sesi[0]?.[1] || "-"), "Dokter Pengirim", `( ${esc(sesi[0]?.[3] || "-")} )`]
     )}
 </section>`;
   }
   function buildUjiFungsiSection(sections) {
     const fields = formFields(sections, /^Uji Fungsi/i);
-    const rows = formRows(sections, /^Uji Fungsi/i);
     const f = (...r) => fieldValue(fields, ...r);
+    const src = sections.find((s) => /^Uji Fungsi/i.test(s.title));
+    const doc = src ? new DOMParser().parseFromString(src.html, "text/html") : null;
+    const suspec = doc?.querySelector(
+      'input[name="suspec_penyakit"]:checked'
+    )?.value;
+    const suspectHtml = suspec === "Ya" ? '<span class="chk-box">&#10003;</span> Ya &nbsp; <span class="chk-box">&nbsp;</span> Tidak' : '<span class="chk-box">&nbsp;</span> Ya &nbsp; <span class="chk-box">&#10003;</span> Tidak';
+    const lahirUmur = f(/^Tanggal Lahir\/Umur/i).split(/\s*\/\s*/);
+    const tglLayanan = f(/^Tanggal Pelayanan/i).split(/\s+/);
+    const kv = (label, value) => `<tr><td style="width:175px;"><strong>${label}</strong></td><td>${nl2br(value)}</td></tr>`;
+    const bar = (judul) => `<tr><th class="rm-sec-head" colspan="2" style="text-align:left;">${judul}</th></tr>`;
+    const table = (rows) => `<table class="rm-grid-table"><tbody>${rows}</tbody></table>`;
     return `<section class="rm-page" id="form-uji-fungsi">
 ${kop("UJI FUNGSI")}
-<div class="rm-form-title">LEMBAR UJI FUNGSI</div>
+<div class="rm-form-title">LEMBAR PEMERIKSAAN REHABILITASI MEDIK</div>
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
-    ${idRow("Nama Pasien", pick("nama"), true)}
-    ${idRow("No. Rekam Medis", pick("norm", "rekam_medis"))}
-    ${idRow("Tgl. Lahir", pick("tgl_lahir", "tglLahir"))}
-    ${idRow("Jenis Kelamin", pick("jenis_kelamin", "jk"))}
+    ${idRow("Nama Pasien", pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i), true)}
+    ${idRow("No. RM", pick("norm", "rekam_medis") !== "-" ? pick("norm", "rekam_medis") : f(/^No\.?Rm/i))}
+    ${idRow("Tgl. Lahir / Umur", `${lahirUmur[0] ?? "-"} (${lahirUmur[1] ?? "-"})`)}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow("Tanggal Pemeriksaan", f(/^Tanggal/i))}
-    ${idRow("Diagnosa", f(/^Diagnosa/i))}
-    ${idRow("Petugas Uji", f(/^Petugas|^Terapis/i))}
-    ${idRow("Alat / Metode", f(/^Alat|^Metode/i))}
+    ${idRow("Tanggal Pelayanan", `${tglLayanan[0] ?? "-"} ${tglLayanan[1] ?? ""}`.trim())}
+    ${idRow("Jenis Kunjungan", pick("jenis", "kelas", "ruang"))}
+    ${idRow("No. SEP", pick("sep", "no_sep"))}
   </table></div>
 </div>
-${dataTable(["PARAMETER FUNGSI", "NILAI / SKOR", "SATUAN", "KETERANGAN"], rows, true)}
-${kvTable([
-      ["HASIL / INTERPRETASI", f(/^Hasil|^Interpretasi/i)],
-      ["KESIMPULAN", f(/^Kesimpulan/i)],
-      ["REKOMENDASI TERAPI", f(/^Rekomendasi|^Saran/i)]
-    ])}
+${table(
+      bar("I. IDENTITAS PESERTA") + kv("Alamat", f(/^Alamat/i)) + kv("Telp / HP", f(/^Telp/i)) + kv("Hubungan dengan Tertanggung", f(/^Hubungan/i))
+    )}
+${table(
+      bar("II. PEMERIKSAAN &amp; UJI FUNGSI") + kv("ANAMNESA", f(/^Anamnesa/i)) + kv("PEMERIKSAAN FISIK &amp; UJI FUNGSI", f(/^Pemeriksaan Fisik/i)) + kv("DIAGNOSA MEDIS (ICD-10)", f(/^Diagnosa Medis/i)) + kv("DIAGNOSA FUNGSI (ICD-10)", f(/^Diagnosa Fungsi/i)) + kv("TATA LAKSANA KFR (ICD-9)", f(/^Tata Laksana/i)) + kv("EDUKASI", f(/^Edukasi/i)) + kv("ANJURAN", f(/^Anjuran/i)) + kv("EVALUASI", f(/^Evaluasi/i)) + kv("SUSPEK PENYAKIT AKIBAT KERJA", suspectHtml)
+    )}
 ${sig(
-      ["Pasien / Keluarga Pasien", `( ${esc(pick("nama"))} )`],
-      [
-        "Kota Jambi, " + esc(f(/^Tanggal/i)),
-        "Petugas Uji Fungsi",
-        `( ${esc(f(/^Petugas|^Terapis/i))} )`
-      ]
+      ["Pasien / Keluarga Pasien", `( ${esc(pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i))} )`],
+      ["Kota Jambi, " + esc(tglLayanan[0] ?? "-"), "Dokter Sp.KFR", "( .................................................. )"]
     )}
 </section>`;
   }
@@ -3211,33 +3233,35 @@ ${table(
   function buildBonMakanSection(sections) {
     const fields = formFields(sections, /^Bon Makan/i);
     const f = (...r) => fieldValue(fields, ...r);
+    const qr = sectionQrs(sections, /^Bon Makan/i)[0] ?? "";
+    const dokter = doctorFromQr(qr);
+    const tgl = f(/^TANGGAL/i);
     return `<section class="rm-page" id="form-bon-makan">
-${kop("BON MAKAN")}
-<div class="rm-form-title">BON MAKAN PASIEN / PENDAMPING</div>
+${kop("BON MAKANAN")}
+<div class="rm-form-title">BON MAKANAN</div>
+<div class="an-tte-note">Harap diberikan untuk penderita :</div>
 <div class="id-box-bordered">
   <div class="id-col"><table class="id-table">
-    ${idRow("Nama Pasien", pick("nama"), true)}
-    ${idRow("No. Rekam Medis", pick("norm", "rekam_medis"))}
-    ${idRow("Ruang / Kelas", [pick("jenis"), pick("kelas", "ruang")].filter((v) => v !== "-").join(" / ") || "-")}
-    ${idRow("Tanggal", f(/^Tanggal/i))}
+    ${idRow("NAMA", f(/^NAMA$/i), true)}
+    ${idRow("NO RM", f(/^NO RM$/i))}
+    ${idRow("NO REGISTRASI", f(/^NO REGISTRASI/i))}
+    ${idRow("KELAS", f(/^KELAS$/i))}
   </table></div>
   <div class="id-col"><table class="id-table">
-    ${idRow("Nama Pendamping", f(/^Pendamping|^Keluarga/i))}
-    ${idRow("Jumlah Porsi", f(/^Jumlah|^Porsi/i))}
-    ${idRow("Waktu", f(/^Waktu|^Jam/i))}
-    ${idRow("Petugas", f(/^Petugas/i))}
+    ${idRow("RUANG", f(/^RUANG$/i))}
+    ${idRow("TANGGAL", tgl)}
+    ${idRow("JAM", f(/^JAM$/i))}
+    ${idRow("DIET", f(/^DIET$/i))}
   </table></div>
 </div>
-${dataTable(
-      ["NO", "NAMA", "HUBUNGAN", "JUMLAH", "KETERANGAN"],
-      formRows(sections, /^Bon Makan/i),
-      true
-    )}
-<div class="footnote-rm">Bon ini berlaku sesuai jadwal makan yang ditetapkan ruangan / instalasi gizi.</div>
-${sig(
-      ["Pasien / Pendamping", `( ${esc(f(/^Pendamping|^Keluarga/i))} )`],
-      ["Kota Jambi, " + esc(f(/^Tanggal/i)), "Petugas Ruangan", `( ${esc(f(/^Petugas/i))} )`]
-    )}
+<div class="rm-signature-block" style="justify-content:flex-end;">
+  <div class="rm-sig-box">
+    <div>Kota Jambi, ${esc(tgl)}</div>
+    <div>Dokter Jaga</div>
+    ${qr ? `<img class="rm-sig-qr" src="${esc(qr)}" alt="QR dokter jaga" width="80" height="80" />` : '<div class="rm-sig-space"></div>'}
+    <div class="rm-sig-name">( ${esc(dokter)} )</div>
+  </div>
+</div>
 </section>`;
   }
   function buildPemeriksaanSection(sections) {
