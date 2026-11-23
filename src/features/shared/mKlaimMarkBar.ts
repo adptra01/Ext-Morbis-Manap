@@ -81,18 +81,21 @@ table tbody tr .ext-partial-btn:not(.ext-partial-large),
 }
 .ext-mark-trigger {
   display:inline-flex;align-items:center;justify-content:center;gap:4px;
-  width:66px;height:26px;margin-left:4px;padding:0;
+  height:26px;margin-left:4px;padding:0 8px;
   font-size:11px;font-weight:600;color:#334155;background:#f8fafc;
   border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;vertical-align:middle;
+  white-space:nowrap;
 }
 .ext-mark-trigger:hover { background:#e2e8f0; }
+.ext-mark-trigger.has-count { background:#eff6ff;color:#1d4ed8;border-color:#93c5fd; }
+.ext-mark-trigger.has-count:hover { background:#dbeafe; }
 .ext-chips-wrap {
-  display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;
+  display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;max-width:125px;
   contain:layout style;
 }
 .ext-chip {
-  font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;
-  letter-spacing:.2px;line-height:1.3;white-space:nowrap;
+  font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;
+  letter-spacing:.1px;line-height:1.25;white-space:nowrap;
 }
 .ext-chip[data-type="labor"]         { background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd; }
 .ext-chip[data-type="radiologi"]     { background:#fef3c7;color:#b45309;border:1px solid #fde68a; }
@@ -112,6 +115,13 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
   color:#1e293b;border-radius:4px;cursor:pointer;user-select:none;
 }
 .ext-pop-item:hover { background:#f1f5f9; }
+.ext-pop-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.ext-pop-dot[data-type="labor"]         { background:#0284c7; }
+.ext-pop-dot[data-type="radiologi"]     { background:#d97706; }
+.ext-pop-dot[data-type="batal-berobat"] { background:#dc2626; }
+.ext-pop-dot[data-type="pre-op"]        { background:#7c3aed; }
+.ext-pop-dot[data-type="telaah"]        { background:#16a34a; }
+.ext-pop-dot[data-type="partial"]       { background:#64748b; }
 `;
 
 const LEGACY_BTN_SEL = MARK_DEFS.map((d) => d.button).join(',');
@@ -123,6 +133,11 @@ const LEGACY_BTN_SEL = MARK_DEFS.map((d) => d.button).join(',');
  */
 export function hasLegacyMarkButton(row: HTMLTableRowElement): boolean {
   return !!row.querySelector(LEGACY_BTN_SEL);
+}
+
+/** Teks tombol pemicu mengikuti jumlah mark aktif. */
+export function triggerLabel(count: number): string {
+  return count > 0 ? `Mark (${count})` : '+ Mark';
 }
 
 /** Signature ringkas untuk state diffing (urutan tetap). */
@@ -154,7 +169,9 @@ export function startMarkBar(): void {
   popover.innerHTML = MARK_DEFS.map(
     (d) =>
       `<label class="ext-pop-item" data-ext-pop="${d.key}">` +
-      `<input type="checkbox" value="${d.key}"><span>${d.label}</span></label>`,
+      `<input type="checkbox" value="${d.key}">` +
+      `<span class="ext-pop-dot" data-type="${d.key}"></span>` +
+      `<span>${d.label}</span></label>`,
   ).join('');
   document.body.appendChild(popover);
 
@@ -178,7 +195,17 @@ export function startMarkBar(): void {
     return id;
   }
 
+  /** Label tombol mengikuti jumlah mark aktif: "+ Mark" / "Mark (4)". */
+  function updateTriggerBadge(row: HTMLTableRowElement, count: number): void {
+    const btn = row.querySelector<HTMLButtonElement>('.ext-mark-trigger');
+    if (!btn) return;
+    const text = triggerLabel(count);
+    if (btn.textContent !== text) btn.textContent = text;
+    btn.classList.toggle('has-count', count > 0);
+  }
+
   function paint(row: HTMLTableRowElement, marks: string[]): void {
+    updateTriggerBadge(row, marks.length);
     const cell = badgeCellFor(row);
     if (!cell) return;
     let wrap = row.querySelector<HTMLElement>('.ext-chips-wrap');
@@ -235,13 +262,17 @@ export function startMarkBar(): void {
     });
     popover.classList.add('open');
     const rect = trigger.getBoundingClientRect();
-    const left = Math.min(rect.left, window.innerWidth - 185);
-    const below = rect.bottom + 4;
-    popover.style.left = `${Math.max(4, left)}px`;
-    popover.style.top =
-      below + popover.offsetHeight > window.innerHeight
-        ? `${Math.max(4, rect.top - popover.offsetHeight - 4)}px`
-        : `${below}px`;
+    const width = popover.offsetWidth;
+    const height = popover.offsetHeight;
+    // Rata kanan dengan tombol → popover selalu membuka ke arah dalam (kiri).
+    const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
+    // Auto-flip ke atas bila sisa ruang bawah tidak cukup.
+    const top =
+      window.innerHeight - rect.bottom < height + 10
+        ? Math.max(8, rect.top - height - 4)
+        : rect.bottom + 4;
+    popover.style.left = `${left}px`;
+    popover.style.top = `${top}px`;
   }
 
   popover.addEventListener('change', (e) => {

@@ -4,6 +4,7 @@ import {
   hasLegacyMarkButton,
   marksSignature,
   readRowMarks,
+  triggerLabel,
 } from '../../src/features/shared/mKlaimMarkBar.js';
 
 /** Baris palsu: hanya querySelector yang dipakai readRowMarks. */
@@ -24,6 +25,13 @@ describe('mKlaimMarkBar — state diffing', () => {
   it('signature stabil walau urutan mark berbeda', () => {
     expect(marksSignature(['labor', 'pre-op'])).toBe(marksSignature(['pre-op', 'labor']));
     expect(marksSignature([])).toBe('');
+  });
+});
+
+describe('mKlaimMarkBar — label tombol', () => {
+  it('tanpa mark → + Mark, dengan mark → Mark (n)', () => {
+    expect(triggerLabel(0)).toBe('+ Mark');
+    expect(triggerLabel(4)).toBe('Mark (4)');
   });
 });
 
