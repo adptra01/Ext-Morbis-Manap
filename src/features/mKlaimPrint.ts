@@ -3907,6 +3907,7 @@ interface KonsulSheetData {
   keputusan: string;
   tglJawaban: string;
   jamJawaban: string;
+  tglLahir: string;
 }
 
 const tableRows = (t: Element | null): string[][] =>
@@ -3966,6 +3967,7 @@ function parseKonsulSheet(el: HTMLElement): KonsulSheetData {
     keputusan: a.flat().find((x) => /Konsultasi selesai tanggal/i.test(x)) || '-',
     tglJawaban,
     jamJawaban,
+    tglLahir: '-',
   };
 }
 
@@ -3978,8 +3980,19 @@ function buildKonsulSection(sections: Section[], src?: Section, id = 'rm-10'): s
     .map((b) => b.closest('table')?.parentElement)
     .filter((el): el is HTMLElement => !!el);
   const qrs = sectionQrs([target], /Konsul/i);
+  // Identitas pasien ada di tabel kop (di luar tiap entri konsul).
+  const lahir =
+    Array.from(doc.querySelectorAll('tr'))
+      .map((tr) => Array.from(tr.cells).map(cellText))
+      .flatMap((c) => c.slice(0, -1).map((x, i) => [x, c[i + 1]] as [string, string]))
+      .find(([k]) => /^Tanggal Lahir$/i.test(k))?.[1]
+      ?.match(/\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4}/)?.[0] ?? '-';
   return entries
-    .map((el, i) => buildKonsulSheet(parseKonsulSheet(el), qrs[i] ?? '', i ? `${id}-${i + 1}` : id))
+    .map((el, i) => {
+      const data = parseKonsulSheet(el);
+      data.tglLahir = lahir;
+      return buildKonsulSheet(data, qrs[i] ?? '', i ? `${id}-${i + 1}` : id);
+    })
     .join('');
 }
 
@@ -3991,6 +4004,37 @@ function buildKonsulSheet(data: KonsulSheetData, qrKonsul: string, id: string): 
       : pick('dokter_konsulen') !== '-'
         ? pick('dokter_konsulen')
         : doctorFromQr(qrKonsul);
+  const bersih = (x: string): string =>
+    decodeEntities(x)
+      .replace(/\bPenilain\b/gi, 'Penilaian')
+      .replace(/\bdijadwalkn\b/gi, 'dijadwalkan')
+      .replace(/\bbtk\b/gi, 'terima kasih')
+      .replace(/Terimakasih/gi, 'Terima kasih')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const tujuan = Array.from(
+    bersih(data.permintaan).matchAll(/(?:^|\s)[1-3]\.\s*([^]*?)(?=\s[1-3]\.\s|$)/g),
+  )
+    .map((m) => m[1].trim())
+    .filter(Boolean);
+  const tujuanHtml = tujuan.length
+    ? tujuan.map((x) => `<div><span class="chk-box">&nbsp;</span> ${esc(x)}</div>`).join('')
+    : '-';
+  const jamJawab = /^0?0:00:00$/.test(data.jamJawaban) ? '' : data.jamJawaban;
+  const tglJawab = `${data.tglJawaban} ${jamJawab}`.trim();
+  const dugaan = data.dugaan !== '-' ? data.dugaan : data.penemuan;
+  const soap: Array<[string, string]> = [
+    ['S (SUBJEKTIF)', data.subjektif],
+    ['O (OBJEKTIF)', data.objektif],
+    ['A (ASSESMEN)', data.asesmen],
+    ['P (PLANNING)', data.planning],
+    ['INSTRUKSI', data.instruksi],
+    ['KEPUTUSAN KONSULTASI', data.keputusan],
+  ];
+  const bar = (judul: string): string =>
+    `<tr><th class="rm-sec-head" style="text-align:left;">${judul}</th></tr>`;
+  const table = (rows: string): string =>
+    `<table class="rm-grid-table"><tbody>${rows}</tbody></table>`;
   return `<section class="rm-page" id="${esc(id)}">
 ${kop('RM. 10')}
 <div class="rm-form-title">LEMBAR KONSULTASI</div>
@@ -3998,29 +4042,31 @@ ${kop('RM. 10')}
   <div class="id-col"><table class="id-table">
     ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'), true)}
     ${idRow('Nama Pasien', pick('nama'), true)}
-    ${idRow('Tanggal Lahir / Umur', pick('tgl_lahir', 'tglLahir'))}
+    ${idRow('Tanggal Lahir', data.tglLahir)}
   </table></div>
   <div class="id-col"><table class="id-table">
     ${idRow('Jenis Kunjungan', [pick('jenis'), pick('kelas', 'ruang')].filter((v) => v !== '-').join(' / ') || '-')}
     ${idRow('Tanggal Permintaan', `${data.tanggal} ${data.jam}`.trim())}
-    ${idRow('Tanggal Jawaban', `${data.tglJawaban} ${data.jamJawaban}`.trim())}
+    ${idRow('Tanggal Jawaban', tglJawab)}
   </table></div>
 </div>
-${kvTable([
-  ['BAGIAN I : KEPADA YTH. KONSULEN', konsulen],
-  ['JENIS PERMOHONAN', data.jenis],
-  ['PERMINTAAN KONSULTASI', data.permintaan],
-  ['PENEMUAN KLINIS TERPENTING', data.penemuan],
-  ['DUGAAN DIAGNOSA', data.dugaan],
-])}
-${kvTable([
-  ['S (SUBJEKTIF)', data.subjektif],
-  ['O (OBJEKTIF)', data.objektif],
-  ['A (ASSESMEN)', data.asesmen],
-  ['P (PLANNING)', data.planning],
-  ['INSTRUKSI', data.instruksi],
-  ['KEPUTUSAN KONSULTASI', data.keputusan],
-])}
+${table(
+  bar('BAGIAN I — PERMINTAAN KONSULTASI (DOKTER PEMOHON)') +
+    `<tr><td style="width:175px;"><strong>Kepada Yth. Konsulen</strong></td><td>${esc(konsulen)}</td></tr>` +
+    `<tr><td><strong>Jenis Permohonan</strong></td><td>${esc(data.jenis)}</td></tr>` +
+    `<tr><td><strong>Tujuan Konsultasi</strong></td><td>${tujuanHtml}</td></tr>` +
+    `<tr><td><strong>Penemuan Klinis Terpenting</strong></td><td>${nl2br(bersih(data.penemuan))}</td></tr>` +
+    `<tr><td><strong>Dugaan Diagnosa</strong></td><td><strong>${esc(bersih(dugaan))}</strong></td></tr>`,
+)}
+${table(
+  bar('BAGIAN II — JAWABAN KONSULTASI (DOKTER KONSULEN)') +
+    soap
+      .map(
+        ([k, v]) =>
+          `<tr><td style="width:175px;"><strong>${k}</strong></td><td>${nl2br(bersih(v))}</td></tr>`,
+      )
+      .join(''),
+)}
 ${sig(
   [
     'Dokter Pemohon Konsultasi',

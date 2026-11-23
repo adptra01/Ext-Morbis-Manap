@@ -576,7 +576,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
         'buildKonsulSection',
         'buildBonMakanSection',
         'rm-10',
-        ['id="${esc(id)}"', 'BAGIAN I : KEPADA YTH. KONSULEN', 'S (SUBJEKTIF)'],
+        ['id="${esc(id)}"', 'BAGIAN I — PERMINTAAN KONSULTASI', 'S (SUBJEKTIF)'],
       ],
       [
         'buildBonMakanSection',
@@ -836,7 +836,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     // Nama konsulen diambil dari tanda tangan jawaban; pengirim dari permintaan.
     expect(src).toContain("firstDoctor(a[a.length - 1]?.[1] || '')");
     expect(src).toContain("firstDoctor(r[r.length - 1]?.[1] || '')");
-    expect(src).toContain("['PERMINTAAN KONSULTASI', data.permintaan]");
+    expect(src).toContain('bersih(data.permintaan)');
     expect(src).toContain("['INSTRUKSI', data.instruksi]");
   });
 

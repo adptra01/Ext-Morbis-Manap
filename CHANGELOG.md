@@ -20,6 +20,8 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — Anestesi — lengkapi nilai (demografi lintas-section, medikasi/cairan, napas, tanggal) (`850cbed`)
+- **mKlaimPrint** — formFields — dukung format 'Label : nilai' (Anestesi) + nilai mengandung ':' (`459f429`)
 - **mKlaimPrint** — Operasi — temukan sel Uraian Pembedahan langsung (bukan baris pembungkus luar) (`e7e79ec`)
 - **mKlaimPrint** — Operasi — pecah uraian pembedahan per kalimat (newline hilang saat scrape) (`4465742`)
 - **mKlaimPrint** — Operasi — ekstraksi Nama Pasien (label 'Nama' di header) (`9935a59`)
@@ -2344,4 +2346,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a46e5049704d7520ef9e16548a8253f3ddd3138a -->
+<!-- changelog-upto: 850cbed25e1d205d595ce1d4ed22cf36f59eadab -->
