@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign Laporan Anestesi RM.21 jadi 2 halaman A4 (`31cc140`)
 - **mKlaimPrint** — redesign Laporan Operasi jadi grid RM.20 1 halaman (`6d6e335`)
 - **mKlaimPrint** — Surat Kontrol pakai sheet BPJS identik SEP (`0b74d2d`)
 - **mKlaimPrint** — RM.19A ruang tanda tangan kosong saat QR tidak ada (`e01a7e1`)
@@ -49,6 +50,7 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.274 (redesign Laporan Operasi) [skip ci] (`5456586`)
 - **changelog** — sync dist SPRI (`443d6e2`)
 - **dist** — sync mKlaimPrint — TTD SPRI kanan (`51514b5`)
 - bump versi 1.5.273 (TTD SPRI kanan) [skip ci] (`622721d`)
@@ -2336,4 +2338,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6d6e3352a8fc642ad237f59e275378d735f5ec5a -->
+<!-- changelog-upto: 31cc140b923f0cdcce2ad4e34b20e8757484264f -->
