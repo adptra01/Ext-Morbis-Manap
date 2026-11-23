@@ -26,7 +26,7 @@
 
 ### ♻️ refactor
 
-- **mKlaimMarks** — 1 tombol + popover + multi-chip untuk ke-6 mark (`3663923`)
+- **mKlaimMarks** — 1 tombol + popover + multi-chip untuk ke-6 mark (`bb5c06f`)
 
 ### 📝 docs
 
@@ -34,6 +34,7 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.262 (unified mark bar) [skip ci] (`4e80d1a`)
 - **changelog** — sync entri simbol PA (`1ebf45a`)
 - bump versi 1.5.261 (simbol PA) [skip ci] (`28be175`)
 - **changelog** — sync marker fix NORM Auto-Crawl (`d1d6a53`)
@@ -2298,4 +2299,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 3663923474571cff02fb4ea811dbeb410c303311 -->
+<!-- changelog-upto: 4e80d1a66111e3f9a86ad115c62082b9047b92ad -->
