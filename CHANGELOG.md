@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **mKlaimMarks** — + Mark jangan muncul di kalender datepicker (`4085188`)
 - **paLabPrint** — decode simbol ± = ≥ ≤ dari input form labor PA (`7ad7295`)
 - **batchUpload** — NORM halaman didahulukan — Auto-Crawl ORA-02291 FK2 (`cffcf4a`)
 - **test** — CI tidak baca file referensi di docs/evidence (gitignore) (`ab422d1`)
@@ -34,6 +35,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri unified mark bar (`6c313b0`)
 - bump versi 1.5.262 (unified mark bar) [skip ci] (`4e80d1a`)
 - **changelog** — sync entri simbol PA (`1ebf45a`)
 - bump versi 1.5.261 (simbol PA) [skip ci] (`28be175`)
@@ -2299,4 +2301,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4e80d1a66111e3f9a86ad115c62082b9047b92ad -->
+<!-- changelog-upto: 4085188a56bb97fddeff7418b915ea8fec018465 -->
