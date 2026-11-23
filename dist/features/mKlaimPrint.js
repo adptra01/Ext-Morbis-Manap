@@ -2968,7 +2968,9 @@ ${sig(
     const norm = cell(/^No\.?\s*RM/i);
     const nama = cell(/^Nama Pasien/i);
     const diagnosa = cell(/^Diagnosa/i) !== "-" ? cell(/^Diagnosa/i) : pick("diagnosa");
-    const permintaan = doc ? Array.from(doc.querySelectorAll("td")).find((td) => /Permintaan\s+Terapi\s*:/i.test(td.textContent || ""))?.innerHTML.split(/<hr\s*\/?>|\n|<br\s*\/?>/i).map((x) => decodeEntities(x.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim()).filter((x) => x && !/Permintaan\s+Terapi/i.test(x)) ?? [] : [];
+    const permintaan = doc ? Array.from(doc.querySelectorAll("td")).find((td) => /Permintaan\s+Terapi\s*:/i.test(td.textContent || ""))?.innerHTML.split(/<hr\s*\/?>|\n|<br\s*\/?>/i).map(
+      (x) => decodeEntities(x.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim()
+    ).filter((x) => x && !/Permintaan\s+Terapi/i.test(x)) ?? [] : [];
     const programTable = Array.from(doc?.querySelectorAll("table") || []).find((t) => {
       const h = (t.rows[0]?.textContent || "").replace(/\s+/g, " ");
       return /PROGRAM/i.test(h) && /TANGGAL/i.test(h) && /TTD/i.test(h);
@@ -3041,8 +3043,15 @@ ${table(
       bar("II. PEMERIKSAAN &amp; UJI FUNGSI") + kv("ANAMNESA", f(/^Anamnesa/i)) + kv("PEMERIKSAAN FISIK &amp; UJI FUNGSI", f(/^Pemeriksaan Fisik/i)) + kv("DIAGNOSA MEDIS (ICD-10)", f(/^Diagnosa Medis/i)) + kv("DIAGNOSA FUNGSI (ICD-10)", f(/^Diagnosa Fungsi/i)) + kv("TATA LAKSANA KFR (ICD-9)", f(/^Tata Laksana/i)) + kv("EDUKASI", f(/^Edukasi/i)) + kv("ANJURAN", f(/^Anjuran/i)) + kv("EVALUASI", f(/^Evaluasi/i)) + kv("SUSPEK PENYAKIT AKIBAT KERJA", suspectHtml)
     )}
 ${sig(
-      ["Pasien / Keluarga Pasien", `( ${esc(pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i))} )`],
-      ["Kota Jambi, " + esc(tglLayanan[0] ?? "-"), "Dokter Sp.KFR", "( .................................................. )"]
+      [
+        "Pasien / Keluarga Pasien",
+        `( ${esc(pick("nama") !== "-" ? pick("nama") : f(/^Nama Pasien/i))} )`
+      ],
+      [
+        "Kota Jambi, " + esc(tglLayanan[0] ?? "-"),
+        "Dokter Sp.KFR",
+        "( .................................................. )"
+      ]
     )}
 </section>`;
   }
@@ -4200,7 +4209,7 @@ ${kop(m.code)}
     #form-anestesi .an-tte-note { font-size: 7.6pt; margin-top: 4px; }
     #form-anestesi .an-tte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; break-inside: avoid; page-break-inside: avoid; }
     #form-anestesi .an-tte .tte-box { padding: 5px 4px; text-align: center; font-size: 8pt; }
-    #form-anestesi .an-tte .tte-qr { width: 54px; height: 54px; margin: 4px auto; border: 1px solid #000000; padding: 2px; display: flex; align-items: center; justify-content: center; }
+    #form-anestesi .an-tte .tte-qr { width: 54px; height: 54px; margin: 4px auto; display: flex; align-items: center; justify-content: center; }
     #form-anestesi .an-tte .tte-name { font-weight: bold; }
 </style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">

@@ -5216,7 +5216,7 @@ ${kop(m.code)}
     #form-anestesi .an-tte-note { font-size: 7.6pt; margin-top: 4px; }
     #form-anestesi .an-tte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; break-inside: avoid; page-break-inside: avoid; }
     #form-anestesi .an-tte .tte-box { padding: 5px 4px; text-align: center; font-size: 8pt; }
-    #form-anestesi .an-tte .tte-qr { width: 54px; height: 54px; margin: 4px auto; border: 1px solid #000000; padding: 2px; display: flex; align-items: center; justify-content: center; }
+    #form-anestesi .an-tte .tte-qr { width: 54px; height: 54px; margin: 4px auto; display: flex; align-items: center; justify-content: center; }
     #form-anestesi .an-tte .tte-name { font-weight: bold; }
 </style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
