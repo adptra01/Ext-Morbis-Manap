@@ -35,10 +35,11 @@
 
 ### 🎨 style
 
-- **mKlaimMarks** — micro-polish mark bar — label count, chip ramping, popover anti-potong (`1842ae1`)
+- **mKlaimMarks** — micro-polish mark bar — label count, chip ramping, popover anti-potong (`65d5b93`)
 
 ### 🧹 chore
 
+- bump versi 1.5.264 (micro-polish mark bar) [skip ci] (`083ae53`)
 - **changelog** — sync entri scope mark bar (`7a437d0`)
 - bump versi 1.5.263 (scope mark bar) [skip ci] (`d8cabff`)
 - **changelog** — sync entri unified mark bar (`6c313b0`)
@@ -2307,4 +2308,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 1842ae10f6157b516a7b9d0f776fcdf204eea885 -->
+<!-- changelog-upto: 083ae53d5a7379d947ec01bfcd761c4bd65d6d0b -->
