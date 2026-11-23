@@ -24,12 +24,17 @@
 - **paLabPrint** — decode entity &lt;/&gt; pada teks medis hasil scrape (`b10a7d7`)
 - **mKlaimPrint** — RM.19A bersihkan artefak SIMRS & ejaan mediko-legal (`3cce138`)
 
+### ♻️ refactor
+
+- **mKlaimMarks** — 1 tombol + popover + multi-chip untuk ke-6 mark (`3663923`)
+
 ### 📝 docs
 
 - rapikan struktur folder — pisahkan dokumen tracked & bukti lokal (`8abf1c3`)
 
 ### 🧹 chore
 
+- **changelog** — sync entri simbol PA (`1ebf45a`)
 - bump versi 1.5.261 (simbol PA) [skip ci] (`28be175`)
 - **changelog** — sync marker fix NORM Auto-Crawl (`d1d6a53`)
 - **changelog** — sync entr fix NORM Auto-Crawl (`7b47b1c`)
@@ -2293,4 +2298,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 28be17516a7b44a5babe6b7002c7ff558fd3a244 -->
+<!-- changelog-upto: 3663923474571cff02fb4ea811dbeb410c303311 -->
