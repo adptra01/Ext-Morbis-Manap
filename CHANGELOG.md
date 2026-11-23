@@ -33,8 +33,13 @@
 
 - rapikan struktur folder — pisahkan dokumen tracked & bukti lokal (`8abf1c3`)
 
+### 🎨 style
+
+- **mKlaimMarks** — micro-polish mark bar — label count, chip ramping, popover anti-potong (`1842ae1`)
+
 ### 🧹 chore
 
+- **changelog** — sync entri scope mark bar (`7a437d0`)
 - bump versi 1.5.263 (scope mark bar) [skip ci] (`d8cabff`)
 - **changelog** — sync entri unified mark bar (`6c313b0`)
 - bump versi 1.5.262 (unified mark bar) [skip ci] (`4e80d1a`)
@@ -2302,4 +2307,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d8cabffee8c488f9e99237fcc3a617ff123ca7a3 -->
+<!-- changelog-upto: 1842ae10f6157b516a7b9d0f776fcdf204eea885 -->
