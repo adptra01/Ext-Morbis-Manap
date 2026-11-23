@@ -3300,15 +3300,68 @@ function buildAnestesiSection(sections: Section[]): string {
     cek('Epidural', 'before') === '&#10003;' ||
     cek('Kaudal', 'before') === '&#10003;' ||
     /subarachnoid/i.test(teks);
+  const skorDari = (...ids: string[]): string =>
+    ids
+      .map((id) => pick(id))
+      .filter((v) => v !== '-')
+      .join(' / ') || '-';
+  const aldreteNilai = skorDari(
+    'skorRR',
+    'skor15',
+    'skor30',
+    'skor1jam',
+    'skor2jam',
+    'skorkeluarRR',
+  );
+  const bromageNilai = skorDari(
+    'jampascaanestesi',
+    'jam15',
+    'jam30',
+    'jam45',
+    '1jam',
+    '2jam',
+    '3jam',
+    '4jam',
+  );
   const skorHtml = anak
-    ? '<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak; skor diisi di halaman asal.</td></tr>'
-    : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas · Pernapasan · Sirkulasi · Kesadaran · Warna — skor diisi di halaman asal.</td></tr>
+    ? `<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak. Nilai: ${skorDari('pergerakansteward', 'pernafasansteward', 'kesadaransteward')}</td></tr>`
+    : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas · Pernapasan · Sirkulasi · Kesadaran · Warna — ${
+        aldreteNilai !== '-'
+          ? `skor (RR/15'/30'/1j/2j/keluar): <strong>${esc(aldreteNilai)}</strong>`
+          : 'skor diisi di halaman asal.'
+      }</td></tr>
        <tr><td>Bromage Score</td><td colspan="3">${
          spinal
-           ? 'Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) — skor diisi di halaman asal.'
+           ? `Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) — ${
+               bromageNilai !== '-'
+                 ? `nilai: <strong>${esc(bromageNilai)}</strong>`
+                 : 'skor diisi di halaman asal.'
+             }`
            : 'Tidak Berlaku (anestesi non-regional).'
        }</td></tr>
        <tr><td>Steward Score</td><td colspan="3"><em>Tidak Berlaku (khusus pasien anak — pasien dewasa).</em></td></tr>`;
+
+  // Tanda vital & kronologi dari teks asli (span hasil flatten).
+  const ganti = (re: RegExp, fallback = '-'): string => teks.match(re)?.[1]?.trim() || fallback;
+  const vitalAwal = [
+    `GCS ${ganti(/GCS\s*:\s*(\d+)/i)}`,
+    `TD ${ganti(/Tekanan Darah\s*:\s*(\d+\s*\/\s*\d+)/i)} mmHg`,
+    `Nadi ${ganti(/Nadi\s*:\s*(\d+)/i)} x/mnt`,
+    `RR ${ganti(/RR\s*:\s*(\d+)/i)} x/mnt`,
+    `BB ${ganti(/BB\s*:\s*(\d+)/i)} kg`,
+    `TB ${ganti(/TB\s*:\s*(\d+)/i)} cm`,
+  ].join(' · ');
+  const jamBlok = [
+    `Suntikan ${ganti(/Suntikan Jam\s*:\s*([\d:]+)/i)}`,
+    `Analgesia ${ganti(/analgesia Jam\s*:\s*([\d:]+)/i)}`,
+    `Operasi ${ganti(/operasi Jam\s*:\s*([\d:]+)/i)}`,
+  ].join(' · ');
+  const vitalPasca = [
+    `Masuk RR ${ganti(/Masuk ruangan pemulihan jam\s*:\s*([\d:]+)/i)}`,
+    `Keluar RR ${ganti(/Jam keluar ruangan pemulihan\s*:\s*([\d:]+)/i)}`,
+    `TD ${ganti(/Tanda Vital[^:]*Tekanan Darah\s*:\s*(\d+\s*\/\s*\d+)/i)} mmHg`,
+    `Nadi ${ganti(/Nadi\s*:\s*(\d+)(?=\s*x\/mnt)/i)} x/mnt`,
+  ].join(' · ');
 
   // Instruksi pasca anestesi dari tabel asli.
   const instruksiTable = ownTable(/INSTRUKSI PASCA ANESTESI/i);
@@ -3354,6 +3407,7 @@ ${kop('RM. 21')}
 <table class="rm-grid-table"><tbody>${head('B. PENGKAJIAN PRA BEDAH &amp; RENCANA ANESTESI')}
 <tr><td><table class="an-kv">
   ${kv('Waktu Mulai', esc(jamMulai))}
+  ${kv('Tanda Vital Awal', esc(vitalAwal))}
   ${kv('Dokter Operator', esc(dokterOperator))}
   ${kv('Asisten Bedah', esc(val(/^Asisten Bedah|^Asisten/i)))}
   ${kv('Instrumen Bedah', esc(val(/^Instrumen Bedah|^Perawat Instrumen/i)))}
@@ -3365,6 +3419,7 @@ ${kop('RM. 21')}
 <table class="rm-grid-table"><tbody>${head('C. INDUKSI &amp; MONITORING ANESTESI')}
 <tr><td><table class="an-kv">
   ${kv('Teknik / Lokasi Tusukan', esc(val(/^Lokasi Tusukan/i)))}
+  ${kv('Waktu Suntikan / Analgesia / Operasi', esc(jamBlok))}
   ${kv('Anestesi Lokal', esc(val(/^Anestesi lokal/i)))}
   ${kv('ASA', `${cek(' I ')} I &nbsp; ${cek(' II ')} II &nbsp; ${cek(' III ')} III &nbsp; ${cek(' IV ')} IV &nbsp; ${cek(' V ')} V &nbsp; ${cek(' E ')} E`)}
 </table></td></tr>
@@ -3388,6 +3443,9 @@ ${kop('RM. 21')}
 </table></td></tr></tbody></table>
 
 <table class="rm-grid-table"><tbody>${head('E. PEMANTAUAN RUANG PULIH SADAR')}
+<tr><td><table class="an-kv">
+  ${kv('Kronologi & Tanda Vital RR', esc(vitalPasca))}
+</table></td></tr>
 <tr><td>${chartRr}</td></tr></tbody></table>
 
 <table class="rm-grid-table"><tbody>${head('F. PENILAIAN KELAYAKAN PINDAH RUANGAN')}
@@ -5266,3 +5324,6 @@ if (typeof g.featureModules !== 'undefined') {
     },
   };
 }
+
+// Diekspor untuk regression test (lihat tests/unit/mKlaimAnestesi.test.ts).
+export { formFields, doctorFromQr, buildAnestesiSection };

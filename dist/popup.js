@@ -1,5 +1,5 @@
-import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, i as Select, l as X, m as Switch, n as Button, o as SelectItem, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-18vYXSTs.js";
-// src/popup/StatusCard.tsx
+import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, i as Select, l as X, m as Switch, n as Button, o as SelectItem, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-n2Qh2CxV.js";
+//#region src/popup/StatusCard.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_client = require_client();
 var import_jsx_runtime = require_jsx_runtime();
@@ -76,7 +76,8 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 		})]
 	});
 }
-// src/popup/FeaturesPanel.tsx
+//#endregion
+//#region src/popup/FeaturesPanel.tsx
 function FeaturesPanel({ features, role, disabled, onToggle, onModeChange }) {
 	const entries = Object.entries(features).filter(([, f]) => role === "admin" || f.allowedRoles?.includes(role)).sort(([, a], [, b]) => (a.name ?? "").localeCompare(b.name ?? "", "id"));
 	const enabledCount = entries.filter(([, f]) => f.enabled && !f.comingSoon).length;
@@ -143,7 +144,8 @@ function FeaturesPanel({ features, role, disabled, onToggle, onModeChange }) {
 		})]
 	});
 }
-// src/popup/DomainPanel.tsx
+//#endregion
+//#region src/popup/DomainPanel.tsx
 function DomainPanel({ urls, onAdd, onRemove, onToggle }) {
 	const [input, setInput] = (0, import_react.useState)("");
 	const [error, setError] = (0, import_react.useState)(null);
@@ -232,7 +234,8 @@ function DomainPanel({ urls, onAdd, onRemove, onToggle }) {
 		})
 	] });
 }
-// src/popup/Footer.tsx
+//#endregion
+//#region src/popup/Footer.tsx
 function Footer({ onReload, onReset }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "flex items-center gap-2 px-4 py-2.5 border-t border-border",
@@ -251,7 +254,8 @@ function Footer({ onReload, onReset }) {
 		})]
 	});
 }
-// src/features/shared/usageLog.ts
+//#endregion
+//#region src/features/shared/usageLog.ts
 var KEY = "extUsageLog";
 /** Ambil log (terbaru dulu) — utk viewer/console. */
 async function getUsageLog() {
@@ -268,7 +272,8 @@ async function clearUsageLog() {
 		await chrome.storage.local.remove(KEY);
 	} catch {}
 }
-// src/popup/UsageLogPanel.tsx
+//#endregion
+//#region src/popup/UsageLogPanel.tsx
 function fmtTime(ts) {
 	const d = new Date(ts);
 	const p = (n) => String(n).padStart(2, "0");
@@ -354,7 +359,8 @@ function UsageLogPanel() {
 		})]
 	});
 }
-// src/popup/App.tsx
+//#endregion
+//#region src/popup/App.tsx
 async function loadAll() {
 	try {
 		const result = await sendMessage({ type: MessageTypes.GET_ALL });
@@ -612,6 +618,8 @@ function App() {
 		]
 	}) });
 }
-// popup/main.tsx
+//#endregion
+//#region popup/main.tsx
 var root = document.getElementById("root");
 if (root) (0, import_client.createRoot)(root).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
+//#endregion

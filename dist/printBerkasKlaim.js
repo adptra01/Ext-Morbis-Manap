@@ -1,4 +1,4 @@
-// src/features/shared/printDossier.ts
+//#region src/features/shared/printDossier.ts
 async function loadDossier(key) {
 	let got = await chrome.storage.session.get(key);
 	let html = got[key];
@@ -126,7 +126,8 @@ function installDossierHandlers(win) {
 		if (win.confirm("Apakah menu print ini akan ditutup?")) win.close();
 	});
 }
-// src/features/printBerkasKlaim/main.ts
+//#endregion
+//#region src/features/printBerkasKlaim/main.ts
 /** Halaman ekstensi asli untuk dossier cetak M-KLAIM.
 *  Berbeda dari about:blank: punya URL chrome-extension:// sehingga isi
 *  dossier tetap ada setelah tab di-refresh (dibaca ulang dari storage). */
@@ -149,3 +150,4 @@ async function boot() {
 	installDossierHandlers(window);
 }
 boot();
+//#endregion

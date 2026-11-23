@@ -21,6 +21,8 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — Anestesi — QR peran benar, cek arah, chart base64, spinal, formFields multi-pasangan (`f84dca5`)
+- **mKlaimPrint** — Anestesi — cek radio dua arah + tabel persiapan/penyakit/instruksi dari sel sendiri (`630125d`)
 - **mKlaimPrint** — Anestesi — lengkapi nilai (demografi lintas-section, medikasi/cairan, napas, tanggal) (`850cbed`)
 - **mKlaimPrint** — formFields — dukung format 'Label : nilai' (Anestesi) + nilai mengandung ':' (`459f429`)
 - **mKlaimPrint** — Operasi — temukan sel Uraian Pembedahan langsung (bukan baris pembungkus luar) (`e7e79ec`)
@@ -2348,4 +2350,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 3d2d7de797d85e776414fbeaa7c530493b8ac629 -->
+<!-- changelog-upto: f84dca5f5ccecd46ea6039d9a6132bb07c56ee31 -->

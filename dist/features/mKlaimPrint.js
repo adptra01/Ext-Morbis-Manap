@@ -1,5 +1,31 @@
 "use strict";
 var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/mKlaimPrint.ts
+  var mKlaimPrint_exports = {};
+  __export(mKlaimPrint_exports, {
+    buildAnestesiSection: () => buildAnestesiSection,
+    doctorFromQr: () => doctorFromQr,
+    formFields: () => formFields
+  });
+
   // src/features/shared/types.ts
   function getMorbisGlobals() {
     return window;
@@ -2175,8 +2201,7 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
       for (const cell of c) {
         for (const part of cell.split(/\n+/)) {
           const m = part.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
-          if (m && m[2].length <= 120 && !out.has(m[1].trim()))
-            out.set(m[1].trim(), m[2].trim());
+          if (m && m[2].length <= 120 && !out.has(m[1].trim())) out.set(m[1].trim(), m[2].trim());
         }
       }
     }
@@ -2481,9 +2506,32 @@ ${kop("RM. 19A")}
     ).join("");
     const anak = umur > 0 && umur < 18;
     const spinal = cek("Spinal", "before") === "&#10003;" || cek("Epidural", "before") === "&#10003;" || cek("Kaudal", "before") === "&#10003;" || /subarachnoid/i.test(teks);
-    const skorHtml = anak ? '<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak; skor diisi di halaman asal.</td></tr>' : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas \xB7 Pernapasan \xB7 Sirkulasi \xB7 Kesadaran \xB7 Warna \u2014 skor diisi di halaman asal.</td></tr>
-       <tr><td>Bromage Score</td><td colspan="3">${spinal ? "Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) \u2014 skor diisi di halaman asal." : "Tidak Berlaku (anestesi non-regional)."}</td></tr>
+    const skorDari = (...ids) => ids.map((id) => pick(id)).filter((v) => v !== "-").join(" / ") || "-";
+    const aldreteNilai = skorDari("skorRR", "skor15", "skor30", "skor1jam", "skor2jam", "skorkeluarRR");
+    const bromageNilai = skorDari("jampascaanestesi", "jam15", "jam30", "jam45", "1jam", "2jam", "3jam", "4jam");
+    const skorHtml = anak ? `<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak. Nilai: ${skorDari("pergerakansteward", "pernafasansteward", "kesadaransteward")}</td></tr>` : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas \xB7 Pernapasan \xB7 Sirkulasi \xB7 Kesadaran \xB7 Warna \u2014 ${aldreteNilai !== "-" ? `skor (RR/15'/30'/1j/2j/keluar): <strong>${esc(aldreteNilai)}</strong>` : "skor diisi di halaman asal."}</td></tr>
+       <tr><td>Bromage Score</td><td colspan="3">${spinal ? `Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) \u2014 ${bromageNilai !== "-" ? `nilai: <strong>${esc(bromageNilai)}</strong>` : "skor diisi di halaman asal."}` : "Tidak Berlaku (anestesi non-regional)."}</td></tr>
        <tr><td>Steward Score</td><td colspan="3"><em>Tidak Berlaku (khusus pasien anak \u2014 pasien dewasa).</em></td></tr>`;
+    const ganti = (re, fallback = "-") => teks.match(re)?.[1]?.trim() || fallback;
+    const vitalAwal = [
+      `GCS ${ganti(/GCS\s*:\s*(\d+)/i)}`,
+      `TD ${ganti(/Tekanan Darah\s*:\s*(\d+\s*\/\s*\d+)/i)} mmHg`,
+      `Nadi ${ganti(/Nadi\s*:\s*(\d+)/i)} x/mnt`,
+      `RR ${ganti(/RR\s*:\s*(\d+)/i)} x/mnt`,
+      `BB ${ganti(/BB\s*:\s*(\d+)/i)} kg`,
+      `TB ${ganti(/TB\s*:\s*(\d+)/i)} cm`
+    ].join(" \xB7 ");
+    const jamBlok = [
+      `Suntikan ${ganti(/Suntikan Jam\s*:\s*([\d:]+)/i)}`,
+      `Analgesia ${ganti(/analgesia Jam\s*:\s*([\d:]+)/i)}`,
+      `Operasi ${ganti(/operasi Jam\s*:\s*([\d:]+)/i)}`
+    ].join(" \xB7 ");
+    const vitalPasca = [
+      `Masuk RR ${ganti(/Masuk ruangan pemulihan jam\s*:\s*([\d:]+)/i)}`,
+      `Keluar RR ${ganti(/Jam keluar ruangan pemulihan\s*:\s*([\d:]+)/i)}`,
+      `TD ${ganti(/Tanda Vital[^:]*Tekanan Darah\s*:\s*(\d+\s*\/\s*\d+)/i)} mmHg`,
+      `Nadi ${ganti(/Nadi\s*:\s*(\d+)(?=\s*x\/mnt)/i)} x/mnt`
+    ].join(" \xB7 ");
     const instruksiTable = ownTable(/INSTRUKSI PASCA ANESTESI/i);
     const instruksi = rowsOf(instruksiTable).flat().map((x) => x.replace(/^[\d\s]+/, "").trim()).filter((x) => x && !/INSTRUKSI PASCA ANESTESI/i.test(x) && x.length > 3);
     const instruksiHtml = instruksi.length ? '<ol class="an-instruksi">' + instruksi.map((x) => `<li>${esc(x)}</li>`).join("") + "</ol>" : "<div>-</div>";
@@ -2518,6 +2566,7 @@ ${kop("RM. 21")}
 <table class="rm-grid-table"><tbody>${head("B. PENGKAJIAN PRA BEDAH &amp; RENCANA ANESTESI")}
 <tr><td><table class="an-kv">
   ${kv("Waktu Mulai", esc(jamMulai))}
+  ${kv("Tanda Vital Awal", esc(vitalAwal))}
   ${kv("Dokter Operator", esc(dokterOperator))}
   ${kv("Asisten Bedah", esc(val2(/^Asisten Bedah|^Asisten/i)))}
   ${kv("Instrumen Bedah", esc(val2(/^Instrumen Bedah|^Perawat Instrumen/i)))}
@@ -2529,6 +2578,7 @@ ${kop("RM. 21")}
 <table class="rm-grid-table"><tbody>${head("C. INDUKSI &amp; MONITORING ANESTESI")}
 <tr><td><table class="an-kv">
   ${kv("Teknik / Lokasi Tusukan", esc(val2(/^Lokasi Tusukan/i)))}
+  ${kv("Waktu Suntikan / Analgesia / Operasi", esc(jamBlok))}
   ${kv("Anestesi Lokal", esc(val2(/^Anestesi lokal/i)))}
   ${kv("ASA", `${cek(" I ")} I &nbsp; ${cek(" II ")} II &nbsp; ${cek(" III ")} III &nbsp; ${cek(" IV ")} IV &nbsp; ${cek(" V ")} V &nbsp; ${cek(" E ")} E`)}
 </table></td></tr>
@@ -2552,6 +2602,9 @@ ${kop("RM. 21")}
 </table></td></tr></tbody></table>
 
 <table class="rm-grid-table"><tbody>${head("E. PEMANTAUAN RUANG PULIH SADAR")}
+<tr><td><table class="an-kv">
+  ${kv("Kronologi & Tanda Vital RR", esc(vitalPasca))}
+</table></td></tr>
 <tr><td>${chartRr}</td></tr></tbody></table>
 
 <table class="rm-grid-table"><tbody>${head("F. PENILAIAN KELAYAKAN PINDAH RUANGAN")}
@@ -4209,4 +4262,5 @@ ${kop(m.code)}
       }
     };
   }
+  return __toCommonJS(mKlaimPrint_exports);
 })();

@@ -1,5 +1,5 @@
-import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-18vYXSTs.js";
-// node_modules/lucide-react/dist/esm/icons/check.mjs
+import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-n2Qh2CxV.js";
+//#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -16,7 +16,8 @@ var __iconData$7 = {
 };
 __iconData$7.node;
 var Check = createLucideIcon(__iconData$7);
-// node_modules/lucide-react/dist/esm/icons/circle-alert.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/circle-alert.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -52,7 +53,8 @@ var __iconData$6 = {
 };
 __iconData$6.node;
 var CircleAlert = createLucideIcon(__iconData$6);
-// node_modules/lucide-react/dist/esm/icons/eye.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/eye.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -74,7 +76,8 @@ var __iconData$5 = {
 };
 __iconData$5.node;
 var Eye = createLucideIcon(__iconData$5);
-// node_modules/lucide-react/dist/esm/icons/info.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/info.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -103,7 +106,8 @@ var __iconData$4 = {
 };
 __iconData$4.node;
 var Info = createLucideIcon(__iconData$4);
-// node_modules/lucide-react/dist/esm/icons/search.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/search.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -125,7 +129,8 @@ var __iconData$3 = {
 };
 __iconData$3.node;
 var Search = createLucideIcon(__iconData$3);
-// node_modules/lucide-react/dist/esm/icons/trash.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/trash.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -161,7 +166,8 @@ var __iconData$2 = {
 };
 __iconData$2.node;
 var Trash = createLucideIcon(__iconData$2);
-// node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -189,7 +195,8 @@ var __iconData$1 = {
 };
 __iconData$1.node;
 var TriangleAlert = createLucideIcon(__iconData$1);
-// node_modules/lucide-react/dist/esm/icons/upload.mjs
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/upload.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
 *
@@ -216,7 +223,8 @@ var __iconData = {
 };
 __iconData.node;
 var Upload = createLucideIcon(__iconData);
-// src/ui/hooks/useDarkMode.ts
+//#endregion
+//#region src/ui/hooks/useDarkMode.ts
 var import_client = require_client();
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var STORAGE_KEY = "theme";
@@ -259,7 +267,8 @@ function useDarkMode() {
 		setTheme: setAndStore
 	};
 }
-// src/ui/components/Badge.tsx
+//#endregion
+//#region src/ui/components/Badge.tsx
 var import_jsx_runtime = require_jsx_runtime();
 var variants = {
 	default: "bg-primary/10 text-primary border-primary/20",
@@ -289,7 +298,8 @@ function Badge({ variant = "default", icon, children, className, onDismiss }) {
 		]
 	});
 }
-// src/features/sidepanel/RoleSelector.tsx
+//#endregion
+//#region src/features/sidepanel/RoleSelector.tsx
 var roleOptions = [
 	{
 		value: "casemix",
@@ -331,7 +341,8 @@ function RoleSelector({ value, onChange }) {
 		}, opt.value))
 	});
 }
-// src/features/sidepanel/StatusCard.tsx
+//#endregion
+//#region src/features/sidepanel/StatusCard.tsx
 function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between",
@@ -359,7 +370,8 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 		})]
 	});
 }
-// src/features/sidepanel/FeaturesPanel.tsx
+//#endregion
+//#region src/features/sidepanel/FeaturesPanel.tsx
 function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, onModeChange }) {
 	const visible = features.filter((f) => role === "admin" || f.roles.includes(role)).sort((a, b) => a.name.localeCompare(b.name, "id"));
 	const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
@@ -438,7 +450,8 @@ function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, on
 		})
 	] });
 }
-// src/features/sidepanel/DomainPanel.tsx
+//#endregion
+//#region src/features/sidepanel/DomainPanel.tsx
 var isValidUrl = (url) => {
 	try {
 		const p = new URL(url);
@@ -533,7 +546,8 @@ function DomainPanel({ urls, onAdd, onRemove, onToggle }) {
 		]
 	});
 }
-// src/features/sidepanel/BatchUploadPanel.tsx
+//#endregion
+//#region src/features/sidepanel/BatchUploadPanel.tsx
 function BatchUploadPanel({ tabId }) {
 	const [mode, setMode] = (0, import_react.useState)("manual");
 	const [inputText, setInputText] = (0, import_react.useState)("");
@@ -860,7 +874,8 @@ function BatchUploadPanel({ tabId }) {
 		]
 	});
 }
-// src/features/sidepanel/BatchDeletePanel.tsx
+//#endregion
+//#region src/features/sidepanel/BatchDeletePanel.tsx
 function BatchDeletePanel({ tabId }) {
 	const [items, setItems] = (0, import_react.useState)([]);
 	const [isProcessing, setIsProcessing] = (0, import_react.useState)(false);
@@ -1129,7 +1144,8 @@ function BatchDeletePanel({ tabId }) {
 		]
 	});
 }
-// src/features/sidepanel/ConsultationDetailPanel.tsx
+//#endregion
+//#region src/features/sidepanel/ConsultationDetailPanel.tsx
 function ConsultationDetailPanel({ data }) {
 	const fields = [
 		{
@@ -1175,7 +1191,8 @@ function ConsultationDetailPanel({ data }) {
 		})] }, i))]
 	});
 }
-// src/features/shared/sanitizeHtml.ts
+//#endregion
+//#region src/features/shared/sanitizeHtml.ts
 /**
 * sanitizeHtml.ts — sanitizer HTML dari server MORBIS sebelum dirender lewat
 * `dangerouslySetInnerHTML` / `innerHTML` (anti DOM XSS). Ringan, berbasis
@@ -1211,7 +1228,8 @@ function sanitizeHtml(html) {
 		return "";
 	}
 }
-// src/features/sidepanel/ConsultationInfoPanel.tsx
+//#endregion
+//#region src/features/sidepanel/ConsultationInfoPanel.tsx
 var TABS = [
 	{
 		id: "resep",
@@ -1332,7 +1350,8 @@ function ConsultationInfoPanel({ data }) {
 		]
 	});
 }
-// src/features/sidepanel/Footer.tsx
+//#endregion
+//#region src/features/sidepanel/Footer.tsx
 function Footer({ onReload, onReset }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "flex items-center justify-between px-4 py-3 border-t border-border",
@@ -1349,7 +1368,8 @@ function Footer({ onReload, onReset }) {
 		})]
 	});
 }
-// src/features/sidepanel/utils.ts
+//#endregion
+//#region src/features/sidepanel/utils.ts
 function configToFeatureList(features) {
 	return Object.entries(features).map(([key, f]) => ({
 		key,
@@ -1366,7 +1386,8 @@ function configToToggles(features) {
 	for (const [key, f] of Object.entries(features || {})) toggles[key] = f.enabled ?? false;
 	return toggles;
 }
-// src/features/sidepanel/App.tsx
+//#endregion
+//#region src/features/sidepanel/App.tsx
 var FALLBACK_FEATURES = [
 	{
 		key: "openDetailInNewTab",
@@ -2000,6 +2021,8 @@ function App() {
 		]
 	}) });
 }
-// src/features/sidepanel/main.tsx
+//#endregion
+//#region src/features/sidepanel/main.tsx
 var root = document.getElementById("app");
 if (root) (0, import_client.createRoot)(root).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
+//#endregion
