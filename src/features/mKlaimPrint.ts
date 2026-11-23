@@ -574,9 +574,9 @@ const RM_META: Array<[RegExp, { id: string; code: string; tab: string; option: s
     /^Anestesi/i,
     {
       id: 'form-anestesi',
-      code: 'ANESTESI',
-      tab: 'Anestesi',
-      option: 'Anestesi — Rekam Pelaksanaan Anestesi',
+      code: 'RM. 21',
+      tab: 'RM. 21 Anestesi',
+      option: 'RM. 21 — Laporan Anestesi',
     },
   ],
   [
@@ -3099,40 +3099,239 @@ ${kop('RM. 19A')}
 </section>`;
 }
 
-/** FORM — REKAM ANESTESI. */
+/** FORM — LAPORAN ANESTESI (RM. 21), 2 halaman A4 portrait terkontrol.
+ *
+ * Halaman 1: kop + identitas, checklist persiapan, pengkajian pra bedah
+ * (riwayat penyakit diringkas jadi grid 3 kolom), induksi & grafik monitoring.
+ * Halaman 2: running header, medikasi/cairan/jalan napas, grafik RR, skor
+ * Aldrete/Bromage (Steward otomatis "Tidak Berlaku" untuk dewasa),
+ * instruksi pasca anestesi, dan 3 QR TTE sejajar.
+ * Semua nilai berasal dari scrape; kosong → '-'.
+ */
 function buildAnestesiSection(sections: Section[]): string {
+  const src = sections.find((s) => /^Anestesi/i.test(s.title));
+  const doc = src ? new DOMParser().parseFromString(src.html, 'text/html') : null;
   const fields = formFields(sections, /^Anestesi/i);
-  const rows = formRows(sections, /^Anestesi/i);
-  const f = (...r: RegExp[]) => fieldValue(fields, ...r);
+  const f = (...r: RegExp[]): string => fieldValue(fields, ...r);
+  const val = (...r: RegExp[]): string => {
+    const v = decodeEntities(f(...r))
+      .replace(/\s+/g, ' ')
+      .trim();
+    return v && v !== '-' ? v : '-';
+  };
+  const teks = doc ? (doc.body.textContent || '').replace(/\s+/g, ' ').trim() : '';
+  const tables = doc ? Array.from(doc.querySelectorAll('table')) : [];
+  const rowsOf = (t?: Element): string[][] =>
+    t
+      ? Array.from(t.rows).map((tr) =>
+          Array.from(tr.cells).map((td) => (td.textContent || '').replace(/\s+/g, ' ').trim()),
+        )
+      : [];
+  const cek = (label: string): string =>
+    new RegExp(`${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*✓`, 'i').test(teks)
+      ? '&#10003;'
+      : '&nbsp;';
+
+  // Identitas & tim (field halaman lebih lengkap, fallback ke scratch).
+  const nama = pick('nama') !== '-' ? pick('nama') : val(/^Nama Pasien/i);
+  const norm =
+    pick('norm', 'rekam_medis') !== '-' ? pick('norm', 'rekam_medis') : val(/^No\.? RM/i);
+  const lahir = pick('tgl_lahir', 'tglLahir');
+  const umurTeks = pick('umur') !== '-' ? pick('umur') : val(/^Umur/i);
+  const umur = Number(umurTeks.match(/(\d{1,3})/)?.[1] || 0);
+  const jkRaw = pick('jenis_kelamin', 'jk') || val(/^Jenis Kelamin/i);
+  const jk = /perempuan|^p$/i.test(jkRaw)
+    ? 'Perempuan (P)'
+    : /laki|^l$/i.test(jkRaw)
+      ? 'Laki-laki (L)'
+      : jkRaw;
+  const dokterAnestesi = val(/^Dokter Anestesi/i);
+  const dokterOperator =
+    val(/^Dokter Bedah/i) !== '-' ? val(/^Dokter Bedah/i) : pick('dokter', 'dpjp');
+  const penata = val(/^Penata Anestesi/i);
+  const ruang = val(/^Ruangan/i) !== '-' ? val(/^Ruangan/i) : pick('jenis', 'kelas', 'ruang');
+  const tglTindakan =
+    val(/^Tanggal/i) !== '-' ? val(/^Tanggal/i) : pick('tanggalAwal', 'tgl_masuk', 'tgl');
+  const diagnosaPra = val(/^Diagnosis Prabedah|^Diagnosa Pra/i);
+  const diagnosaPasca = val(/^Diagnosis Pasca Bedah|^Diagnosa Pasca/i);
+  const jenisPembedahan = val(/^Jenis pembedahan/i);
+  const jenisOperasi = val(/^Jenis operasi/i);
+  const jamMulai = val(/^Jam Mulai/i);
+
+  // Checklist persiapan — label dibaca dari baris asli, centang dari ✓ hasil flatten.
+  const prepTable = tables.find((t) => /Informed Consent/i.test(t.textContent || ''));
+  const prepItems = rowsOf(prepTable)
+    .flat()
+    .filter(Boolean)
+    .map((x) => ({ label: x.replace(/^[\d\s✓]+/, '').trim(), on: /✓/.test(x) }))
+    .filter((x) => x.label && x.label.length < 60);
+  const prepHtml = prepItems.length
+    ? prepItems
+        .map(
+          (p) =>
+            `<div><span class="chk-box">${p.on ? '&#10003;' : '&nbsp;'}</span> ${esc(p.label)}</div>`,
+        )
+        .join('')
+    : '<div>-</div>';
+
+  // Riwayat penyakit / faktor risiko diringkas jadi 3 kolom.
+  const penyakitTable = tables.find((t) => /PENYAKIT PENYERTA/i.test(t.textContent || ''));
+  const penyakitRows = rowsOf(penyakitTable)
+    .slice(1)
+    .filter((r) => r.length >= 2 && r[0] && !/PENYAKIT PENYERTA/i.test(r[0]));
+  const penyakitHtml = penyakitRows.length
+    ? penyakitRows
+        .map(
+          (r) =>
+            `<div><span class="chk-box">${/ya|ada|\+/i.test(r[1]) ? '&#10003;' : '&nbsp;'}</span> ${esc(r[0])}</div>`,
+        )
+        .join('')
+    : '<div>-</div>';
+
+  // Grafik monitoring: kanvas sudah diubah jadi <img> data-URL oleh clean().
+  const chartImgs = Array.from(doc?.querySelectorAll('img') || []).filter((img) => {
+    const s = img.getAttribute('src') || '';
+    const cls = img.getAttribute('class') || '';
+    return !!s && !/logo|kars|qr|barcode/i.test(s) && !/logo/i.test(cls);
+  });
+  const chart = (img?: Element): string =>
+    img
+      ? `<div class="chart-frame">${img.outerHTML}</div>`
+      : '<div class="chart-frame">Grafik tidak tersedia pada berkas ini.</div>';
+  const chartIntra = chart(chartImgs[0]);
+  const chartRr = chart(chartImgs[1] ?? chartImgs[0]);
+
+  // TTE: 3 QR asli berurutan dari halaman.
+  const qrs = sectionQrs(sections, /^Anestesi/i);
+  const ttd: Array<[string, string, string]> = [
+    [
+      'Dokter Spesialis Anestesiologi',
+      qrs[0] || '',
+      dokterAnestesi !== '-' ? dokterAnestesi : doctorFromQr(qrs[0]),
+    ],
+    [
+      'Dokter Operator',
+      qrs[1] || '',
+      dokterOperator !== '-' ? dokterOperator : doctorFromQr(qrs[1]),
+    ],
+    ['Penata / Perawat Anestesi', qrs[2] || '', penata !== '-' ? penata : doctorFromQr(qrs[2])],
+  ];
+  const tteHtml = ttd
+    .map(
+      ([role, qr, who]) =>
+        '<div class="tte-box"><div>' +
+        esc(role) +
+        '</div><div class="tte-qr">' +
+        (qr ? `<img src="${esc(qr)}" alt="QR TTE" width="54" height="54" />` : '') +
+        '</div><div class="tte-name">' +
+        esc(who) +
+        '</div></div>',
+    )
+    .join('');
+
+  // Skor pemulihan: dewasa + regional → Aldrete & Bromage; anak → Steward.
+  const anak = umur > 0 && umur < 18;
+  const spinal = /spinal|subarachnoid|regional/i.test(
+    [val(/^Rencana Anestesi/i), val(/^Teknik/i), teks].join(' '),
+  );
+  const skorHtml = anak
+    ? '<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak; skor diisi di halaman asal.</td></tr>'
+    : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas · Pernapasan · Sirkulasi · Kesadaran · Warna — skor diisi di halaman asal.</td></tr>
+       <tr><td>Bromage Score</td><td colspan="3">${
+         spinal
+           ? 'Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) — skor diisi di halaman asal.'
+           : 'Tidak Berlaku (anestesi non-regional).'
+       }</td></tr>
+       <tr><td>Steward Score</td><td colspan="3"><em>Tidak Berlaku (khusus pasien anak — pasien dewasa).</em></td></tr>`;
+
+  // Instruksi pasca anestesi dari tabel asli.
+  const instruksiTable = tables.find((t) => /INSTRUKSI PASCA ANESTESI/i.test(t.textContent || ''));
+  const instruksi = rowsOf(instruksiTable)
+    .flat()
+    .map((x) => x.replace(/^[\d\s]+/, '').trim())
+    .filter((x) => x && !/INSTRUKSI PASCA ANESTESI/i.test(x) && x.length > 3);
+  const instruksiHtml = instruksi.length
+    ? '<ol class="an-instruksi">' + instruksi.map((x) => `<li>${esc(x)}</li>`).join('') + '</ol>'
+    : '<div>-</div>';
+
+  const kv = (label: string, value: string): string =>
+    `<tr><td class="k">${label}</td><td class="c">:</td><td class="v">${value}</td></tr>`;
+  const head = (judul: string): string =>
+    `<tr><th class="rm-sec-head" style="text-align:left;">${judul}</th></tr>`;
+
   return `<section class="rm-page" id="form-anestesi">
-${kop('ANESTESI')}
-<div class="rm-form-title">REKAM PELAKSANAAN ANESTESI</div>
-<div class="id-box-bordered">
-  <div class="id-col"><table class="id-table">
-    ${idRow('Nama Pasien', pick('nama'), true)}
-    ${idRow('No. Rekam Medis', pick('norm', 'rekam_medis'))}
-    ${idRow('Tgl. Lahir', pick('tgl_lahir', 'tglLahir'))}
-    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk'))}
-  </table></div>
-  <div class="id-col"><table class="id-table">
-    ${idRow('Tanggal', f(/^Tanggal/i))}
-    ${idRow('Jenis Anestesi', f(/^Jenis Anestesi|^Anestesi/i))}
-    ${idRow('ASA', f(/^ASA/i))}
-    ${idRow('Dokter Anestesi', f(/^Dokter Anestesi|^Anestesiologi/i))}
-  </table></div>
+<div class="an-meta"><span>Halaman 1 dari 2</span><span>RM. 21</span></div>
+${kop('RM. 21')}
+<div class="rm-form-title">LAPORAN ANESTESI</div>
+<div class="an-subtitle">REKAM PELAKSANAAN ANESTESI</div>
+
+<table class="rm-grid-table"><tbody><tr>
+  <td style="width:52%;"><table class="an-kv">
+    ${kv('Nama Pasien', `<strong>${esc(nama)}</strong>`)}
+    ${kv('No. Rekam Medis', `<strong>${esc(norm)}</strong>`)}
+    ${kv('Tgl. Lahir / Umur', `${esc(lahir)} (${esc(umurTeks)} / ${esc(jk)})`)}
+    ${kv('Diagnosa Pra Bedah', esc(diagnosaPra))}
+    ${kv('Diagnosa Pasca Bedah', `<strong>${esc(diagnosaPasca)}</strong>`)}
+  </table></td>
+  <td><table class="an-kv">
+    ${kv('Tanggal Tindakan', `<strong>${esc(tglTindakan)}</strong>`)}
+    ${kv('Jenis Pembedahan', esc(jenisPembedahan))}
+    ${kv('Jenis Operasi', esc(jenisOperasi))}
+    ${kv('Ruangan', esc(ruang))}
+    ${kv('Dokter Anestesi', `<strong>${esc(dokterAnestesi)}</strong>`)}
+  </table></td>
+</tr></tbody></table>
+
+<table class="rm-grid-table"><tbody>${head('A. JENIS PERSIAPAN ANESTESI')}
+<tr><td><div class="an-grid-4">${prepHtml}</div></td></tr></tbody></table>
+
+<table class="rm-grid-table"><tbody>${head('B. PENGKAJIAN PRA BEDAH &amp; RENCANA ANESTESI')}
+<tr><td><table class="an-kv">
+  ${kv('Waktu Mulai', esc(jamMulai))}
+  ${kv('Dokter Operator', esc(dokterOperator))}
+  ${kv('Asisten Bedah', esc(val(/^Asisten Bedah|^Asisten/i)))}
+  ${kv('Instrumen Bedah', esc(val(/^Instrumen Bedah|^Perawat Instrumen/i)))}
+  ${kv('Rencana Anestesi', `${cek('Anestesi Umum')} Umum &nbsp; ${cek('Spinal')} Spinal &nbsp; ${cek('Epidural')} Epidural &nbsp; ${cek('Kaudal')} Kaudal`)}
+</table>
+<div class="an-risk"><strong>Riwayat Penyakit &amp; Faktor Risiko:</strong><div class="an-grid-3">${penyakitHtml}</div></div>
+</td></tr></tbody></table>
+
+<table class="rm-grid-table"><tbody>${head('C. INDUKSI &amp; MONITORING ANESTESI')}
+<tr><td><table class="an-kv">
+  ${kv('Teknik / Lokasi Tusukan', `${esc(val(/^Teknik :|^Lokasi Tusukan/i))} ${esc(val(/^Analgesia setinggi/i))}`)}
+  ${kv('Anestesi Lokal', esc(val(/^Anestesi lokal/i)))}
+  ${kv('ASA', `${cek(' I ')} I &nbsp; ${cek(' II ')} II &nbsp; ${cek(' III ')} III &nbsp; ${cek(' IV ')} IV &nbsp; ${cek(' V ')} V &nbsp; ${cek(' E ')} E`)}
+</table></td></tr>
+<tr><td>${chartIntra}</td></tr></tbody></table>
+
+<!-- ================= HALAMAN 2 ================= -->
+<div class="an-page-break"></div>
+<div class="an-running">
+  <span><strong>LAPORAN ANESTESI (LANJUTAN)</strong> — ${esc(HOSPITAL_NAME)}</span>
+  <span>Pasien: <strong>${esc(nama)}</strong> • RM: <strong>${esc(norm)}</strong></span>
+  <span><strong>Halaman 2 dari 2 • RM. 21</strong></span>
 </div>
-${kvTable([
-  ['DIAGNOSA / TINDAKAN', f(/^Diagnosa|^Tindakan/i)],
-  ['PEMERIKSAAN PRA ANESTESI', f(/^Pra Anestesi|^Pemeriksaan/i)],
-  ['OBAT &amp; TEKNIK ANESTESI', f(/^Obat|^Teknik/i)],
-  ['KOMPLIKASI / CATATAN', f(/^Komplikasi|^Catatan/i)],
-])}
-<div class="sub-heading-rm">MONITORING ANESTESI</div>
-${dataTable(['JAM', 'TEKANAN DARAH', 'NADI', 'RR', 'SpO2', 'CATATAN'], rows, true)}
-${sig(
-  ['Petugas Anestesi', `( ${esc(f(/^Dokter Anestesi|^Anestesiologi/i))} )`],
-  ['Kota Jambi, ' + esc(f(/^Tanggal/i)), 'Dokter Operator', `( ${esc(pick('dokter', 'dpjp'))} )`],
-)}
+
+<table class="rm-grid-table"><tbody>${head('D. MEDIKASI, CAIRAN &amp; JALAN NAPAS')}
+<tr><td><table class="an-kv">
+  ${kv('Medikasi', esc(val(/^MEDIKASI|^Obat/i)))}
+  ${kv('Pemberian Cairan', esc(val(/^PEMBERIAN CAIRAN|^RL /i)))}
+  ${kv('Total Asupan Cairan', esc(val(/^kristaloid/i)))}
+  ${kv('Total Keluaran Cairan', `Perdarahan ${esc(val(/^perdarahan/i))} • Diuresis ${esc(val(/^diuresis/i))}`)}
+  ${kv('Pengelolaan Napas', esc(val(/^Respirasi|^Air way/i)))}
+</table></td></tr></tbody></table>
+
+<table class="rm-grid-table"><tbody>${head('E. PEMANTAUAN RUANG PULIH SADAR')}
+<tr><td>${chartRr}</td></tr></tbody></table>
+
+<table class="rm-grid-table"><tbody>${head('F. PENILAIAN KELAYAKAN PINDAH RUANGAN')}
+${skorHtml}</tbody></table>
+
+<table class="rm-grid-table"><tbody>${head('G. INSTRUKSI PASCA ANESTESI')}
+<tr><td>${instruksiHtml}</td></tr></tbody></table>
+
+<div class="an-tte-note">Jambi, ${esc(tglTindakan)} — Dokumen ditandatangani secara elektronik (TTE):</div>
+<footer class="an-tte">${tteHtml}</footer>
 </section>`;
 }
 
@@ -4763,6 +4962,28 @@ ${kop(m.code)}
     #form-operasi .op-preface { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px dashed #666666; }
     #form-operasi .op-steps { margin: 3px 0 0; padding-left: 18px; }
     #form-operasi .op-steps li { margin-bottom: 2px; }
+
+    /* Laporan Anestesi (RM.21) — 2 halaman A4, grafik terkunci, 3 TTE sejajar. */
+    #form-anestesi .an-meta { display: flex; justify-content: space-between; font-size: 8pt; font-weight: bold; margin-bottom: 2px; }
+    #form-anestesi .an-subtitle { text-align: center; font-size: 8.5pt; letter-spacing: 0.08em; margin: -4px 0 6px; }
+    #form-anestesi .an-kv { width: 100%; border-collapse: collapse; }
+    #form-anestesi .an-kv td { border: none; padding: 1.5px 0; vertical-align: top; font-size: 8.2pt; line-height: 1.3; }
+    #form-anestesi .an-kv td.k { width: 112px; white-space: nowrap; }
+    #form-anestesi .an-kv td.c { width: 10px; text-align: center; }
+    #form-anestesi .an-kv td.v { overflow-wrap: anywhere; }
+    #form-anestesi .an-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px 6px; font-size: 8pt; }
+    #form-anestesi .an-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 8px; font-size: 7.8pt; margin-top: 2px; }
+    #form-anestesi .an-risk { margin-top: 4px; padding-top: 4px; border-top: 1px dashed #666666; }
+    #form-anestesi .chart-frame { padding: 4px; text-align: center; border: 1px solid #000000; break-inside: avoid; page-break-inside: avoid; }
+    #form-anestesi .chart-frame img { max-width: 100%; height: auto; }
+    #form-anestesi .an-page-break { page-break-before: always; break-before: page; }
+    #form-anestesi .an-running { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; border-bottom: 1.5px solid #000000; padding-bottom: 4px; margin: 0 0 7px; font-size: 8pt; }
+    #form-anestesi .an-instruksi { margin: 0; padding-left: 18px; line-height: 1.4; font-size: 8.2pt; }
+    #form-anestesi .an-tte-note { font-size: 7.6pt; margin-top: 4px; }
+    #form-anestesi .an-tte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; break-inside: avoid; page-break-inside: avoid; }
+    #form-anestesi .an-tte .tte-box { border: 1px solid #000000; padding: 5px 4px; text-align: center; font-size: 8pt; }
+    #form-anestesi .an-tte .tte-qr { width: 54px; height: 54px; margin: 4px auto; border: 1px solid #000000; padding: 2px; display: flex; align-items: center; justify-content: center; }
+    #form-anestesi .an-tte .tte-name { font-weight: bold; text-decoration: underline; }
 </style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
 <div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>

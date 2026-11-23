@@ -662,6 +662,44 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).not.toContain('sep-sig-line');
   });
 
+  it('Anestesi (RM.21): 2 halaman, grafik terkunci, skor umur, 3 QR TTE', () => {
+    const an = src.slice(
+      src.indexOf('function buildAnestesiSection'),
+      src.indexOf('function buildFisioterapiSection'),
+    );
+    for (const marker of [
+      "kop('RM. 21')",
+      'Halaman 1 dari 2',
+      'Halaman 2 dari 2',
+      'an-page-break',
+      'an-running',
+      'REKAM PELAKSANAAN ANESTESI',
+      'A. JENIS PERSIAPAN ANESTESI',
+      'an-grid-4',
+      'B. PENGKAJIAN PRA BEDAH &amp; RENCANA ANESTESI',
+      'an-grid-3',
+      'C. INDUKSI &amp; MONITORING ANESTESI',
+      'chart-frame',
+      'D. MEDIKASI, CAIRAN &amp; JALAN NAPAS',
+      'E. PEMANTAUAN RUANG PULIH SADAR',
+      'F. PENILAIAN KELAYAKAN PINDAH RUANGAN',
+      'Aldrete Score',
+      'Bromage Score',
+      'Tidak Berlaku (khusus pasien anak',
+      'G. INSTRUKSI PASCA ANESTESI',
+      'an-tte',
+      'sectionQrs(sections, /^Anestesi/i)',
+    ]) {
+      expect(an).toContain(marker);
+    }
+    // Tiga kolom TTE sejajar, tidak ada data contoh prototipe.
+    expect(an).toContain("'Dokter Spesialis Anestesiologi'");
+    expect(an).toContain("'Dokter Operator'");
+    expect(an).toContain("'Penata / Perawat Anestesi'");
+    expect(an).not.toContain('TEMU JAYANTI');
+    expect(an).not.toContain('00054438');
+  });
+
   it('Operasi (RM.20): grid 2 kolom, uraian bernomor, ejaan klinis dibetulkan', () => {
     const op = src.slice(
       src.indexOf('function buildOperasiSection'),
