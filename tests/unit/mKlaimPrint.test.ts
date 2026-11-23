@@ -119,45 +119,70 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildSepSection(sections);');
   });
 
-  it('Surat Kontrol: sheet BPJS sama persis dengan SEP (tanpa CSS baru)', () => {
+  it('Surat Rencana Kontrol: isi sesuai cetakan asli, kulit sheet SEP', () => {
     const sk = src.slice(
       src.indexOf('function buildSuratKontrolSection'),
       src.indexOf('function buildBillingSection'),
     );
+    // Kulit visual SEP (tanpa stylesheet/@page/kop baru).
     for (const marker of [
       '<section class="rm-page sep-page" id="surat-kontrol">',
       'class="bpjs-sep-sheet"',
       'class="sep-header"',
       'src="${BPJS_LOGO}"',
       'class="sep-title-wrap"',
-      'SURAT KONTROL',
       'class="sep-columns"',
-      'class="sep-col-left"',
-      'class="sep-col-right"',
       'class="sep-kv-table"',
       'class="sep-no-value"',
       'class="sep-inline-mr"',
-      'class="sep-multiline-list"',
-      'class="sep-disclaimer"',
-      'class="sep-print-meta"',
       'class="sep-signatures"',
-      'class="sep-sig-role"',
-      'class="sep-sig-name"',
-      'class="sep-qr"',
     ]) {
       expect(sk).toContain(marker);
     }
-    // Tidak boleh ada stylesheet/@page kedua, kop RM, atau data contoh.
-    expect(sk).not.toContain('<style');
-    expect(sk).not.toContain('@page');
-    expect(sk).not.toContain('SAMPLE_');
-    expect(sk).not.toContain("kop('");
-    // Aturan ':' wajib sama seperti SEP supaya judul sheet tak tertelan.
-    expect(sk).toContain("grabField('(?<!Nama )Peserta'");
+    // Field yang ADA di cetakan — urutan pun mengikuti cetakan.
+    for (const marker of [
+      'SURAT RENCANA KONTROL',
+      'NO. ${esc(noSurat)}',
+      'Kepada Yth',
+      'Mohon pemeriksaan dan penangan lebih lanjut :',
+      "kv('No.Kartu', kartuHtml)",
+      'namaTampil',
+      "kv('Tanggal Lahir', esc(lahir))",
+      "kv('Diagnosa', esc(diagnosa))",
+      "kv('Tanggal entri', esc(tglEntri))",
+      'Demikian atas bantuannya, diucapkan banyak terima kasih.',
+      'Mengetahui,',
+    ]) {
+      expect(sk).toContain(marker);
+    }
+    // Field SEP yang TIDAK ada di cetakan Surat Kontrol.
+    for (const absent of [
+      'Tgl. Rencana Kontrol',
+      'No. SEP',
+      'No.Telepon',
+      'Sub/Spesialis',
+      'Faskes Tujuan',
+      'Jns.Rawat',
+      'Kls.Hak',
+      'Penjamin',
+      'sep-disclaimer',
+      'sep-print-meta',
+      'Pasien/<br/>Keluarga Pasien',
+      '<style',
+      '@page',
+      "kop('",
+      'SAMPLE_',
+    ]) {
+      expect(sk).not.toContain(absent);
+    }
     // Terdaftar di meta, tab/option, dan dispatch.
-    expect(src).toContain('/^Surat Kontrol/i');
+    expect(src).toContain('/^Surat (?:Rencana )?Kontrol/i');
     expect(src).toContain("id: 'surat-kontrol'");
+    expect(src).toContain("tab: 'Surat Rencana Kontrol'");
     expect(src).toContain('return buildSuratKontrolSection(sections);');
+    // Tanggal panjang "14 September 1960" dari "14/09/1960".
+    expect(src).toContain('function panjangTanggal');
+    expect(src).toContain('BULAN_ID[Number(b) - 1]');
   });
 
   it('RM.03 (SPRI): vital, fisik/catatan, diit & terapi terstruktur', () => {

@@ -414,12 +414,12 @@ var __morbis_feature = (() => {
       }
     ],
     [
-      /^Surat Kontrol/i,
+      /^Surat (?:Rencana )?Kontrol/i,
       {
         id: "surat-kontrol",
         code: "SURAT KONTROL",
-        tab: "Surat Kontrol",
-        option: "Surat Kontrol \u2014 BPJS VClaim"
+        tab: "Surat Rencana Kontrol",
+        option: "Surat Rencana Kontrol \u2014 BPJS VClaim"
       }
     ],
     [
@@ -942,8 +942,31 @@ ${kop("RM. 02")}
 </div>
 </section>`;
   }
+  var BULAN_ID = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember"
+  ];
+  function panjangTanggal(raw) {
+    const s = String(raw ?? "").replace(/^\s*:\s*/, "").trim();
+    const m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/) || s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (!m) return s || "-";
+    const [a, b, c] = m.slice(1);
+    const tahun = a.length === 4 ? a : c;
+    const bulan = BULAN_ID[Number(b) - 1];
+    return bulan ? `${Number(a.length === 4 ? c : a)} ${bulan} ${tahun}` : s;
+  }
   function buildSuratKontrolSection(sections) {
-    const src = sections.find((s) => /^Surat Kontrol/i.test(s.title));
+    const src = sections.find((s) => /^Surat (?:Rencana )?Kontrol/i.test(s.title));
     const txt = src ? plainText(src.html) : "";
     const grab = (re) => sepNorm(txt.match(re)?.[1] || "") || "-";
     const grabField = (label, next) => grab(new RegExp(`${label}\\s*:\\s*([\\s\\S]*?)(?=${next}|$)`, "i"));
@@ -955,16 +978,8 @@ ${kop("RM. 02")}
       return grab(re);
     };
     const qrSrc = src ? new DOMParser().parseFromString(src.html, "text/html").querySelector('img[src*="qrserver"], img[src*="qr-code"]')?.getAttribute("src") || "" : "";
-    const noSurat = pickOr(
-      ["no_surat_kontrol", "no_surat"],
-      /No\.?\s*Surat\s*Kontrol\s*[:.]?\s*([0-9A-Z/-]+)/i
-    );
-    const tglKontrol = pickOr(
-      ["tgl_kontrol", "tgl_rencana_kontrol"],
-      /Tgl\.?\s*(?:Rencana\s*)?Kontrol\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i
-    );
-    const noSep = pickOr(["no_sep", "sep"], /No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]+)/i);
-    const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
+    const noSurat = pickOr(["no_surat_kontrol", "no_surat"], /NO\.\s*([0-9A-Z]{10,})/i);
+    const dokterTuju = grab(/Kepada Yth\s*([\s\S]*?)(?=Mohon pemeriksaan|No\.?\s*Kartu|$)/i) !== "-" ? grab(/Kepada Yth\s*([\s\S]*?)(?=Mohon pemeriksaan|No\.?\s*Kartu|$)/i) : pick("dokter", "dpjp");
     const kartu = pickOr(
       ["kartu", "no_kartu", "noka"],
       /No\.?\s*Kartu\s*[:.]?\s*([\s\S]*?)(?=Nama\s*Peserta|$)/i
@@ -972,74 +987,51 @@ ${kop("RM. 02")}
     const mr = pick("norm", "rekam_medis");
     const km = kartu.match(/^(.*?)\s*\(MR\.?\s*([^)]+)\)$/i);
     const kartuHtml = km ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>` : `${esc(kartu)}${mr !== "-" ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ""}`;
-    const namaPeserta = pick("nama") !== "-" ? pick("nama") : grabField("Nama\\s*Peserta", "Tgl\\.?\\s*Lahir");
-    const lahirRaw = pick("tgl_lahir", "tglLahir").replace(/^:\s*/, "");
-    const lahir = lahirRaw.split(/\s*\/\s*/)[0]?.trim() || grabField("Tgl\\.?\\s*Lahir", "Kelamin");
-    const kelamin = pick("jenis_kelamin", "jk") !== "-" ? pick("jenis_kelamin", "jk") : grabField("Kelamin", "No\\.?\\s*Telepon");
-    const noHp = pick("no_hp", "telepon") !== "-" ? pick("no_hp", "telepon") : grabField("No\\.?\\s*Telepon", "Sub\\/Spesialis");
-    const subSpesialis = grabField("Sub\\/Spesialis", "Dokter");
-    const dokter = pick("dokter", "dpjp") !== "-" ? pick("dokter", "dpjp") : grabField("Dokter", "Faskes");
-    const faskes = grabField("Faskes\\s*(?:Tujuan|Perujuk)", "Diagnosa");
-    const diagnosa = grabField("Diagnosa", "Catatan|Peserta");
-    const catatan = grabField("Catatan", "Peserta|COB");
-    const peserta = grabField("(?<!Nama )Peserta", "COB|Jns\\.?\\s*Rawat");
-    const penjamin = grabField("Penjamin", "\\*Saya|CATATAN");
-    const jnsRawat = pick("jenis") !== "-" ? pick("jenis") : grabField("Jns\\.?\\s*Rawat", "Jns\\.?\\s*Kunjungan");
-    const kelas = pick("kelas").replace(/^Kelas\s*/i, "");
-    const kelasTeks = kelas !== "-" ? `Kelas ${esc(kelas)}` : "-";
-    const kunjungan = grabField("Jns\\.?\\s*Kunjungan", "Kls\\.?\\s*Hak");
-    const kunjunganItems = kunjungan.replace(/^-\s*/, "").split(/\s+-\s+|\n/).map((x) => x.trim()).filter(Boolean);
-    const kunjunganHtml = kunjunganItems.length > 1 ? '<ul class="sep-multiline-list">' + kunjunganItems.map((x) => `<li>${esc(x)}</li>`).join("") + "</ul>" : esc(kunjungan);
-    const cetakan = grab(/Cetakan\s+ke\s*[:.]?\s*(\d+)/i);
-    const printMeta = cetakan !== "-" ? `<div class="sep-print-meta">Cetakan ke ${esc(cetakan)}</div>` : "";
-    const kv = (label, value, cls = "", right = false) => `<tr><td class="lbl${right ? " right" : ""}">${label}</td><td class="sep">:</td><td class="val${cls ? " " + cls : ""}">${value}</td></tr>`;
-    const spacer = '<tr><td colspan="3">&nbsp;</td></tr>';
+    const namaPeserta = pick("nama") !== "-" ? pick("nama") : grabField("Nama\\s*Peserta", "Tanggal Lahir");
+    const jkRaw = pick("jenis_kelamin", "jk");
+    const jkTeks = /perempuan|^p$/i.test(jkRaw) ? "Perempuan" : /laki|^l$/i.test(jkRaw) ? "Laki-laki" : txt.match(/Nama Peserta\s*:\s*[^()]*\((Perempuan|Laki-laki)\)/i)?.[1] || "";
+    const namaTampil = jkTeks && !new RegExp(`\\(${jkTeks}\\)`, "i").test(namaPeserta) ? `${namaPeserta} (${jkTeks})` : namaPeserta;
+    const lahir = panjangTanggal(
+      pickOr(
+        ["tgl_lahir", "tglLahir"],
+        /Tanggal Lahir\s*[:.]?\s*([\s\S]*?)(?=Diagnosa|$)/i
+      )
+    );
+    const diagnosa = pickOr(
+      ["diagnosa_awal", "diagnosa"],
+      /Diagnosa\s*[:.]?\s*([\s\S]*?)(?=Tanggal entri|$)/i
+    );
+    const tglEntri = panjangTanggal(
+      pickOr(["tanggalAwal", "tgl_masuk", "tgl"], /Tanggal entri\s*[:.]?\s*([\s\S]*?)(?=Demikian|$)/i)
+    );
+    const kv = (label, value) => `<tr><td class="lbl">${label}</td><td class="sep">:</td><td class="val">${value}</td></tr>`;
+    const kalimat = (teks) => `<tr><td class="val" colspan="3" style="padding-top:6px;">${esc(teks)}</td></tr>`;
     return `<section class="rm-page sep-page" id="surat-kontrol">
  <section class="bpjs-sep-sheet">
  <div class="sep-header">
    <img class="sep-logo" src="${BPJS_LOGO}" alt="BPJS Kesehatan" width="215" height="33" />
    <div class="sep-title-wrap">
-     <div class="sep-title">SURAT KONTROL</div>
+     <div class="sep-title">SURAT RENCANA KONTROL</div>
      <div class="sep-hospital">${esc(HOSPITAL_NAME.toUpperCase())}</div>
    </div>
  </div>
+ <div class="sep-no-value" style="text-align:right;margin-bottom:10px;">NO. ${esc(noSurat)}</div>
  <div class="sep-columns">
-   <div class="sep-col-left"><table class="sep-kv-table">
-     ${kv("No. Surat Kontrol", `<span class="sep-no-value">${esc(noSurat)}</span>`)}
-     ${kv("Tgl. Rencana Kontrol", esc(tglKontrol))}
-     ${kv("No. SEP", esc(noSep))}
-     ${kv("Tgl. SEP", esc(tglSep))}
+   <div class="sep-col-left" style="flex:1 1 100%;"><table class="sep-kv-table">
+     <tr><td class="lbl">Kepada Yth</td><td class="sep">:</td><td class="val"><strong>${esc(dokterTuju)}</strong></td></tr>
+     ${kalimat("Mohon pemeriksaan dan penangan lebih lanjut :")}
      ${kv("No.Kartu", kartuHtml)}
-     ${kv("Nama Peserta", `<strong>${esc(namaPeserta)}</strong>`)}
-     ${kv("Tgl.Lahir", `${esc(lahir)} &nbsp;&nbsp; Kelamin : ${esc(kelamin)}`)}
-     ${kv("No.Telepon", esc(noHp))}
-     ${kv("Sub/Spesialis", esc(subSpesialis))}
-     ${kv("Dokter DPJP", esc(dokter))}
-     ${kv("Faskes Tujuan", esc(faskes !== "-" ? faskes : `${HOSPITAL_NAME} - Kota Jambi`))}
+     ${kv("Nama Peserta", `<strong>${esc(namaTampil)}</strong>`)}
+     ${kv("Tanggal Lahir", esc(lahir))}
      ${kv("Diagnosa", esc(diagnosa))}
-     ${kv("Catatan", esc(catatan))}
-   </table></div>
-   <div class="sep-col-right"><table class="sep-kv-table">
-     ${spacer}${spacer}
-     ${kv("Peserta", esc(peserta), "", true)}
-     ${kv("COB", "-", "", true)}
-     ${kv("Jns.Rawat", `<strong>${esc(jnsRawat)}</strong>`, "", true)}
-     ${kv("Jns.Kunjungan", kunjunganHtml, "", true)}
-     ${kv("Kls.Hak", `<strong>${kelasTeks}</strong>`, "", true)}
-     ${kv("Kls.Rawat", `<strong>${kelasTeks}</strong>`, "", true)}
-     ${kv("Penjamin", esc(penjamin), "", true)}
+     ${kv("Tanggal entri", esc(tglEntri))}
+     ${kalimat("Demikian atas bantuannya, diucapkan banyak terima kasih.")}
    </table></div>
  </div>
- <div class="sep-disclaimer">
-   *Saya Menyetujui BPJS Kesehatan menggunakan informasi Medis Pasien jika diperlukan.<br/>
-   *Surat Kontrol bukan sebagai bukti penjamin peserta
- </div>
- ${printMeta}
  <div class="sep-signatures">
    <div class="sep-sig-box">
-     <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
-     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR Surat Kontrol" width="100" height="100" />` : ""}
-     <div class="sep-sig-name">(${esc(namaPeserta)})</div>
+     <div>Mengetahui,</div>
+     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR Surat Rencana Kontrol" width="100" height="100" />` : ""}
    </div>
  </div>
  </section>
@@ -2922,20 +2914,7 @@ ${sig(
     const jk = pick("jenis_kelamin", "jk");
     const alamat = patientAlamat(sections);
     const nota = sections.filter((s) => /resep/i.test(s.title)).length;
-    const bulan = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember"
-    ];
+    const bulan = BULAN_ID;
     const now = /* @__PURE__ */ new Date();
     const tglCetak = `${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`;
     const checksHtml = `<table class="rm-grid-table">
@@ -3044,7 +3023,7 @@ ${checksHtml}
     const docs = renderSections.map((s, i) => {
       const m = metas[i];
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
-      if (/^Surat Kontrol/i.test(s.title)) return buildSuratKontrolSection(sections);
+      if (/^Surat (?:Rencana )?Kontrol/i.test(s.title)) return buildSuratKontrolSection(sections);
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
       if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
       if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
