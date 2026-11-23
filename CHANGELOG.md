@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **config** — on/off fitur & sakelar global benar-benar berlaku (`0b0ef07`)
 - **mKlaimMarks** — mark bar ikut toggle aktif/nonaktif tiap fitur (`715bea0`)
 - **mKlaimMarks** — + Mark jangan muncul di kalender datepicker (`827996d`)
 - **paLabPrint** — decode simbol ± = ≥ ≤ dari input form labor PA (`7ad7295`)
@@ -40,6 +41,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri gate mark bar (`d8c6663`)
 - bump versi 1.5.265 (gate mark bar) [skip ci] (`c46d301`)
 - **changelog** — sync entri micro-polish mark bar (`cb8c33a`)
 - bump versi 1.5.264 (micro-polish mark bar) [skip ci] (`083ae53`)
@@ -2311,4 +2313,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c46d301c8043e2a32d39bf30769c8529d041b24f -->
+<!-- changelog-upto: 0b0ef072f1dcb7982eabcdc5a6344f0d5ec2d3fe -->
