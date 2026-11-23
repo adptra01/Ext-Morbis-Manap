@@ -18,7 +18,7 @@
 
 ### 🐛 fix
 
-- **mKlaimPrint** — fallback QR DPJP Surat Kontrol dari SEP/Resume (`a4c388d`)
+- **mKlaimPrint** — fallback QR DPJP Surat Kontrol dari SEP/Resume (`51faf1a`)
 - **mKlaimPrint** — tanda tangan Mengetahui Surat Kontrol = DPJP (`104aa16`)
 - **mKlaimPrint** — Surat Rencana Kontrol isi sesuai cetakan asli (`2261afc`)
 - **config** — on/off fitur & sakelar global benar-benar berlaku (`0b0ef07`)
@@ -46,6 +46,7 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.270 (fallback QR DPJP) [skip ci] (`79d526b`)
 - **changelog** — sync entri TTD DPJP Surat Kontrol (`20ff88f`)
 - bump versi 1.5.269 (TTD DPJP Surat Kontrol) [skip ci] (`cde398a`)
 - **changelog** — sync komentar Surat Kontrol (`e5a429c`)
@@ -2326,4 +2327,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: a4c388dd3054ef59cf2d817c0201f0234cac4bd6 -->
+<!-- changelog-upto: 79d526b09393f7169883b58eee02792614f3ef55 -->
