@@ -2746,15 +2746,20 @@ function formFields(sections: Section[], titleRe: RegExp): Map<string, string> {
         .replace(/[ \t]+/g, ' ')
         .trim(),
     );
-    for (let i = 0; i < c.length - 2; i++) {
+    for (let i = 0; i < c.length - 1; i++) {
       const label = c[i].replace(/^[-:\s]+|[\s:]+$/g, '');
-      if (!label || c[i + 1] !== ':' || !c[i + 2] || out.has(label)) continue;
-      out.set(label, c[i + 2]);
+      if (!label || out.has(label)) continue;
+      // Dua format SIMRS: titik dua jadi sel sendiri `Label | : | nilai`,
+      // atau menempel di nilai `Label | : nilai` (form Anestesi, dll).
+      if (c[i + 1] === ':' && c[i + 2]) out.set(label, c[i + 2]);
+      else if (c[i + 1].startsWith(':') && c[i + 1].length > 1)
+        out.set(label, c[i + 1].replace(/^:\s*/, '').trim());
     }
     for (const cell of c) {
       const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
-      if (m && !m[2].includes(':') && m[2].length <= 120 && !out.has(m[1].trim()))
-        out.set(m[1].trim(), m[2].trim());
+      // Nilai boleh mengandung ':' (jam 10:15:00, "GCS: 15", dll.) — dulu
+      // ditolak, bikin field Anestesi kosong semua.
+      if (m && m[2].length <= 120 && !out.has(m[1].trim())) out.set(m[1].trim(), m[2].trim());
     }
   }
   return out;

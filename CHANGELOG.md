@@ -20,6 +20,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — Operasi — temukan sel Uraian Pembedahan langsung (bukan baris pembungkus luar) (`e7e79ec`)
 - **mKlaimPrint** — Operasi — pecah uraian pembedahan per kalimat (newline hilang saat scrape) (`4465742`)
 - **mKlaimPrint** — Operasi — ekstraksi Nama Pasien (label 'Nama' di header) (`9935a59`)
 - **mKlaimPrint** — Rincian Biaya footer — 'Yang Menerima' di atas QR, '(Petugas Billing / Kasir)' di bawah (`c305d0b`)
@@ -40,6 +41,7 @@
 
 ### ♻️ refactor
 
+- **mKlaimPrint** — Operasi — hapus tebakan pemisah uraian, semua baris jadi langkah bernomor (`a46e504`)
 - **mKlaimMarks** — 1 tombol + popover + multi-chip untuk ke-6 mark (`bb5c06f`)
 
 ### 📝 docs
@@ -2342,4 +2344,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 4465742d2385875a56fc0c4efdee7a74ad711b03 -->
+<!-- changelog-upto: a46e5049704d7520ef9e16548a8253f3ddd3138a -->
