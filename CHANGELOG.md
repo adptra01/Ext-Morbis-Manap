@@ -18,6 +18,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — tanda tangan Mengetahui Surat Kontrol = DPJP (`b3e469a`)
 - **mKlaimPrint** — Surat Rencana Kontrol isi sesuai cetakan asli (`2261afc`)
 - **config** — on/off fitur & sakelar global benar-benar berlaku (`0b0ef07`)
 - **mKlaimMarks** — mark bar ikut toggle aktif/nonaktif tiap fitur (`715bea0`)
@@ -44,6 +45,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync komentar Surat Kontrol (`e5a429c`)
 - **changelog** — sync entri Surat Rencana Kontrol (`77a5630`)
 - bump versi 1.5.268 (Surat Rencana Kontrol) [skip ci] (`2c84b19`)
 - **changelog** — sync entri Surat Kontrol (`14b09ea`)
@@ -2321,4 +2323,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d3cbc03b673d4686f7b52c13ede5b3a1929cab91 -->
+<!-- changelog-upto: b3e469a4d9a06bfb38fbd3e4913727164d934b16 -->
