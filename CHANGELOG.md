@@ -17,11 +17,13 @@
 
 ### 🐛 fix
 
+- **inputHasilPa** — fallback id permintaan tanpa warning menyesatkan (`7de86a6`)
 - **paLabPrint** — decode entity &lt;/&gt; pada teks medis hasil scrape (`b10a7d7`)
 - **mKlaimPrint** — RM.19A bersihkan artefak SIMRS & ejaan mediko-legal (`3cce138`)
 
 ### 🧹 chore
 
+- **changelog** — sync entr decode tanda lab (`cc74406`)
 - **changelog** — sync entr ruang TTD RM.19A (`e6ad15f`)
 - **changelog** — sync entr RM.19A terstruktur (`b8a5713`)
 - **changelog** — sync entr cleanup RM.19A (`48e18a5`)
@@ -2277,4 +2279,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: b10a7d72b550e1b95948baadd5f940b70ea20535 -->
+<!-- changelog-upto: 7de86a64a71554b485bb53da47852a80a3d4e7b8 -->
