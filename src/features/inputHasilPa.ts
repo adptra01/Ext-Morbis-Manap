@@ -56,8 +56,8 @@ whenFeatureEnabled('labHistory', function () {
         },
       );
       const html = await res.text();
-      const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
-      const row = rows.find((r) => r.includes(`nolab="${idLab}"`));
+      const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
+      const row = rows.find((r) => new RegExp(`nolab\\s*=\\s*['"]?${idLab}['"]?`, 'i').test(r));
       if (!row) return null;
       const id = row.match(/cetakFormPermintaanLab\(\s*(\d+)/)?.[1] || null;
       const tgl = row.match(/edit_tanggal\(\s*\d+\s*,\s*\d+\s*,\s*"([^"]+)"/)?.[1] || null;
@@ -357,10 +357,12 @@ whenFeatureEnabled('labHistory', function () {
         tanggalPengajuan = got.tgl;
         console.log('[inputHasilPa] permintaan data', { idLab, idVisit, id: got.id, tgl: got.tgl });
       } else {
-        console.warn('[inputHasilPa] Baris lab tidak ditemukan di daftar, pakai hasil[1][id].', {
-          idLab,
-          idVisit,
-        });
+        // Fallback normal: halaman daftar bisa tidak memuat baris ini
+        // (DataTables/paginasi). ID permintaan sudah diambil dari
+        // input hasil[1][id] di halaman ini — tidak ada yang gagal.
+        console.info(
+          `[inputHasilPa] Baris lab ${idLab} tidak ada di daftar; pakai id hasil[1][id]=${permintaanId}.`,
+        );
       }
     });
 

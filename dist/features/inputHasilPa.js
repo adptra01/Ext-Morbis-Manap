@@ -248,8 +248,10 @@ var __morbis_feature = (() => {
           }
         );
         const html = await res.text();
-        const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
-        const row = rows.find((r) => r.includes(`nolab="${idLab}"`));
+        const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
+        const row = rows.find(
+          (r) => new RegExp(`nolab\\s*=\\s*['"]?${idLab}['"]?`, "i").test(r)
+        );
         if (!row) return null;
         const id = row.match(/cetakFormPermintaanLab\(\s*(\d+)/)?.[1] || null;
         const tgl = row.match(/edit_tanggal\(\s*\d+\s*,\s*\d+\s*,\s*"([^"]+)"/)?.[1] || null;
@@ -477,10 +479,9 @@ var __morbis_feature = (() => {
           tanggalPengajuan = got.tgl;
           console.log("[inputHasilPa] permintaan data", { idLab, idVisit, id: got.id, tgl: got.tgl });
         } else {
-          console.warn("[inputHasilPa] Baris lab tidak ditemukan di daftar, pakai hasil[1][id].", {
-            idLab,
-            idVisit
-          });
+          console.info(
+            `[inputHasilPa] Baris lab ${idLab} tidak ada di daftar; pakai id hasil[1][id]=${permintaanId}.`
+          );
         }
       });
       container.append(
