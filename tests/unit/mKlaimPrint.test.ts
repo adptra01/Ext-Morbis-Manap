@@ -153,6 +153,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'Demikian atas bantuannya, diucapkan banyak terima kasih.',
       'Mengetahui,',
       'QR tanda tangan DPJP',
+      'sectionQrs(sections, /^SEP/i)[0]',
+      'sectionQrs(sections, /^Resume/i)[0]',
+      'const qrDpjp =',
       'esc(dokterTtd)',
     ]) {
       expect(sk).toContain(marker);

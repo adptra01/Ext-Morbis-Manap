@@ -1199,13 +1199,21 @@ function buildSuratKontrolSection(sections: Section[]): string {
     return grab(re);
   };
 
-  // QR asli dari section (sama seperti SEP) — dipakai apa adanya.
-  const qrSrc = src
+  // QR tanda tangan: pakai yang ada di Surat Kontrol; kalau kosong ambil dari
+  // SEP, lalu QR DPJP di Resume, lalu section lain yang punya QR.
+  const qrSendiri = src
     ? new DOMParser()
         .parseFromString(src.html, 'text/html')
         .querySelector('img[src*="qrserver"], img[src*="qr-code"]')
         ?.getAttribute('src') || ''
     : '';
+  const qrDpjp =
+    qrSendiri ||
+    sectionQrs(sections, /^SEP/i)[0] ||
+    sectionQrs(sections, /^Resume/i)[0] ||
+    sectionQrs(sections, /^SBPK/i)[0] ||
+    sectionQrs(sections, /^Rincian Biaya/i)[0] ||
+    '';
 
   // Field yang BENAR-BENAR ada di cetakan Surat Rencana Kontrol.
   const noSurat = pickOr(['no_surat_kontrol', 'no_surat'], /NO\.\s*([0-9A-Z]{10,})/i);
@@ -1283,7 +1291,7 @@ function buildSuratKontrolSection(sections: Section[]): string {
  <div class="sep-signatures">
    <div class="sep-sig-box">
      <div>Mengetahui,</div>
-     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR tanda tangan DPJP" width="100" height="100" />` : ''}
+     ${qrDpjp ? `<img class="sep-qr" src="${esc(qrDpjp)}" alt="QR tanda tangan DPJP" width="100" height="100" />` : ''}
      <div class="sep-sig-name">( ${esc(dokterTtd)} )</div>
    </div>
  </div>

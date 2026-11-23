@@ -977,7 +977,8 @@ ${kop("RM. 02")}
       }
       return grab(re);
     };
-    const qrSrc = src ? new DOMParser().parseFromString(src.html, "text/html").querySelector('img[src*="qrserver"], img[src*="qr-code"]')?.getAttribute("src") || "" : "";
+    const qrSendiri = src ? new DOMParser().parseFromString(src.html, "text/html").querySelector('img[src*="qrserver"], img[src*="qr-code"]')?.getAttribute("src") || "" : "";
+    const qrDpjp = qrSendiri || sectionQrs(sections, /^SEP/i)[0] || sectionQrs(sections, /^Resume/i)[0] || sectionQrs(sections, /^SBPK/i)[0] || sectionQrs(sections, /^Rincian Biaya/i)[0] || "";
     const noSurat = pickOr(["no_surat_kontrol", "no_surat"], /NO\.\s*([0-9A-Z]{10,})/i);
     const dokterTuju = grab(/Kepada Yth\s*([\s\S]*?)(?=Mohon pemeriksaan|No\.?\s*Kartu|$)/i) !== "-" ? grab(/Kepada Yth\s*([\s\S]*?)(?=Mohon pemeriksaan|No\.?\s*Kartu|$)/i) : pick("dokter", "dpjp");
     const dokterTtd = pick("dokter", "dpjp") !== "-" ? pick("dokter", "dpjp") : dokterTuju;
@@ -1032,7 +1033,7 @@ ${kop("RM. 02")}
  <div class="sep-signatures">
    <div class="sep-sig-box">
      <div>Mengetahui,</div>
-     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR tanda tangan DPJP" width="100" height="100" />` : ""}
+     ${qrDpjp ? `<img class="sep-qr" src="${esc(qrDpjp)}" alt="QR tanda tangan DPJP" width="100" height="100" />` : ""}
      <div class="sep-sig-name">( ${esc(dokterTtd)} )</div>
    </div>
  </div>
