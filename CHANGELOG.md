@@ -18,6 +18,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — Surat Rencana Kontrol isi sesuai cetakan asli (`7d6d0bb`)
 - **config** — on/off fitur & sakelar global benar-benar berlaku (`0b0ef07`)
 - **mKlaimMarks** — mark bar ikut toggle aktif/nonaktif tiap fitur (`715bea0`)
 - **mKlaimMarks** — + Mark jangan muncul di kalender datepicker (`827996d`)
@@ -42,6 +43,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri Surat Kontrol (`14b09ea`)
 - bump versi 1.5.267 (Surat Kontrol sheet SEP) [skip ci] (`de85982`)
 - **changelog** — sync entri on/off config (`b0ca599`)
 - **changelog** — sync entri gate mark bar (`d8c6663`)
@@ -2316,4 +2318,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: de85982f32ded318b22ff1d2875e7f9120334b52 -->
+<!-- changelog-upto: 7d6d0bb1da28a6047a98c4c45ed67731b9eeccea -->
