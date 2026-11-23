@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **batchUpload** — NORM halaman didahulukan — Auto-Crawl ORA-02291 FK2 (`cffcf4a`)
 - **test** — CI tidak baca file referensi di docs/evidence (gitignore) (`ab422d1`)
 - **inputHasilPa** — fallback id permintaan tanpa warning menyesatkan (`7de86a6`)
 - **paLabPrint** — decode entity &lt;/&gt; pada teks medis hasil scrape (`b10a7d7`)
@@ -28,6 +29,8 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr fix NORM Auto-Crawl (`d1369d3`)
+- bump versi 1.5.260 (fix NORM Auto-Crawl) [skip ci] (`de883a8`)
 - **changelog** — sync entr rapikan docs (`14ae23b`)
 - **changelog** — sync entr fix CI test (`928a10e`)
 - **changelog** — sync entr inputHasilPa fallback (`9968452`)
@@ -2287,4 +2290,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 14ae23bf1f0701240eeb94eb68e8951bd25b6583 -->
+<!-- changelog-upto: d1369d351662c9aefddcac06157319bb8d98c6fe -->
