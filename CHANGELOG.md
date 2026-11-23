@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **mKlaimMarks** — mark bar ikut toggle aktif/nonaktif tiap fitur (`286536d`)
 - **mKlaimMarks** — + Mark jangan muncul di kalender datepicker (`827996d`)
 - **paLabPrint** — decode simbol ± = ≥ ≤ dari input form labor PA (`7ad7295`)
 - **batchUpload** — NORM halaman didahulukan — Auto-Crawl ORA-02291 FK2 (`cffcf4a`)
@@ -39,6 +40,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri micro-polish mark bar (`cb8c33a`)
 - bump versi 1.5.264 (micro-polish mark bar) [skip ci] (`083ae53`)
 - **changelog** — sync entri scope mark bar (`7a437d0`)
 - bump versi 1.5.263 (scope mark bar) [skip ci] (`d8cabff`)
@@ -2308,4 +2310,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 083ae53d5a7379d947ec01bfcd761c4bd65d6d0b -->
+<!-- changelog-upto: 286536dba94e5724ee2438c401010de059b9fb1f -->
