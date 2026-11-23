@@ -13,6 +13,14 @@
 
 - **mKlaimPrint** — redesign RM.19A dari 4 tabel asli (info, checklist, pernyataan, saksi) (`d9d06d2`)
 
+### 🐛 fix
+
+- **mKlaimPrint** — RM.19A bersihkan artefak SIMRS & ejaan mediko-legal (`3cce138`)
+
+### 🧹 chore
+
+- **changelog** — sync entr redesign persetujuan tindakan (`8d802de`)
+
 ## 2026-11-22
 
 ### ✨ feat
@@ -2263,4 +2271,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d9d06d2777117cc378e4a77d3df75fddf092fde4 -->
+<!-- changelog-upto: 3cce138992309dffc76216be2bdcdabddbb737ab -->
