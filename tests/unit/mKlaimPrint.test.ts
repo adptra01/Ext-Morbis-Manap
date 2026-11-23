@@ -744,9 +744,12 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(qr).toBeGreaterThan(label);
     expect(nama).toBeGreaterThan(qr);
 
-    const terima = bill.indexOf('<div>Yang Menerima (Petugas Billing / Kasir)</div>');
+    const terima = bill.indexOf('<div>Yang Menerima</div>');
     const qrTerima = bill.indexOf('QR penerima', terima);
+    const role = bill.indexOf('(Petugas Billing / Kasir)', terima);
+    expect(terima).toBeGreaterThan(-1);
     expect(qrTerima).toBeGreaterThan(terima);
+    expect(role).toBeGreaterThan(qrTerima);
   });
 
   it('fix audit: field SEP scrape, alamat lintas-section, vital & tanggal lahir', () => {

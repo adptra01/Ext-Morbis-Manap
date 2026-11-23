@@ -1194,9 +1194,10 @@ ${kop("RM. 05")}
     <div class="rm-sig-name">( ${esc(nama)} )</div>
   </div>
   <div class="rm-sig-box">
-    <div>Yang Menerima (Petugas Billing / Kasir)</div>
+    <div>Yang Menerima</div>
     ${qrPenerima ? `<img class="rm-sig-qr" src="${esc(qrPenerima)}" alt="QR penerima" width="80" height="80" />` : ""}
     ${qrPenerima ? "" : '<div class="rm-sig-space"></div>'}
+    <div>(Petugas Billing / Kasir)</div>
   </div>
 </div>
 </section>`;
