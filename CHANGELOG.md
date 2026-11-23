@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — Konsultasi — BAGIAN I/II, tujuan checkbox, normalisasi jam/typo, dugaan fallback, demografi (`bb2ed38`)
 - **mKlaimPrint** — redesign Laporan Anestesi RM.21 jadi 2 halaman A4 (`31cc140`)
 - **mKlaimPrint** — redesign Laporan Operasi jadi grid RM.20 1 halaman (`6d6e335`)
 - **mKlaimPrint** — Surat Kontrol pakai sheet BPJS identik SEP (`0b74d2d`)
@@ -43,6 +44,7 @@
 
 ### ♻️ refactor
 
+- **mKlaimPrint** — Konsultasi — hapus footer TTD (QR tidak pernah ada) (`3d2d7de`)
 - **mKlaimPrint** — Operasi — hapus tebakan pemisah uraian, semua baris jadi langkah bernomor (`a46e504`)
 - **mKlaimMarks** — 1 tombol + popover + multi-chip untuk ke-6 mark (`bb5c06f`)
 
@@ -2346,4 +2348,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 850cbed25e1d205d595ce1d4ed22cf36f59eadab -->
+<!-- changelog-upto: 3d2d7de797d85e776414fbeaa7c530493b8ac629 -->

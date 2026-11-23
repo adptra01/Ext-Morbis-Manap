@@ -3133,10 +3133,26 @@ function buildAnestesiSection(sections: Section[]): string {
           Array.from(tr.cells).map((td) => (td.textContent || '').replace(/\s+/g, ' ').trim()),
         )
       : [];
-  const cek = (label: string): string =>
-    new RegExp(`${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*✓`, 'i').test(teks)
-      ? '&#10003;'
-      : '&nbsp;';
+  /** Cari tabel yang memuat kata kunci di SEL SENDIRI — bukan tabel pembungkus
+   *  luar yang textContent-nya menyertakan seluruh berkas (sama seperti bug
+   *  Uraian Pembedahan di RM.20). */
+  const ownTable = (re: RegExp): Element | undefined =>
+    tables.find((t) =>
+      re.test(
+        Array.from(t.rows)
+          .flatMap((tr) =>
+            Array.from(tr.cells)
+              .filter((td) => !td.querySelector('table'))
+              .map((td) => td.textContent || ''),
+          )
+          .join(' '),
+      ),
+    );
+  // Radio SIMRS bisa sebelum ATAU sesudah label — cek dua arah.
+  const cek = (label: string): string => {
+    const L = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`${L}\\s*✓|✓\\s*${L}`, 'i').test(teks) ? '&#10003;' : '&nbsp;';
+  };
   /** Demografi pasien sering cuma ada di SBPK/Resume, bukan disection Anestesi. */
   const anywhere = (...res: RegExp[]): string => {
     for (const sec of sections) {
@@ -3205,7 +3221,7 @@ function buildAnestesiSection(sections: Section[]): string {
   const napas = teks.match(/Respirasi\s*:\s*([^,]+)/i)?.[1]?.trim() ?? '-';
 
   // Checklist persiapan — label dibaca dari baris asli, centang dari ✓ hasil flatten.
-  const prepTable = tables.find((t) => /Informed Consent/i.test(t.textContent || ''));
+  const prepTable = ownTable(/Informed Consent/i);
   const prepItems = rowsOf(prepTable)
     .flat()
     .filter(Boolean)
@@ -3221,10 +3237,10 @@ function buildAnestesiSection(sections: Section[]): string {
     : '<div>-</div>';
 
   // Riwayat penyakit / faktor risiko diringkas jadi 3 kolom.
-  const penyakitTable = tables.find((t) => /PENYAKIT PENYERTA/i.test(t.textContent || ''));
+  const penyakitTable = ownTable(/PENYAKIT PENYERTA/i);
   const penyakitRows = rowsOf(penyakitTable)
     .slice(1)
-    .filter((r) => r.length >= 2 && r[0] && !/PENYAKIT PENYERTA/i.test(r[0]));
+    .filter((r) => r.length >= 2 && /^(Sistem|lain-lain)/i.test(r[0]));
   const penyakitHtml = penyakitRows.length
     ? penyakitRows
         .map(
@@ -3291,7 +3307,7 @@ function buildAnestesiSection(sections: Section[]): string {
        <tr><td>Steward Score</td><td colspan="3"><em>Tidak Berlaku (khusus pasien anak — pasien dewasa).</em></td></tr>`;
 
   // Instruksi pasca anestesi dari tabel asli.
-  const instruksiTable = tables.find((t) => /INSTRUKSI PASCA ANESTESI/i.test(t.textContent || ''));
+  const instruksiTable = ownTable(/INSTRUKSI PASCA ANESTESI/i);
   const instruksi = rowsOf(instruksiTable)
     .flat()
     .map((x) => x.replace(/^[\d\s]+/, '').trim())

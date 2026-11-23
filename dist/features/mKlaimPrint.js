@@ -2393,7 +2393,17 @@ ${kop("RM. 19A")}
     const rowsOf = (t) => t ? Array.from(t.rows).map(
       (tr) => Array.from(tr.cells).map((td) => (td.textContent || "").replace(/\s+/g, " ").trim())
     ) : [];
-    const cek = (label) => new RegExp(`${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\u2713`, "i").test(teks) ? "&#10003;" : "&nbsp;";
+    const ownTable = (re) => tables.find(
+      (t) => re.test(
+        Array.from(t.rows).flatMap(
+          (tr) => Array.from(tr.cells).filter((td) => !td.querySelector("table")).map((td) => td.textContent || "")
+        ).join(" ")
+      )
+    );
+    const cek = (label) => {
+      const L = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`${L}\\s*\u2713|\u2713\\s*${L}`, "i").test(teks) ? "&#10003;" : "&nbsp;";
+    };
     const anywhere = (...res) => {
       for (const sec of sections) {
         const dd = new DOMParser().parseFromString(sec.html, "text/html");
@@ -2438,13 +2448,13 @@ ${kop("RM. 19A")}
     const ebl = teks.match(/perdarahan\s*\(?EBL\)?\s*(\d+)\s*ml/i)?.[1] ?? "-";
     const diuresis = teks.match(/diuresis\s*(\d+)\s*ml/i)?.[1] ?? "-";
     const napas = teks.match(/Respirasi\s*:\s*([^,]+)/i)?.[1]?.trim() ?? "-";
-    const prepTable = tables.find((t) => /Informed Consent/i.test(t.textContent || ""));
+    const prepTable = ownTable(/Informed Consent/i);
     const prepItems = rowsOf(prepTable).flat().filter(Boolean).map((x) => ({ label: x.replace(/^[\d\s✓]+/, "").trim(), on: /✓/.test(x) })).filter((x) => x.label && x.label.length < 60);
     const prepHtml = prepItems.length ? prepItems.map(
       (p) => `<div><span class="chk-box">${p.on ? "&#10003;" : "&nbsp;"}</span> ${esc(p.label)}</div>`
     ).join("") : "<div>-</div>";
-    const penyakitTable = tables.find((t) => /PENYAKIT PENYERTA/i.test(t.textContent || ""));
-    const penyakitRows = rowsOf(penyakitTable).slice(1).filter((r) => r.length >= 2 && r[0] && !/PENYAKIT PENYERTA/i.test(r[0]));
+    const penyakitTable = ownTable(/PENYAKIT PENYERTA/i);
+    const penyakitRows = rowsOf(penyakitTable).slice(1).filter((r) => r.length >= 2 && /^(Sistem|lain-lain)/i.test(r[0]));
     const penyakitHtml = penyakitRows.length ? penyakitRows.map(
       (r) => `<div><span class="chk-box">${/ya|ada|\+/i.test(r[1]) ? "&#10003;" : "&nbsp;"}</span> ${esc(r[0])}</div>`
     ).join("") : "<div>-</div>";
@@ -2480,7 +2490,7 @@ ${kop("RM. 19A")}
     const skorHtml = anak ? '<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak; skor diisi di halaman asal.</td></tr>' : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas \xB7 Pernapasan \xB7 Sirkulasi \xB7 Kesadaran \xB7 Warna \u2014 skor diisi di halaman asal.</td></tr>
        <tr><td>Bromage Score</td><td colspan="3">${spinal ? "Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) \u2014 skor diisi di halaman asal." : "Tidak Berlaku (anestesi non-regional)."}</td></tr>
        <tr><td>Steward Score</td><td colspan="3"><em>Tidak Berlaku (khusus pasien anak \u2014 pasien dewasa).</em></td></tr>`;
-    const instruksiTable = tables.find((t) => /INSTRUKSI PASCA ANESTESI/i.test(t.textContent || ""));
+    const instruksiTable = ownTable(/INSTRUKSI PASCA ANESTESI/i);
     const instruksi = rowsOf(instruksiTable).flat().map((x) => x.replace(/^[\d\s]+/, "").trim()).filter((x) => x && !/INSTRUKSI PASCA ANESTESI/i.test(x) && x.length > 3);
     const instruksiHtml = instruksi.length ? '<ol class="an-instruksi">' + instruksi.map((x) => `<li>${esc(x)}</li>`).join("") + "</ol>" : "<div>-</div>";
     const kv = (label, value) => `<tr><td class="k">${label}</td><td class="c">:</td><td class="v">${value}</td></tr>`;
