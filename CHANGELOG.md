@@ -18,6 +18,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — urutan TTD RM.05 — label di atas QR, nama di bawah (`72f40af`)
 - **mKlaimPrint** — fallback QR DPJP Surat Kontrol dari SEP/Resume (`51faf1a`)
 - **mKlaimPrint** — tanda tangan Mengetahui Surat Kontrol = DPJP (`104aa16`)
 - **mKlaimPrint** — Surat Rencana Kontrol isi sesuai cetakan asli (`2261afc`)
@@ -46,6 +47,8 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.271 (urutan TTD RM.05) [skip ci] (`282b9e4`)
+- **changelog** — sync entri fallback QR DPJP (`233a4a3`)
 - bump versi 1.5.270 (fallback QR DPJP) [skip ci] (`79d526b`)
 - **changelog** — sync entri TTD DPJP Surat Kontrol (`20ff88f`)
 - bump versi 1.5.269 (TTD DPJP Surat Kontrol) [skip ci] (`cde398a`)
@@ -2327,4 +2330,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 79d526b09393f7169883b58eee02792614f3ef55 -->
+<!-- changelog-upto: 282b9e4dc212d95dc5b4d44bc912b8bc1f0d97c4 -->
