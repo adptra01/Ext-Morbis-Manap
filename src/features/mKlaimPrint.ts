@@ -2751,6 +2751,7 @@ function buildKonsentSection(sections: Section[]): string {
       .replace(/\btsb\b/gi, 'tersebut')
       .replace(/pembiuasan/gi, 'pembiusan')
       .replace(/\bizi Tuhan\b/gi, 'izin Tuhan')
+      .replace(/\bresiko\b/gi, 'risiko')
       .replace(/\bAm\.?kep\b/gi, 'A.Md.Kep')
       .replace(/\s+/g, ' ')
       .trim();
@@ -2792,6 +2793,40 @@ function buildKonsentSection(sections: Section[]): string {
   }));
 
   const nama = pick('nama');
+  const stripTimestamp = (t: string): string =>
+    t
+      .replace(/Jambi\s*,?\s*\d{1,2}\/\d{1,2}\/\d{4}\s*,?\s*Jam\s*[\d:.]+/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const nameInParen = (t: string): string =>
+    t.match(/\(([^)]+)\)/)?.[1]?.trim() || stripTimestamp(t) || '-';
+  const cIdentity = stripTimestamp(consentIdentity);
+  const cParagraf = stripTimestamp(consentParagraf);
+  const waliNama = cIdentity.match(/Nama\s*:\s*(.+?)(?=\s+Umur\s*:|$)/i)?.[1]?.trim() || '-';
+  const waliUmur =
+    cIdentity.match(/Umur\s*:\s*(.+?)(?=\s+Jenis Kelamin\s*:|$)/i)?.[1]?.trim() || '-';
+  const waliJk =
+    cIdentity.match(/Jenis Kelamin\s*:\s*(.+?)(?=\s+Alamat\s*:|$)/i)?.[1]?.trim() || '-';
+  const waliAlamat = cIdentity.match(/Alamat\s*:\s*(.+)$/i)?.[1]?.trim() || '-';
+  const tindakanNama = checkRows.find((r) => r.no === '3')?.isi || '-';
+  const paragrafTeks = (re: RegExp): string => cParagraf.match(re)?.[0]?.trim() || '';
+  const paragraf = [
+    paragrafTeks(
+      /Saya memahami perlunya dan manfaat tindakan tersebut[\s\S]*?(?=Saya juga menyadari|$)/i,
+    ),
+    paragrafTeks(
+      /Saya juga menyadari[\s\S]*?(?=Saya memahami perlunya tindakan pembiusan|Saya bertanggung jawab|$)/i,
+    ),
+    paragrafTeks(/Saya memahami perlunya tindakan pembiusan[\s\S]*?(?=Saya bertanggung jawab|$)/i),
+    paragrafTeks(/Saya bertanggung jawab[\s\S]*$/i),
+  ].filter(Boolean);
+  const saksiNama = (i: number, prefix: RegExp): string => {
+    const t = stripTimestamp(saksi[i]?.teks || '').replace(prefix, '');
+    return nameInParen(t);
+  };
+  const ttdWali = saksiNama(0, /Yang Menyatakan/i);
+  const ttdSaksiKel = saksiNama(1, /Saksi Keluarga/i);
+  const ttdSaksiRs = saksiNama(2, /Saksi Rumah Sakit/i);
 
   return `<section class="rm-page" id="form-konsent">
 ${kop('RM. 19A')}
@@ -2839,12 +2874,13 @@ ${kop('RM. 19A')}
       stmtRows.length
         ? stmtRows
             .map(
-              (r) =>
-                `<tr><td colspan="3">${nl2br(r.teks)}</td><td style="text-align:center;vertical-align:top;">${
-                  r.qr
-                    ? `<img class="rm-sig-qr" src="${esc(r.qr)}" alt="QR tanda tangan" width="80" height="80" /><br/>`
-                    : ''
-                }${esc(r.ttd)}</td></tr>`,
+              (r, i) =>
+                `<tr><td colspan="3">${nl2br(stripTimestamp(r.teks))}</td><td style="text-align:center;vertical-align:top;">` +
+                `<div>${i === 0 ? 'Tanda Tangan Dokter' : 'Tanda Tangan Penerima'}</div>` +
+                (r.qr
+                  ? `<img class="rm-sig-qr" src="${esc(r.qr)}" alt="QR tanda tangan" width="80" height="80" />`
+                  : '<div class="rm-sig-space"></div>') +
+                `<div>( <strong>${esc(nameInParen(r.ttd))}</strong> )</div></td></tr>`,
             )
             .join('')
         : '<tr><td colspan="4">-</td></tr>'
@@ -2853,30 +2889,39 @@ ${kop('RM. 19A')}
   </tbody>
 </table>
 
-<table class="rm-table">
-  <thead><tr class="sec-hdr"><td colspan="3">III. PERSETUJUAN TINDAKAN KEDOKTERAN</td></tr></thead>
-  <tbody>
-    <tr><td colspan="3" style="text-align:center;">Yang bertandatangan di bawah ini Saya,</td></tr>
-    <tr><td colspan="3">${nl2br(consentIdentity)}</td></tr>
-    <tr><td colspan="3" style="text-align:justify;">${nl2br(consentParagraf)}</td></tr>
-    <tr>
-      ${
-        saksi.length
-          ? saksi
-              .map(
-                (s) =>
-                  `<td style="text-align:center;vertical-align:top;width:33%;">${
-                    s.qr
-                      ? `<img class="rm-sig-qr" src="${esc(s.qr)}" alt="QR saksi rumah sakit" width="80" height="80" /><br/>`
-                      : ''
-                  }${esc(s.teks)}</td>`,
-              )
-              .join('')
-          : '<td colspan="3">-</td>'
-      }
-    </tr>
-  </tbody>
-</table>
+<div style="border:1px solid #000000;margin-bottom:5px;">
+  <div class="sec-hdr" style="border-bottom:1px solid #000000;padding:4px 6px;">III. PERSETUJUAN TINDAKAN KEDOKTERAN</div>
+  <div style="padding:5px 8px;">
+    <div>Yang bertanda tangan di bawah ini, saya:</div>
+    <table class="rm-grid-table"><tbody>
+      <tr><td style="width:80px;">Nama</td><td style="width:10px;">:</td><td><strong>${esc(waliNama)}</strong></td><td style="width:80px;">Umur</td><td style="width:10px;">:</td><td>${esc(waliUmur)}</td></tr>
+      <tr><td>Jenis Kelamin</td><td>:</td><td>${esc(waliJk)}</td><td>Alamat</td><td>:</td><td>${esc(waliAlamat)}</td></tr>
+    </tbody></table>
+    <div>Dengan ini menyatakan <strong>PERSETUJUAN</strong> untuk dilakukannya tindakan kedokteran (<strong>${esc(
+      tindakanNama,
+    )}</strong>) terhadap: &nbsp; <span class="chk-box">&nbsp;</span> diri saya sendiri &nbsp; <span class="chk-box">&#10003;</span> <strong>Wali / Keluarga dari pasien</strong>:</div>
+    <table class="rm-grid-table"><tbody>
+      <tr><td style="width:90px;">Nama Pasien</td><td style="width:10px;">:</td><td><strong>${esc(nama)}</strong></td><td style="width:70px;">Umur</td><td style="width:10px;">:</td><td>${esc(
+        pick('tgl_lahir', 'tglLahir'),
+      )}</td></tr>
+      <tr><td>Jenis Kelamin</td><td>:</td><td><span class="chk-box">${
+        /laki|^l$/i.test(pick('jenis_kelamin', 'jk')) ? '&#10003;' : '&nbsp;'
+      }</span> Laki-laki &nbsp; <span class="chk-box">${
+        /perempuan|^p$/i.test(pick('jenis_kelamin', 'jk')) ? '&#10003;' : '&nbsp;'
+      }</span> Perempuan</td><td>Alamat</td><td>:</td><td>${esc(patientAlamat(sections))}</td></tr>
+    </tbody></table>
+    ${paragraf
+      .map((p, i) => `<div style="text-align:justify;margin:3px 0;">${i + 1}. ${esc(p)}</div>`)
+      .join('')}
+    <table class="rm-table"><thead><tr>
+      <th>Yang Menyatakan / Pemberi Persetujuan</th><th>Saksi Keluarga</th><th>Saksi Rumah Sakit</th>
+    </tr></thead><tbody><tr>
+      <td style="text-align:center;">( <strong>${esc(ttdWali)}</strong> )</td>
+      <td style="text-align:center;">( <strong>${esc(ttdSaksiKel)}</strong> )</td>
+      <td style="text-align:center;">( <strong>${esc(ttdSaksiRs)}</strong> )</td>
+    </tr></tbody></table>
+  </div>
+</div>
 </section>`;
 }
 
