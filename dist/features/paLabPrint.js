@@ -238,11 +238,15 @@ var __morbis_feature = (() => {
       function fixRsName(s) {
         return s.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, "H. ");
       }
+      function decodeEntities(s) {
+        return s.replace(/&gt;/gi, ">").replace(/&lt;/gi, "<").replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&");
+      }
       function cleanPhpNoise(s) {
-        return fixRsName(s).replace(
+        const cleaned = fixRsName(s).replace(
           /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
           " "
-        ).replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, " ").replace(/\s+/g, " ").trim();
+        ).replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, " ");
+        return decodeEntities(decodeEntities(cleaned)).replace(/\s+/g, " ").trim();
       }
       function esc(s) {
         return String(s ?? "").replace(
