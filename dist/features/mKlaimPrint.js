@@ -891,7 +891,7 @@ ${kop("RM. 03")}
         for (let i = 0; i < cells.length - 2; i++) {
           const label = (cells[i].textContent || "").replace(/\s+/g, " ").trim();
           if ((cells[i + 1].textContent || "").trim() !== ":") continue;
-          const value = (cells[i + 2].innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
+          const value = (cells[i + 2].innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/li>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
           if (label && value && !fields.has(label)) fields.set(label, value);
         }
         if (cells.length >= 5 && /^[A-Z]\d{2}(?:\.\d+)?$/.test(cells[2].textContent?.trim() ?? "") && cells[0].textContent?.trim() && cells[1].textContent?.trim()) {
@@ -1291,8 +1291,13 @@ ${kop("RM. 05")}
           const rawLabel = (cells[i].textContent || "").replace(/\s+/g, " ").trim();
           const label = rawLabel.replace(/^-\s*/, "").replace(/\s*:$/, "");
           if ((cells[i + 1].textContent || "").trim() !== ":") continue;
-          const value = (cells[i + 2].innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
+          const value = (cells[i + 2].innerHTML || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").replace(/\u00a0/g, " ").replace(/[ \t]+/g, " ").trim();
           if (label && value && !fields.has(label)) fields.set(label, value);
+        }
+        for (let i = 0; i < cells.length - 1; i++) {
+          const k = (cells[i].textContent || "").replace(/\s+/g, " ").trim().replace(/^-\s*/, "").replace(/\s*:$/, "");
+          const m = (cells[i + 1].textContent || "").replace(/\u00a0/g, " ").match(/^\s*:\s*(.+)$/);
+          if (k && m && !fields.has(k)) fields.set(k, m[1].trim());
         }
       }
     }
@@ -1309,30 +1314,45 @@ ${kop("RM. 05")}
     const lahir = pick("tgl_lahir", "tglLahir");
     const jk = pick("jenis_kelamin", "jk");
     const masuk = f(/^Tanggal Masuk$/i);
-    const keluar = f(/^Tanggal Keluar$/i);
+    const keluarValues = Array.from(fields).filter(([k]) => /^Tanggal Keluar$/i.test(k)).map(([, v]) => v);
+    const keluar = keluarValues.find((v) => /\d{1,2}:\d{2}/.test(v)) ?? keluarValues[0] ?? "-";
     const ruang = f(/^Ruang Rawat$/i);
     const kelas = f(/^Kelas$/i);
-    const dokter = pick("dokter", "dpjp");
+    const dokterScrape = f(/^Dokter Rawat Bersama/i);
+    const dokter = dokterScrape !== "-" ? dokterScrape : pick("dokter", "dpjp");
     const seb = f(/^Anemnesa|^Anamnesa/i);
+    const riwayatPenyakit = f(/^Riwayat Penyakit$/i);
     const fisik = f(/^Pemeriksaan Fisik$/i);
     const diagnostik = f(/^Hasil Pemeriksaan Diagnostik/i);
     const diagUtama = f(/^Diagnosa Utama$/i);
     const diagSekunder = f(/^Diagnosa Sekunder$/i);
-    const prosedur = f(/^Prosedur \/ Operasi|^Diagnosa Tindakan/i);
+    const prosedur = f(/^Prosedur \/ Operasi$/i);
+    const icd9 = f(/^Diagnosa Tindakan$/i);
     const pengobatan = f(/^Pengobatan$/i);
     const obatPulang = f(/^Obat Pulang$/i);
     const kondisi = f(/^Kondisi Pulang$/i);
     const catatanKondisi = f(/^Catatan Kondisi Pulang$/i);
     const kontrol = f(/^Jadwal Kontrol$/i);
     const lanjutan = f(/^Pemeriksaan Lanjutan/i);
+    const caraPulang = f(/^Cara Pulang$/i);
+    const instruksiPulang = f(/^Instruksi Pulang$/i);
+    const rujukMasuk = f(/rujukan masuk/i);
+    const rujukKembali = f(/rujukan dikembalikan/i);
+    const rujukKeluar = f(/dirujuk keluar/i);
+    const kb = f(/^Apakah pasien menggunakan KB\?$/i);
+    const tindakan = f(/^Tindakan$/i);
     const vitalSigns = [
       ["TD", vital(/^TD$/)],
       ["HR", vital(/^HR$/)],
       ["RR", vital(/^RR$/)],
       ["S", vital(/^S$/)],
       ["SpO2", vital(/^SPO2$/)],
-      ["GCS", vital(/^GCS$/)]
-    ].filter(([, v]) => v !== "-").map(([k, v]) => `${k}: ${v}`).join(" | ");
+      ["GCS E/M/V", [vital(/^E$/), vital(/^M$/), vital(/^V$/)].filter((v) => v !== "-").join("/")],
+      ["KU", vital(/^KU$/)],
+      ["Kesadaran", vital(/^Kesadaran$/)],
+      ["Nadi", vital(/^Nadi$/)],
+      ["SH", vital(/^SH$/)]
+    ].filter(([, v]) => v && v !== "-").map(([k, v]) => `${k}: ${v}`).join(" | ");
     const row = (label, value) => `<tr><td style="width: 175px;"><strong>${label}</strong></td><td>${nl2br(value)}</td></tr>`;
     return `<section class="rm-page" id="rm-06">
 ${kop("RM. 06")}
@@ -1357,19 +1377,25 @@ ${kop("RM. 06")}
   <tbody>
     ${row("ALASAN / INDIKASI RAWAT &amp; ANAMNESA", `${f(/^Alasan \/ Indikasi Rawat/i)}
 ${seb}`.trim())}
+    ${row("RIWAYAT PENYAKIT", riwayatPenyakit)}
     ${row("PEMERIKSAAN FISIK &amp; TANDA VITAL MASUK", `${fisik}${vitalSigns ? `
 Vital Signs : ${vitalSigns}` : ""}`.trim())}
     ${row("HASIL PEMERIKSAAN DIAGNOSTIK", diagnostik)}
     ${row("DIAGNOSA UTAMA", diagUtama)}
     ${row("DIAGNOSA SEKUNDER", diagSekunder)}
-    ${row("TINDAKAN / PROSEDUR (ICD-9-CM)", prosedur)}
+    ${row("TINDAKAN / PROSEDUR", prosedur)}
+    ${row("DIAGNOSA TINDAKAN (ICD-9-CM)", icd9)}
     ${row("PENGOBATAN SELAMA RAWAT", pengobatan)}
     ${row("OBAT PULANG", obatPulang)}
-    ${row("KONDISI &amp; CARA PULANG", `${kondisi}
-${catatanKondisi}`.trim())}
+    ${row("TINDAKAN KEPERAWATAN", tindakan)}
+    ${row("KONDISI PULANG", kondisi.split(/\n/)[0])}
+    ${row("KONDISI &amp; CARA PULANG", `${catatanKondisi}
+Cara Pulang: ${caraPulang}`.trim())}
+    ${row("INSTRUKSI PULANG", instruksiPulang)}
     ${row("INSTRUKSI &amp; JADWAL KONTROL", `${kontrol}
 ${lanjutan}`.trim())}
-    ${row("STATUS RUJUKAN &amp; PELAYANAN KB", f(/^Apakah pasien rujukan masuk/i))}
+    ${row("STATUS RUJUKAN", `Masuk: ${rujukMasuk} | Dikembalikan: ${rujukKembali} | Dirujuk keluar: ${rujukKeluar}`)}
+    ${row("PELAYANAN KB", kb)}
   </tbody>
 </table>
 

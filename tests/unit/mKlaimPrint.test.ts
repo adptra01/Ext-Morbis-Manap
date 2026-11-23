@@ -297,7 +297,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'RINGKASAN PULANG (DISCHARGE SUMMARY)',
       'PEMERIKSAAN FISIK &amp; TANDA VITAL MASUK',
       'HASIL PEMERIKSAAN DIAGNOSTIK',
-      'TINDAKAN / PROSEDUR (ICD-9-CM)',
+      'TINDAKAN / PROSEDUR',
       'KONDISI &amp; CARA PULANG',
       'Yang Membuat',
     ]) {

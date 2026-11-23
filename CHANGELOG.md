@@ -48,6 +48,7 @@
 
 ### ♻️ refactor
 
+- **mKlaimPrint** — redesign Bon Makan, Uji Fungsi, Permintaan Terapi dari form asli (`6cc6842`)
 - **mKlaimPrint** — hapus kode formulir kanan atas (RM.20 dll) yang penomorannya salah (`bac9729`)
 - **mKlaimPrint** — Konsultasi — hapus footer TTD (QR tidak pernah ada) (`3d2d7de`)
 - **mKlaimPrint** — Operasi — hapus tebakan pemisah uraian, semua baris jadi langkah bernomor (`a46e504`)
@@ -60,6 +61,7 @@
 
 ### 🎨 style
 
+- **mKlaimPrint** — Anestesi — hapus border kotak QR TTE (`47d7ce7`)
 - **mKlaimPrint** — Anestesi & Konsul — rapikan header span-2, TTE tanpa kotak/underline (`ad300d2`)
 - **mKlaimMarks** — micro-polish mark bar — label count, chip ramping, popover anti-potong (`65d5b93`)
 
@@ -2354,4 +2356,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ad300d25aa31dd76117558f28a9b30b21e1d86be -->
+<!-- changelog-upto: 47d7ce7540faeb3507e1a30cd84e03249f3bb6eb -->
