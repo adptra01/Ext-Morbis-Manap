@@ -35,6 +35,57 @@ var __morbis_feature = (() => {
   var HOSPITAL_NAME = "RSUD H. Abdul Manap";
 
   // src/features/shared/printDossier.ts
+  function installImageTools(win) {
+    const doc = win.document;
+    const setup = (img) => {
+      if (img.dataset.tools || !img.naturalWidth || img.naturalWidth < 260) return;
+      if (img.closest("table")) return;
+      img.dataset.tools = "1";
+      const wrap = doc.createElement("span");
+      wrap.className = "img-wrap";
+      img.parentNode?.insertBefore(wrap, img);
+      wrap.appendChild(img);
+      const tools = doc.createElement("span");
+      tools.className = "img-tools";
+      const mk = (label, act) => {
+        const b = doc.createElement("button");
+        b.type = "button";
+        b.dataset.act = act;
+        b.textContent = label;
+        return b;
+      };
+      tools.appendChild(mk("\u21BB Rotasi 90\xB0", "rot"));
+      tools.appendChild(mk("Hapus", "del"));
+      wrap.insertBefore(tools, img);
+      tools.addEventListener("click", (ev) => {
+        const act = ev.target.closest("button")?.dataset.act;
+        if (act === "del") {
+          wrap.remove();
+          return;
+        }
+        if (act !== "rot") return;
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        if (!w || !h) return;
+        const c = doc.createElement("canvas");
+        c.width = h;
+        c.height = w;
+        const ctx = c.getContext("2d");
+        if (!ctx) return;
+        ctx.translate(h / 2, w / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(img, -w / 2, -h / 2);
+        try {
+          img.src = c.toDataURL("image/png");
+        } catch {
+        }
+      });
+    };
+    doc.querySelectorAll(".dossier-wrapper img").forEach((img) => {
+      if (img.complete) setup(img);
+      else img.addEventListener("load", () => setup(img), { once: true });
+    });
+  }
   function installDossierHandlers(win) {
     const doPrint = () => {
       try {
@@ -2507,8 +2558,24 @@ ${kop("RM. 19A")}
     const anak = umur > 0 && umur < 18;
     const spinal = cek("Spinal", "before") === "&#10003;" || cek("Epidural", "before") === "&#10003;" || cek("Kaudal", "before") === "&#10003;" || /subarachnoid/i.test(teks);
     const skorDari = (...ids) => ids.map((id) => pick(id)).filter((v) => v !== "-").join(" / ") || "-";
-    const aldreteNilai = skorDari("skorRR", "skor15", "skor30", "skor1jam", "skor2jam", "skorkeluarRR");
-    const bromageNilai = skorDari("jampascaanestesi", "jam15", "jam30", "jam45", "1jam", "2jam", "3jam", "4jam");
+    const aldreteNilai = skorDari(
+      "skorRR",
+      "skor15",
+      "skor30",
+      "skor1jam",
+      "skor2jam",
+      "skorkeluarRR"
+    );
+    const bromageNilai = skorDari(
+      "jampascaanestesi",
+      "jam15",
+      "jam30",
+      "jam45",
+      "1jam",
+      "2jam",
+      "3jam",
+      "4jam"
+    );
     const skorHtml = anak ? `<tr><td>Skor Steward</td><td colspan="3">Berlaku untuk pasien anak. Nilai: ${skorDari("pergerakansteward", "pernafasansteward", "kesadaransteward")}</td></tr>` : `<tr><td>Aldrete Score</td><td colspan="3">Aktivitas \xB7 Pernapasan \xB7 Sirkulasi \xB7 Kesadaran \xB7 Warna \u2014 ${aldreteNilai !== "-" ? `skor (RR/15'/30'/1j/2j/keluar): <strong>${esc(aldreteNilai)}</strong>` : "skor diisi di halaman asal."}</td></tr>
        <tr><td>Bromage Score</td><td colspan="3">${spinal ? `Gerakan penuh dari tungkai dan pergelangan kaki (blok motorik pulih) \u2014 ${bromageNilai !== "-" ? `nilai: <strong>${esc(bromageNilai)}</strong>` : "skor diisi di halaman asal."}` : "Tidak Berlaku (anestesi non-regional)."}</td></tr>
        <tr><td>Steward Score</td><td colspan="3"><em>Tidak Berlaku (khusus pasien anak \u2014 pasien dewasa).</em></td></tr>`;
@@ -3881,7 +3948,8 @@ ${kop(m.code)}
       }
 
       .no-print,
-      .verifier-toolbar {
+      .verifier-toolbar,
+      .img-tools {
         display: none !important;
       }
 
@@ -4143,6 +4211,7 @@ ${kop(m.code)}
       win.document.open();
       win.document.write(html);
       win.document.close();
+      installImageTools(win);
       installDossierHandlers(win);
       return true;
     } catch {

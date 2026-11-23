@@ -76,7 +76,7 @@ export function installImageTools(win: Window): void {
       }
     });
   };
-  doc.querySelectorAll<HTMLImageElement>('.doc-body img').forEach((img) => {
+  doc.querySelectorAll<HTMLImageElement>('.dossier-wrapper img').forEach((img) => {
     if (img.complete) setup(img);
     else img.addEventListener('load', () => setup(img), { once: true });
   });

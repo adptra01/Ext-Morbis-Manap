@@ -54,7 +54,7 @@ function installImageTools(win) {
 			} catch {}
 		});
 	};
-	doc.querySelectorAll(".doc-body img").forEach((img) => {
+	doc.querySelectorAll(".dossier-wrapper img").forEach((img) => {
 		if (img.complete) setup(img);
 		else img.addEventListener("load", () => setup(img), { once: true });
 	});

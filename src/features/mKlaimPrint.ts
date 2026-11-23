@@ -1,6 +1,6 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { HOSPITAL_NAME } from './shared/config.js';
-import { installDossierHandlers } from './shared/printDossier.js';
+import { installDossierHandlers, installImageTools } from './shared/printDossier.js';
 
 const g = getMorbisGlobals();
 
@@ -4909,7 +4909,8 @@ ${kop(m.code)}
       }
 
       .no-print,
-      .verifier-toolbar {
+      .verifier-toolbar,
+      .img-tools {
         display: none !important;
       }
 
@@ -5178,6 +5179,7 @@ function openDirectTab(html: string): boolean {
     win.document.open();
     win.document.write(html);
     win.document.close();
+    installImageTools(win);
     installDossierHandlers(win);
     return true;
   } catch {
