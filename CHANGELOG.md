@@ -29,7 +29,7 @@
 
 ### 🧹 chore
 
-- **changelog** — sync entr fix NORM Auto-Crawl (`d1369d3`)
+- **changelog** — sync entr fix NORM Auto-Crawl (`7b47b1c`)
 - bump versi 1.5.260 (fix NORM Auto-Crawl) [skip ci] (`de883a8`)
 - **changelog** — sync entr rapikan docs (`14ae23b`)
 - **changelog** — sync entr fix CI test (`928a10e`)
@@ -2290,4 +2290,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: d1369d351662c9aefddcac06157319bb8d98c6fe -->
+<!-- changelog-upto: 7b47b1cda6ff70cc3050f172f1d331ab411fcd27 -->
