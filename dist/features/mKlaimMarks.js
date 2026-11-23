@@ -2114,44 +2114,53 @@ var __morbis_feature = (() => {
       label: "Labor",
       badge: "LABOR",
       button: 'button.ext-mk-btn[data-ext-mk="labor"]',
-      stateAttr: "data-ext-mk-marked"
+      stateAttr: "data-ext-mk-marked",
+      configKey: "laborMarker"
     },
     {
       key: "radiologi",
       label: "Radiologi",
       badge: "RADIOLOGI",
       button: 'button.ext-mk-btn[data-ext-mk="radiologi"]',
-      stateAttr: "data-ext-mk-marked"
+      stateAttr: "data-ext-mk-marked",
+      configKey: "radiologiMarker"
     },
     {
       key: "batal-berobat",
       label: "Batal Berobat",
       badge: "BATAL BEROBAT",
       button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]',
-      stateAttr: "data-ext-mk-marked"
+      stateAttr: "data-ext-mk-marked",
+      configKey: "batalBerobatMarker"
     },
     {
       key: "pre-op",
       label: "Pre-op",
       badge: "PRE-OP",
       button: "button.ext-preop-btn",
-      stateAttr: "data-ext-preop-marked"
+      stateAttr: "data-ext-preop-marked",
+      configKey: "preOpMarker"
     },
     {
       key: "telaah",
       label: "Telaah",
       badge: "TELAAH",
       button: "button.ext-telaah-btn",
-      stateAttr: "data-ext-telaah-marked"
+      stateAttr: "data-ext-telaah-marked",
+      configKey: "telaahBerkas"
     },
     {
       key: "partial",
       label: "Partial",
       badge: "PARTIAL",
       button: "button.ext-partial-btn",
-      stateAttr: "data-ext-partial-marked"
+      stateAttr: "data-ext-partial-marked",
+      configKey: "partialBerkas"
     }
   ];
+  function activeMarkDefs(enabledKeys) {
+    return MARK_DEFS.filter((d) => enabledKeys.has(d.configKey));
+  }
   var CSS = `
 @media print { .ext-mark-trigger, .ext-chips-wrap, #ext-shared-popover { display:none !important; } }
 /* Tombol & badge lama disembunyikan di list \u2014 logikanya tetap jalan. */
@@ -2206,9 +2215,8 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
 .ext-pop-dot[data-type="telaah"]        { background:#16a34a; }
 .ext-pop-dot[data-type="partial"]       { background:#64748b; }
 `;
-  var LEGACY_BTN_SEL = MARK_DEFS.map((d) => d.button).join(",");
-  function hasLegacyMarkButton(row) {
-    return !!row.querySelector(LEGACY_BTN_SEL);
+  function hasLegacyMarkButton(row, defs = MARK_DEFS) {
+    return !!row.querySelector(defs.map((d) => d.button).join(","));
   }
   function triggerLabel(count) {
     return count > 0 ? `Mark (${count})` : "+ Mark";
@@ -2216,9 +2224,9 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
   function marksSignature(marks) {
     return marks.slice().sort().join("|");
   }
-  function readRowMarks(row) {
+  function readRowMarks(row, defs = MARK_DEFS) {
     const out = [];
-    for (const def of MARK_DEFS) {
+    for (const def of defs) {
       const btn = row.querySelector(def.button);
       if (!btn) continue;
       const attr = btn.getAttribute(def.stateAttr);
@@ -2227,13 +2235,15 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     return out;
   }
   var started = false;
-  function startMarkBar() {
+  function startMarkBar(enabledKeys) {
     if (started) return;
+    const defs = activeMarkDefs(enabledKeys);
+    if (!defs.length) return;
     started = true;
     injectCSS("ext-mark-bar-styles", CSS);
     const popover = document.createElement("div");
     popover.id = "ext-shared-popover";
-    popover.innerHTML = MARK_DEFS.map(
+    popover.innerHTML = defs.map(
       (d) => `<label class="ext-pop-item" data-ext-pop="${d.key}"><input type="checkbox" value="${d.key}"><span class="ext-pop-dot" data-type="${d.key}"></span><span>${d.label}</span></label>`
     ).join("");
     document.body.appendChild(popover);
@@ -2243,7 +2253,7 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     function rowId(row) {
       const known = row.getAttribute("data-ext-mark-row-id");
       if (known) return known;
-      const btn = row.querySelector(LEGACY_BTN_SEL);
+      const btn = row.querySelector(defs.map((d) => d.button).join(","));
       if (!btn) return "";
       const attrs = [
         btn.getAttribute("data-ext-mk-id"),
@@ -2273,7 +2283,7 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
         cell.appendChild(wrap);
       }
       const html = marks.map((key2) => {
-        const def = MARK_DEFS.find((d) => d.key === key2);
+        const def = defs.find((d) => d.key === key2);
         return def ? `<span class="ext-chip" data-type="${def.key}">${def.badge}</span>` : "";
       }).join("");
       if (wrap.innerHTML !== html) wrap.innerHTML = html;
@@ -2285,10 +2295,10 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
         frame = 0;
         for (const row of document.querySelectorAll("table tbody tr")) {
           if (row.classList.contains("dataTables_empty")) continue;
-          if (!hasLegacyMarkButton(row)) continue;
+          if (!hasLegacyMarkButton(row, defs)) continue;
           const id = rowId(row);
           if (!id) continue;
-          const marks = readRowMarks(row);
+          const marks = readRowMarks(row, defs);
           ensureTrigger(row, id);
           if (cache.get(id) === marksSignature(marks)) continue;
           cache.set(id, marksSignature(marks));
@@ -2308,7 +2318,7 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     }
     function openPopover(row, trigger) {
       activeRow = row;
-      const marks = readRowMarks(row);
+      const marks = readRowMarks(row, defs);
       popover.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
         cb.checked = marks.includes(cb.value);
       });
@@ -2324,10 +2334,10 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     popover.addEventListener("change", (e) => {
       const cb = e.target;
       if (!cb.matches('input[type="checkbox"]') || !activeRow) return;
-      const def = MARK_DEFS.find((d) => d.key === cb.value);
+      const def = defs.find((d) => d.key === cb.value);
       if (!def) return;
       const legacy = activeRow.querySelector(def.button);
-      const marks = readRowMarks(activeRow).filter((x) => x !== def.key);
+      const marks = readRowMarks(activeRow, defs).filter((x) => x !== def.key);
       if (cb.checked) marks.push(def.key);
       cache.set(rowId(activeRow), marksSignature(marks));
       paint(activeRow, marks);
@@ -3490,22 +3500,16 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
       }
     });
   }
-  void Promise.all(
-    [
-      "laborMarker",
-      "radiologiMarker",
-      "batalBerobatMarker",
-      "mKlaimPreOp",
-      "mKlaimTelaah",
-      "mKlaimPartial"
-    ].map((key2) => isFeatureEnabled(key2))
-  ).then((enabled) => {
+  void Promise.all(MARK_DEFS.map((d) => isFeatureEnabled(d.configKey))).then((enabled) => {
     const path = window.location?.pathname ?? "";
     if (!enabled.some(Boolean) || !path.startsWith("/v2/m-klaim") || path.includes("/detail")) return;
+    const active = new Set(
+      MARK_DEFS.filter((_, i) => enabled[i]).map((d) => d.configKey)
+    );
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => startMarkBar());
+      document.addEventListener("DOMContentLoaded", () => startMarkBar(active));
     } else {
-      startMarkBar();
+      startMarkBar(active);
     }
   });
 })();

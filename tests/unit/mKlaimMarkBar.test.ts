@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   MARK_DEFS,
+  activeMarkDefs,
   hasLegacyMarkButton,
   marksSignature,
   readRowMarks,
@@ -32,6 +33,29 @@ describe('mKlaimMarkBar — label tombol', () => {
   it('tanpa mark → + Mark, dengan mark → Mark (n)', () => {
     expect(triggerLabel(0)).toBe('+ Mark');
     expect(triggerLabel(4)).toBe('Mark (4)');
+  });
+});
+
+describe('mKlaimMarkBar — gate aktif/nonaktif', () => {
+  it('key config mengikuti background.ts (bukan nama file fitur)', () => {
+    expect(MARK_DEFS.map((d) => d.configKey)).toEqual([
+      'laborMarker',
+      'radiologiMarker',
+      'batalBerobatMarker',
+      'preOpMarker',
+      'telaahBerkas',
+      'partialBerkas',
+    ]);
+  });
+
+  it('hanya mark yang aktif yang dipakai UI', () => {
+    const active = activeMarkDefs(new Set(['laborMarker', 'telaahBerkas']));
+    expect(active.map((d) => d.key)).toEqual(['labor', 'telaah']);
+    expect(readRowMarks(rowWithMarks({ labor: true, pre_op: true }), active)).toEqual(['labor']);
+  });
+
+  it('semua mark OFF → tidak ada def aktif', () => {
+    expect(activeMarkDefs(new Set())).toEqual([]);
   });
 });
 

@@ -21,6 +21,8 @@ export interface MarkDef {
   button: string;
   /** Atribut penanda status "aktif" pada tombol/badge lama. */
   stateAttr: string;
+  /** Key config di background.ts — satu sumber untuk gate & UI. */
+  configKey: string;
 }
 
 /** Urutan tampil chip & checkbox mengikuti urutan mark di permintaan. */
@@ -31,6 +33,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'LABOR',
     button: 'button.ext-mk-btn[data-ext-mk="labor"]',
     stateAttr: 'data-ext-mk-marked',
+    configKey: 'laborMarker',
   },
   {
     key: 'radiologi',
@@ -38,6 +41,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'RADIOLOGI',
     button: 'button.ext-mk-btn[data-ext-mk="radiologi"]',
     stateAttr: 'data-ext-mk-marked',
+    configKey: 'radiologiMarker',
   },
   {
     key: 'batal-berobat',
@@ -45,6 +49,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'BATAL BEROBAT',
     button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]',
     stateAttr: 'data-ext-mk-marked',
+    configKey: 'batalBerobatMarker',
   },
   {
     key: 'pre-op',
@@ -52,6 +57,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'PRE-OP',
     button: 'button.ext-preop-btn',
     stateAttr: 'data-ext-preop-marked',
+    configKey: 'preOpMarker',
   },
   {
     key: 'telaah',
@@ -59,6 +65,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'TELAAH',
     button: 'button.ext-telaah-btn',
     stateAttr: 'data-ext-telaah-marked',
+    configKey: 'telaahBerkas',
   },
   {
     key: 'partial',
@@ -66,8 +73,14 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'PARTIAL',
     button: 'button.ext-partial-btn',
     stateAttr: 'data-ext-partial-marked',
+    configKey: 'partialBerkas',
   },
 ];
+
+/** Mark yang benar-benar aktif (config ON + role diizinkan). */
+export function activeMarkDefs(enabledKeys: ReadonlySet<string>): MarkDef[] {
+  return MARK_DEFS.filter((d) => enabledKeys.has(d.configKey));
+}
 
 const CSS = `
 @media print { .ext-mark-trigger, .ext-chips-wrap, #ext-shared-popover { display:none !important; } }
@@ -124,15 +137,16 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
 .ext-pop-dot[data-type="partial"]       { background:#64748b; }
 `;
 
-const LEGACY_BTN_SEL = MARK_DEFS.map((d) => d.button).join(',');
-
 /**
- * Baris klaim = baris yang punya minimal satu tombol mark lama.
+ * Baris klaim = baris yang punya minimal satu tombol mark lama yang aktif.
  * PENTING: jangan pakai `table tbody tr` mentah — datepicker kalender di form
  * pencarian juga pakai <table> dan ikut kena "+ Mark" (laporan 2026-11-23).
  */
-export function hasLegacyMarkButton(row: HTMLTableRowElement): boolean {
-  return !!row.querySelector(LEGACY_BTN_SEL);
+export function hasLegacyMarkButton(
+  row: HTMLTableRowElement,
+  defs: MarkDef[] = MARK_DEFS,
+): boolean {
+  return !!row.querySelector(defs.map((d) => d.button).join(','));
 }
 
 /** Teks tombol pemicu mengikuti jumlah mark aktif. */
@@ -146,9 +160,9 @@ export function marksSignature(marks: string[]): string {
 }
 
 /** Baca mark aktif dari tombol lama pada satu baris. */
-export function readRowMarks(row: HTMLTableRowElement): string[] {
+export function readRowMarks(row: HTMLTableRowElement, defs: MarkDef[] = MARK_DEFS): string[] {
   const out: string[] = [];
-  for (const def of MARK_DEFS) {
+  for (const def of defs) {
     const btn = row.querySelector<HTMLElement>(def.button);
     if (!btn) continue;
     const attr = btn.getAttribute(def.stateAttr);
@@ -159,20 +173,24 @@ export function readRowMarks(row: HTMLTableRowElement): string[] {
 
 let started = false;
 
-export function startMarkBar(): void {
+export function startMarkBar(enabledKeys: ReadonlySet<string>): void {
   if (started) return;
+  const defs = activeMarkDefs(enabledKeys);
+  if (!defs.length) return; // semua mark OFF — jangan injeks UI sama sekali
   started = true;
   injectCSS('ext-mark-bar-styles', CSS);
 
   const popover = document.createElement('div');
   popover.id = 'ext-shared-popover';
-  popover.innerHTML = MARK_DEFS.map(
-    (d) =>
-      `<label class="ext-pop-item" data-ext-pop="${d.key}">` +
-      `<input type="checkbox" value="${d.key}">` +
-      `<span class="ext-pop-dot" data-type="${d.key}"></span>` +
-      `<span>${d.label}</span></label>`,
-  ).join('');
+  popover.innerHTML = defs
+    .map(
+      (d) =>
+        `<label class="ext-pop-item" data-ext-pop="${d.key}">` +
+        `<input type="checkbox" value="${d.key}">` +
+        `<span class="ext-pop-dot" data-type="${d.key}"></span>` +
+        `<span>${d.label}</span></label>`,
+    )
+    .join('');
   document.body.appendChild(popover);
 
   const cache = new Map<string, string>();
@@ -182,7 +200,7 @@ export function startMarkBar(): void {
   function rowId(row: HTMLTableRowElement): string {
     const known = row.getAttribute('data-ext-mark-row-id');
     if (known) return known;
-    const btn = row.querySelector<HTMLElement>(LEGACY_BTN_SEL);
+    const btn = row.querySelector<HTMLElement>(defs.map((d) => d.button).join(','));
     if (!btn) return '';
     const attrs = [
       btn.getAttribute('data-ext-mk-id'),
@@ -216,7 +234,7 @@ export function startMarkBar(): void {
     }
     const html = marks
       .map((key) => {
-        const def = MARK_DEFS.find((d) => d.key === key);
+        const def = defs.find((d) => d.key === key);
         return def ? `<span class="ext-chip" data-type="${def.key}">${def.badge}</span>` : '';
       })
       .join('');
@@ -231,10 +249,10 @@ export function startMarkBar(): void {
       frame = 0;
       for (const row of document.querySelectorAll<HTMLTableRowElement>('table tbody tr')) {
         if (row.classList.contains('dataTables_empty')) continue;
-        if (!hasLegacyMarkButton(row)) continue; // kalender/datepicker & tabel lain
+        if (!hasLegacyMarkButton(row, defs)) continue; // kalender/datepicker & tabel lain
         const id = rowId(row);
         if (!id) continue; // baris klaim tanpa id_visit tak bisa disinkronkan
-        const marks = readRowMarks(row);
+        const marks = readRowMarks(row, defs);
         ensureTrigger(row, id); // idempoten — tahan redraw DataTables
         if (cache.get(id) === marksSignature(marks)) continue;
         cache.set(id, marksSignature(marks));
@@ -256,7 +274,7 @@ export function startMarkBar(): void {
 
   function openPopover(row: HTMLTableRowElement, trigger: HTMLElement): void {
     activeRow = row;
-    const marks = readRowMarks(row);
+    const marks = readRowMarks(row, defs);
     popover.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((cb) => {
       cb.checked = marks.includes(cb.value);
     });
@@ -278,11 +296,11 @@ export function startMarkBar(): void {
   popover.addEventListener('change', (e) => {
     const cb = e.target as HTMLInputElement;
     if (!cb.matches('input[type="checkbox"]') || !activeRow) return;
-    const def = MARK_DEFS.find((d) => d.key === cb.value);
+    const def = defs.find((d) => d.key === cb.value);
     if (!def) return;
     const legacy = activeRow.querySelector<HTMLElement>(def.button);
     // Optimistic: chip langsung berubah; engine lama yang menangani POST.
-    const marks = readRowMarks(activeRow).filter((x) => x !== def.key);
+    const marks = readRowMarks(activeRow, defs).filter((x) => x !== def.key);
     if (cb.checked) marks.push(def.key);
     cache.set(rowId(activeRow), marksSignature(marks));
     paint(activeRow, marks);

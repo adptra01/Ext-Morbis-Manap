@@ -5,7 +5,7 @@
  */
 import { getMorbisGlobals } from './shared/types.js';
 import { isFeatureEnabled, whenFeatureEnabled } from './shared/featureGate.js';
-import { startMarkBar } from './shared/mKlaimMarkBar.js';
+import { MARK_DEFS, startMarkBar } from './shared/mKlaimMarkBar.js';
 import { injectCSS } from '../shared/ui/index.js';
 import { logUsage } from './shared/usageLog.js';
 import { readPetugas } from './shared/resumeHistory.js';
@@ -413,21 +413,13 @@ for (const cfg of CONFIGS) {
 // UI mark terpadu: 1 tombol pemicu + 1 popover + multi-chip untuk ke-6 mark.
 // Engine lama tetap jalan sebagai backend (toggle + sinkron pusat); tombolnya
 // disembunyikan CSS dan dipicu lewat .click() dari popover.
-void Promise.all(
-  [
-    'laborMarker',
-    'radiologiMarker',
-    'batalBerobatMarker',
-    'mKlaimPreOp',
-    'mKlaimTelaah',
-    'mKlaimPartial',
-  ].map((key) => isFeatureEnabled(key)),
-).then((enabled) => {
+void Promise.all(MARK_DEFS.map((d) => isFeatureEnabled(d.configKey))).then((enabled) => {
   const path = window.location?.pathname ?? '';
   if (!enabled.some(Boolean) || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
+  const active = new Set(MARK_DEFS.filter((_, i) => enabled[i]).map((d) => d.configKey));
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => startMarkBar());
+    document.addEventListener('DOMContentLoaded', () => startMarkBar(active));
   } else {
-    startMarkBar();
+    startMarkBar(active);
   }
 });
