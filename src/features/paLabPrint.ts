@@ -10,6 +10,7 @@ import {
   type PaTypo,
 } from './shared/paTypo.js';
 import { splitListMarker } from './shared/paList.js';
+import { decodePaEntities } from './shared/paEntities.js';
 whenFeatureEnabled('paLabPrint', function () {
   'use strict';
 
@@ -123,18 +124,6 @@ whenFeatureEnabled('paLabPrint', function () {
       return s.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
     }
 
-    /** Decode entity hasil render server (bisa double-encoded &amp;lt;) supaya
-     *  tanda "<" / ">" pada teks medis tidak tampil literal "&lt;" / "&gt;". */
-    function decodeEntities(s: string): string {
-      return s
-        .replace(/&gt;/gi, '>')
-        .replace(/&lt;/gi, '<')
-        .replace(/&quot;/gi, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/&amp;/gi, '&');
-    }
-
     function cleanPhpNoise(s: string): string {
       const cleaned = fixRsName(s)
         .replace(
@@ -142,7 +131,9 @@ whenFeatureEnabled('paLabPrint', function () {
           ' ',
         )
         .replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, ' ');
-      return decodeEntities(decodeEntities(cleaned)).replace(/\s+/g, ' ').trim();
+      // 2 pass: server bisa meng-encode entity dua kali (&amp;lt; → &lt; → <),
+      // termasuk simbol input form (&amp;plusmn; → &plusmn; → ±).
+      return decodePaEntities(decodePaEntities(cleaned)).replace(/\s+/g, ' ').trim();
     }
 
     function esc(s: unknown): string {

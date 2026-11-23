@@ -187,6 +187,61 @@ var __morbis_feature = (() => {
     return [m[1], rest];
   }
 
+  // src/features/shared/paEntities.ts
+  var NAMED_ENTITIES = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+    plusmn: "\xB1",
+    pm: "\xB1",
+    equals: "=",
+    ge: "\u2265",
+    geq: "\u2265",
+    le: "\u2264",
+    leq: "\u2264",
+    ne: "\u2260",
+    neq: "\u2260",
+    times: "\xD7",
+    divide: "\xF7",
+    deg: "\xB0",
+    micro: "\xB5",
+    hellip: "\u2026",
+    ndash: "\u2013",
+    mdash: "\u2014",
+    bull: "\u2022",
+    middot: "\xB7",
+    ldquo: "\u201C",
+    rdquo: "\u201D",
+    lsquo: "\u2018",
+    rsquo: "\u2019",
+    laquo: "\xAB",
+    raquo: "\xBB",
+    trade: "\u2122",
+    reg: "\xAE",
+    copy: "\xA9"
+  };
+  var ENTITY_RE = /&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi;
+  function safeCodePoint(code) {
+    if (!Number.isFinite(code) || code < 32 || code > 1114111) return " ";
+    try {
+      return String.fromCodePoint(code);
+    } catch {
+      return " ";
+    }
+  }
+  function decodePaEntities(value) {
+    return String(value ?? "").replace(ENTITY_RE, (match, body) => {
+      if (body[0] === "#") {
+        const hex = /^#x([0-9a-f]+)$/i.exec(body);
+        return hex ? safeCodePoint(parseInt(hex[1], 16)) : safeCodePoint(parseInt(body.slice(1), 10));
+      }
+      return NAMED_ENTITIES[body.toLowerCase()] ?? match;
+    });
+  }
+
   // src/features/paLabPrint.ts
   whenFeatureEnabled("paLabPrint", function() {
     "use strict";
@@ -238,15 +293,12 @@ var __morbis_feature = (() => {
       function fixRsName(s) {
         return s.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, "H. ");
       }
-      function decodeEntities(s) {
-        return s.replace(/&gt;/gi, ">").replace(/&lt;/gi, "<").replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&");
-      }
       function cleanPhpNoise(s) {
         const cleaned = fixRsName(s).replace(
           /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
           " "
         ).replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, " ");
-        return decodeEntities(decodeEntities(cleaned)).replace(/\s+/g, " ").trim();
+        return decodePaEntities(decodePaEntities(cleaned)).replace(/\s+/g, " ").trim();
       }
       function esc(s) {
         return String(s ?? "").replace(
