@@ -17,6 +17,7 @@
 
 ### 🐛 fix
 
+- **paLabPrint** — decode simbol ± = ≥ ≤ dari input form labor PA (`1e296a7`)
 - **batchUpload** — NORM halaman didahulukan — Auto-Crawl ORA-02291 FK2 (`cffcf4a`)
 - **test** — CI tidak baca file referensi di docs/evidence (gitignore) (`ab422d1`)
 - **inputHasilPa** — fallback id permintaan tanpa warning menyesatkan (`7de86a6`)
@@ -29,6 +30,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync marker fix NORM Auto-Crawl (`d1d6a53`)
 - **changelog** — sync entr fix NORM Auto-Crawl (`7b47b1c`)
 - bump versi 1.5.260 (fix NORM Auto-Crawl) [skip ci] (`de883a8`)
 - **changelog** — sync entr rapikan docs (`14ae23b`)
@@ -2290,4 +2292,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 7b47b1cda6ff70cc3050f172f1d331ab411fcd27 -->
+<!-- changelog-upto: 1e296a7b63912c63ee544a97e7664179ea5f90ab -->
