@@ -3979,7 +3979,6 @@ function buildKonsulSection(sections: Section[], src?: Section, id = 'rm-10'): s
     .filter((b) => /^\s*Konsul Ke\s*:/i.test(b.textContent || ''))
     .map((b) => b.closest('table')?.parentElement)
     .filter((el): el is HTMLElement => !!el);
-  const qrs = sectionQrs([target], /Konsul/i);
   // Identitas pasien ada di tabel kop (di luar tiap entri konsul).
   const lahir =
     Array.from(doc.querySelectorAll('tr'))
@@ -3991,19 +3990,18 @@ function buildKonsulSection(sections: Section[], src?: Section, id = 'rm-10'): s
     .map((el, i) => {
       const data = parseKonsulSheet(el);
       data.tglLahir = lahir;
-      return buildKonsulSheet(data, qrs[i] ?? '', i ? `${id}-${i + 1}` : id);
+      return buildKonsulSheet(data, i ? `${id}-${i + 1}` : id);
     })
     .join('');
 }
 
-function buildKonsulSheet(data: KonsulSheetData, qrKonsul: string, id: string): string {
-  const pengirim = pick('dokter', 'dpjp');
+function buildKonsulSheet(data: KonsulSheetData, id: string): string {
   const konsulen =
     data.konsulen !== '-'
       ? data.konsulen
       : pick('dokter_konsulen') !== '-'
         ? pick('dokter_konsulen')
-        : doctorFromQr(qrKonsul);
+        : '-';
   const bersih = (x: string): string =>
     decodeEntities(x)
       .replace(/\bPenilain\b/gi, 'Penilaian')
@@ -4066,19 +4064,6 @@ ${table(
           `<tr><td style="width:175px;"><strong>${k}</strong></td><td>${nl2br(bersih(v))}</td></tr>`,
       )
       .join(''),
-)}
-${sig(
-  [
-    'Dokter Pemohon Konsultasi',
-    pengirim !== '-' ? `( ${esc(pengirim)} )` : `( ${esc(data.pengirim)} )`,
-  ],
-  [
-    'Dokter Konsulen',
-    qrKonsul
-      ? `<img class="rm-sig-qr" src="${esc(qrKonsul)}" alt="QR dokter konsulen" width="80" height="80" />`
-      : '<div class="rm-sig-space"></div>',
-    `( ${esc(konsulen)} )`,
-  ],
 )}
 </section>`;
 }
