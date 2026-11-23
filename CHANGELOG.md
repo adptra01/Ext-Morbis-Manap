@@ -20,6 +20,8 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — Operasi — pecah uraian pembedahan per kalimat (newline hilang saat scrape) (`4465742`)
+- **mKlaimPrint** — Operasi — ekstraksi Nama Pasien (label 'Nama' di header) (`9935a59`)
 - **mKlaimPrint** — Rincian Biaya footer — 'Yang Menerima' di atas QR, '(Petugas Billing / Kasir)' di bawah (`c305d0b`)
 - **mKlaimPrint** — TTD SPRI diposisikan di kanan (`9f9f061`)
 - **mKlaimPrint** — urutan TTD RM.05 — label di atas QR, nama di bawah (`72f40af`)
@@ -2340,4 +2342,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: c305d0b5d94b253d942bf1d4d264904809c2147c -->
+<!-- changelog-upto: 4465742d2385875a56fc0c4efdee7a74ad711b03 -->

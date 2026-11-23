@@ -3460,9 +3460,12 @@ function buildOperasiSection(sections: Section[]): string {
   /** Uraian: baris setelah judul "Uraian Pembedahan" (atau sel terpanjang). */
   const narasi = ((): { persiapan: string; langkah: string[] } => {
     if (!doc) return { persiapan: '-', langkah: [] };
-    const trs = Array.from(doc.querySelectorAll('tr'));
-    const at = trs.findIndex((tr) => /Uraian Pembedahan/i.test(tr.textContent || ''));
-    let raw = at >= 0 ? trs[at + 1]?.cells[0]?.textContent || '' : '';
+    // Cari SEL yang memuat judul "Uraian Pembedahan" (bukan baris pembungkus
+    // luar yang textContent-nya mencakup semua tabel → at+1 salah ambil baris).
+    const headCell = Array.from(doc.querySelectorAll('td')).find((td) =>
+      /^\s*Uraian Pembedahan\b/i.test(td.textContent || ''),
+    );
+    let raw = headCell?.parentElement?.nextElementSibling?.querySelector('td')?.textContent || '';
     if (!raw.trim()) {
       raw =
         Array.from(doc.querySelectorAll('td'))

@@ -2633,9 +2633,10 @@ ${sig(
     };
     const narasi = (() => {
       if (!doc) return { persiapan: "-", langkah: [] };
-      const trs = Array.from(doc.querySelectorAll("tr"));
-      const at = trs.findIndex((tr) => /Uraian Pembedahan/i.test(tr.textContent || ""));
-      let raw = at >= 0 ? trs[at + 1]?.cells[0]?.textContent || "" : "";
+      const headCell = Array.from(doc.querySelectorAll("td")).find(
+        (td) => /^\s*Uraian Pembedahan\b/i.test(td.textContent || "")
+      );
+      let raw = headCell?.parentElement?.nextElementSibling?.querySelector("td")?.textContent || "";
       if (!raw.trim()) {
         raw = Array.from(doc.querySelectorAll("td")).map((td) => (td.textContent || "").trim()).sort((a, b) => b.length - a.length)[0] || "";
       }
