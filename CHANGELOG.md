@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — RM.19A hapus timestamp, TTD label-barcode-nama, paragraf & saksi terstruktur (`9202860`)
 - **mKlaimPrint** — redesign RM.19A dari 4 tabel asli (info, checklist, pernyataan, saksi) (`d9d06d2`)
 
 ### 🐛 fix
@@ -19,6 +20,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr cleanup RM.19A (`48e18a5`)
 - **changelog** — sync entr redesign persetujuan tindakan (`8d802de`)
 
 ## 2026-11-22
@@ -2271,4 +2273,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 3cce138992309dffc76216be2bdcdabddbb737ab -->
+<!-- changelog-upto: 9202860cb81a75c671ebb5b931cd7b4af9b13a36 -->
