@@ -2916,9 +2916,18 @@ ${kop('RM. 19A')}
     <table class="rm-table"><thead><tr>
       <th>Yang Menyatakan / Pemberi Persetujuan</th><th>Saksi Keluarga</th><th>Saksi Rumah Sakit</th>
     </tr></thead><tbody><tr>
-      <td style="text-align:center;">( <strong>${esc(ttdWali)}</strong> )</td>
-      <td style="text-align:center;">( <strong>${esc(ttdSaksiKel)}</strong> )</td>
-      <td style="text-align:center;">( <strong>${esc(ttdSaksiRs)}</strong> )</td>
+      <td style="text-align:center;">
+        ${saksi[0]?.qr ? `<img class="rm-sig-qr" src="${esc(saksi[0].qr)}" alt="QR penandatangan" width="80" height="80" />` : '<div class="rm-sig-space"></div>'}
+        ( <strong>${esc(ttdWali)}</strong> )
+      </td>
+      <td style="text-align:center;">
+        ${saksi[1]?.qr ? `<img class="rm-sig-qr" src="${esc(saksi[1].qr)}" alt="QR saksi keluarga" width="80" height="80" />` : '<div class="rm-sig-space"></div>'}
+        ( <strong>${esc(ttdSaksiKel)}</strong> )
+      </td>
+      <td style="text-align:center;">
+        ${saksi[2]?.qr ? `<img class="rm-sig-qr" src="${esc(saksi[2].qr)}" alt="QR saksi rumah sakit" width="80" height="80" />` : '<div class="rm-sig-space"></div>'}
+        ( <strong>${esc(ttdSaksiRs)}</strong> )
+      </td>
     </tr></tbody></table>
   </div>
 </div>
