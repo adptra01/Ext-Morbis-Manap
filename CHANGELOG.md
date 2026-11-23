@@ -11,7 +11,7 @@
 
 ### ✨ feat
 
-- **mKlaimPrint** — Surat Kontrol pakai sheet BPJS identik SEP (`f922e56`)
+- **mKlaimPrint** — Surat Kontrol pakai sheet BPJS identik SEP (`0b74d2d`)
 - **mKlaimPrint** — RM.19A ruang tanda tangan kosong saat QR tidak ada (`e01a7e1`)
 - **mKlaimPrint** — RM.19A hapus timestamp, TTD label-barcode-nama, paragraf & saksi terstruktur (`9202860`)
 - **mKlaimPrint** — redesign RM.19A dari 4 tabel asli (info, checklist, pernyataan, saksi) (`d9d06d2`)
@@ -42,6 +42,7 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.267 (Surat Kontrol sheet SEP) [skip ci] (`de85982`)
 - **changelog** — sync entri on/off config (`b0ca599`)
 - **changelog** — sync entri gate mark bar (`d8c6663`)
 - bump versi 1.5.265 (gate mark bar) [skip ci] (`c46d301`)
@@ -2315,4 +2316,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f922e560b5b8d29669791abde590c40647d87016 -->
+<!-- changelog-upto: de85982f32ded318b22ff1d2875e7f9120334b52 -->
