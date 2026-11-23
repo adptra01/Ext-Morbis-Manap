@@ -1492,10 +1492,10 @@ ${kop('RM. 05')}
 </section>`;
 }
 
-/** SECTION RM.06 — RINGKASAN PULANG (DISCHARGE SUMMARY).
+/** SECTION RM.06 — RINGKASAN PULANG (DISCHARGE SUMMARY) — RAWAT INAP.
  *  SATU pass kumpulkan field label→nilai dari tabel hasil scrape, lalu
  *  render baris klinis referensi. Tanpa nested loop per tabel. */
-function buildResumeSection(sections: Section[]): string {
+function buildRanapResumeSection(sections: Section[]): string {
   const res = sections.find((s) => /^Resume/i.test(s.title));
   const qrResume = sectionQrs(sections, /^Resume/i)[0] ?? '';
   const qrPasienResume =
@@ -1651,6 +1651,83 @@ ${kop('RM. 06')}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
 </div>
+</section>`;
+}
+
+/** Resume Rajal & Ranap punya struktur berbeda — deteksi dari judul/field. */
+function buildResumeSection(sections: Section[]): string {
+  const res = sections.find((s) => /^Resume/i.test(s.title));
+  const teks = res ? plainText(res.html) : '';
+  return /RESUME MEDIS RAWAT JALAN|RINGKASAN PELAYANAN RAWAT JALAN/i.test(teks) ||
+    /Tanggal Konsultasi/i.test(teks)
+    ? buildRajalResumeSection(sections)
+    : buildRanapResumeSection(sections);
+}
+
+/** FORM — RESUME MEDIS RAWAT JALAN (field berbeda dari ringkasan pulang). */
+function buildRajalResumeSection(sections: Section[]): string {
+  const res = sections.find((s) => /^Resume/i.test(s.title));
+  const doc = res ? new DOMParser().parseFromString(res.html, 'text/html') : null;
+  const fields = new Map<string, string>();
+  if (doc) {
+    for (const tr of Array.from(doc.querySelectorAll('tr'))) {
+      const c = Array.from(tr.cells).map((td) => cellText(td));
+      for (let i = 0; i < c.length - 2; i++) {
+        if (c[i + 1] !== ':') continue;
+        if (c[i] && c[i + 2] && !fields.has(c[i])) fields.set(c[i], c[i + 2]);
+      }
+    }
+  }
+  const f = (...re: RegExp[]): string => {
+    for (const [k, v] of fields) if (re.some((r) => r.test(k))) return v;
+    return '-';
+  };
+  const nama = pick('nama') !== '-' ? pick('nama') : f(/^Nama Pasien$/i);
+  const norm =
+    pick('norm', 'rekam_medis') !== '-' ? pick('norm', 'rekam_medis') : f(/^No\.? Rekam Medis$/i);
+  const row = (label: string, value: string): string =>
+    `<tr><td style="width:175px;"><strong>${label}</strong></td><td>${nl2br(value)}</td></tr>`;
+  const bar = (judul: string): string =>
+    `<tr><th class="rm-sec-head" colspan="2" style="text-align:left;">${judul}</th></tr>`;
+  const table = (rows: string): string =>
+    `<table class="rm-grid-table"><tbody>${rows}</tbody></table>`;
+  return `<section class="rm-page" id="rm-06-rajal">
+${kop('RM. 06')}
+<div class="rm-form-title">RESUME MEDIS RAWAT JALAN</div>
+<div class="id-box-bordered">
+  <div class="id-col"><table class="id-table">
+    ${idRow('Nama Pasien', nama, true)}
+    ${idRow('No. Rekam Medis', norm, true)}
+    ${idRow('Jenis Kelamin', pick('jenis_kelamin', 'jk') !== '-' ? pick('jenis_kelamin', 'jk') : f(/^Jenis Kelamin$/i))}
+  </table></div>
+  <div class="id-col"><table class="id-table">
+    ${idRow('Tanggal Konsultasi', f(/^Tanggal Konsultasi$/i))}
+    ${idRow('Tempat Konsultasi', f(/^Tempat Konsultasi$/i))}
+    ${idRow('Jenis Kunjungan', pick('jenis', 'kelas', 'ruang'))}
+  </table></div>
+</div>
+${table(
+  bar('I. ANAMNESA &amp; PEMERIKSAAN') +
+    row('ANAMNESA', f(/^Anamnesa$/i)) +
+    row('HASIL PEMERIKSAAN FISIK', f(/^Hasil Pemeriksaan Fisik$/i)),
+)}
+${table(
+  bar('II. DIAGNOSA &amp; TINDAKAN') +
+    row('DIAGNOSA', f(/^Diagnosa$/i)) +
+    row('ICD X (UTAMA / SEKUNDER)', f(/^ICD X$/i)) +
+    row('JENIS TINDAKAN', f(/^Jenis tindakan$/i)) +
+    row('ICD IX', f(/^ICD IX$/i)) +
+    row('TINDAKAN', f(/^Tindakan$/i)),
+)}
+${table(
+  bar('III. PLANNING, TERAPI &amp; TINDAK LANJUT') +
+    row('PLANNING', f(/^Planning$/i)) +
+    row('TERAPI PENGOBATAN', f(/^Terapi Pengobatan$/i)) +
+    row('TINDAK LANJUT', f(/^Tindak Lanjut$/i)) +
+    row('JADWAL CONTROL', f(/^Jadwal Contro[li]$/i)) +
+    row('RUJUK KE', f(/^Rujuk Ke$/i)) +
+    row('RIWAYAT PENUNJANG MEDIS', f(/^Riwayat Penunjang Medis$/i)),
+)}
 </section>`;
 }
 

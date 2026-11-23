@@ -289,8 +289,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
 
   it('RM.06 (Resume): ringkasan pulang terstruktur', () => {
     const res = src.slice(
+      src.indexOf('function buildRanapResumeSection'),
       src.indexOf('function buildResumeSection'),
-      src.indexOf('function buildTelaahSection'),
     );
     for (const marker of [
       '<section class="rm-page" id="rm-06">',
@@ -647,7 +647,7 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
   it('QR TTD: pakai QR asli yang ditemukan, tanpa baris kosong pengganti ttd', () => {
     for (const [fn, marker] of [
       ['buildSpriSection', 'qrSpri'],
-      ['buildResumeSection', 'qrResume'],
+      ['buildRanapResumeSection', 'qrResume'],
       ['buildRadiologiSheet', 'qrRad'],
       ['buildTriageSection', 'qrTriage'],
       ['buildSbpkSection', 'qrDpjp'],
