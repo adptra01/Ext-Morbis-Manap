@@ -249,9 +249,7 @@ var __morbis_feature = (() => {
         );
         const html = await res.text();
         const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
-        const row = rows.find(
-          (r) => new RegExp(`nolab\\s*=\\s*['"]?${idLab}['"]?`, "i").test(r)
-        );
+        const row = rows.find((r) => new RegExp(`nolab\\s*=\\s*['"]?${idLab}['"]?`, "i").test(r));
         if (!row) return null;
         const id = row.match(/cetakFormPermintaanLab\(\s*(\d+)/)?.[1] || null;
         const tgl = row.match(/edit_tanggal\(\s*\d+\s*,\s*\d+\s*,\s*"([^"]+)"/)?.[1] || null;
