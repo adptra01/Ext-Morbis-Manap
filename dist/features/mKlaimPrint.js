@@ -686,8 +686,7 @@ var __morbis_feature = (() => {
     tab: `RM. ${String(i + 1).padStart(2, "0")} ${title}`,
     option: `RM. ${String(i + 1).padStart(2, "0")} \u2014 ${title}`
   };
-  var kop = (code) => `<div class="rm-code-top">${code}</div>
-<div class="kop-surat"><img class="kop-logo" src="${KOP_LOGO}" alt="Logo Kota Jambi"><div class="kop-text">
+  var kop = (_code) => `<div class="kop-surat"><img class="kop-logo" src="${KOP_LOGO}" alt="Logo Kota Jambi"><div class="kop-text">
 <div class="kop-line-1">PEMERINTAH KOTA JAMBI</div>
 <div class="kop-line-2">DINAS KESEHATAN</div>
 <div class="kop-line-3">RUMAH SAKIT UMUM DAERAH H. ABDUL MANAP</div>
@@ -2605,7 +2604,7 @@ ${kop("RM. 19A")}
     const kv = (label, value) => `<tr><td class="k">${label}</td><td class="c">:</td><td class="v">${value}</td></tr>`;
     const head = (judul) => `<tr><th class="rm-sec-head" style="text-align:left;">${judul}</th></tr>`;
     return `<section class="rm-page" id="form-anestesi">
-<div class="an-meta"><span>Halaman 1 dari 2</span><span>RM. 21</span></div>
+<div class="an-meta"><span>Halaman 1 dari 2</span></div>
 ${kop("RM. 21")}
 <div class="rm-form-title">LAPORAN ANESTESI</div>
 <div class="an-subtitle">REKAM PELAKSANAAN ANESTESI</div>
@@ -2656,7 +2655,7 @@ ${kop("RM. 21")}
 <div class="an-running">
   <span><strong>LAPORAN ANESTESI (LANJUTAN)</strong> \u2014 ${esc(HOSPITAL_NAME)}</span>
   <span>Pasien: <strong>${esc(nama)}</strong> \u2022 RM: <strong>${esc(norm)}</strong></span>
-  <span><strong>Halaman 2 dari 2 \u2022 RM. 21</strong></span>
+  <span><strong>Halaman 2 dari 2</strong></span>
 </div>
 
 <table class="rm-grid-table"><tbody>${head("D. MEDIKASI, CAIRAN &amp; JALAN NAPAS")}

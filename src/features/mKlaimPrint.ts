@@ -683,8 +683,9 @@ const metaFor = (
   };
 
 /** Kop surat resmi RSUD H. Abdul Manap (Times New Roman + double rule). */
-const kop = (code: string): string => `<div class="rm-code-top">${code}</div>
-<div class="kop-surat"><img class="kop-logo" src="${KOP_LOGO}" alt="Logo Kota Jambi"><div class="kop-text">
+const kop = (
+  _code: string,
+): string => `<div class="kop-surat"><img class="kop-logo" src="${KOP_LOGO}" alt="Logo Kota Jambi"><div class="kop-text">
 <div class="kop-line-1">PEMERINTAH KOTA JAMBI</div>
 <div class="kop-line-2">DINAS KESEHATAN</div>
 <div class="kop-line-3">RUMAH SAKIT UMUM DAERAH H. ABDUL MANAP</div>
@@ -3379,7 +3380,7 @@ function buildAnestesiSection(sections: Section[]): string {
     `<tr><th class="rm-sec-head" style="text-align:left;">${judul}</th></tr>`;
 
   return `<section class="rm-page" id="form-anestesi">
-<div class="an-meta"><span>Halaman 1 dari 2</span><span>RM. 21</span></div>
+<div class="an-meta"><span>Halaman 1 dari 2</span></div>
 ${kop('RM. 21')}
 <div class="rm-form-title">LAPORAN ANESTESI</div>
 <div class="an-subtitle">REKAM PELAKSANAAN ANESTESI</div>
@@ -3430,7 +3431,7 @@ ${kop('RM. 21')}
 <div class="an-running">
   <span><strong>LAPORAN ANESTESI (LANJUTAN)</strong> — ${esc(HOSPITAL_NAME)}</span>
   <span>Pasien: <strong>${esc(nama)}</strong> • RM: <strong>${esc(norm)}</strong></span>
-  <span><strong>Halaman 2 dari 2 • RM. 21</strong></span>
+  <span><strong>Halaman 2 dari 2</strong></span>
 </div>
 
 <table class="rm-grid-table"><tbody>${head('D. MEDIKASI, CAIRAN &amp; JALAN NAPAS')}

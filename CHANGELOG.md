@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — Anestesi — skor & vitals dari input, regression test happy-dom (`1ba4a86`)
 - **mKlaimPrint** — Konsultasi — BAGIAN I/II, tujuan checkbox, normalisasi jam/typo, dugaan fallback, demografi (`bb2ed38`)
 - **mKlaimPrint** — redesign Laporan Anestesi RM.21 jadi 2 halaman A4 (`31cc140`)
 - **mKlaimPrint** — redesign Laporan Operasi jadi grid RM.20 1 halaman (`6d6e335`)
@@ -21,6 +22,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — pulihkan tombol rotasi 90° lampiran di jalur tab-langsung (`10af06a`)
 - **mKlaimPrint** — Anestesi — QR peran benar, cek arah, chart base64, spinal, formFields multi-pasangan (`f84dca5`)
 - **mKlaimPrint** — Anestesi — cek radio dua arah + tabel persiapan/penyakit/instruksi dari sel sendiri (`630125d`)
 - **mKlaimPrint** — Anestesi — lengkapi nilai (demografi lintas-section, medikasi/cairan, napas, tanggal) (`850cbed`)
@@ -2350,4 +2352,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f84dca5f5ccecd46ea6039d9a6132bb07c56ee31 -->
+<!-- changelog-upto: 10af06a1d075e22ab401d0ab912db3882b2af8f6 -->
