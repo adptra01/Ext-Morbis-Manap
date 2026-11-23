@@ -2639,7 +2639,13 @@ ${sig(
       if (!raw.trim()) {
         raw = Array.from(doc.querySelectorAll("td")).map((td) => (td.textContent || "").trim()).sort((a, b) => b.length - a.length)[0] || "";
       }
-      const lines = raw.split(/\n+/).map((x) => op(x)).filter(Boolean);
+      const splitUraian = (raw2) => {
+        const byNl = raw2.split(/\n+/).map((x) => op(x)).filter(Boolean);
+        if (byNl.length > 1) return byNl;
+        const kw = /\s+(?=Pasien |Dilakukan |Pada |Diputuskan |Dilanjutkan |Mukosa |Operasi |Dilakukan)/g;
+        return raw2.split(kw).map((x) => op(x)).filter(Boolean);
+      };
+      const lines = splitUraian(raw);
       if (!lines.length) return { persiapan: "-", langkah: [] };
       const cut = lines.findIndex((l) => /Diputuskan|sebagai berikut/i.test(l));
       const head2 = cut >= 0 ? cut + 1 : Math.min(4, lines.length);

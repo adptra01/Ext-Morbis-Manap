@@ -3469,10 +3469,23 @@ function buildOperasiSection(sections: Section[]): string {
           .map((td) => (td.textContent || '').trim())
           .sort((a, b) => b.length - a.length)[0] || '';
     }
-    const lines = raw
-      .split(/\n+/)
-      .map((x) => op(x))
-      .filter(Boolean);
+    // Teks uraian di SIMRS sering satu baris (newline hilang saat scrape) —
+    // pecah per kalimat berdasarkan kata-kunci awal kalimat agar langkah
+    // tindakan tetap bernomor, bukan satu paragraf panjang.
+    const splitUraian = (raw: string): string[] => {
+      const byNl = raw
+        .split(/\n+/)
+        .map((x) => op(x))
+        .filter(Boolean);
+      if (byNl.length > 1) return byNl;
+      const kw =
+        /\s+(?=Pasien |Dilakukan |Pada |Diputuskan |Dilanjutkan |Mukosa |Operasi |Dilakukan)/g;
+      return raw
+        .split(kw)
+        .map((x) => op(x))
+        .filter(Boolean);
+    };
+    const lines = splitUraian(raw);
     if (!lines.length) return { persiapan: '-', langkah: [] };
     const cut = lines.findIndex((l) => /Diputuskan|sebagai berikut/i.test(l));
     const head = cut >= 0 ? cut + 1 : Math.min(4, lines.length);
