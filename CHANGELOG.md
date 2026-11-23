@@ -35,6 +35,7 @@
 
 ### 📝 docs
 
+- **mKlaimPrint** — buang sebutan Tanggal Cetak dari komentar Surat Kontrol (`d3cbc03`)
 - rapikan struktur folder — pisahkan dokumen tracked & bukti lokal (`8abf1c3`)
 
 ### 🎨 style
@@ -43,6 +44,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri Surat Rencana Kontrol (`77a5630`)
 - bump versi 1.5.268 (Surat Rencana Kontrol) [skip ci] (`2c84b19`)
 - **changelog** — sync entri Surat Kontrol (`14b09ea`)
 - bump versi 1.5.267 (Surat Kontrol sheet SEP) [skip ci] (`de85982`)
@@ -2319,4 +2321,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 2c84b19365bbb7d4381136c37f2b4c2430282d63 -->
+<!-- changelog-upto: d3cbc03b673d4686f7b52c13ede5b3a1929cab91 -->
