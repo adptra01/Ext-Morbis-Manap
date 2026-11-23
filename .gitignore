@@ -12,10 +12,11 @@ node_modules/
 # *.pem
 # deploy/update.xml
 
-# Dokumentasi desain internal (rujukan lokal developer, tidak dikirim repo).
-# examples/ & *.md yang dipakai user (Pages) tetap tracked.
+# Bukti/rujukan lokal: binary besar & artefak sekali pakai, tidak dikirim repo.
+# docs/*.md (README, SOP, panduan) + Pages (index/privacy.html) tetap tracked.
+# Lihat docs/README.md untuk peta isi folder ini.
 docs/sirs/
-docs/evidence/*
+docs/evidence/
 
 # Logs
 *.log
