@@ -48,6 +48,8 @@
 
 ### 🧹 chore
 
+- **dist** — sync mKlaimPrint — TTD SPRI kanan (`51514b5`)
+- bump versi 1.5.273 (TTD SPRI kanan) [skip ci] (`622721d`)
 - **changelog** — sync entri urutan TTD RM.05 (`1dd3258`)
 - bump versi 1.5.271 (urutan TTD RM.05) [skip ci] (`282b9e4`)
 - **changelog** — sync entri fallback QR DPJP (`233a4a3`)
@@ -2332,4 +2334,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9f9f061827837f9a7b10ddbf76c952109e5e5644 -->
+<!-- changelog-upto: 51514b52cbb82d70cee73b5e869dd96e37d22d78 -->
