@@ -956,7 +956,7 @@ ${kop('RM. 03')}
   </tbody>
 </table>
 
-<div class="rm-signature-block">
+<div class="rm-signature-block" style="justify-content:flex-end;">
   <div class="rm-sig-box">
     <div>${esc(pengantar)}</div>
     <div>Dokter yang Memeriksa</div>

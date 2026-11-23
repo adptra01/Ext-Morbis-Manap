@@ -207,6 +207,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     }
     expect(spr).not.toContain('Petugas Admisi / TPPRI');
     expect(src).toContain('return buildSpriSection(sections);');
+    // TTD satu blok diposisikan di kanan.
+    expect(spr).toContain('<div class="rm-signature-block" style="justify-content:flex-end;">');
     // Baris baru pada value tidak boleh di-esc() langsung (jadi sambung).
     expect(spr).not.toContain('const nl2br');
     expect(spr).not.toContain('esc(fisik)');
