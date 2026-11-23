@@ -4,7 +4,8 @@
  * tombol + badge di list & footer detail, sinkron pusat lintas-PC.
  */
 import { getMorbisGlobals } from './shared/types.js';
-import { whenFeatureEnabled } from './shared/featureGate.js';
+import { isFeatureEnabled, whenFeatureEnabled } from './shared/featureGate.js';
+import { startMarkBar } from './shared/mKlaimMarkBar.js';
 import { injectCSS } from '../shared/ui/index.js';
 import { logUsage } from './shared/usageLog.js';
 import { readPetugas } from './shared/resumeHistory.js';
@@ -99,7 +100,6 @@ function ensureCss(): void {
       box-shadow:0 2px 6px ${rgba(c.color, 0.45)};font-weight:700;
     }
     .ext-mk-badge[data-ext-mk="${c.mark}"] { background:${c.bg}; color:${c.color}; border-color:${c.border}; }
-    tr[data-ext-mk-marked="${c.mark}=true"] { box-shadow: inset 3px 0 0 ${c.color} !important; }
   `,
   ).join('');
   injectCSS(
@@ -409,3 +409,25 @@ for (const cfg of CONFIGS) {
     }
   });
 }
+
+// UI mark terpadu: 1 tombol pemicu + 1 popover + multi-chip untuk ke-6 mark.
+// Engine lama tetap jalan sebagai backend (toggle + sinkron pusat); tombolnya
+// disembunyikan CSS dan dipicu lewat .click() dari popover.
+void Promise.all(
+  [
+    'laborMarker',
+    'radiologiMarker',
+    'batalBerobatMarker',
+    'mKlaimPreOp',
+    'mKlaimTelaah',
+    'mKlaimPartial',
+  ].map((key) => isFeatureEnabled(key)),
+).then((enabled) => {
+  const path = window.location?.pathname ?? '';
+  if (!enabled.some(Boolean) || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => startMarkBar());
+  } else {
+    startMarkBar();
+  }
+});

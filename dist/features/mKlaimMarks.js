@@ -364,32 +364,132 @@ var __morbis_feature = (() => {
 `
   );
 
-  // src/features/shared/usageLog.ts
-  var KEY = "extUsageLog";
-  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
-  var MAX_ENTRIES = 2e3;
-  async function logUsage(feature, event, ok, detail) {
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
+  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
+  function resolvePreOpMarked(localHas, centralHas, unmarkedAt, now = Date.now(), tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS) {
+    if (localHas) return true;
+    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
+    if (centralHas === null) return false;
+    return centralHas;
+  }
+  function defaultStore() {
     try {
-      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
-      const now = Date.now();
-      const entry = {
-        ts: now,
-        feature,
-        event,
-        ok,
-        detail: detail instanceof Error ? `${detail.name}: ${detail.message}` : detail !== void 0 ? String(detail) : void 0,
-        url: typeof location !== "undefined" ? location.href : void 0
-      };
-      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
-      const trimmed = kept.slice(-MAX_ENTRIES);
-      await chrome.storage.local.set({ [KEY]: trimmed });
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
     } catch {
+    }
+    return null;
+  }
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadPreOpMap(store2 = defaultStore(), now = Date.now()) {
+    if (!store2) return {};
+    try {
+      const raw = store2.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== "object" || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store2);
+      }
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function minimalPreOpItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
+  }
+  function savePreOpMap(map, store2 = defaultStore()) {
+    if (!store2) return;
+    try {
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalPreOpItem(item);
+      }
+      store2.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setPreOp(idVisit, _info = {}, store2 = defaultStore(), now = Date.now(), fromCentral = false) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store2, now);
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
+    savePreOpMap(map, store2);
+  }
+  function loadUnmarkQueue(store2 = defaultStore()) {
+    if (!store2) return [];
+    try {
+      const raw = store2.getItem(PRE_OP_UNMARK_QUEUE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveUnmarkQueue(ids, store2 = defaultStore()) {
+    if (!store2) return;
+    try {
+      store2.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
+    } catch {
+    }
+  }
+  function removePreOp(idVisit, store2 = defaultStore()) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store2);
+    if (map[idVisit]) {
+      delete map[idVisit];
+      savePreOpMap(map, store2);
+    }
+    const q = loadUnmarkQueue(store2);
+    if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store2);
+  }
+  var RECONCILE_GRACE_MS = 6e4;
+  function collectStaleCentralMarks(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
+    const out = [];
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || item.fromCentral !== true) continue;
+      if (centralHas(id)) continue;
+      if (now - item.markedAt < graceMs) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function forgetCentralMark(idVisit, store2 = defaultStore()) {
+    if (!idVisit || !store2) return false;
+    try {
+      const map = loadPreOpMap(store2);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      savePreOpMap(map, store2);
+      return true;
+    } catch {
+      return false;
     }
   }
 
   // src/features/shared/resumeHistory.ts
   init_casemixApi();
-  function defaultStore() {
+  function defaultStore2() {
     try {
       if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
     } catch {
@@ -399,7 +499,7 @@ var __morbis_feature = (() => {
   var HIST_PREFIX = "ext_rv_history_";
   var LEGACY_HIST_PREFIX = HIST_PREFIX;
   var RV_MIGRATED_PREFIX = "ext_migrated_rv_";
-  var MAX_ENTRIES2 = 50;
+  var MAX_ENTRIES = 50;
   function getHistoryKey(idVisit, tipe) {
     return `${HIST_PREFIX}${tipe === "ranap" ? "ri" : "rj"}_${idVisit || "unknown"}`;
   }
@@ -420,7 +520,7 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
-  function loadHistory(idVisit, tipe, store2 = defaultStore()) {
+  function loadHistory(idVisit, tipe, store2 = defaultStore2()) {
     const arr = readJson(store2, getHistoryKey(idVisit, tipe));
     const list = Array.isArray(arr) ? arr : [];
     if (tipe === "ranap") {
@@ -433,8 +533,8 @@ var __morbis_feature = (() => {
     }
     return list;
   }
-  function saveHistory(list, idVisit, tipe, store2 = defaultStore()) {
-    writeJson(store2, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES2));
+  function saveHistory(list, idVisit, tipe, store2 = defaultStore2()) {
+    writeJson(store2, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
   }
   function readPetugas() {
     try {
@@ -465,280 +565,14 @@ var __morbis_feature = (() => {
     return "petugas";
   }
 
-  // src/features/shared/whenIdle.ts
-  function runWhenIdle(cb, timeoutMs = 8e3) {
-    try {
-      const ric = window.requestIdleCallback;
-      if (typeof ric === "function") {
-        ric.call(window, cb, { timeout: timeoutMs });
-        return;
-      }
-    } catch {
-    }
-    window.setTimeout(cb, Math.min(timeoutMs, 1500));
-  }
-
-  // src/features/shared/preOpStorage.ts
-  var PRE_OP_STORAGE_KEY = "morbis_preop_markers";
-  var PRE_OP_UNMARK_QUEUE_KEY = "ext_preop_unmark_queue";
-  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
-  function resolvePreOpMarked(localHas, centralHas, unmarkedAt, now = Date.now(), tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS) {
-    if (localHas) return true;
-    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
-    if (centralHas === null) return false;
-    return centralHas;
-  }
-  function defaultStore2() {
-    try {
-      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
-    } catch {
-    }
-    return null;
-  }
-  function purgeExpiredPreOp(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
-  }
-  function loadPreOpMap(store2 = defaultStore2(), now = Date.now()) {
-    if (!store2) return {};
-    try {
-      const raw = store2.getItem(PRE_OP_STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== "object" || parsed === null) return {};
-      const { purged, count } = purgeExpiredPreOp(parsed, now);
-      if (count > 0) {
-        savePreOpMap(purged, store2);
-      }
-      return purged;
-    } catch {
-      return {};
-    }
-  }
-  function minimalPreOpItem(raw) {
-    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
-    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
-    if (raw.fromCentral === true) out.fromCentral = true;
-    return out;
-  }
-  function savePreOpMap(map, store2 = defaultStore2()) {
-    if (!store2) return;
-    try {
-      const clean = {};
-      for (const [id, item] of Object.entries(map)) {
-        if (!item || typeof item !== "object" || !item.idVisit) continue;
-        clean[id] = minimalPreOpItem(item);
-      }
-      store2.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(clean));
-    } catch {
-    }
-  }
-  function setPreOp(idVisit, _info = {}, store2 = defaultStore2(), now = Date.now(), fromCentral = false) {
-    if (!idVisit) return;
-    const map = loadPreOpMap(store2, now);
-    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
-    savePreOpMap(map, store2);
-  }
-  function loadUnmarkQueue(store2 = defaultStore2()) {
-    if (!store2) return [];
-    try {
-      const raw = store2.getItem(PRE_OP_UNMARK_QUEUE_KEY);
-      if (!raw) return [];
-      const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
-    } catch {
-      return [];
-    }
-  }
-  function saveUnmarkQueue(ids, store2 = defaultStore2()) {
-    if (!store2) return;
-    try {
-      store2.setItem(PRE_OP_UNMARK_QUEUE_KEY, JSON.stringify([...new Set(ids)]));
-    } catch {
-    }
-  }
-  function removePreOp(idVisit, store2 = defaultStore2()) {
-    if (!idVisit) return;
-    const map = loadPreOpMap(store2);
-    if (map[idVisit]) {
-      delete map[idVisit];
-      savePreOpMap(map, store2);
-    }
-    const q = loadUnmarkQueue(store2);
-    if (!q.includes(idVisit)) saveUnmarkQueue([...q, idVisit], store2);
-  }
-  var RECONCILE_GRACE_MS = 6e4;
-  function collectStaleCentralMarks(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
-    const out = [];
-    for (const [id, item] of Object.entries(map)) {
-      if (!item || item.fromCentral !== true) continue;
-      if (centralHas(id)) continue;
-      if (now - item.markedAt < graceMs) continue;
-      out.push(id);
-    }
-    return out;
-  }
-  function forgetCentralMark(idVisit, store2 = defaultStore2()) {
-    if (!idVisit || !store2) return false;
-    try {
-      const map = loadPreOpMap(store2);
-      const item = map[idVisit];
-      if (!item || item.fromCentral !== true) return false;
-      delete map[idVisit];
-      savePreOpMap(map, store2);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  // src/features/shared/markStorage.ts
-  var TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  var TOMBSTONE_MS = 3e4;
-  var key = (mark) => "morbis_mark_" + mark + "_markers";
-  function store() {
-    try {
-      return typeof window === "undefined" ? null : window.localStorage;
-    } catch {
-      return null;
-    }
-  }
-  var _unmarks = {};
-  function markUnmarked(mark, idVisit) {
-    (_unmarks[mark] ?? (_unmarks[mark] = {}))[idVisit] = Date.now();
-  }
-  function clearUnmark(mark, idVisit) {
-    delete _unmarks[mark]?.[idVisit];
-  }
-  function resolveMark(mark, idVisit, localHas, centralHas, now = Date.now()) {
-    if (localHas) return true;
-    const at = _unmarks[mark]?.[idVisit];
-    if (at !== void 0 && now - at < TOMBSTONE_MS) return false;
-    if (centralHas === null) return false;
-    return centralHas;
-  }
-  function loadMarkMap(mark, s = store(), now = Date.now()) {
-    try {
-      const raw = s?.getItem(key(mark));
-      if (!raw) return {};
-      const obj = JSON.parse(raw);
-      const out = {};
-      for (const [id, v] of Object.entries(obj)) {
-        if (v && typeof v.markedAt === "number" && now - v.markedAt < TTL_MS) {
-          out[id] = { idVisit: id, markedAt: v.markedAt, fromCentral: !!v.fromCentral };
-        }
-      }
-      return out;
-    } catch {
-      return {};
-    }
-  }
-  function saveMarkMap(mark, map, s = store()) {
-    try {
-      const clean = {};
-      for (const [id, v] of Object.entries(map)) {
-        clean[id] = { idVisit: id, markedAt: v.markedAt, fromCentral: !!v.fromCentral };
-      }
-      s?.setItem(key(mark), JSON.stringify(clean));
-    } catch {
-    }
-  }
-  function setMark(mark, idVisit, s = store(), now = Date.now(), fromCentral = false) {
-    const map = loadMarkMap(mark, s, now);
-    map[idVisit] = { idVisit, markedAt: now, fromCentral };
-    saveMarkMap(mark, map, s);
-  }
-  function removeMark(mark, idVisit, s = store()) {
-    const map = {};
-    try {
-      const raw = s?.getItem(key(mark));
-      if (raw) {
-        const obj = JSON.parse(raw);
-        for (const [id, v] of Object.entries(obj)) {
-          if (v && typeof v.markedAt === "number") {
-            map[id] = { idVisit: id, markedAt: v.markedAt, fromCentral: !!v.fromCentral };
-          }
-        }
-      }
-    } catch {
-    }
-    if (idVisit in map) {
-      delete map[idVisit];
-      saveMarkMap(mark, map, s);
-    }
-    markUnmarked(mark, idVisit);
-  }
-  function collectStaleMark(map, centralHas, now = Date.now()) {
-    return Object.values(map).filter((v) => v.fromCentral && !centralHas(v.idVisit) && now - v.markedAt > RECONCILE_GRACE_MS).map((v) => v.idVisit);
-  }
-  function forgetMarkCentral(mark, idVisit, s = store()) {
-    const map = loadMarkMap(mark, s);
-    if (!map[idVisit]?.fromCentral) return false;
-    delete map[idVisit];
-    saveMarkMap(mark, map, s);
-    return true;
-  }
-
-  // src/features/shared/markApi.ts
+  // src/features/mKlaimPreOp.ts
   init_casemixApi();
-  var base = (mark) => "/api/casemix/mark/" + encodeURIComponent(mark);
-  function toggleMarkCentral(mark, idVisit, marked, info = {}) {
-    return postFireForget(base(mark) + "/toggle", {
-      id_visit: idVisit,
-      marked,
-      norm: info.norm ?? null,
-      nama: info.nama ?? null,
-      no_reg: info.noReg ?? null,
-      user: info.user ?? null,
-      visit_datetime: info.visitDatetime ?? null,
-      poli: info.poli ?? null
-    });
-  }
-  async function fetchMarkBatch(mark, ids) {
-    const q = normalizeIds(ids).join(",");
-    if (!q) return {};
-    const res = await getJson(
-      base(mark) + "/list?ids=" + encodeURIComponent(q)
-    );
-    return res && res.ok !== false ? res.marks ?? {} : null;
-  }
 
-  // src/features/shared/telaahStorage.ts
-  var TELAAH_STORAGE_KEY = "morbis_telaah_markers";
-  var TELAAH_UNMARK_QUEUE_KEY = "ext_telaah_unmark_queue";
-  var TELAAH_MIGRATED_KEY = "ext_migrated_telaah_ids";
-  var TELAAH_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  var _telaahUnmarkAt = {};
-  function markTelaahUnmarked(idVisit) {
-    if (idVisit) _telaahUnmarkAt[idVisit] = Date.now();
-  }
-  function clearTelaahUnmark(idVisit) {
-    if (idVisit) delete _telaahUnmarkAt[idVisit];
-  }
-  function readTelaahUnmarks() {
-    return { ..._telaahUnmarkAt };
-  }
-  function pruneTelaahUnmarks(now = Date.now()) {
-    for (const k of Object.keys(_telaahUnmarkAt)) {
-      if (now - _telaahUnmarkAt[k] >= 6e4) delete _telaahUnmarkAt[k];
-    }
-  }
-  function defaultStore3() {
-    try {
-      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
-    } catch {
-    }
-    return null;
-  }
+  // src/features/shared/casemixBackfill.ts
+  init_casemixApi();
+  var MIGRATED_PREOP_KEY = "ext_migrated_preop_ids";
+  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
+  var BACKFILL_BATCH = 20;
   function readJson2(store2, key2) {
     if (!store2) return null;
     try {
@@ -756,421 +590,14 @@ var __morbis_feature = (() => {
     } catch {
     }
   }
-  function purgeExpiredTelaah(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= TELAAH_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
-  }
-  function loadTelaahMap(store2 = defaultStore3(), now = Date.now()) {
-    if (!store2) return {};
-    try {
-      const parsed = readJson2(store2, TELAAH_STORAGE_KEY);
-      if (typeof parsed !== "object" || parsed === null) return {};
-      const { purged, count } = purgeExpiredTelaah(parsed, now);
-      if (count > 0) saveTelaahMap(purged, store2);
-      return purged;
-    } catch {
-      return {};
-    }
-  }
-  function minimalTelaahItem(raw) {
-    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
-    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
-    if (raw.fromCentral === true) out.fromCentral = true;
-    return out;
-  }
-  function saveTelaahMap(map, store2 = defaultStore3()) {
-    if (!store2) return;
-    try {
-      const clean = {};
-      for (const [id, item] of Object.entries(map)) {
-        if (!item || typeof item !== "object" || !item.idVisit) continue;
-        clean[id] = minimalTelaahItem(item);
-      }
-      store2.setItem(TELAAH_STORAGE_KEY, JSON.stringify(clean));
-    } catch {
-    }
-  }
-  function setTelaah(idVisit, store2 = defaultStore3(), now = Date.now(), fromCentral = false) {
-    if (!idVisit) return;
-    const map = loadTelaahMap(store2, now);
-    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
-    saveTelaahMap(map, store2);
-  }
-  function loadTelaahUnmarkQueue(store2 = defaultStore3()) {
-    if (!store2) return [];
-    try {
-      const arr = readJson2(store2, TELAAH_UNMARK_QUEUE_KEY);
-      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
-    } catch {
-      return [];
-    }
-  }
-  function saveTelaahUnmarkQueue(ids, store2 = defaultStore3()) {
-    if (!store2) return;
-    writeJson2(store2, TELAAH_UNMARK_QUEUE_KEY, [...new Set(ids)]);
-  }
-  function removeTelaah(idVisit, store2 = defaultStore3()) {
-    if (!idVisit) return;
-    const map = loadTelaahMap(store2);
-    if (map[idVisit]) {
-      delete map[idVisit];
-      saveTelaahMap(map, store2);
-    }
-    const q = loadTelaahUnmarkQueue(store2);
-    if (!q.includes(idVisit)) saveTelaahUnmarkQueue([...q, idVisit], store2);
-  }
-  function countTelaahPending(map, migratedIds) {
-    const done = new Set(migratedIds);
-    let n = 0;
-    for (const id of Object.keys(map)) {
-      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
-    }
-    return n;
-  }
-  function loadTelaahMigratedIds(store2 = defaultStore3()) {
-    const raw = readJson2(store2, TELAAH_MIGRATED_KEY);
-    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
-  }
-  function saveTelaahMigratedIds(store2 = defaultStore3(), ids) {
-    writeJson2(store2, TELAAH_MIGRATED_KEY, [...new Set(ids)]);
-  }
-  function collectStaleTelaah(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
-    const out = [];
-    for (const [id, item] of Object.entries(map)) {
-      if (!item || item.fromCentral !== true) continue;
-      if (centralHas(id)) continue;
-      if (now - item.markedAt < graceMs) continue;
-      out.push(id);
-    }
-    return out;
-  }
-  function forgetTelaahCentral(idVisit, store2 = defaultStore3()) {
-    if (!idVisit || !store2) return false;
-    try {
-      const map = loadTelaahMap(store2);
-      const item = map[idVisit];
-      if (!item || item.fromCentral !== true) return false;
-      delete map[idVisit];
-      saveTelaahMap(map, store2);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  // src/features/mKlaimTelaah.ts
-  init_telaahApi();
-
-  // src/features/shared/klaimIdentity.ts
-  var KLAIM_DATA_PATH = "/v2/m-klaim/data-tabel/data";
-  var KLAIM_LIST_HEADERS = [
-    "No",
-    "No Registrasi",
-    "No RM",
-    "Nama Pasien",
-    "Penjamin",
-    "Jenis Kunjungan",
-    "Unit",
-    "Tanggal Kunjungan",
-    "Tanggal Keluar",
-    "Total",
-    "Status Bayar",
-    "Status Revisi",
-    "Status BPJS",
-    "User Verif",
-    "User Upload",
-    "Aksi"
-  ];
-  var DAY_MS = 24 * 60 * 60 * 1e3;
-  function formatDmy(d) {
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    return `${dd}-${mm}-${d.getFullYear()}`;
-  }
-  function buildKlaimDataQuery(start2, end, jenis, filterTanggal = "kunjungan") {
-    return new URLSearchParams({
-      tanggalAwal: formatDmy(start2),
-      tanggalAkhir: formatDmy(end),
-      filter_tanggal: filterTanggal,
-      norm: "",
-      nama: "",
-      reg: "",
-      billing: "all",
-      status: "all",
-      id_poli_cari: "",
-      jenis_pasien: "all",
-      jenis
-    });
-  }
-  function normalizeVisitDatetime(v) {
-    if (!v || v === "" || v === "-") return void 0;
-    let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
-    if (m) {
-      const iso = `${m[3]}-${m[2]}-${m[1]}`;
-      return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
-    }
-    m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
-    if (m) return v.replace("T", " ");
-    return v;
-  }
-  function stripHtml(s) {
-    return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
-  }
-  function extractIdVisitFromCells(cellsRaw) {
-    for (let i = cellsRaw.length - 1; i >= 0; i--) {
-      const c = cellsRaw[i] ?? "";
-      const m = c.match(/detail\(\s*['"]?(\d+)/) || c.match(/id_visit=(\d+)/);
-      if (m) return m[1];
-    }
-    return null;
-  }
-  function infoPresent(i) {
-    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0 || i.visitDatetime !== void 0 || i.poli !== void 0);
-  }
-  function pickFromObject(o) {
-    const get = (...keys) => {
-      for (const k of Object.keys(o)) {
-        if (keys.includes(k.toLowerCase())) {
-          const t = stripHtml(o[k]);
-          if (t !== "" && t !== "-") return t;
-        }
-      }
-      return void 0;
-    };
-    const id = get("id_visit", "idvisit");
-    return {
-      id: id ?? null,
-      info: {
-        norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
-        nama: get("nama", "nama_pasien", "pasien"),
-        noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
-        visitDatetime: normalizeVisitDatetime(
-          get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
-        ),
-        poli: get("poli", "unit", "unit_kerja", "ruangan", "ruang", "bangsal")
-      }
-    };
-  }
-  function parseKlaimRows(json, headers, pick) {
-    const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : Array.isArray(json?.aaData) ? json.aaData : [];
-    const out = [];
-    for (const r of rows) {
-      if (Array.isArray(r)) {
-        const raw = r.map((c) => String(c ?? ""));
-        const id = extractIdVisitFromCells(raw);
-        if (!id) continue;
-        const info = pick(headers, raw.map(stripHtml));
-        if (infoPresent(info)) out.push({ idVisit: id, info });
-      } else if (r && typeof r === "object") {
-        const { id, info } = pickFromObject(r);
-        if (id && infoPresent(info)) out.push({ idVisit: id, info });
-      }
-    }
-    return out;
-  }
-  async function fetchKlaimIdentity(needIds, deps) {
-    const need = new Set(needIds.map((s) => String(s).trim()).filter(Boolean));
-    const found = /* @__PURE__ */ new Map();
-    if (need.size === 0) return [];
-    const fetcher = deps.fetcher ?? fetch;
-    const today = deps.now ?? /* @__PURE__ */ new Date();
-    const windowDays = Math.max(1, deps.windowDays ?? 31);
-    const maxWindows = Math.max(1, deps.maxWindows ?? 9);
-    const delayMs = deps.delayMs ?? 300;
-    const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
-    const total = maxWindows * 2;
-    let request = 0;
-    let failStreak = 0;
-    outer: for (let w = 0; w < maxWindows; w++) {
-      const end = new Date(today.getTime() - w * windowDays * DAY_MS);
-      const start2 = new Date(end.getTime() - (windowDays - 1) * DAY_MS);
-      for (const jenis of ["n", "y"]) {
-        if (found.size >= need.size) break outer;
-        request++;
-        try {
-          const qs = buildKlaimDataQuery(start2, end, jenis).toString();
-          const res = await fetcher(`${KLAIM_DATA_PATH}?${qs}`, {
-            method: "GET",
-            cache: "no-store",
-            credentials: "same-origin",
-            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
-          });
-          if (!res || !res.ok) throw new Error("HTTP " + (res?.status ?? "?"));
-          const json = await res.json();
-          for (const row of parseKlaimRows(json, deps.headers, deps.pick)) {
-            if (need.has(row.idVisit) && !found.has(row.idVisit)) found.set(row.idVisit, row);
-          }
-          failStreak = 0;
-        } catch {
-          failStreak++;
-          if (failStreak >= 3) break outer;
-        }
-        deps.onProgress?.({ request, total, found: found.size, need: need.size });
-        if (found.size < need.size) await sleep(delayMs);
-      }
-    }
-    return [...found.values()];
-  }
-
-  // src/features/shared/telaahBackfill.ts
-  init_casemixApi();
-  function defaultStore4() {
-    try {
-      if (typeof window !== "undefined" && window.localStorage)
-        return window.localStorage;
-    } catch {
-    }
-    return null;
-  }
-  async function postCentral(path, payload, fetcher = fetch) {
-    try {
-      const res = await requestCentral(
-        path,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(payload),
-          credentials: "omit"
-        },
-        fetcher
-      );
-      return !!res && res.ok;
-    } catch {
-      return false;
-    }
-  }
-  async function runTelaahBackfill(store2 = defaultStore4(), fetcher = fetch, resolveIdentity) {
-    const res = { uploaded: 0, offline: false };
-    if (!store2) return res;
-    try {
-      const map = loadTelaahMap(store2);
-      const migrated = loadTelaahMigratedIds(store2);
-      const done = new Set(migrated);
-      const pending = Object.keys(map).filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true).slice(0, 20);
-      let ident = /* @__PURE__ */ new Map();
-      if (pending.length > 0 && resolveIdentity) {
-        try {
-          const rows = await resolveIdentity(pending) ?? [];
-          ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
-        } catch {
-        }
-      }
-      for (const id of pending) {
-        if (!map[id]) continue;
-        const info = ident.get(id);
-        const ok = await postCentral(
-          "/api/casemix/telaah-berkas/toggle",
-          {
-            id_visit: id,
-            marked: true,
-            norm: info?.norm ?? null,
-            nama: info?.nama ?? null,
-            no_reg: info?.noReg ?? null,
-            visit_datetime: info?.visitDatetime ?? null,
-            poli: info?.poli ?? null,
-            user: info?.user ?? null
-          },
-          fetcher
-        );
-        if (!ok) {
-          res.offline = true;
-          break;
-        }
-        migrated.push(id);
-        res.uploaded++;
-      }
-      if (res.uploaded > 0) saveTelaahMigratedIds(store2, migrated);
-      try {
-        const alive = new Set(Object.keys(map));
-        const queue = loadTelaahUnmarkQueue(store2);
-        const stillQueued = [];
-        for (const id of queue) {
-          if (alive.has(id)) continue;
-          if (res.offline) {
-            stillQueued.push(id);
-            continue;
-          }
-          const ok = await postCentral(
-            "/api/casemix/telaah-berkas/toggle",
-            { id_visit: id, marked: false },
-            fetcher
-          );
-          if (!ok) {
-            res.offline = true;
-            stillQueued.push(id);
-          } else {
-            res.uploaded++;
-          }
-        }
-        if (queue.length > 0) saveTelaahUnmarkQueue(stillQueued, store2);
-        const keep = new Set(stillQueued);
-        const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
-        if (kept.length !== migrated.length) saveTelaahMigratedIds(store2, kept);
-      } catch {
-      }
-    } catch {
-      res.offline = true;
-    }
-    return res;
-  }
-  var _telaahTimer = null;
-  var _telaahResolver;
-  function initTelaahBackfill(resolver) {
-    if (resolver) _telaahResolver = resolver;
-    if (_telaahTimer !== null) return;
-    const tick = () => {
-      try {
-        if (document.hidden) return;
-      } catch {
-      }
-      void runTelaahBackfill(void 0, void 0, _telaahResolver).catch(() => {
-      });
-    };
-    window.setTimeout(tick, 7e3);
-    _telaahTimer = window.setInterval(tick, 3e4);
-  }
-
-  // src/features/mKlaimPreOp.ts
-  init_casemixApi();
-
-  // src/features/shared/casemixBackfill.ts
-  init_casemixApi();
-  var MIGRATED_PREOP_KEY = "ext_migrated_preop_ids";
-  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
-  var BACKFILL_BATCH = 20;
-  function readJson3(store2, key2) {
-    if (!store2) return null;
-    try {
-      const raw = store2.getItem(key2);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-  function writeJson3(store2, key2, value) {
-    if (!store2) return;
-    try {
-      store2.setItem(key2, JSON.stringify(value));
-    } catch {
-    }
-  }
-  function defaultStore5() {
+  function defaultStore3() {
     try {
       if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
     } catch {
     }
     return null;
   }
-  async function postCentral2(path, payload, fetcher = fetch) {
+  async function postCentral(path, payload, fetcher = fetch) {
     try {
       const res = await requestCentral(
         path,
@@ -1199,12 +626,12 @@ var __morbis_feature = (() => {
     }
     return n;
   }
-  function loadMigratedIds(store2 = defaultStore5()) {
-    const raw = readJson3(store2, MIGRATED_PREOP_KEY);
+  function loadMigratedIds(store2 = defaultStore3()) {
+    const raw = readJson2(store2, MIGRATED_PREOP_KEY);
     return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
   }
-  function saveMigratedIds(store2 = defaultStore5(), ids) {
-    writeJson3(store2, MIGRATED_PREOP_KEY, [...new Set(ids)]);
+  function saveMigratedIds(store2 = defaultStore3(), ids) {
+    writeJson2(store2, MIGRATED_PREOP_KEY, [...new Set(ids)]);
   }
   function collectResumePending(list, sinceAt) {
     return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
@@ -1236,7 +663,7 @@ var __morbis_feature = (() => {
     }
     return out;
   }
-  async function runCasemixBackfill(store2 = defaultStore5(), fetcher = fetch, resolveIdentity) {
+  async function runCasemixBackfill(store2 = defaultStore3(), fetcher = fetch, resolveIdentity) {
     const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
     if (!store2) return res;
     try {
@@ -1255,7 +682,7 @@ var __morbis_feature = (() => {
         const item = map[id];
         if (!item) continue;
         const info = ident.get(id);
-        const ok = await postCentral2(
+        const ok = await postCentral(
           "/api/casemix/pre-op/toggle",
           {
             id_visit: id,
@@ -1287,7 +714,7 @@ var __morbis_feature = (() => {
             stillQueued.push(id);
             continue;
           }
-          const ok = await postCentral2(
+          const ok = await postCentral(
             "/api/casemix/pre-op/toggle",
             { id_visit: id, marked: false },
             fetcher
@@ -1315,12 +742,12 @@ var __morbis_feature = (() => {
       for (const { key: key2, idVisit, tipe } of discoverResumeKeys(store2)) {
         if (!idVisit || idVisit === "unknown") continue;
         if (res.resumeUploaded >= BACKFILL_BATCH) break;
-        const sinceAt = readJson3(store2, MIGRATED_RV_PREFIX + key2) ?? 0;
+        const sinceAt = readJson2(store2, MIGRATED_RV_PREFIX + key2) ?? 0;
         const list = loadHistory(idVisit, tipe, store2);
         const pending = collectResumePending(list, sinceAt);
         let maxAt = sinceAt;
         for (const e of pending) {
-          const ok = await postCentral2(
+          const ok = await postCentral(
             "/api/reports/resume-history",
             {
               client_id: e.client_id ?? null,
@@ -1343,7 +770,7 @@ var __morbis_feature = (() => {
           maxAt = Math.max(maxAt, e.at);
           res.resumeUploaded++;
         }
-        if (maxAt > sinceAt) writeJson3(store2, MIGRATED_RV_PREFIX + key2, maxAt);
+        if (maxAt > sinceAt) writeJson2(store2, MIGRATED_RV_PREFIX + key2, maxAt);
         if (res.offline) break;
       }
     } catch {
@@ -1377,7 +804,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/shared/casemixSync.ts
-  function infoPresent2(info) {
+  function infoPresent(info) {
     return !!info && (info.norm !== void 0 || info.nama !== void 0 || info.noReg !== void 0);
   }
   function repairLegacyInfo(stored) {
@@ -1405,7 +832,7 @@ var __morbis_feature = (() => {
       visitDatetime: visibleInfo?.visitDatetime,
       poli: visibleInfo?.poli
     };
-    return infoPresent2(merged) ? merged : void 0;
+    return infoPresent(merged) ? merged : void 0;
   }
   async function syncCasemixNow(rows, deps) {
     const now = deps.now ?? Date.now();
@@ -1461,7 +888,7 @@ var __morbis_feature = (() => {
         return !!(m && m.norm && m.nama && m.no_reg && m.visit_datetime && m.poli);
       };
       for (const id of /* @__PURE__ */ new Set([...Object.keys(local), ...Object.keys(central)])) {
-        if (infoPresent2(visible.get(id))) continue;
+        if (infoPresent(visible.get(id))) continue;
         if (centralComplete(id)) continue;
         if (!isMarked(id)) continue;
         need.add(id);
@@ -1470,7 +897,7 @@ var __morbis_feature = (() => {
         try {
           const extra = await deps.resolveIdentity([...need].slice(0, 500));
           for (const r of extra ?? []) {
-            if (r?.idVisit && infoPresent2(r.info) && !infoPresent2(visible.get(r.idVisit))) {
+            if (r?.idVisit && infoPresent(r.info) && !infoPresent(visible.get(r.idVisit))) {
               visible.set(r.idVisit, r.info);
             }
           }
@@ -1500,9 +927,9 @@ var __morbis_feature = (() => {
     }
     for (const [id, info] of visible) {
       const owned = id in local && local[id]?.fromCentral !== true;
-      if (owned && infoPresent2(info)) continue;
+      if (owned && infoPresent(info)) continue;
       if (!isMarked(id)) continue;
-      if (!infoPresent2(info)) continue;
+      if (!infoPresent(info)) continue;
       try {
         if (await deps.postToggle(id, true, info)) {
           enriched++;
@@ -1537,10 +964,164 @@ var __morbis_feature = (() => {
     return { pushed, enriched, pulled, pending, offline };
   }
 
+  // src/features/shared/telaahStorage.ts
+  var TELAAH_STORAGE_KEY = "morbis_telaah_markers";
+  var TELAAH_UNMARK_QUEUE_KEY = "ext_telaah_unmark_queue";
+  var TELAAH_MIGRATED_KEY = "ext_migrated_telaah_ids";
+  var TELAAH_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var _telaahUnmarkAt = {};
+  function markTelaahUnmarked(idVisit) {
+    if (idVisit) _telaahUnmarkAt[idVisit] = Date.now();
+  }
+  function clearTelaahUnmark(idVisit) {
+    if (idVisit) delete _telaahUnmarkAt[idVisit];
+  }
+  function readTelaahUnmarks() {
+    return { ..._telaahUnmarkAt };
+  }
+  function pruneTelaahUnmarks(now = Date.now()) {
+    for (const k of Object.keys(_telaahUnmarkAt)) {
+      if (now - _telaahUnmarkAt[k] >= 6e4) delete _telaahUnmarkAt[k];
+    }
+  }
+  function defaultStore4() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  function readJson3(store2, key2) {
+    if (!store2) return null;
+    try {
+      const raw = store2.getItem(key2);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson3(store2, key2, value) {
+    if (!store2) return;
+    try {
+      store2.setItem(key2, JSON.stringify(value));
+    } catch {
+    }
+  }
+  function purgeExpiredTelaah(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= TELAAH_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadTelaahMap(store2 = defaultStore4(), now = Date.now()) {
+    if (!store2) return {};
+    try {
+      const parsed = readJson3(store2, TELAAH_STORAGE_KEY);
+      if (typeof parsed !== "object" || parsed === null) return {};
+      const { purged, count } = purgeExpiredTelaah(parsed, now);
+      if (count > 0) saveTelaahMap(purged, store2);
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function minimalTelaahItem(raw) {
+    if (!raw || typeof raw !== "object") return { idVisit: "", markedAt: 0 };
+    const out = { idVisit: raw.idVisit, markedAt: raw.markedAt };
+    if (raw.fromCentral === true) out.fromCentral = true;
+    return out;
+  }
+  function saveTelaahMap(map, store2 = defaultStore4()) {
+    if (!store2) return;
+    try {
+      const clean = {};
+      for (const [id, item] of Object.entries(map)) {
+        if (!item || typeof item !== "object" || !item.idVisit) continue;
+        clean[id] = minimalTelaahItem(item);
+      }
+      store2.setItem(TELAAH_STORAGE_KEY, JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setTelaah(idVisit, store2 = defaultStore4(), now = Date.now(), fromCentral = false) {
+    if (!idVisit) return;
+    const map = loadTelaahMap(store2, now);
+    map[idVisit] = fromCentral ? { idVisit, markedAt: now, fromCentral: true } : { idVisit, markedAt: now };
+    saveTelaahMap(map, store2);
+  }
+  function loadTelaahUnmarkQueue(store2 = defaultStore4()) {
+    if (!store2) return [];
+    try {
+      const arr = readJson3(store2, TELAAH_UNMARK_QUEUE_KEY);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveTelaahUnmarkQueue(ids, store2 = defaultStore4()) {
+    if (!store2) return;
+    writeJson3(store2, TELAAH_UNMARK_QUEUE_KEY, [...new Set(ids)]);
+  }
+  function removeTelaah(idVisit, store2 = defaultStore4()) {
+    if (!idVisit) return;
+    const map = loadTelaahMap(store2);
+    if (map[idVisit]) {
+      delete map[idVisit];
+      saveTelaahMap(map, store2);
+    }
+    const q = loadTelaahUnmarkQueue(store2);
+    if (!q.includes(idVisit)) saveTelaahUnmarkQueue([...q, idVisit], store2);
+  }
+  function countTelaahPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    let n = 0;
+    for (const id of Object.keys(map)) {
+      if (!done.has(id) && map[id] && map[id].fromCentral !== true) n++;
+    }
+    return n;
+  }
+  function loadTelaahMigratedIds(store2 = defaultStore4()) {
+    const raw = readJson3(store2, TELAAH_MIGRATED_KEY);
+    return Array.isArray(raw) ? raw.filter((s) => typeof s === "string") : [];
+  }
+  function saveTelaahMigratedIds(store2 = defaultStore4(), ids) {
+    writeJson3(store2, TELAAH_MIGRATED_KEY, [...new Set(ids)]);
+  }
+  function collectStaleTelaah(map, centralHas, now = Date.now(), graceMs = RECONCILE_GRACE_MS) {
+    const out = [];
+    for (const [id, item] of Object.entries(map)) {
+      if (!item || item.fromCentral !== true) continue;
+      if (centralHas(id)) continue;
+      if (now - item.markedAt < graceMs) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function forgetTelaahCentral(idVisit, store2 = defaultStore4()) {
+    if (!idVisit || !store2) return false;
+    try {
+      const map = loadTelaahMap(store2);
+      const item = map[idVisit];
+      if (!item || item.fromCentral !== true) return false;
+      delete map[idVisit];
+      saveTelaahMap(map, store2);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // src/features/shared/telaahSyncDeps.ts
   init_telaahApi();
   init_casemixApi();
-  function defaultStore6() {
+  function defaultStore5() {
     try {
       if (typeof window !== "undefined" && window.localStorage)
         return window.localStorage;
@@ -1549,7 +1130,7 @@ var __morbis_feature = (() => {
     return null;
   }
   async function runTelaahSync(input) {
-    const store2 = input.store ?? defaultStore6();
+    const store2 = input.store ?? defaultStore5();
     const fetcher = input.fetcher ?? fetch;
     const user = (() => {
       try {
@@ -1626,6 +1207,193 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/klaimIdentity.ts
+  var KLAIM_DATA_PATH = "/v2/m-klaim/data-tabel/data";
+  var KLAIM_LIST_HEADERS = [
+    "No",
+    "No Registrasi",
+    "No RM",
+    "Nama Pasien",
+    "Penjamin",
+    "Jenis Kunjungan",
+    "Unit",
+    "Tanggal Kunjungan",
+    "Tanggal Keluar",
+    "Total",
+    "Status Bayar",
+    "Status Revisi",
+    "Status BPJS",
+    "User Verif",
+    "User Upload",
+    "Aksi"
+  ];
+  var DAY_MS = 24 * 60 * 60 * 1e3;
+  function formatDmy(d) {
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}-${mm}-${d.getFullYear()}`;
+  }
+  function buildKlaimDataQuery(start2, end, jenis, filterTanggal = "kunjungan") {
+    return new URLSearchParams({
+      tanggalAwal: formatDmy(start2),
+      tanggalAkhir: formatDmy(end),
+      filter_tanggal: filterTanggal,
+      norm: "",
+      nama: "",
+      reg: "",
+      billing: "all",
+      status: "all",
+      id_poli_cari: "",
+      jenis_pasien: "all",
+      jenis
+    });
+  }
+  function normalizeVisitDatetime(v) {
+    if (!v || v === "" || v === "-") return void 0;
+    let m = /^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/.exec(v);
+    if (m) {
+      const iso = `${m[3]}-${m[2]}-${m[1]}`;
+      return m[4] ? `${iso} ${m[4]}:${m[5]}:${m[6]}` : `${iso} 00:00:00`;
+    }
+    m = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.exec(v);
+    if (m) return v.replace("T", " ");
+    return v;
+  }
+  function stripHtml(s) {
+    return String(s ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&/gi, "&").replace(/</gi, "<").replace(/>/gi, ">").replace(/"/gi, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
+  }
+  function extractIdVisitFromCells(cellsRaw) {
+    for (let i = cellsRaw.length - 1; i >= 0; i--) {
+      const c = cellsRaw[i] ?? "";
+      const m = c.match(/detail\(\s*['"]?(\d+)/) || c.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  function infoPresent2(i) {
+    return !!i && (i.norm !== void 0 || i.nama !== void 0 || i.noReg !== void 0 || i.visitDatetime !== void 0 || i.poli !== void 0);
+  }
+  function pickFromObject(o) {
+    const get = (...keys) => {
+      for (const k of Object.keys(o)) {
+        if (keys.includes(k.toLowerCase())) {
+          const t = stripHtml(o[k]);
+          if (t !== "" && t !== "-") return t;
+        }
+      }
+      return void 0;
+    };
+    const id = get("id_visit", "idvisit");
+    return {
+      id: id ?? null,
+      info: {
+        norm: get("norm", "no_rm", "norm_pasien", "id_pasien"),
+        nama: get("nama", "nama_pasien", "pasien"),
+        noReg: get("no_reg", "noreg", "no_registrasi", "reg", "registrasi"),
+        visitDatetime: normalizeVisitDatetime(
+          get("tanggal_kunjungan", "tgl_kunjungan", "visit_datetime", "visit_date")
+        ),
+        poli: get("poli", "unit", "unit_kerja", "ruangan", "ruang", "bangsal")
+      }
+    };
+  }
+  function parseKlaimRows(json, headers, pick) {
+    const rows = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : Array.isArray(json?.aaData) ? json.aaData : [];
+    const out = [];
+    for (const r of rows) {
+      if (Array.isArray(r)) {
+        const raw = r.map((c) => String(c ?? ""));
+        const id = extractIdVisitFromCells(raw);
+        if (!id) continue;
+        const info = pick(headers, raw.map(stripHtml));
+        if (infoPresent2(info)) out.push({ idVisit: id, info });
+      } else if (r && typeof r === "object") {
+        const { id, info } = pickFromObject(r);
+        if (id && infoPresent2(info)) out.push({ idVisit: id, info });
+      }
+    }
+    return out;
+  }
+  async function fetchKlaimIdentity(needIds, deps) {
+    const need = new Set(needIds.map((s) => String(s).trim()).filter(Boolean));
+    const found = /* @__PURE__ */ new Map();
+    if (need.size === 0) return [];
+    const fetcher = deps.fetcher ?? fetch;
+    const today = deps.now ?? /* @__PURE__ */ new Date();
+    const windowDays = Math.max(1, deps.windowDays ?? 31);
+    const maxWindows = Math.max(1, deps.maxWindows ?? 9);
+    const delayMs = deps.delayMs ?? 300;
+    const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+    const total = maxWindows * 2;
+    let request = 0;
+    let failStreak = 0;
+    outer: for (let w = 0; w < maxWindows; w++) {
+      const end = new Date(today.getTime() - w * windowDays * DAY_MS);
+      const start2 = new Date(end.getTime() - (windowDays - 1) * DAY_MS);
+      for (const jenis of ["n", "y"]) {
+        if (found.size >= need.size) break outer;
+        request++;
+        try {
+          const qs = buildKlaimDataQuery(start2, end, jenis).toString();
+          const res = await fetcher(`${KLAIM_DATA_PATH}?${qs}`, {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
+          });
+          if (!res || !res.ok) throw new Error("HTTP " + (res?.status ?? "?"));
+          const json = await res.json();
+          for (const row of parseKlaimRows(json, deps.headers, deps.pick)) {
+            if (need.has(row.idVisit) && !found.has(row.idVisit)) found.set(row.idVisit, row);
+          }
+          failStreak = 0;
+        } catch {
+          failStreak++;
+          if (failStreak >= 3) break outer;
+        }
+        deps.onProgress?.({ request, total, found: found.size, need: need.size });
+        if (found.size < need.size) await sleep(delayMs);
+      }
+    }
+    return [...found.values()];
+  }
+
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === "function") {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {
+    }
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
+  // src/features/shared/usageLog.ts
+  var KEY = "extUsageLog";
+  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
+  var MAX_ENTRIES2 = 2e3;
+  async function logUsage(feature, event, ok, detail) {
+    try {
+      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
+      const now = Date.now();
+      const entry = {
+        ts: now,
+        feature,
+        event,
+        ok,
+        detail: detail instanceof Error ? `${detail.name}: ${detail.message}` : detail !== void 0 ? String(detail) : void 0,
+        url: typeof location !== "undefined" ? location.href : void 0
+      };
+      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
+      const trimmed = kept.slice(-MAX_ENTRIES2);
+      await chrome.storage.local.set({ [KEY]: trimmed });
+    } catch {
+    }
+  }
+
   // src/features/mKlaimPreOp.ts
   var g = getMorbisGlobals();
   injectCSS(
@@ -1679,9 +1447,6 @@ var __morbis_feature = (() => {
   @keyframes ext-preop-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.55; }
-  }
-  tr[data-ext-preop-marked="true"] {
-    background-color: rgba(124, 58, 237, 0.07) !important;
   }
   .ext-preop-badge {
     display: inline-block;
@@ -2342,6 +2107,431 @@ var __morbis_feature = (() => {
     }
   });
 
+  // src/features/shared/mKlaimMarkBar.ts
+  var MARK_DEFS = [
+    { key: "labor", label: "Labor", badge: "LABOR", button: 'button.ext-mk-btn[data-ext-mk="labor"]', stateAttr: "data-ext-mk-marked" },
+    { key: "radiologi", label: "Radiologi", badge: "RADIOLOGI", button: 'button.ext-mk-btn[data-ext-mk="radiologi"]', stateAttr: "data-ext-mk-marked" },
+    { key: "batal-berobat", label: "Batal Berobat", badge: "BATAL BEROBAT", button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]', stateAttr: "data-ext-mk-marked" },
+    { key: "pre-op", label: "Pre-op", badge: "PRE-OP", button: "button.ext-preop-btn", stateAttr: "data-ext-preop-marked" },
+    { key: "telaah", label: "Telaah", badge: "TELAAH", button: "button.ext-telaah-btn", stateAttr: "data-ext-telaah-marked" },
+    { key: "partial", label: "Partial", badge: "PARTIAL", button: "button.ext-partial-btn", stateAttr: "data-ext-partial-marked" }
+  ];
+  var CSS = `
+@media print { .ext-mark-trigger, .ext-chips-wrap, #ext-shared-popover { display:none !important; } }
+/* Tombol & badge lama disembunyikan di list \u2014 logikanya tetap jalan. */
+table tbody tr .ext-mk-btn:not(.ext-mk-large),
+table tbody tr .ext-preop-btn:not(.ext-preop-large),
+table tbody tr .ext-telaah-btn:not(.ext-telaah-large),
+table tbody tr .ext-partial-btn:not(.ext-partial-large),
+.ext-mk-badge, .ext-preop-badge, .ext-telaah-badge, .ext-partial-badge {
+  display:none !important;
+}
+.ext-mark-trigger {
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  width:66px;height:26px;margin-left:4px;padding:0;
+  font-size:11px;font-weight:600;color:#334155;background:#f8fafc;
+  border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;vertical-align:middle;
+}
+.ext-mark-trigger:hover { background:#e2e8f0; }
+.ext-chips-wrap {
+  display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;
+  contain:layout style;
+}
+.ext-chip {
+  font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;
+  letter-spacing:.2px;line-height:1.3;white-space:nowrap;
+}
+.ext-chip[data-type="labor"]         { background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd; }
+.ext-chip[data-type="radiologi"]     { background:#fef3c7;color:#b45309;border:1px solid #fde68a; }
+.ext-chip[data-type="batal-berobat"] { background:#fee2e2;color:#b91c1c;border:1px solid #fecaca; }
+.ext-chip[data-type="pre-op"]        { background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff; }
+.ext-chip[data-type="telaah"]        { background:#dcfce7;color:#15803d;border:1px solid #bbf7d0; }
+.ext-chip[data-type="partial"]       { background:#f1f5f9;color:#334155;border:1px solid #cbd5e1; }
+tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
+#ext-shared-popover {
+  position:fixed;z-index:99999;width:175px;background:#fff;
+  border:1px solid #cbd5e1;border-radius:6px;box-shadow:0 8px 20px rgba(15,23,42,.15);
+  padding:6px;display:none;font-family:system-ui,-apple-system,sans-serif;
+}
+#ext-shared-popover.open { display:block; }
+.ext-pop-item {
+  display:flex;align-items:center;gap:8px;padding:5px 7px;font-size:12px;
+  color:#1e293b;border-radius:4px;cursor:pointer;user-select:none;
+}
+.ext-pop-item:hover { background:#f1f5f9; }
+`;
+  function marksSignature(marks) {
+    return marks.slice().sort().join("|");
+  }
+  function readRowMarks(row) {
+    const out = [];
+    for (const def of MARK_DEFS) {
+      const btn = row.querySelector(def.button);
+      if (!btn) continue;
+      const attr = btn.getAttribute(def.stateAttr);
+      if (attr === "true" || btn.classList.contains("active")) out.push(def.key);
+    }
+    return out;
+  }
+  var started = false;
+  function startMarkBar() {
+    if (started) return;
+    started = true;
+    injectCSS("ext-mark-bar-styles", CSS);
+    const popover = document.createElement("div");
+    popover.id = "ext-shared-popover";
+    popover.innerHTML = MARK_DEFS.map(
+      (d) => `<label class="ext-pop-item" data-ext-pop="${d.key}"><input type="checkbox" value="${d.key}"><span>${d.label}</span></label>`
+    ).join("");
+    document.body.appendChild(popover);
+    const cache = /* @__PURE__ */ new Map();
+    let activeRow = null;
+    let frame = 0;
+    function rowId(row) {
+      const known = row.getAttribute("data-ext-mark-row-id");
+      if (known) return known;
+      const btn = row.querySelector(MARK_DEFS.map((d) => d.button).join(","));
+      const attrs = [
+        btn?.getAttribute("data-ext-mk-id"),
+        btn?.getAttribute("data-ext-preop-btn"),
+        btn?.getAttribute("data-ext-telaah-btn"),
+        btn?.getAttribute("data-ext-partial-btn")
+      ];
+      const id = attrs.find((x) => !!x) || `${row.rowIndex}`;
+      row.setAttribute("data-ext-mark-row-id", id);
+      return id;
+    }
+    function paint(row, marks) {
+      const cell = badgeCellFor(row);
+      if (!cell) return;
+      let wrap = row.querySelector(".ext-chips-wrap");
+      if (!wrap) {
+        wrap = document.createElement("div");
+        wrap.className = "ext-chips-wrap";
+        cell.appendChild(wrap);
+      }
+      const html = marks.map((key2) => {
+        const def = MARK_DEFS.find((d) => d.key === key2);
+        return def ? `<span class="ext-chip" data-type="${def.key}">${def.badge}</span>` : "";
+      }).join("");
+      if (wrap.innerHTML !== html) wrap.innerHTML = html;
+      row.classList.toggle("ext-has-marks", marks.length > 0);
+    }
+    function scan() {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        for (const row of document.querySelectorAll("table tbody tr")) {
+          if (row.classList.contains("dataTables_empty")) continue;
+          const marks = readRowMarks(row);
+          if (!marks.length && !row.querySelector(".ext-mark-trigger")) {
+            const id2 = rowId(row);
+            if (!id2) continue;
+          }
+          const id = rowId(row);
+          ensureTrigger(row, id);
+          if (cache.get(id) === marksSignature(marks)) continue;
+          cache.set(id, marksSignature(marks));
+          paint(row, marks);
+        }
+      });
+    }
+    function ensureTrigger(row, id) {
+      const cell = row.cells[row.cells.length - 1];
+      if (!cell || cell.querySelector(".ext-mark-trigger")) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ext-mark-trigger";
+      btn.textContent = "+ Mark";
+      btn.setAttribute("data-ext-mark-trigger", id);
+      cell.appendChild(btn);
+    }
+    function openPopover(row, trigger) {
+      activeRow = row;
+      const marks = readRowMarks(row);
+      popover.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.checked = marks.includes(cb.value);
+      });
+      popover.classList.add("open");
+      const rect = trigger.getBoundingClientRect();
+      const left = Math.min(rect.left, window.innerWidth - 185);
+      const below = rect.bottom + 4;
+      popover.style.left = `${Math.max(4, left)}px`;
+      popover.style.top = below + popover.offsetHeight > window.innerHeight ? `${Math.max(4, rect.top - popover.offsetHeight - 4)}px` : `${below}px`;
+    }
+    popover.addEventListener("change", (e) => {
+      const cb = e.target;
+      if (!cb.matches('input[type="checkbox"]') || !activeRow) return;
+      const def = MARK_DEFS.find((d) => d.key === cb.value);
+      if (!def) return;
+      const legacy = activeRow.querySelector(def.button);
+      const marks = readRowMarks(activeRow).filter((x) => x !== def.key);
+      if (cb.checked) marks.push(def.key);
+      cache.set(rowId(activeRow), marksSignature(marks));
+      paint(activeRow, marks);
+      if (legacy && !("disabled" in legacy && legacy.disabled)) {
+        legacy.click();
+      }
+      activeRow.querySelector(".ext-mark-trigger")?.focus();
+    });
+    document.addEventListener("click", (e) => {
+      const target = e.target;
+      const trigger = target.closest(".ext-mark-trigger");
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        const row = trigger.closest("tr");
+        if (row) openPopover(row, trigger);
+        return;
+      }
+      if (!popover.contains(target)) {
+        popover.classList.remove("open");
+        activeRow = null;
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        popover.classList.remove("open");
+        activeRow = null;
+      }
+    });
+    scan();
+    new MutationObserver(() => scan()).observe(document.body, { childList: true, subtree: true });
+    window.setInterval(scan, 1e3);
+  }
+
+  // src/features/shared/markStorage.ts
+  var TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var TOMBSTONE_MS = 3e4;
+  var key = (mark) => "morbis_mark_" + mark + "_markers";
+  function store() {
+    try {
+      return typeof window === "undefined" ? null : window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+  var _unmarks = {};
+  function markUnmarked(mark, idVisit) {
+    (_unmarks[mark] ?? (_unmarks[mark] = {}))[idVisit] = Date.now();
+  }
+  function clearUnmark(mark, idVisit) {
+    delete _unmarks[mark]?.[idVisit];
+  }
+  function resolveMark(mark, idVisit, localHas, centralHas, now = Date.now()) {
+    if (localHas) return true;
+    const at = _unmarks[mark]?.[idVisit];
+    if (at !== void 0 && now - at < TOMBSTONE_MS) return false;
+    if (centralHas === null) return false;
+    return centralHas;
+  }
+  function loadMarkMap(mark, s = store(), now = Date.now()) {
+    try {
+      const raw = s?.getItem(key(mark));
+      if (!raw) return {};
+      const obj = JSON.parse(raw);
+      const out = {};
+      for (const [id, v] of Object.entries(obj)) {
+        if (v && typeof v.markedAt === "number" && now - v.markedAt < TTL_MS) {
+          out[id] = { idVisit: id, markedAt: v.markedAt, fromCentral: !!v.fromCentral };
+        }
+      }
+      return out;
+    } catch {
+      return {};
+    }
+  }
+  function saveMarkMap(mark, map, s = store()) {
+    try {
+      const clean = {};
+      for (const [id, v] of Object.entries(map)) {
+        clean[id] = { idVisit: id, markedAt: v.markedAt, fromCentral: !!v.fromCentral };
+      }
+      s?.setItem(key(mark), JSON.stringify(clean));
+    } catch {
+    }
+  }
+  function setMark(mark, idVisit, s = store(), now = Date.now(), fromCentral = false) {
+    const map = loadMarkMap(mark, s, now);
+    map[idVisit] = { idVisit, markedAt: now, fromCentral };
+    saveMarkMap(mark, map, s);
+  }
+  function removeMark(mark, idVisit, s = store()) {
+    const map = {};
+    try {
+      const raw = s?.getItem(key(mark));
+      if (raw) {
+        const obj = JSON.parse(raw);
+        for (const [id, v] of Object.entries(obj)) {
+          if (v && typeof v.markedAt === "number") {
+            map[id] = { idVisit: id, markedAt: v.markedAt, fromCentral: !!v.fromCentral };
+          }
+        }
+      }
+    } catch {
+    }
+    if (idVisit in map) {
+      delete map[idVisit];
+      saveMarkMap(mark, map, s);
+    }
+    markUnmarked(mark, idVisit);
+  }
+  function collectStaleMark(map, centralHas, now = Date.now()) {
+    return Object.values(map).filter((v) => v.fromCentral && !centralHas(v.idVisit) && now - v.markedAt > RECONCILE_GRACE_MS).map((v) => v.idVisit);
+  }
+  function forgetMarkCentral(mark, idVisit, s = store()) {
+    const map = loadMarkMap(mark, s);
+    if (!map[idVisit]?.fromCentral) return false;
+    delete map[idVisit];
+    saveMarkMap(mark, map, s);
+    return true;
+  }
+
+  // src/features/shared/markApi.ts
+  init_casemixApi();
+  var base = (mark) => "/api/casemix/mark/" + encodeURIComponent(mark);
+  function toggleMarkCentral(mark, idVisit, marked, info = {}) {
+    return postFireForget(base(mark) + "/toggle", {
+      id_visit: idVisit,
+      marked,
+      norm: info.norm ?? null,
+      nama: info.nama ?? null,
+      no_reg: info.noReg ?? null,
+      user: info.user ?? null,
+      visit_datetime: info.visitDatetime ?? null,
+      poli: info.poli ?? null
+    });
+  }
+  async function fetchMarkBatch(mark, ids) {
+    const q = normalizeIds(ids).join(",");
+    if (!q) return {};
+    const res = await getJson(
+      base(mark) + "/list?ids=" + encodeURIComponent(q)
+    );
+    return res && res.ok !== false ? res.marks ?? {} : null;
+  }
+
+  // src/features/mKlaimTelaah.ts
+  init_telaahApi();
+
+  // src/features/shared/telaahBackfill.ts
+  init_casemixApi();
+  function defaultStore6() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage)
+        return window.localStorage;
+    } catch {
+    }
+    return null;
+  }
+  async function postCentral2(path, payload, fetcher = fetch) {
+    try {
+      const res = await requestCentral(
+        path,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(payload),
+          credentials: "omit"
+        },
+        fetcher
+      );
+      return !!res && res.ok;
+    } catch {
+      return false;
+    }
+  }
+  async function runTelaahBackfill(store2 = defaultStore6(), fetcher = fetch, resolveIdentity) {
+    const res = { uploaded: 0, offline: false };
+    if (!store2) return res;
+    try {
+      const map = loadTelaahMap(store2);
+      const migrated = loadTelaahMigratedIds(store2);
+      const done = new Set(migrated);
+      const pending = Object.keys(map).filter((id) => !done.has(id) && map[id] && map[id].fromCentral !== true).slice(0, 20);
+      let ident = /* @__PURE__ */ new Map();
+      if (pending.length > 0 && resolveIdentity) {
+        try {
+          const rows = await resolveIdentity(pending) ?? [];
+          ident = new Map(rows.filter((r) => r?.idVisit).map((r) => [r.idVisit, r.info ?? {}]));
+        } catch {
+        }
+      }
+      for (const id of pending) {
+        if (!map[id]) continue;
+        const info = ident.get(id);
+        const ok = await postCentral2(
+          "/api/casemix/telaah-berkas/toggle",
+          {
+            id_visit: id,
+            marked: true,
+            norm: info?.norm ?? null,
+            nama: info?.nama ?? null,
+            no_reg: info?.noReg ?? null,
+            visit_datetime: info?.visitDatetime ?? null,
+            poli: info?.poli ?? null,
+            user: info?.user ?? null
+          },
+          fetcher
+        );
+        if (!ok) {
+          res.offline = true;
+          break;
+        }
+        migrated.push(id);
+        res.uploaded++;
+      }
+      if (res.uploaded > 0) saveTelaahMigratedIds(store2, migrated);
+      try {
+        const alive = new Set(Object.keys(map));
+        const queue = loadTelaahUnmarkQueue(store2);
+        const stillQueued = [];
+        for (const id of queue) {
+          if (alive.has(id)) continue;
+          if (res.offline) {
+            stillQueued.push(id);
+            continue;
+          }
+          const ok = await postCentral2(
+            "/api/casemix/telaah-berkas/toggle",
+            { id_visit: id, marked: false },
+            fetcher
+          );
+          if (!ok) {
+            res.offline = true;
+            stillQueued.push(id);
+          } else {
+            res.uploaded++;
+          }
+        }
+        if (queue.length > 0) saveTelaahUnmarkQueue(stillQueued, store2);
+        const keep = new Set(stillQueued);
+        const kept = migrated.filter((id) => alive.has(id) || keep.has(id));
+        if (kept.length !== migrated.length) saveTelaahMigratedIds(store2, kept);
+      } catch {
+      }
+    } catch {
+      res.offline = true;
+    }
+    return res;
+  }
+  var _telaahTimer = null;
+  var _telaahResolver;
+  function initTelaahBackfill(resolver) {
+    if (resolver) _telaahResolver = resolver;
+    if (_telaahTimer !== null) return;
+    const tick = () => {
+      try {
+        if (document.hidden) return;
+      } catch {
+      }
+      void runTelaahBackfill(void 0, void 0, _telaahResolver).catch(() => {
+      });
+    };
+    window.setTimeout(tick, 7e3);
+    _telaahTimer = window.setInterval(tick, 3e4);
+  }
+
   // src/features/mKlaimTelaah.ts
   var g2 = getMorbisGlobals();
   injectCSS(
@@ -2967,7 +3157,6 @@ var __morbis_feature = (() => {
       box-shadow:0 2px 6px ${rgba(c.color, 0.45)};font-weight:700;
     }
     .ext-mk-badge[data-ext-mk="${c.mark}"] { background:${c.bg}; color:${c.color}; border-color:${c.border}; }
-    tr[data-ext-mk-marked="${c.mark}=true"] { box-shadow: inset 3px 0 0 ${c.color} !important; }
   `
     ).join("");
     injectCSS(
@@ -3239,4 +3428,22 @@ var __morbis_feature = (() => {
       }
     });
   }
+  void Promise.all(
+    [
+      "laborMarker",
+      "radiologiMarker",
+      "batalBerobatMarker",
+      "mKlaimPreOp",
+      "mKlaimTelaah",
+      "mKlaimPartial"
+    ].map((key2) => isFeatureEnabled(key2))
+  ).then((enabled) => {
+    const path = window.location?.pathname ?? "";
+    if (!enabled.some(Boolean) || !path.startsWith("/v2/m-klaim") || path.includes("/detail")) return;
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => startMarkBar());
+    } else {
+      startMarkBar();
+    }
+  });
 })();

@@ -1356,9 +1356,6 @@ var __morbis_feature = (() => {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.55; }
   }
-  tr[data-ext-preop-marked="true"] {
-    background-color: rgba(124, 58, 237, 0.07) !important;
-  }
   .ext-preop-badge {
     display: inline-block;
     padding: 2px 6px;
