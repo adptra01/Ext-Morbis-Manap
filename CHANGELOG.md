@@ -22,8 +22,13 @@
 - **paLabPrint** — decode entity &lt;/&gt; pada teks medis hasil scrape (`b10a7d7`)
 - **mKlaimPrint** — RM.19A bersihkan artefak SIMRS & ejaan mediko-legal (`3cce138`)
 
+### 📝 docs
+
+- rapikan struktur folder — pisahkan dokumen tracked & bukti lokal (`cd63c41`)
+
 ### 🧹 chore
 
+- **changelog** — sync entr fix CI test (`928a10e`)
 - **changelog** — sync entr inputHasilPa fallback (`9968452`)
 - **changelog** — sync entr decode tanda lab (`cc74406`)
 - **changelog** — sync entr ruang TTD RM.19A (`e6ad15f`)
@@ -2281,4 +2286,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ab422d1054d78fe6a01ec7295acf1053b45e6380 -->
+<!-- changelog-upto: cd63c4156e0456345cf278710291fe03dcce139f -->
