@@ -2632,7 +2632,7 @@ ${sig(
       return val2(re);
     };
     const narasi = (() => {
-      if (!doc) return { persiapan: "-", langkah: [] };
+      if (!doc) return [];
       const headCell = Array.from(doc.querySelectorAll("td")).find(
         (td) => /^\s*Uraian Pembedahan\b/i.test(td.textContent || "")
       );
@@ -2640,17 +2640,7 @@ ${sig(
       if (!raw.trim()) {
         raw = Array.from(doc.querySelectorAll("td")).map((td) => (td.textContent || "").trim()).sort((a, b) => b.length - a.length)[0] || "";
       }
-      const splitUraian = (raw2) => {
-        const byNl = raw2.split(/\n+/).map((x) => op(x)).filter(Boolean);
-        if (byNl.length > 1) return byNl;
-        const kw = /\s+(?=Pasien |Dilakukan |Pada |Diputuskan |Dilanjutkan |Mukosa |Operasi |Dilakukan)/g;
-        return raw2.split(kw).map((x) => op(x)).filter(Boolean);
-      };
-      const lines = splitUraian(raw);
-      if (!lines.length) return { persiapan: "-", langkah: [] };
-      const cut = lines.findIndex((l) => /Diputuskan|sebagai berikut/i.test(l));
-      const head2 = cut >= 0 ? cut + 1 : Math.min(4, lines.length);
-      return { persiapan: lines.slice(0, head2).join(" "), langkah: lines.slice(head2) };
+      return raw.split(/\n+/).map((x) => op(x)).filter(Boolean);
     })();
     const klasTeks = doc ? Array.from(doc.querySelectorAll("td")).map((td) => (td.textContent || "").replace(/\s+/g, " ").trim()).filter((t) => /^-?\s*(MAYOR|MINOR|EFEKTIF|ELEKTIF|EMERGENSI|CITO|SEDANG|KHUSUS)$/i.test(t)).join(" ") : "";
     const pilih = (re) => re.test(klasTeks) ? "&#10003;" : "&nbsp;";
@@ -2666,8 +2656,7 @@ ${sig(
     const tglCetak = tglBedah !== "-" ? panjangTanggal(tglBedah) : "-";
     const kv = (label, value, cls = "") => `<tr><td class="k${cls}">${label}</td><td class="c">:</td><td class="v">${value}</td></tr>`;
     const head = (judul, span = 2) => `<tr><th class="rm-sec-head" colspan="${span}" style="text-align:left;">${judul}</th></tr>`;
-    const persiapanHtml = narasi.persiapan !== "-" ? esc(narasi.persiapan) : "-";
-    const langkahHtml = narasi.langkah.length ? '<ol class="op-steps">' + narasi.langkah.map((s) => `<li>${esc(s)}</li>`).join("") + "</ol>" : "<div>-</div>";
+    const langkahHtml = narasi.length ? '<ol class="op-steps">' + narasi.map((s) => `<li>${esc(s)}</li>`).join("") + "</ol>" : "<div>-</div>";
     return `<section class="rm-page" id="form-operasi">
 ${kop("RM. 20")}
 <div class="rm-form-title">LAPORAN PELAKSANAAN OPERASI</div>
@@ -2727,7 +2716,6 @@ ${kop("RM. 20")}
 <table class="rm-grid-table"><tbody>
   ${head("III. URAIAN PEMBEDAHAN")}
   <tr><td class="op-narrative">
-    <div class="op-preface"><strong>Persiapan &amp; Evaluasi Awal:</strong> ${persiapanHtml}</div>
     <div><strong>Langkah-Langkah Tindakan:</strong></div>
     ${langkahHtml}
   </td></tr>

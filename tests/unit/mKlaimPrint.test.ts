@@ -713,7 +713,6 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       'III. URAIAN PEMBEDAHAN',
       'op-kv',
       'op-steps',
-      'Persiapan &amp; Evaluasi Awal',
       'Langkah-Langkah Tindakan',
       'IV. Komplikasi Intraoperatif',
       'V. PEMERIKSAAN PATOLOGI ANATOMI (PA)',
@@ -723,6 +722,9 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     ]) {
       expect(op).toContain(marker);
     }
+    // Uraian: semua baris jadi langkah bernomor, tanpa tebakan pemisah.
+    expect(op).not.toContain('Diputuskan|sebagai berikut');
+    expect(op).not.toContain('Persiapan &amp; Evaluasi Awal');
     // Typo SIMRS diperbaiki di titik normalisasi.
     for (const fix of ['antiseptik', 'daryantulle', 'Perdarahan', 'Transfusi', 'Elektif']) {
       expect(op).toContain(fix);

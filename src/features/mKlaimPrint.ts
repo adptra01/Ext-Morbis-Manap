@@ -3457,9 +3457,10 @@ function buildOperasiSection(sections: Section[]): string {
     return val(re);
   };
 
-  /** Uraian: baris setelah judul "Uraian Pembedahan" (atau sel terpanjang). */
-  const narasi = ((): { persiapan: string; langkah: string[] } => {
-    if (!doc) return { persiapan: '-', langkah: [] };
+  /** Uraian: setiap baris teks asli jadi satu langkah bernomor — tanpa
+   *  menebak mana "persiapan" mana "tindakan" (kalimatnya bebas dari user). */
+  const narasi = ((): string[] => {
+    if (!doc) return [];
     // Cari SEL yang memuat judul "Uraian Pembedahan" (bukan baris pembungkus
     // luar yang textContent-nya mencakup semua tabel → at+1 salah ambil baris).
     const headCell = Array.from(doc.querySelectorAll('td')).find((td) =>
@@ -3472,27 +3473,10 @@ function buildOperasiSection(sections: Section[]): string {
           .map((td) => (td.textContent || '').trim())
           .sort((a, b) => b.length - a.length)[0] || '';
     }
-    // Teks uraian di SIMRS sering satu baris (newline hilang saat scrape) —
-    // pecah per kalimat berdasarkan kata-kunci awal kalimat agar langkah
-    // tindakan tetap bernomor, bukan satu paragraf panjang.
-    const splitUraian = (raw: string): string[] => {
-      const byNl = raw
-        .split(/\n+/)
-        .map((x) => op(x))
-        .filter(Boolean);
-      if (byNl.length > 1) return byNl;
-      const kw =
-        /\s+(?=Pasien |Dilakukan |Pada |Diputuskan |Dilanjutkan |Mukosa |Operasi |Dilakukan)/g;
-      return raw
-        .split(kw)
-        .map((x) => op(x))
-        .filter(Boolean);
-    };
-    const lines = splitUraian(raw);
-    if (!lines.length) return { persiapan: '-', langkah: [] };
-    const cut = lines.findIndex((l) => /Diputuskan|sebagai berikut/i.test(l));
-    const head = cut >= 0 ? cut + 1 : Math.min(4, lines.length);
-    return { persiapan: lines.slice(0, head).join(' '), langkah: lines.slice(head) };
+    return raw
+      .split(/\n+/)
+      .map((x) => op(x))
+      .filter(Boolean);
   })();
 
   /** Klasifikasi dari pilihan yang tercantum di tabel asli. */
@@ -3536,9 +3520,8 @@ function buildOperasiSection(sections: Section[]): string {
     `<tr><td class="k${cls}">${label}</td><td class="c">:</td><td class="v">${value}</td></tr>`;
   const head = (judul: string, span = 2): string =>
     `<tr><th class="rm-sec-head" colspan="${span}" style="text-align:left;">${judul}</th></tr>`;
-  const persiapanHtml = narasi.persiapan !== '-' ? esc(narasi.persiapan) : '-';
-  const langkahHtml = narasi.langkah.length
-    ? '<ol class="op-steps">' + narasi.langkah.map((s) => `<li>${esc(s)}</li>`).join('') + '</ol>'
+  const langkahHtml = narasi.length
+    ? '<ol class="op-steps">' + narasi.map((s) => `<li>${esc(s)}</li>`).join('') + '</ol>'
     : '<div>-</div>';
 
   return `<section class="rm-page" id="form-operasi">
@@ -3600,7 +3583,6 @@ ${kop('RM. 20')}
 <table class="rm-grid-table"><tbody>
   ${head('III. URAIAN PEMBEDAHAN')}
   <tr><td class="op-narrative">
-    <div class="op-preface"><strong>Persiapan &amp; Evaluasi Awal:</strong> ${persiapanHtml}</div>
     <div><strong>Langkah-Langkah Tindakan:</strong></div>
     ${langkahHtml}
   </td></tr>
