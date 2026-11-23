@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — redesign Laporan Operasi jadi grid RM.20 1 halaman (`6d6e335`)
 - **mKlaimPrint** — Surat Kontrol pakai sheet BPJS identik SEP (`0b74d2d`)
 - **mKlaimPrint** — RM.19A ruang tanda tangan kosong saat QR tidak ada (`e01a7e1`)
 - **mKlaimPrint** — RM.19A hapus timestamp, TTD label-barcode-nama, paragraf & saksi terstruktur (`9202860`)
@@ -48,6 +49,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync dist SPRI (`443d6e2`)
 - **dist** — sync mKlaimPrint — TTD SPRI kanan (`51514b5`)
 - bump versi 1.5.273 (TTD SPRI kanan) [skip ci] (`622721d`)
 - **changelog** — sync entri urutan TTD RM.05 (`1dd3258`)
@@ -2334,4 +2336,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 51514b52cbb82d70cee73b5e869dd96e37d22d78 -->
+<!-- changelog-upto: 6d6e3352a8fc642ad237f59e275378d735f5ec5a -->
