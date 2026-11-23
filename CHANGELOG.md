@@ -20,6 +20,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — Rincian Biaya footer — 'Yang Menerima' di atas QR, '(Petugas Billing / Kasir)' di bawah (`c305d0b`)
 - **mKlaimPrint** — TTD SPRI diposisikan di kanan (`9f9f061`)
 - **mKlaimPrint** — urutan TTD RM.05 — label di atas QR, nama di bawah (`72f40af`)
 - **mKlaimPrint** — fallback QR DPJP Surat Kontrol dari SEP/Resume (`51faf1a`)
@@ -50,6 +51,7 @@
 
 ### 🧹 chore
 
+- bump versi 1.5.275 (redesign Laporan Anestesi) [skip ci] (`970b633`)
 - bump versi 1.5.274 (redesign Laporan Operasi) [skip ci] (`5456586`)
 - **changelog** — sync dist SPRI (`443d6e2`)
 - **dist** — sync mKlaimPrint — TTD SPRI kanan (`51514b5`)
@@ -2338,4 +2340,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 31cc140b923f0cdcce2ad4e34b20e8757484264f -->
+<!-- changelog-upto: c305d0b5d94b253d942bf1d4d264904809c2147c -->

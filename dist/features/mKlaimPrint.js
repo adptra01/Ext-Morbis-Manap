@@ -2667,7 +2667,7 @@ ${kop("RM. 20")}
 
 <div class="id-box-borderless">
   <div class="id-col"><table class="op-kv">
-    ${kv("Nama Pasien", `<strong>${esc(pageOr(["nama"], /^Nama Pasien/i))}</strong>`)}
+    ${kv("Nama Pasien", `<strong>${esc(pageOr(["nama"], /^Nama Pasien|^Nama$/i))}</strong>`)}
     ${kv("Tanggal Lahir / Umur", `${esc(pageOr(["tgl_lahir", "tglLahir"], /^Tanggal Lahir|^Tgl Lahir/i))} (${esc(pick("umur") || val2(/^Umur/i))})`)}
   </table></div>
   <div class="id-col"><table class="op-kv">
