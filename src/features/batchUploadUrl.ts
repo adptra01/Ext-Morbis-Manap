@@ -694,9 +694,19 @@ function getPatientNormFromPage(): string {
   return (el?.value || '').trim();
 }
 
-/** NORM yang aman dikirim: wajib angka (ID_PASIEN bertipe NUMBER di Oracle). */
-function resolveNorm(metadata: BatchItem): string {
-  const candidates = [metadata.norm, getPatientNormFromPage()];
+/**
+ * NORM yang aman dikirim: wajib angka (ID_PASIEN bertipe NUMBER di Oracle).
+ *
+ * Prioritas: NORM halaman (#norm) dulu. Nama file hasil Auto-Crawl bisa diawali
+ * token 6 digit acuan (mis. `260681-1795408332-upload-ulang-...pdf`) yang BUKAN
+ * NORM pasien — kalau dikirim, ID_PASIEN salah → ORA-02291 FK2 (2026-11-23).
+ * `pageNorm` bisa disuntik untuk test; defaultnya baca dari halaman.
+ */
+export function resolveNorm(
+  metadata: BatchItem,
+  pageNorm: string = getPatientNormFromPage(),
+): string {
+  const candidates = [pageNorm, metadata.norm];
   for (const candidate of candidates) {
     const value = String(candidate ?? '').trim();
     if (/^\d{1,12}$/.test(value)) return value;

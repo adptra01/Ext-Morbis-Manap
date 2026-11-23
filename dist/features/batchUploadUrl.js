@@ -1,5 +1,29 @@
 "use strict";
 var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/batchUploadUrl.ts
+  var batchUploadUrl_exports = {};
+  __export(batchUploadUrl_exports, {
+    resolveNorm: () => resolveNorm
+  });
+
   // src/features/shared/types.ts
   function getMorbisGlobals() {
     return window;
@@ -1349,8 +1373,8 @@ ${xrefOffset}
     const el = document.querySelector('#norm, input[name="norm"]');
     return (el?.value || "").trim();
   }
-  function resolveNorm(metadata) {
-    const candidates = [metadata.norm, getPatientNormFromPage()];
+  function resolveNorm(metadata, pageNorm = getPatientNormFromPage()) {
+    const candidates = [pageNorm, metadata.norm];
     for (const candidate of candidates) {
       const value = String(candidate ?? "").trim();
       if (/^\d{1,12}$/.test(value)) return value;
@@ -2366,4 +2390,5 @@ ${xrefOffset}
   } else {
     console.warn("[Batch Upload] featureModules not defined, module registration skipped");
   }
+  return __toCommonJS(batchUploadUrl_exports);
 })();

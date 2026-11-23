@@ -24,10 +24,11 @@
 
 ### 📝 docs
 
-- rapikan struktur folder — pisahkan dokumen tracked & bukti lokal (`cd63c41`)
+- rapikan struktur folder — pisahkan dokumen tracked & bukti lokal (`8abf1c3`)
 
 ### 🧹 chore
 
+- **changelog** — sync entr rapikan docs (`14ae23b`)
 - **changelog** — sync entr fix CI test (`928a10e`)
 - **changelog** — sync entr inputHasilPa fallback (`9968452`)
 - **changelog** — sync entr decode tanda lab (`cc74406`)
@@ -2286,4 +2287,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: cd63c4156e0456345cf278710291fe03dcce139f -->
+<!-- changelog-upto: 14ae23bf1f0701240eeb94eb68e8951bd25b6583 -->
