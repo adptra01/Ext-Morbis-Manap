@@ -980,6 +980,7 @@ ${kop("RM. 02")}
     const qrSrc = src ? new DOMParser().parseFromString(src.html, "text/html").querySelector('img[src*="qrserver"], img[src*="qr-code"]')?.getAttribute("src") || "" : "";
     const noSurat = pickOr(["no_surat_kontrol", "no_surat"], /NO\.\s*([0-9A-Z]{10,})/i);
     const dokterTuju = grab(/Kepada Yth\s*([\s\S]*?)(?=Mohon pemeriksaan|No\.?\s*Kartu|$)/i) !== "-" ? grab(/Kepada Yth\s*([\s\S]*?)(?=Mohon pemeriksaan|No\.?\s*Kartu|$)/i) : pick("dokter", "dpjp");
+    const dokterTtd = pick("dokter", "dpjp") !== "-" ? pick("dokter", "dpjp") : dokterTuju;
     const kartu = pickOr(
       ["kartu", "no_kartu", "noka"],
       /No\.?\s*Kartu\s*[:.]?\s*([\s\S]*?)(?=Nama\s*Peserta|$)/i
@@ -1031,7 +1032,8 @@ ${kop("RM. 02")}
  <div class="sep-signatures">
    <div class="sep-sig-box">
      <div>Mengetahui,</div>
-     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR Surat Rencana Kontrol" width="100" height="100" />` : ""}
+     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR tanda tangan DPJP" width="100" height="100" />` : ""}
+     <div class="sep-sig-name">( ${esc(dokterTtd)} )</div>
    </div>
  </div>
  </section>

@@ -152,6 +152,8 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
       "kv('Tanggal entri', esc(tglEntri))",
       'Demikian atas bantuannya, diucapkan banyak terima kasih.',
       'Mengetahui,',
+      'QR tanda tangan DPJP',
+      'esc(dokterTtd)',
     ]) {
       expect(sk).toContain(marker);
     }
