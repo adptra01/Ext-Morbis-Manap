@@ -992,17 +992,17 @@ ${kop("RM. 02")}
     const jkTeks = /perempuan|^p$/i.test(jkRaw) ? "Perempuan" : /laki|^l$/i.test(jkRaw) ? "Laki-laki" : txt.match(/Nama Peserta\s*:\s*[^()]*\((Perempuan|Laki-laki)\)/i)?.[1] || "";
     const namaTampil = jkTeks && !new RegExp(`\\(${jkTeks}\\)`, "i").test(namaPeserta) ? `${namaPeserta} (${jkTeks})` : namaPeserta;
     const lahir = panjangTanggal(
-      pickOr(
-        ["tgl_lahir", "tglLahir"],
-        /Tanggal Lahir\s*[:.]?\s*([\s\S]*?)(?=Diagnosa|$)/i
-      )
+      pickOr(["tgl_lahir", "tglLahir"], /Tanggal Lahir\s*[:.]?\s*([\s\S]*?)(?=Diagnosa|$)/i)
     );
     const diagnosa = pickOr(
       ["diagnosa_awal", "diagnosa"],
       /Diagnosa\s*[:.]?\s*([\s\S]*?)(?=Tanggal entri|$)/i
     );
     const tglEntri = panjangTanggal(
-      pickOr(["tanggalAwal", "tgl_masuk", "tgl"], /Tanggal entri\s*[:.]?\s*([\s\S]*?)(?=Demikian|$)/i)
+      pickOr(
+        ["tanggalAwal", "tgl_masuk", "tgl"],
+        /Tanggal entri\s*[:.]?\s*([\s\S]*?)(?=Demikian|$)/i
+      )
     );
     const kv = (label, value) => `<tr><td class="lbl">${label}</td><td class="sep">:</td><td class="val">${value}</td></tr>`;
     const kalimat = (teks) => `<tr><td class="val" colspan="3" style="padding-top:6px;">${esc(teks)}</td></tr>`;

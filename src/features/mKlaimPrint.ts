@@ -1177,7 +1177,7 @@ function panjangTanggal(raw: string): string {
  *
  * Isi mengikuti cetakan asli: judul, NO. surat, Kepada Yth dokter,
  * "Mohon pemeriksaan dan penangan lebih lanjut :", 5 field pasien,
- * kalimat penutup, Tanggal Cetak, dan "Mengetahui,".
+ * kalimat penutup, dan "Mengetahui,".
  * Field SEP yang TIDAK ada di cetakan ini (COB, Jns.Rawat, Kls.Hak,
  * Penjamin, No.Telepon, disclaimer) sengaja tidak dirender.
  *
