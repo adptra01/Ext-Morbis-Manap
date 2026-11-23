@@ -2137,6 +2137,7 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     );
     const rowsOf = (t) => t ? Array.from(t.rows).map((tr) => Array.from(tr.cells).map(txt)) : [];
     const qrOf = (td) => td?.querySelector('img[src*="qrserver"], img[src*="qr-code"]')?.getAttribute("src") || "";
+    const cleanLegal = (s) => s.replace(/-->\s*/g, "").replace(/\btsb\b/gi, "tersebut").replace(/pembiuasan/gi, "pembiusan").replace(/\bizi Tuhan\b/gi, "izin Tuhan").replace(/\bAm\.?kep\b/gi, "A.Md.Kep").replace(/\s+/g, " ").trim();
     const infoT = tables.find((t) => /PEMBERIAN INFORMASI/i.test(t.rows[0]?.textContent || ""));
     const checkT = tables.find((t) => /JENIS INFORMASI/i.test(t.rows[0]?.textContent || ""));
     const stmtT = tables.find(
@@ -2145,24 +2146,24 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     const consentT = tables.find(
       (t) => /PERSETUJUAN TINDAKAN KEDOKTERAN/i.test(t.rows[0]?.textContent || "")
     );
-    const infoRows = rowsOf(infoT).slice(1).map((r) => [r[0] || "-", (r[1] || r[2] || "-").replace(/^:\s*/, "")]);
-    const checkRows = rowsOf(checkT).slice(1).map((r) => ({
-      no: r[0] || "-",
-      label: r[1] || "-",
-      isi: r[2] || "-",
+    const infoRows = rowsOf(infoT).slice(1).map((r) => [r[0] || "-", cleanLegal((r[1] || r[2] || "-").replace(/^:\s*/, ""))]).filter((r, i, arr) => arr.findIndex((x) => x[0] === r[0]) === i);
+    const checkRows = rowsOf(checkT).slice(1).map((r, i) => ({
+      no: /^\d+$/.test(r[0] || "") ? r[0] : String(i + 1),
+      label: cleanLegal(r[1] || "-"),
+      isi: cleanLegal(r[2] || "-"),
       centang: (r[3] || "").includes("\u2713")
     }));
     const stmtRows = (stmtT ? Array.from(stmtT.rows) : []).map((tr) => ({
-      teks: txt(tr.cells[0]),
-      ttd: tr.cells[1] ? txt(tr.cells[1]) : "",
+      teks: cleanLegal(txt(tr.cells[0])),
+      ttd: cleanLegal(tr.cells[1] ? txt(tr.cells[1]) : ""),
       qr: qrOf(tr.cells[1])
-    }));
+    })).filter((r, i, arr) => arr.findIndex((x) => x.teks === r.teks) === i);
     const consentRows = rowsOf(consentT);
-    const consentIdentity = consentRows[2]?.join(" ") || "-";
-    const consentParagraf = consentRows[3]?.join(" ") || "-";
+    const consentIdentity = cleanLegal(consentRows[2]?.join(" ") || "-");
+    const consentParagraf = cleanLegal(consentRows[3]?.join(" ") || "-");
     const saksiCells = consentT ? Array.from(consentT.rows[4]?.cells || []) : [];
     const saksi = saksiCells.map((td, i) => ({
-      teks: txt(td),
+      teks: cleanLegal(txt(td)),
       qr: i === 2 ? qrOf(td) : ""
     }));
     const nama = pick("nama");
