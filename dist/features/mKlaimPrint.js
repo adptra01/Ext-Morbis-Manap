@@ -2174,8 +2174,7 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
       }
       for (const cell of c) {
         const m = cell.match(/^([^:]{2,40}?)\s*:\s*(.+)$/);
-        if (m && m[2].length <= 120 && !out.has(m[1].trim()))
-          out.set(m[1].trim(), m[2].trim());
+        if (m && m[2].length <= 120 && !out.has(m[1].trim())) out.set(m[1].trim(), m[2].trim());
       }
     }
     return out;
@@ -2395,23 +2394,50 @@ ${kop("RM. 19A")}
       (tr) => Array.from(tr.cells).map((td) => (td.textContent || "").replace(/\s+/g, " ").trim())
     ) : [];
     const cek = (label) => new RegExp(`${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\u2713`, "i").test(teks) ? "&#10003;" : "&nbsp;";
+    const anywhere = (...res) => {
+      for (const sec of sections) {
+        const dd = new DOMParser().parseFromString(sec.html, "text/html");
+        for (const tr of Array.from(dd.querySelectorAll("tr"))) {
+          const c = Array.from(tr.cells).map(
+            (td) => (td.textContent || "").replace(/\s+/g, " ").trim()
+          );
+          for (let i = 0; i < c.length - 1; i++) {
+            const lab = c[i].replace(/^[-:\s]+|[\s:]+$/g, "");
+            if (!res.some((r) => r.test(lab))) continue;
+            const v = c[i + 1] === ":" ? c[i + 2] || "" : c[i + 1].replace(/^:\s*/, "").trim();
+            if (v) return v;
+          }
+        }
+      }
+      return "-";
+    };
     const nama = pick("nama") !== "-" ? pick("nama") : val2(/^Nama Pasien/i);
     const norm = pick("norm", "rekam_medis") !== "-" ? pick("norm", "rekam_medis") : val2(/^No\.? RM/i);
-    const lahir = pick("tgl_lahir", "tglLahir");
-    const umurTeks = pick("umur") !== "-" ? pick("umur") : val2(/^Umur/i);
+    const lahir = pick("tgl_lahir", "tglLahir") !== "-" ? pick("tgl_lahir", "tglLahir") : anywhere(/^Tgl\.? Lahir|^Tanggal Lahir/i);
+    const umurTeks = pick("umur") !== "-" ? pick("umur") : anywhere(/^Umur/i);
     const umur = Number(umurTeks.match(/(\d{1,3})/)?.[1] || 0);
-    const jkRaw = pick("jenis_kelamin", "jk") || val2(/^Jenis Kelamin/i);
+    const jkRaw = pick("jenis_kelamin", "jk") !== "-" ? pick("jenis_kelamin", "jk") : anywhere(/^Jenis Kelamin/i);
     const jk = /perempuan|^p$/i.test(jkRaw) ? "Perempuan (P)" : /laki|^l$/i.test(jkRaw) ? "Laki-laki (L)" : jkRaw;
     const dokterAnestesi = val2(/^Dokter Anestesi/i);
     const dokterOperator = val2(/^Dokter Bedah/i) !== "-" ? val2(/^Dokter Bedah/i) : pick("dokter", "dpjp");
     const penata = val2(/^Penata Anestesi/i);
     const ruang = val2(/^Ruangan/i) !== "-" ? val2(/^Ruangan/i) : pick("jenis", "kelas", "ruang");
-    const tglTindakan = val2(/^Tanggal/i) !== "-" ? val2(/^Tanggal/i) : pick("tanggalAwal", "tgl_masuk", "tgl");
+    const tglTindakan = val2(/^Tanggal/i) !== "-" ? val2(/^Tanggal/i) : pick("tgl", "tanggalAwal", "tgl_masuk");
     const diagnosaPra = val2(/^Diagnosis Prabedah|^Diagnosa Pra/i);
     const diagnosaPasca = val2(/^Diagnosis Pasca Bedah|^Diagnosa Pasca/i);
     const jenisPembedahan = val2(/^Jenis pembedahan/i);
     const jenisOperasi = val2(/^Jenis operasi/i);
     const jamMulai = val2(/^Jam Mulai/i);
+    const tableData = (judul) => {
+      const t = tables.find((tb) => judul.test(tb.rows[0]?.textContent || ""));
+      return t ? rowsOf(t).slice(1).map((r) => r.slice(1).filter(Boolean).join(" ")).filter(Boolean).join(", ") : "-";
+    };
+    const medikasi = tableData(/MEDIKASI/i);
+    const cairanMasuk = tableData(/PEMBERIAN CAIRAN/i);
+    const asupan = teks.match(/kristaloid\s+(\d+)\s*ml/i)?.[1] ?? "-";
+    const ebl = teks.match(/perdarahan\s*\(?EBL\)?\s*(\d+)\s*ml/i)?.[1] ?? "-";
+    const diuresis = teks.match(/diuresis\s*(\d+)\s*ml/i)?.[1] ?? "-";
+    const napas = teks.match(/Respirasi\s*:\s*([^,]+)/i)?.[1]?.trim() ?? "-";
     const prepTable = tables.find((t) => /Informed Consent/i.test(t.textContent || ""));
     const prepItems = rowsOf(prepTable).flat().filter(Boolean).map((x) => ({ label: x.replace(/^[\d\s✓]+/, "").trim(), on: /✓/.test(x) })).filter((x) => x.label && x.label.length < 60);
     const prepHtml = prepItems.length ? prepItems.map(
@@ -2514,11 +2540,11 @@ ${kop("RM. 21")}
 
 <table class="rm-grid-table"><tbody>${head("D. MEDIKASI, CAIRAN &amp; JALAN NAPAS")}
 <tr><td><table class="an-kv">
-  ${kv("Medikasi", esc(val2(/^MEDIKASI|^Obat/i)))}
-  ${kv("Pemberian Cairan", esc(val2(/^PEMBERIAN CAIRAN|^RL /i)))}
-  ${kv("Total Asupan Cairan", esc(val2(/^kristaloid/i)))}
-  ${kv("Total Keluaran Cairan", `Perdarahan ${esc(val2(/^perdarahan/i))} \u2022 Diuresis ${esc(val2(/^diuresis/i))}`)}
-  ${kv("Pengelolaan Napas", esc(val2(/^Respirasi|^Air way/i)))}
+  ${kv("Medikasi", esc(medikasi))}
+  ${kv("Pemberian Cairan", esc(cairanMasuk))}
+  ${kv("Total Asupan Cairan", asupan === "-" ? "-" : `${asupan} ml`)}
+  ${kv("Total Keluaran Cairan", `Perdarahan ${ebl} ml \u2022 Diuresis ${diuresis} ml`)}
+  ${kv("Pengelolaan Napas", esc(napas))}
 </table></td></tr></tbody></table>
 
 <table class="rm-grid-table"><tbody>${head("E. PEMANTAUAN RUANG PULIH SADAR")}
