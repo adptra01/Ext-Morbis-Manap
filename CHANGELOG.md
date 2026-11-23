@@ -18,6 +18,7 @@
 
 ### 🐛 fix
 
+- **mKlaimPrint** — TTD SPRI diposisikan di kanan (`9f9f061`)
 - **mKlaimPrint** — urutan TTD RM.05 — label di atas QR, nama di bawah (`72f40af`)
 - **mKlaimPrint** — fallback QR DPJP Surat Kontrol dari SEP/Resume (`51faf1a`)
 - **mKlaimPrint** — tanda tangan Mengetahui Surat Kontrol = DPJP (`104aa16`)
@@ -47,6 +48,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entri urutan TTD RM.05 (`1dd3258`)
 - bump versi 1.5.271 (urutan TTD RM.05) [skip ci] (`282b9e4`)
 - **changelog** — sync entri fallback QR DPJP (`233a4a3`)
 - bump versi 1.5.270 (fallback QR DPJP) [skip ci] (`79d526b`)
@@ -2330,4 +2332,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 282b9e4dc212d95dc5b4d44bc912b8bc1f0d97c4 -->
+<!-- changelog-upto: 9f9f061827837f9a7b10ddbf76c952109e5e5644 -->
