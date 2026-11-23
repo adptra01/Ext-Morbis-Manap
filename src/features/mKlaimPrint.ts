@@ -3449,13 +3449,12 @@ ${kop('RM. 21')}
 </table></td></tr>
 <tr><td>${chartRr}</td></tr></tbody></table>
 
-<table class="rm-grid-table"><tbody>${head('F. PENILAIAN KELAYAKAN PINDAH RUANGAN')}
+<table class="rm-grid-table"><tbody><tr><th class="rm-sec-head" colspan="2" style="text-align:left;">F. PENILAIAN KELAYAKAN PINDAH RUANGAN</th></tr>
 ${skorHtml}</tbody></table>
 
 <table class="rm-grid-table"><tbody>${head('G. INSTRUKSI PASCA ANESTESI')}
 <tr><td>${instruksiHtml}</td></tr></tbody></table>
 
-<div class="an-tte-note">Jambi, ${esc(tglTindakan)} — Dokumen ditandatangani secara elektronik (TTE):</div>
 <footer class="an-tte">${tteHtml}</footer>
 </section>`;
 }
@@ -4109,7 +4108,7 @@ function buildKonsulSheet(data: KonsulSheetData, id: string): string {
     ['KEPUTUSAN KONSULTASI', data.keputusan],
   ];
   const bar = (judul: string): string =>
-    `<tr><th class="rm-sec-head" style="text-align:left;">${judul}</th></tr>`;
+    `<tr><th class="rm-sec-head" colspan="2" style="text-align:left;">${judul}</th></tr>`;
   const table = (rows: string): string =>
     `<table class="rm-grid-table"><tbody>${rows}</tbody></table>`;
   return `<section class="rm-page" id="${esc(id)}">
@@ -5139,9 +5138,9 @@ ${kop(m.code)}
     #form-anestesi .an-instruksi { margin: 0; padding-left: 18px; line-height: 1.4; font-size: 8.2pt; }
     #form-anestesi .an-tte-note { font-size: 7.6pt; margin-top: 4px; }
     #form-anestesi .an-tte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; break-inside: avoid; page-break-inside: avoid; }
-    #form-anestesi .an-tte .tte-box { border: 1px solid #000000; padding: 5px 4px; text-align: center; font-size: 8pt; }
+    #form-anestesi .an-tte .tte-box { padding: 5px 4px; text-align: center; font-size: 8pt; }
     #form-anestesi .an-tte .tte-qr { width: 54px; height: 54px; margin: 4px auto; border: 1px solid #000000; padding: 2px; display: flex; align-items: center; justify-content: center; }
-    #form-anestesi .an-tte .tte-name { font-weight: bold; text-decoration: underline; }
+    #form-anestesi .an-tte .tte-name { font-weight: bold; }
 </style>
 <header class="verifier-toolbar no-print"><div class="toolbar-row">
 <div class="toolbar-group"><span class="toolbar-label">Formulir RM Klaim BPJS:</span><select id="rmSectionSelect" class="toolbar-select" aria-label="Pilih Formulir RM">${opts}</select></div>
