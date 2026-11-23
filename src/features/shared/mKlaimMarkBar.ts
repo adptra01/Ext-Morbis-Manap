@@ -114,6 +114,17 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
 .ext-pop-item:hover { background:#f1f5f9; }
 `;
 
+const LEGACY_BTN_SEL = MARK_DEFS.map((d) => d.button).join(',');
+
+/**
+ * Baris klaim = baris yang punya minimal satu tombol mark lama.
+ * PENTING: jangan pakai `table tbody tr` mentah — datepicker kalender di form
+ * pencarian juga pakai <table> dan ikut kena "+ Mark" (laporan 2026-11-23).
+ */
+export function hasLegacyMarkButton(row: HTMLTableRowElement): boolean {
+  return !!row.querySelector(LEGACY_BTN_SEL);
+}
+
 /** Signature ringkas untuk state diffing (urutan tetap). */
 export function marksSignature(marks: string[]): string {
   return marks.slice().sort().join('|');
@@ -154,15 +165,16 @@ export function startMarkBar(): void {
   function rowId(row: HTMLTableRowElement): string {
     const known = row.getAttribute('data-ext-mark-row-id');
     if (known) return known;
-    const btn = row.querySelector<HTMLElement>(MARK_DEFS.map((d) => d.button).join(','));
+    const btn = row.querySelector<HTMLElement>(LEGACY_BTN_SEL);
+    if (!btn) return '';
     const attrs = [
-      btn?.getAttribute('data-ext-mk-id'),
-      btn?.getAttribute('data-ext-preop-btn'),
-      btn?.getAttribute('data-ext-telaah-btn'),
-      btn?.getAttribute('data-ext-partial-btn'),
+      btn.getAttribute('data-ext-mk-id'),
+      btn.getAttribute('data-ext-preop-btn'),
+      btn.getAttribute('data-ext-telaah-btn'),
+      btn.getAttribute('data-ext-partial-btn'),
     ];
-    const id = attrs.find((x) => !!x) || `${row.rowIndex}`;
-    row.setAttribute('data-ext-mark-row-id', id);
+    const id = attrs.find((x) => !!x) || '';
+    if (id) row.setAttribute('data-ext-mark-row-id', id);
     return id;
   }
 
@@ -192,13 +204,10 @@ export function startMarkBar(): void {
       frame = 0;
       for (const row of document.querySelectorAll<HTMLTableRowElement>('table tbody tr')) {
         if (row.classList.contains('dataTables_empty')) continue;
-        const marks = readRowMarks(row);
-        if (!marks.length && !row.querySelector('.ext-mark-trigger')) {
-          // Baris tanpa mark apa pun tetap dapat trigger (mark bisa ditambah).
-          const id = rowId(row);
-          if (!id) continue;
-        }
+        if (!hasLegacyMarkButton(row)) continue; // kalender/datepicker & tabel lain
         const id = rowId(row);
+        if (!id) continue; // baris klaim tanpa id_visit tak bisa disinkronkan
+        const marks = readRowMarks(row);
         ensureTrigger(row, id); // idempoten — tahan redraw DataTables
         if (cache.get(id) === marksSignature(marks)) continue;
         cache.set(id, marksSignature(marks));

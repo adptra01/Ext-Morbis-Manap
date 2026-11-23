@@ -2109,12 +2109,48 @@ var __morbis_feature = (() => {
 
   // src/features/shared/mKlaimMarkBar.ts
   var MARK_DEFS = [
-    { key: "labor", label: "Labor", badge: "LABOR", button: 'button.ext-mk-btn[data-ext-mk="labor"]', stateAttr: "data-ext-mk-marked" },
-    { key: "radiologi", label: "Radiologi", badge: "RADIOLOGI", button: 'button.ext-mk-btn[data-ext-mk="radiologi"]', stateAttr: "data-ext-mk-marked" },
-    { key: "batal-berobat", label: "Batal Berobat", badge: "BATAL BEROBAT", button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]', stateAttr: "data-ext-mk-marked" },
-    { key: "pre-op", label: "Pre-op", badge: "PRE-OP", button: "button.ext-preop-btn", stateAttr: "data-ext-preop-marked" },
-    { key: "telaah", label: "Telaah", badge: "TELAAH", button: "button.ext-telaah-btn", stateAttr: "data-ext-telaah-marked" },
-    { key: "partial", label: "Partial", badge: "PARTIAL", button: "button.ext-partial-btn", stateAttr: "data-ext-partial-marked" }
+    {
+      key: "labor",
+      label: "Labor",
+      badge: "LABOR",
+      button: 'button.ext-mk-btn[data-ext-mk="labor"]',
+      stateAttr: "data-ext-mk-marked"
+    },
+    {
+      key: "radiologi",
+      label: "Radiologi",
+      badge: "RADIOLOGI",
+      button: 'button.ext-mk-btn[data-ext-mk="radiologi"]',
+      stateAttr: "data-ext-mk-marked"
+    },
+    {
+      key: "batal-berobat",
+      label: "Batal Berobat",
+      badge: "BATAL BEROBAT",
+      button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]',
+      stateAttr: "data-ext-mk-marked"
+    },
+    {
+      key: "pre-op",
+      label: "Pre-op",
+      badge: "PRE-OP",
+      button: "button.ext-preop-btn",
+      stateAttr: "data-ext-preop-marked"
+    },
+    {
+      key: "telaah",
+      label: "Telaah",
+      badge: "TELAAH",
+      button: "button.ext-telaah-btn",
+      stateAttr: "data-ext-telaah-marked"
+    },
+    {
+      key: "partial",
+      label: "Partial",
+      badge: "PARTIAL",
+      button: "button.ext-partial-btn",
+      stateAttr: "data-ext-partial-marked"
+    }
   ];
   var CSS = `
 @media print { .ext-mark-trigger, .ext-chips-wrap, #ext-shared-popover { display:none !important; } }
@@ -2160,6 +2196,10 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
 }
 .ext-pop-item:hover { background:#f1f5f9; }
 `;
+  var LEGACY_BTN_SEL = MARK_DEFS.map((d) => d.button).join(",");
+  function hasLegacyMarkButton(row) {
+    return !!row.querySelector(LEGACY_BTN_SEL);
+  }
   function marksSignature(marks) {
     return marks.slice().sort().join("|");
   }
@@ -2190,15 +2230,16 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     function rowId(row) {
       const known = row.getAttribute("data-ext-mark-row-id");
       if (known) return known;
-      const btn = row.querySelector(MARK_DEFS.map((d) => d.button).join(","));
+      const btn = row.querySelector(LEGACY_BTN_SEL);
+      if (!btn) return "";
       const attrs = [
-        btn?.getAttribute("data-ext-mk-id"),
-        btn?.getAttribute("data-ext-preop-btn"),
-        btn?.getAttribute("data-ext-telaah-btn"),
-        btn?.getAttribute("data-ext-partial-btn")
+        btn.getAttribute("data-ext-mk-id"),
+        btn.getAttribute("data-ext-preop-btn"),
+        btn.getAttribute("data-ext-telaah-btn"),
+        btn.getAttribute("data-ext-partial-btn")
       ];
-      const id = attrs.find((x) => !!x) || `${row.rowIndex}`;
-      row.setAttribute("data-ext-mark-row-id", id);
+      const id = attrs.find((x) => !!x) || "";
+      if (id) row.setAttribute("data-ext-mark-row-id", id);
       return id;
     }
     function paint(row, marks) {
@@ -2223,12 +2264,10 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
         frame = 0;
         for (const row of document.querySelectorAll("table tbody tr")) {
           if (row.classList.contains("dataTables_empty")) continue;
-          const marks = readRowMarks(row);
-          if (!marks.length && !row.querySelector(".ext-mark-trigger")) {
-            const id2 = rowId(row);
-            if (!id2) continue;
-          }
+          if (!hasLegacyMarkButton(row)) continue;
           const id = rowId(row);
+          if (!id) continue;
+          const marks = readRowMarks(row);
           ensureTrigger(row, id);
           if (cache.get(id) === marksSignature(marks)) continue;
           cache.set(id, marksSignature(marks));

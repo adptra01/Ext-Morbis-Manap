@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   MARK_DEFS,
+  hasLegacyMarkButton,
   marksSignature,
   readRowMarks,
 } from '../../src/features/shared/mKlaimMarkBar.js';
@@ -39,5 +40,21 @@ describe('mKlaimMarkBar — baca mark dari tombol lama', () => {
 
   it('baris tanpa mark menghasilkan array kosong', () => {
     expect(readRowMarks(rowWithMarks({}))).toEqual([]);
+  });
+});
+
+describe('mKlaimMarkBar — scope baris (jangan kena datepicker)', () => {
+  it('baris kalender/datepicker di form pencarian dilewati', () => {
+    const calendarRow = {
+      querySelector: () => null,
+    } as unknown as HTMLTableRowElement;
+    expect(hasLegacyMarkButton(calendarRow)).toBe(false);
+  });
+
+  it('baris klaim dikenali dari tombol mark lama', () => {
+    const claimRow = {
+      querySelector: (sel: string) => (sel.includes('ext-preop-btn') ? {} : null),
+    } as unknown as HTMLTableRowElement;
+    expect(hasLegacyMarkButton(claimRow)).toBe(true);
   });
 });
