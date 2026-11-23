@@ -119,6 +119,47 @@ describe('mKlaimPrint — replikasi Section RM.00', () => {
     expect(src).toContain('return buildSepSection(sections);');
   });
 
+  it('Surat Kontrol: sheet BPJS sama persis dengan SEP (tanpa CSS baru)', () => {
+    const sk = src.slice(
+      src.indexOf('function buildSuratKontrolSection'),
+      src.indexOf('function buildBillingSection'),
+    );
+    for (const marker of [
+      '<section class="rm-page sep-page" id="surat-kontrol">',
+      'class="bpjs-sep-sheet"',
+      'class="sep-header"',
+      'src="${BPJS_LOGO}"',
+      'class="sep-title-wrap"',
+      'SURAT KONTROL',
+      'class="sep-columns"',
+      'class="sep-col-left"',
+      'class="sep-col-right"',
+      'class="sep-kv-table"',
+      'class="sep-no-value"',
+      'class="sep-inline-mr"',
+      'class="sep-multiline-list"',
+      'class="sep-disclaimer"',
+      'class="sep-print-meta"',
+      'class="sep-signatures"',
+      'class="sep-sig-role"',
+      'class="sep-sig-name"',
+      'class="sep-qr"',
+    ]) {
+      expect(sk).toContain(marker);
+    }
+    // Tidak boleh ada stylesheet/@page kedua, kop RM, atau data contoh.
+    expect(sk).not.toContain('<style');
+    expect(sk).not.toContain('@page');
+    expect(sk).not.toContain('SAMPLE_');
+    expect(sk).not.toContain("kop('");
+    // Aturan ':' wajib sama seperti SEP supaya judul sheet tak tertelan.
+    expect(sk).toContain("grabField('(?<!Nama )Peserta'");
+    // Terdaftar di meta, tab/option, dan dispatch.
+    expect(src).toContain('/^Surat Kontrol/i');
+    expect(src).toContain("id: 'surat-kontrol'");
+    expect(src).toContain('return buildSuratKontrolSection(sections);');
+  });
+
   it('RM.03 (SPRI): vital, fisik/catatan, diit & terapi terstruktur', () => {
     const spr = src.slice(
       src.indexOf('function buildSpriSection'),

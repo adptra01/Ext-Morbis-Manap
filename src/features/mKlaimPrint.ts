@@ -481,6 +481,15 @@ const RM_META: Array<[RegExp, { id: string; code: string; tab: string; option: s
     },
   ],
   [
+    /^Surat Kontrol/i,
+    {
+      id: 'surat-kontrol',
+      code: 'SURAT KONTROL',
+      tab: 'Surat Kontrol',
+      option: 'Surat Kontrol — BPJS VClaim',
+    },
+  ],
+  [
     /^SBPK$/i,
     {
       id: 'rm-02',
@@ -1131,6 +1140,154 @@ ${kop('RM. 02')}
     <div class="rm-sig-name">( ${esc(dokter)} )</div>
   </div>
 </div>
+</section>`;
+}
+
+/** SECTION — SURAT KONTROL BPJS.
+ *
+ * Arah visual SAMA PERSIS dengan sheet SEP (RM.01): BPJS VClaim monokrom,
+ * logo kiri / judul + nama RS kanan, dua kolom `label : nilai`, disclaimer
+ * miring, satu blok TTD di kanan. Sengaja tidak menambah font, warna, atau
+ * animasi baru — untuk formulir resmi, konsistensi dengan SEP adalah desain.
+ *
+ * Sumber data: field halaman produksi (pick) lalu hasil scrape section.
+ * Field yang tidak ada jadi '-' — tidak ada data contoh yang di-hardcode.
+ */
+function buildSuratKontrolSection(sections: Section[]): string {
+  const src = sections.find((s) => /^Surat Kontrol/i.test(s.title));
+  const txt = src ? plainText(src.html) : '';
+  const grab = (re: RegExp): string => sepNorm(txt.match(re)?.[1] || '') || '-';
+  /** ':' WAJIB — sama seperti SEP, supaya judul sheet tak ikut tertelan. */
+  const grabField = (label: string, next: string): string =>
+    grab(new RegExp(`${label}\\s*:\\s*([\\s\\S]*?)(?=${next}|$)`, 'i'));
+  const pickOr = (ids: string[], re: RegExp): string => {
+    for (const id of ids) {
+      const v = pick(id);
+      if (v !== '-') return v;
+    }
+    return grab(re);
+  };
+
+  // QR asli dari section (sama seperti SEP) — dipakai apa adanya.
+  const qrSrc = src
+    ? new DOMParser()
+        .parseFromString(src.html, 'text/html')
+        .querySelector('img[src*="qrserver"], img[src*="qr-code"]')
+        ?.getAttribute('src') || ''
+    : '';
+
+  const noSurat = pickOr(
+    ['no_surat_kontrol', 'no_surat'],
+    /No\.?\s*Surat\s*Kontrol\s*[:.]?\s*([0-9A-Z/-]+)/i,
+  );
+  const tglKontrol = pickOr(
+    ['tgl_kontrol', 'tgl_rencana_kontrol'],
+    /Tgl\.?\s*(?:Rencana\s*)?Kontrol\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i,
+  );
+  const noSep = pickOr(['no_sep', 'sep'], /No\.?\s*SEP\s*[:.]?\s*([0-9A-Z]+)/i);
+  const tglSep = grab(/Tgl\.?\s*SEP\s*[:.]?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/i);
+  const kartu = pickOr(
+    ['kartu', 'no_kartu', 'noka'],
+    /No\.?\s*Kartu\s*[:.]?\s*([\s\S]*?)(?=Nama\s*Peserta|$)/i,
+  );
+  const mr = pick('norm', 'rekam_medis');
+  const km = kartu.match(/^(.*?)\s*\(MR\.?\s*([^)]+)\)$/i);
+  const kartuHtml = km
+    ? `${esc(km[1].trim())}<span class="sep-inline-mr">No.MR : ${esc(km[2].trim())}</span>`
+    : `${esc(kartu)}${mr !== '-' ? `<span class="sep-inline-mr">No.MR : ${esc(mr)}</span>` : ''}`;
+  const namaPeserta =
+    pick('nama') !== '-' ? pick('nama') : grabField('Nama\\s*Peserta', 'Tgl\\.?\\s*Lahir');
+  const lahirRaw = pick('tgl_lahir', 'tglLahir').replace(/^:\s*/, '');
+  const lahir = lahirRaw.split(/\s*\/\s*/)[0]?.trim() || grabField('Tgl\\.?\\s*Lahir', 'Kelamin');
+  const kelamin =
+    pick('jenis_kelamin', 'jk') !== '-'
+      ? pick('jenis_kelamin', 'jk')
+      : grabField('Kelamin', 'No\\.?\\s*Telepon');
+  const noHp =
+    pick('no_hp', 'telepon') !== '-'
+      ? pick('no_hp', 'telepon')
+      : grabField('No\\.?\\s*Telepon', 'Sub\\/Spesialis');
+  const subSpesialis = grabField('Sub\\/Spesialis', 'Dokter');
+  const dokter =
+    pick('dokter', 'dpjp') !== '-' ? pick('dokter', 'dpjp') : grabField('Dokter', 'Faskes');
+  const faskes = grabField('Faskes\\s*(?:Tujuan|Perujuk)', 'Diagnosa');
+  const diagnosa = grabField('Diagnosa', 'Catatan|Peserta');
+  const catatan = grabField('Catatan', 'Peserta|COB');
+  const peserta = grabField('(?<!Nama )Peserta', 'COB|Jns\\.?\\s*Rawat');
+  const penjamin = grabField('Penjamin', '\\*Saya|CATATAN');
+  const jnsRawat =
+    pick('jenis') !== '-' ? pick('jenis') : grabField('Jns\\.?\\s*Rawat', 'Jns\\.?\\s*Kunjungan');
+  const kelas = pick('kelas').replace(/^Kelas\s*/i, '');
+  const kelasTeks = kelas !== '-' ? `Kelas ${esc(kelas)}` : '-';
+  const kunjungan = grabField('Jns\\.?\\s*Kunjungan', 'Kls\\.?\\s*Hak');
+  const kunjunganItems = kunjungan
+    .replace(/^-\s*/, '')
+    .split(/\s+-\s+|\n/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+  const kunjunganHtml =
+    kunjunganItems.length > 1
+      ? '<ul class="sep-multiline-list">' +
+        kunjunganItems.map((x) => `<li>${esc(x)}</li>`).join('') +
+        '</ul>'
+      : esc(kunjungan);
+  const cetakan = grab(/Cetakan\s+ke\s*[:.]?\s*(\d+)/i);
+  const printMeta =
+    cetakan !== '-' ? `<div class="sep-print-meta">Cetakan ke ${esc(cetakan)}</div>` : '';
+
+  const kv = (label: string, value: string, cls = '', right = false): string =>
+    `<tr><td class="lbl${right ? ' right' : ''}">${label}</td><td class="sep">:</td><td class="val${cls ? ' ' + cls : ''}">${value}</td></tr>`;
+  const spacer = '<tr><td colspan="3">&nbsp;</td></tr>';
+
+  return `<section class="rm-page sep-page" id="surat-kontrol">
+ <section class="bpjs-sep-sheet">
+ <div class="sep-header">
+   <img class="sep-logo" src="${BPJS_LOGO}" alt="BPJS Kesehatan" width="215" height="33" />
+   <div class="sep-title-wrap">
+     <div class="sep-title">SURAT KONTROL</div>
+     <div class="sep-hospital">${esc(HOSPITAL_NAME.toUpperCase())}</div>
+   </div>
+ </div>
+ <div class="sep-columns">
+   <div class="sep-col-left"><table class="sep-kv-table">
+     ${kv('No. Surat Kontrol', `<span class="sep-no-value">${esc(noSurat)}</span>`)}
+     ${kv('Tgl. Rencana Kontrol', esc(tglKontrol))}
+     ${kv('No. SEP', esc(noSep))}
+     ${kv('Tgl. SEP', esc(tglSep))}
+     ${kv('No.Kartu', kartuHtml)}
+     ${kv('Nama Peserta', `<strong>${esc(namaPeserta)}</strong>`)}
+     ${kv('Tgl.Lahir', `${esc(lahir)} &nbsp;&nbsp; Kelamin : ${esc(kelamin)}`)}
+     ${kv('No.Telepon', esc(noHp))}
+     ${kv('Sub/Spesialis', esc(subSpesialis))}
+     ${kv('Dokter DPJP', esc(dokter))}
+     ${kv('Faskes Tujuan', esc(faskes !== '-' ? faskes : `${HOSPITAL_NAME} - Kota Jambi`))}
+     ${kv('Diagnosa', esc(diagnosa))}
+     ${kv('Catatan', esc(catatan))}
+   </table></div>
+   <div class="sep-col-right"><table class="sep-kv-table">
+     ${spacer}${spacer}
+     ${kv('Peserta', esc(peserta), '', true)}
+     ${kv('COB', '-', '', true)}
+     ${kv('Jns.Rawat', `<strong>${esc(jnsRawat)}</strong>`, '', true)}
+     ${kv('Jns.Kunjungan', kunjunganHtml, '', true)}
+     ${kv('Kls.Hak', `<strong>${kelasTeks}</strong>`, '', true)}
+     ${kv('Kls.Rawat', `<strong>${kelasTeks}</strong>`, '', true)}
+     ${kv('Penjamin', esc(penjamin), '', true)}
+   </table></div>
+ </div>
+ <div class="sep-disclaimer">
+   *Saya Menyetujui BPJS Kesehatan menggunakan informasi Medis Pasien jika diperlukan.<br/>
+   *Surat Kontrol bukan sebagai bukti penjamin peserta
+ </div>
+ ${printMeta}
+ <div class="sep-signatures">
+   <div class="sep-sig-box">
+     <div class="sep-sig-role">Pasien/<br/>Keluarga Pasien</div>
+     ${qrSrc ? `<img class="sep-qr" src="${esc(qrSrc)}" alt="QR Surat Kontrol" width="100" height="100" />` : ''}
+     <div class="sep-sig-name">(${esc(namaPeserta)})</div>
+   </div>
+ </div>
+ </section>
 </section>`;
 }
 
@@ -3696,6 +3853,7 @@ ${checksHtml}
     .map((s, i) => {
       const m = metas[i];
       if (/^SEP$/i.test(s.title)) return buildSepSection(sections);
+      if (/^Surat Kontrol/i.test(s.title)) return buildSuratKontrolSection(sections);
       if (/^SPRI$/i.test(s.title)) return buildSpriSection(sections);
       if (/^SBPK$/i.test(s.title)) return buildSbpkSection(sections);
       if (/^Rincian Biaya/i.test(s.title)) return buildBillingSection(sections);
