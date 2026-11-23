@@ -363,7 +363,7 @@ async function loadAll() {
 			urls: result.urls ?? []
 		};
 	} catch {}
-	const c = await chrome.storage.sync.get(["extensionConfig", "extensionCustomUrls"]);
+	const c = await chrome.storage.local.get(["extensionConfig", "extensionCustomUrls"]);
 	return {
 		config: c.extensionConfig ?? {
 			extensionEnabled: true,
@@ -427,7 +427,7 @@ function App() {
 		showToast("Role berhasil diubah");
 	}, [config, showToast]);
 	const handleFeatureToggle = (0, import_react.useCallback)((key, value) => {
-		if (!config?.features[key]) return;
+		if (!config) return;
 		setConfig({
 			...config,
 			features: {

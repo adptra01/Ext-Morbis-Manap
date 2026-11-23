@@ -1705,7 +1705,7 @@ function App() {
 			}
 			if (result?.urls) setUrls(result.urls);
 		}).catch(() => {
-			chrome.storage.sync.get(["extensionConfig", "extensionCustomUrls"], (fallback) => {
+			chrome.storage.local.get(["extensionConfig", "extensionCustomUrls"], (fallback) => {
 				if (fallback.extensionConfig) {
 					setEnabled(fallback.extensionConfig.extensionEnabled);
 					setRole(fallback.extensionConfig.currentRole);
@@ -1718,7 +1718,7 @@ function App() {
 	}, []);
 	(0, import_react.useEffect)(() => {
 		const handleStorageChange = (changes, areaName) => {
-			if (areaName !== "sync") return;
+			if (areaName !== "local") return;
 			if (changes.extensionConfig) {
 				const cfg = changes.extensionConfig.newValue;
 				if (cfg) {

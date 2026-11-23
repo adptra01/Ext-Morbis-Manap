@@ -180,6 +180,18 @@ export function startMarkBar(enabledKeys: ReadonlySet<string>): void {
   started = true;
   injectCSS('ext-mark-bar-styles', CSS);
 
+  // Jaring pengaman: core.ts sudah reload saat config berubah. Kalau pesannya
+  // tak sampai ke tab ini, toggle OFF tetap segera berlaku di sini.
+  try {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes.extensionConfig) {
+        window.setTimeout(() => window.location.reload(), 300);
+      }
+    });
+  } catch {
+    /* MAIN world tanpa chrome — gate tetap jalan saat load */
+  }
+
   const popover = document.createElement('div');
   popover.id = 'ext-shared-popover';
   popover.innerHTML = defs

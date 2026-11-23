@@ -16,7 +16,9 @@ async function loadAll(): Promise<{ config: ExtensionConfig | null; urls: Custom
       return { config: result.config, urls: result.urls ?? [] };
     }
   } catch {}
-  const c = (await chrome.storage.sync.get(['extensionConfig', 'extensionCustomUrls'])) as {
+  // Config pindah ke storage.local (sync 8KB limit). Membaca sync di sini
+  // bikin toggle jadi no-op / tampilan basi saat GET_ALL gagal.
+  const c = (await chrome.storage.local.get(['extensionConfig', 'extensionCustomUrls'])) as {
     extensionConfig?: ExtensionConfig;
     extensionCustomUrls?: CustomUrl[];
   };
@@ -79,7 +81,9 @@ export function App() {
 
   const handleFeatureToggle = useCallback(
     (key: string, value: boolean) => {
-      if (!config?.features[key]) return;
+      // Jangan kembali diam-diam kalau key belum ada di state lokal —
+      // background yang memvalidasi & menulis config.
+      if (!config) return;
       setConfig({
         ...config,
         features: {

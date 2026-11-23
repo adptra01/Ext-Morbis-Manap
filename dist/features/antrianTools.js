@@ -3,6 +3,7 @@ var __morbis_feature = (() => {
   // src/features/shared/featureGate.ts
   var STORAGE_KEY = "extensionConfig";
   function decideFeatureGate(key, config, role) {
+    if (config?.extensionEnabled === false) return false;
     const entry = config?.features?.[key];
     if (!entry) return true;
     if (entry.enabled === false) return false;
@@ -13,6 +14,11 @@ var __morbis_feature = (() => {
     return allowed.includes(r);
   }
   async function isFeatureEnabled(key) {
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
+      if (resp?.config) return decideFeatureGate(key, resp.config);
+    } catch {
+    }
     try {
       const store = await chrome.storage.local.get(STORAGE_KEY);
       const cfg = store?.[STORAGE_KEY] ?? null;

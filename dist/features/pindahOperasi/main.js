@@ -213,6 +213,7 @@ var __morbis_feature = (() => {
 
   // src/features/shared/featureGate.ts
   function decideFeatureGate(key, config, role) {
+    if (config?.extensionEnabled === false) return false;
     const entry = config?.features?.[key];
     if (!entry) return true;
     if (entry.enabled === false) return false;

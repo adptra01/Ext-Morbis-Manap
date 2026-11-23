@@ -29,6 +29,7 @@ export interface FeatureGateEntry {
 }
 
 export interface FeatureGateConfig {
+  extensionEnabled?: boolean;
   currentRole?: string;
   features?: Record<string, FeatureGateEntry>;
 }
@@ -36,6 +37,7 @@ export interface FeatureGateConfig {
 /**
  * Keputusan murni: bolehkah fitur `key` jalan? (unit-testable, tanpa I/O)
  *
+ * - extensionEnabled === false → false (sakelar GLOBAL mati → semua fitur OFF)
  * - entry hilang → true (kompatibel mundur: fitur lama selalu jalan)
  * - enabled === false → false (user mematikan)
  * - role admin → true (admin melihat semua, konsisten dgn init.ts/popup)
@@ -47,6 +49,10 @@ export function decideFeatureGate(
   config: FeatureGateConfig | null | undefined,
   role?: string,
 ): boolean {
+  // Sakelar global menang atas semua fitur — ini yang dipakai popup/sidepanel
+  // saat "Extension dinonaktifkan". Sebelumnya hanya init.ts yang cek ini,
+  // sehingga 13+ fitur ber-`whenFeatureEnabled` (termasuk mark) tetap jalan.
+  if (config?.extensionEnabled === false) return false;
   const entry = config?.features?.[key];
   if (!entry) return true;
   if (entry.enabled === false) return false;
@@ -57,8 +63,14 @@ export function decideFeatureGate(
   return allowed.includes(r);
 }
 
-/** Baca config dari chrome.storage.sync (gagal baca = anggap ON). */
+/** Baca config dari background (sudah termigrasi), fallback storage.local. */
 export async function isFeatureEnabled(key: string): Promise<boolean> {
+  try {
+    const resp = await chrome.runtime.sendMessage({ type: 'GET_CONFIG' });
+    if (resp?.config) return decideFeatureGate(key, resp.config as FeatureGateConfig);
+  } catch {
+    /* background tidur / MAIN world tanpa chrome — fallback di bawah */
+  }
   try {
     const store = await chrome.storage.local.get(STORAGE_KEY);
     const cfg = (store?.[STORAGE_KEY] ?? null) as FeatureGateConfig | null;

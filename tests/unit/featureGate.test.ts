@@ -19,6 +19,16 @@ describe('featureGate — decideFeatureGate', () => {
     expect(decideFeatureGate('f', c)).toBe(false);
   });
 
+  it('sakelar GLOBAL OFF = semua fitur OFF (termasuk mark & admin)', () => {
+    const c = {
+      ...cfg({ f: { enabled: true, allowedRoles: ['admin'] } }, 'admin'),
+      extensionEnabled: false,
+    };
+    expect(decideFeatureGate('f', c)).toBe(false);
+    expect(decideFeatureGate('laborMarker', c)).toBe(false);
+    expect(decideFeatureGate('f', { ...c, extensionEnabled: true })).toBe(true);
+  });
+
   it('enabled true + role diizinkan = ON', () => {
     const c = cfg({ f: { enabled: true, allowedRoles: ['casemix', 'admin'] } });
     expect(decideFeatureGate('f', c)).toBe(true);

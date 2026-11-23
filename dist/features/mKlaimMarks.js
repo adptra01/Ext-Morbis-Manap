@@ -311,6 +311,7 @@ var __morbis_feature = (() => {
   // src/features/shared/featureGate.ts
   var STORAGE_KEY = "extensionConfig";
   function decideFeatureGate(key2, config, role) {
+    if (config?.extensionEnabled === false) return false;
     const entry = config?.features?.[key2];
     if (!entry) return true;
     if (entry.enabled === false) return false;
@@ -321,6 +322,11 @@ var __morbis_feature = (() => {
     return allowed.includes(r);
   }
   async function isFeatureEnabled(key2) {
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
+      if (resp?.config) return decideFeatureGate(key2, resp.config);
+    } catch {
+    }
     try {
       const store2 = await chrome.storage.local.get(STORAGE_KEY);
       const cfg = store2?.[STORAGE_KEY] ?? null;
@@ -2241,6 +2247,14 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     if (!defs.length) return;
     started = true;
     injectCSS("ext-mark-bar-styles", CSS);
+    try {
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === "local" && changes.extensionConfig) {
+          window.setTimeout(() => window.location.reload(), 300);
+        }
+      });
+    } catch {
+    }
     const popover = document.createElement("div");
     popover.id = "ext-shared-popover";
     popover.innerHTML = defs.map(
@@ -3503,9 +3517,7 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
   void Promise.all(MARK_DEFS.map((d) => isFeatureEnabled(d.configKey))).then((enabled) => {
     const path = window.location?.pathname ?? "";
     if (!enabled.some(Boolean) || !path.startsWith("/v2/m-klaim") || path.includes("/detail")) return;
-    const active = new Set(
-      MARK_DEFS.filter((_, i) => enabled[i]).map((d) => d.configKey)
-    );
+    const active = new Set(MARK_DEFS.filter((_, i) => enabled[i]).map((d) => d.configKey));
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => startMarkBar(active));
     } else {

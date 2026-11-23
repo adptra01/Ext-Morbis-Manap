@@ -324,8 +324,8 @@ export function App() {
         }
       })
       .catch(() => {
-        // Fallback: load from local storage if background is unavailable
-        chrome.storage.sync.get(['extensionConfig', 'extensionCustomUrls'], (fallback) => {
+        // Fallback: config ada di storage.local (bukan sync).
+        chrome.storage.local.get(['extensionConfig', 'extensionCustomUrls'], (fallback) => {
           if (fallback.extensionConfig) {
             setEnabled(fallback.extensionConfig.extensionEnabled);
             setRole(fallback.extensionConfig.currentRole);
@@ -348,7 +348,7 @@ export function App() {
       changes: { [key: string]: chrome.storage.StorageChange },
       areaName: string,
     ) => {
-      if (areaName !== 'sync') return;
+      if (areaName !== 'local') return; // config migrasi ke storage.local
       if (changes.extensionConfig) {
         const cfg = changes.extensionConfig.newValue;
         if (cfg) {
