@@ -17,10 +17,12 @@
 
 ### 🐛 fix
 
+- **paLabPrint** — decode entity &lt;/&gt; pada teks medis hasil scrape (`b10a7d7`)
 - **mKlaimPrint** — RM.19A bersihkan artefak SIMRS & ejaan mediko-legal (`3cce138`)
 
 ### 🧹 chore
 
+- **changelog** — sync entr ruang TTD RM.19A (`e6ad15f`)
 - **changelog** — sync entr RM.19A terstruktur (`b8a5713`)
 - **changelog** — sync entr cleanup RM.19A (`48e18a5`)
 - **changelog** — sync entr redesign persetujuan tindakan (`8d802de`)
@@ -2275,4 +2277,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e01a7e11bc7e19ff615463dd533e2496dcbba1c3 -->
+<!-- changelog-upto: b10a7d72b550e1b95948baadd5f940b70ea20535 -->
