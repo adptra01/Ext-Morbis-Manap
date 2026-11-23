@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **mKlaimPrint** — RM.19A ruang tanda tangan kosong saat QR tidak ada (`e01a7e1`)
 - **mKlaimPrint** — RM.19A hapus timestamp, TTD label-barcode-nama, paragraf & saksi terstruktur (`9202860`)
 - **mKlaimPrint** — redesign RM.19A dari 4 tabel asli (info, checklist, pernyataan, saksi) (`d9d06d2`)
 
@@ -20,6 +21,7 @@
 
 ### 🧹 chore
 
+- **changelog** — sync entr RM.19A terstruktur (`b8a5713`)
 - **changelog** — sync entr cleanup RM.19A (`48e18a5`)
 - **changelog** — sync entr redesign persetujuan tindakan (`8d802de`)
 
@@ -2273,4 +2275,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9202860cb81a75c671ebb5b931cd7b4af9b13a36 -->
+<!-- changelog-upto: e01a7e11bc7e19ff615463dd533e2496dcbba1c3 -->
