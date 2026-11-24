@@ -1,6 +1,15 @@
 import { confirmLegacy } from '../shared/batchUtils.js';
 import { decideFeatureGate, type FeatureGateConfig } from '../shared/featureGate.js';
 
+/** Endpoint simpan beda per halaman: edit-operasi (pengajuan) vs detail
+ *  endoskopi/cathlab (control masing-masing). */
+export function saveEndpointFor(pathname: string): string {
+  const p = pathname.toLowerCase();
+  if (/\/endoskopi\/detail_operasi/.test(p)) return '/admisi/pelaksanaan-operasi/endoskopi/control';
+  if (/\/cathlab\/detail_operasi/.test(p)) return '/admisi/pelaksanaan-operasi/cathlab/control';
+  return '/admisi/pelaksanaan_pelayanan/control/pengajuan-operasi?opsi=simpan';
+}
+
 function pindahOperasi(): void {
   const form = document.querySelector<HTMLFormElement>('#form-data');
   if (!form) {
@@ -34,7 +43,7 @@ function pindahOperasi(): void {
     btn.value = 'Memproses...';
   }
 
-  fetch('/admisi/pelaksanaan_pelayanan/control/pengajuan-operasi?opsi=simpan', {
+  fetch(saveEndpointFor(location.pathname), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
