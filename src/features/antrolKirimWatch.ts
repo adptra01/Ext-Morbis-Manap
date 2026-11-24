@@ -473,7 +473,7 @@ whenFeatureEnabled(ANTRL_FEATURE_KEY, () => {
 
 // Toggle popup/sidepanel berpengaruh LANGSUNG tanpa reload halaman.
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== 'sync') return;
+  if (areaName !== 'local') return;
   if (!changes.extensionConfig) return;
   void decideAndRun();
 });

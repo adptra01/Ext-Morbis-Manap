@@ -36749,7 +36749,8 @@ var __morbis_feature = (() => {
       if (btn.disabled) return;
       btn.disabled = true;
       try {
-        if (!cachedFormState || !cachedFormState.id_visit) {
+        const idSekarang = new URLSearchParams(location.search).get("id_visit");
+        if (!cachedFormState || !cachedFormState.id_visit || idSekarang && String(cachedFormState.id_visit) !== idSekarang) {
           const fresh = await fetchFormState();
           if (fresh && fresh.id_visit) {
             cachedFormState = fresh;

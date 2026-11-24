@@ -2831,7 +2831,10 @@ const sectionQrs = (sections: Section[], titleRe: RegExp): string[] => {
 const doctorFromQr = (url: string): string => {
   if (!url) return '-';
   try {
-    const decoded = decodeURIComponent(url.replace(/\+/g, ' '));
+    // Buang suffix query (&size=, &choe=) SEBELUM decode agar nama dengan
+    // '%26' tidak terpotong di '&' buatan parameter QR.
+    const withoutQuery = url.split(/[?&](?:size|choe|cht|chl)=/i)[0] ?? url;
+    const decoded = decodeURIComponent(withoutQuery.replace(/\+/g, ' '));
     // "…di approve<NAMA> tgl … jam…" — nama bisa placeholder
     // "DOKTER TIDAK DI TEMUKAN", jadi jangan cuma cari "dr.".
     const m =

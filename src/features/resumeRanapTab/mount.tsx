@@ -197,8 +197,15 @@ async function fetchFormData(): Promise<RanapFormData | null> {
     const html = await fetchText(url);
     if (html !== null) {
       const d = parseFormHtml(html);
-      // Validasi: form RI minimal punya id_visit atau norm atau noreg
-      if (d.id_visit || d.id_resume_inap || d.norm || d.noreg) {
+      // Form fallback HARUS miliki id_visit yang diminta — kalau tidak,
+      // ini form pasien lain dan simpan berikutnya menimpa data salah.
+      if (d.id_visit && d.id_visit === idVisit) {
+        data = d;
+        break;
+      }
+      // Form lama tanpa id_visit: terima hanya bila ada id_resume_inap
+      // (endpoint kadang mengembalikan form tanpa hidden id_visit).
+      if (!d.id_visit && d.id_resume_inap && (d.norm || d.noreg)) {
         data = d;
         break;
       }
@@ -717,7 +724,15 @@ async function init() {
     if (overlayBtn!.disabled) return;
     overlayBtn!.disabled = true;
     try {
-      if (!cachedData) cachedData = await fetchFormData();
+      // Cache HARUS sesuai id_visit — SPA navigation ke pasien lain
+      // tidak reload halaman, kalau tidak akan memakai data pasien sebelumnya.
+      const idSekarang = new URLSearchParams(location.search).get('id_visit');
+      if (
+        !cachedData ||
+        (idSekarang && cachedData.id_visit && cachedData.id_visit !== idSekarang)
+      ) {
+        cachedData = await fetchFormData();
+      }
       if (!cachedData) {
         void confirmExt({
           title: 'Data belum termuat',

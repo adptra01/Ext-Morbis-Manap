@@ -31,16 +31,64 @@ function store(): Store | null {
   }
 }
 
-const _unmarks: Record<string, Record<string, number>> = {};
+// Tombstone unmark HARUS persist: kalau cuma di-memory, reload/30 detik
+// membuat central mark (masih true) menang lagi → mark "hidup" sendiri.
+const UNMARK_KEY = (mark: string): string => 'morbis_mark_' + mark + '_unmarks';
+const memoryUnmarks: Record<string, Record<string, number>> = {};
+
+function unmarkStore(): Pick<Storage, 'getItem' | 'setItem'> | null {
+  try {
+    return typeof window !== 'undefined' ? window.localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
+function loadUnmarks(mark: string): Record<string, number> {
+  const ls = unmarkStore();
+  let obj: Record<string, number> = {};
+  if (ls) {
+    try {
+      const raw = ls.getItem(UNMARK_KEY(mark));
+      if (raw) obj = JSON.parse(raw) as Record<string, number>;
+    } catch {
+      /* abaikan */
+    }
+  } else {
+    obj = memoryUnmarks[mark] ?? {};
+  }
+  const out: Record<string, number> = {};
+  for (const [id, at] of Object.entries(obj)) {
+    if (typeof at === 'number' && Date.now() - at < TOMBSTONE_MS) out[id] = at;
+  }
+  return out;
+}
+
+function saveUnmarks(mark: string, all: Record<string, number>): void {
+  const ls = unmarkStore();
+  if (ls) {
+    try {
+      ls.setItem(UNMARK_KEY(mark), JSON.stringify(all));
+    } catch {
+      /* kuota */
+    }
+  } else {
+    memoryUnmarks[mark] = all;
+  }
+}
 
 export function markUnmarked(mark: string, idVisit: string): void {
-  (_unmarks[mark] ??= {})[idVisit] = Date.now();
+  const all = loadUnmarks(mark);
+  all[idVisit] = Date.now();
+  saveUnmarks(mark, all);
 }
 export function clearUnmark(mark: string, idVisit: string): void {
-  delete _unmarks[mark]?.[idVisit];
+  const all = loadUnmarks(mark);
+  delete all[idVisit];
+  saveUnmarks(mark, all);
 }
 export function readUnmarks(mark: string): Record<string, number> {
-  return { ...(_unmarks[mark] ?? {}) };
+  return loadUnmarks(mark);
 }
 
 /** Penentu status mark: lokal menang, tombstone unmark menutup pusat basi. */
@@ -52,7 +100,7 @@ export function resolveMark(
   now = Date.now(),
 ): boolean {
   if (localHas) return true;
-  const at = _unmarks[mark]?.[idVisit];
+  const at = readUnmarks(mark)[idVisit];
   if (at !== undefined && now - at < TOMBSTONE_MS) return false;
   if (centralHas === null) return false;
   return centralHas;

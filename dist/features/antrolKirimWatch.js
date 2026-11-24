@@ -37,12 +37,27 @@ var __morbis_feature = (() => {
   };
   function sendMessage(message) {
     return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer2 = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          reject(new Error("Chrome message timeout"));
+        }
+      }, 15e3);
       chrome.runtime.sendMessage(message, (response) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer2);
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
-        } else {
-          resolve(response);
+          return;
         }
+        const r = response;
+        if (r?.success === false || r?.error) {
+          reject(new Error(r.error || "Permintaan ditolak background"));
+          return;
+        }
+        resolve(r);
       });
     });
   }
@@ -677,7 +692,7 @@ var __morbis_feature = (() => {
     void decideAndRun();
   });
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== "sync") return;
+    if (areaName !== "local") return;
     if (!changes.extensionConfig) return;
     void decideAndRun();
   });

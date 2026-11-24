@@ -2358,6 +2358,13 @@ ${xrefOffset}
             action: "BATCH_UPLOAD_ANALYZE_RESULT",
             data: { items: batchQueue }
           }).catch(console.error);
+          chrome.runtime.onMessage.addListener((msg, _sender2, sendResponse2) => {
+            if (msg?.type !== "PAGE_CONTEXT_REQUEST") return;
+            sendResponse2({
+              feature: "mKlaimDetail",
+              data: { idVisit: new URLSearchParams(window.location.search).get("id_visit") }
+            });
+          });
         } else if (action === "BATCH_UPLOAD_CRAWL") {
           crawlDokumenPasienToSidepanel();
         } else if (action === "BATCH_UPLOAD_UPDATE_ITEMS") {

@@ -30063,7 +30063,11 @@ var __morbis_feature = (() => {
       const html = await fetchText(url);
       if (html !== null) {
         const d = parseFormHtml(html);
-        if (d.id_visit || d.id_resume_inap || d.norm || d.noreg) {
+        if (d.id_visit && d.id_visit === idVisit) {
+          data = d;
+          break;
+        }
+        if (!d.id_visit && d.id_resume_inap && (d.norm || d.noreg)) {
           data = d;
           break;
         }
@@ -36434,7 +36438,10 @@ var __morbis_feature = (() => {
       if (overlayBtn.disabled) return;
       overlayBtn.disabled = true;
       try {
-        if (!cachedData) cachedData = await fetchFormData();
+        const idSekarang = new URLSearchParams(location.search).get("id_visit");
+        if (!cachedData || idSekarang && cachedData.id_visit && cachedData.id_visit !== idSekarang) {
+          cachedData = await fetchFormData();
+        }
         if (!cachedData) {
           void confirmExt({
             title: "Data belum termuat",

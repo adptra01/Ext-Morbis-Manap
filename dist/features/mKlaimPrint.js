@@ -2304,7 +2304,8 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
   var doctorFromQr = (url) => {
     if (!url) return "-";
     try {
-      const decoded = decodeURIComponent(url.replace(/\+/g, " "));
+      const withoutQuery = url.split(/[?&](?:size|choe|cht|chl)=/i)[0] ?? url;
+      const decoded = decodeURIComponent(withoutQuery.replace(/\+/g, " "));
       const m = decoded.match(/oleh\s*:\s*([^&]+)/i)?.[1] || decoded.match(/approve\s*([\s\S]*?)\s+tgl\b/i)?.[1] || decoded.match(/(dr\.[^&]+)/i)?.[1] || "";
       return m.split(/\s+(?:tgl|jam)\b/i)[0].replace(/\s+/g, " ").trim() || "-";
     } catch {

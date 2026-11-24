@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from './shared/featureGate.js';
 import { getMorbisGlobals } from './shared/types.js';
 import { colors, injectCSS } from '../shared/ui/index.js';
 import { readPetugas } from './shared/resumeHistory.js';
@@ -611,7 +612,9 @@ function autoInitRevisionPanel(): void {
     const start = () => {
       const bar = document.querySelector<HTMLElement>('[data-toolbar]');
       initBpjsRevisionHistory(bar);
-      initCasemixBackfill(); // sapu log lokal (resume) juga dari halaman detail
+      void isFeatureEnabled('mKlaimMarks').then((on) => {
+        if (on) initCasemixBackfill();
+      }); // sapu log lokal (resume) juga dari halaman detail
       // Bila panel belum ada (render parsial), coba lagi 2 dtk — maks 15x (±30 dtk).
       if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2000);
     };

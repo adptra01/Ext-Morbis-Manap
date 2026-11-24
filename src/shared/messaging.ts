@@ -89,24 +89,24 @@ type ResponseMap = {
   GET_ALL: { config: ExtensionConfig; urls: CustomUrl[]; defaultConfig: ExtensionConfig };
   GET_CONFIG: { config: ExtensionConfig };
   GET_URLS: { urls: CustomUrl[] };
-  SET_ROLE: { success: true };
-  TOGGLE_EXTENSION: { success: true };
-  TOGGLE_FEATURE: { success: true };
-  CHANGE_FEATURE_MODE: { success: true };
-  RESET_CONFIG: { success: true };
-  ADD_URL: { success: true };
-  DELETE_URL: { success: true };
-  TOGGLE_URL: { success: true };
-  OPEN_SIDE_PANEL: { success: true };
+  SET_ROLE: { success: boolean };
+  TOGGLE_EXTENSION: { success: boolean };
+  TOGGLE_FEATURE: { success: boolean };
+  CHANGE_FEATURE_MODE: { success: boolean };
+  RESET_CONFIG: { success: boolean };
+  ADD_URL: { success: boolean };
+  DELETE_URL: { success: boolean };
+  TOGGLE_URL: { success: boolean };
+  OPEN_SIDE_PANEL: { success: boolean };
   OPEN_PRINT_DOSSIER: { success: boolean };
-  CONFIG_CHANGED: { success: true };
+  CONFIG_CHANGED: { success: boolean };
 
-  PAGE_CONTEXT: { success: true };
+  PAGE_CONTEXT: { success: boolean };
   GET_PAGE_CONTEXT: { context: { feature: string; data: Record<string, unknown> } | null };
-  TAB_ACTION: { success: true };
-  TAB_ACTION_RESULT: { success: true };
-  BATCH_UPLOAD_ACTION: { success: true };
-  BATCH_DELETE_ACTION: { success: true };
+  TAB_ACTION: { success: boolean };
+  TAB_ACTION_RESULT: { success: boolean };
+  BATCH_UPLOAD_ACTION: { success: boolean };
+  BATCH_DELETE_ACTION: { success: boolean };
   PROXY_FETCH: { success: boolean; html?: string; error?: string };
   QUEUE_API: { ok: boolean; status?: number; contentType?: string; data?: unknown; error?: string };
   TTS_LOCAL: { ok: boolean; mime?: string; data?: string; reason?: string };
@@ -116,12 +116,28 @@ export function sendMessage<T extends MessageType>(
   message: RequestMap[T],
 ): Promise<ResponseMap[T]> {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    // Handler yang lupa sendResponse tidak boleh menggantung promise selamanya.
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        reject(new Error('Chrome message timeout'));
+      }
+    }, 15000);
     chrome.runtime.sendMessage(message, (response) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
-      } else {
-        resolve(response as ResponseMap[T]);
+        return;
       }
+      const r = response as (ResponseMap[T] & { success?: boolean; error?: string }) | undefined;
+      if (r?.success === false || r?.error) {
+        reject(new Error(r.error || 'Permintaan ditolak background'));
+        return;
+      }
+      resolve(r as ResponseMap[T]);
     });
   });
 }

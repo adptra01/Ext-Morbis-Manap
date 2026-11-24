@@ -2397,16 +2397,60 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
       return null;
     }
   }
-  var _unmarks = {};
+  var UNMARK_KEY = (mark) => "morbis_mark_" + mark + "_unmarks";
+  var memoryUnmarks = {};
+  function unmarkStore() {
+    try {
+      return typeof window !== "undefined" ? window.localStorage : null;
+    } catch {
+      return null;
+    }
+  }
+  function loadUnmarks(mark) {
+    const ls = unmarkStore();
+    let obj = {};
+    if (ls) {
+      try {
+        const raw = ls.getItem(UNMARK_KEY(mark));
+        if (raw) obj = JSON.parse(raw);
+      } catch {
+      }
+    } else {
+      obj = memoryUnmarks[mark] ?? {};
+    }
+    const out = {};
+    for (const [id, at] of Object.entries(obj)) {
+      if (typeof at === "number" && Date.now() - at < TOMBSTONE_MS) out[id] = at;
+    }
+    return out;
+  }
+  function saveUnmarks(mark, all) {
+    const ls = unmarkStore();
+    if (ls) {
+      try {
+        ls.setItem(UNMARK_KEY(mark), JSON.stringify(all));
+      } catch {
+      }
+    } else {
+      memoryUnmarks[mark] = all;
+    }
+  }
   function markUnmarked(mark, idVisit) {
-    (_unmarks[mark] ?? (_unmarks[mark] = {}))[idVisit] = Date.now();
+    const all = loadUnmarks(mark);
+    all[idVisit] = Date.now();
+    saveUnmarks(mark, all);
   }
   function clearUnmark(mark, idVisit) {
-    delete _unmarks[mark]?.[idVisit];
+    const all = loadUnmarks(mark);
+    delete all[idVisit];
+    saveUnmarks(mark, all);
+  }
+  function readUnmarks(mark) {
+    return loadUnmarks(mark);
   }
   function resolveMark(mark, idVisit, localHas, centralHas, now = Date.now()) {
     if (localHas) return true;
-    const at = _unmarks[mark]?.[idVisit];
+    const at = readUnmarks(mark)[idVisit];
     if (at !== void 0 && now - at < TOMBSTONE_MS) return false;
     if (centralHas === null) return false;
     return centralHas;

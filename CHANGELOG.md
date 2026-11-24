@@ -17,6 +17,8 @@
 
 ### 🐛 fix
 
+- deep review — migrate fold, QR mapping, tab context, URL id, toast timer (`5f74af9`)
+- robust — QR decode guard, pindah onclick listener, mark migrasi, toggle rollback, context tab filter (`7fc4c8d`)
 - **resumeRanapTab** — deteksi id_resume_inap dari form fallback (hilangkan warning palsu) (`d587bc7`)
 - **mKlaimPrint** — rapikan jarak antar baris cetak — nl2br spacer + line-height 1.2 (`6efdfb8`)
 - **pindahOperasi** — rollback status Selesai ke Belum Dilaksanakan di endoskopi & cathlab (`0abfd8f`)
@@ -2372,4 +2374,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: e16bd10a0cd67c3bb0d6bb913d763d65d9b72bb4 -->
+<!-- changelog-upto: 5f74af9ebbc94ad08a05af1777b6a835038d1fe6 -->

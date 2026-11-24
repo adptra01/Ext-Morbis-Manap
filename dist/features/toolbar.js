@@ -5,6 +5,34 @@ var __morbis_feature = (() => {
     return window;
   }
 
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    if (config?.extensionEnabled === false) return false;
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
+      if (resp?.config) return decideFeatureGate(key, resp.config);
+    } catch {
+    }
+    try {
+      const store = await chrome.storage.local.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+
   // src/shared/ui/colors.ts
   var colors = {
     background: "#ffffff",
@@ -1093,7 +1121,9 @@ var __morbis_feature = (() => {
       const start = () => {
         const bar = document.querySelector("[data-toolbar]");
         initBpjsRevisionHistory(bar);
-        initCasemixBackfill();
+        void isFeatureEnabled("mKlaimMarks").then((on) => {
+          if (on) initCasemixBackfill();
+        });
         if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2e3);
       };
       if (document.readyState === "loading") {

@@ -2046,6 +2046,15 @@ function initBatchUploadUrlFeature(): void {
             data: { items: batchQueue },
           })
           .catch(console.error);
+        // Background menanyakan konteks halaman secara aktif (SW restart tidak
+        // bisa mengandalkan memori tabContexts).
+        chrome.runtime.onMessage.addListener((msg: { type?: string }, _sender, sendResponse) => {
+          if (msg?.type !== 'PAGE_CONTEXT_REQUEST') return;
+          sendResponse({
+            feature: 'mKlaimDetail',
+            data: { idVisit: new URLSearchParams(window.location.search).get('id_visit') },
+          });
+        });
       } else if (action === 'BATCH_UPLOAD_CRAWL') {
         crawlDokumenPasienToSidepanel();
       } else if (action === 'BATCH_UPLOAD_UPDATE_ITEMS') {

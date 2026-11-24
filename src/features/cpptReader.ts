@@ -611,7 +611,7 @@ whenFeatureEnabled('cpptReader', start);
 // Toggle di popup/sidepanel berlaku seketika — sidepanel tidak me-reload tab.
 try {
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'sync' || !changes['extensionConfig']) return;
+    if (area !== 'local' || !changes['extensionConfig']) return;
     const cfg = changes['extensionConfig'].newValue as FeatureGateConfig | null | undefined;
     if (decideFeatureGate('cpptReader', cfg)) start();
     else stop();
@@ -623,7 +623,7 @@ try {
 // Toggle Detail Kunjungan berlaku seketika — tampilkan/sembunyikan tautan.
 try {
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'sync' || !changes['extensionConfig']) return;
+    if (area !== 'local' || !changes['extensionConfig']) return;
     const cfg = changes['extensionConfig'].newValue as FeatureGateConfig | null | undefined;
     const on = decideFeatureGate('detailKunjungan', cfg);
     const link = document.getElementById(LINK_ID) as HTMLAnchorElement | null;

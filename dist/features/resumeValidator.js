@@ -1,5 +1,43 @@
 "use strict";
 var __morbis_feature = (() => {
+  // src/features/shared/featureGate.ts
+  var STORAGE_KEY = "extensionConfig";
+  function decideFeatureGate(key, config, role) {
+    if (config?.extensionEnabled === false) return false;
+    const entry = config?.features?.[key];
+    if (!entry) return true;
+    if (entry.enabled === false) return false;
+    const r = role ?? config?.currentRole ?? "admin";
+    if (r === "admin") return true;
+    const allowed = entry.allowedRoles;
+    if (!Array.isArray(allowed) || allowed.length === 0) return true;
+    return allowed.includes(r);
+  }
+  async function isFeatureEnabled(key) {
+    try {
+      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
+      if (resp?.config) return decideFeatureGate(key, resp.config);
+    } catch {
+    }
+    try {
+      const store = await chrome.storage.local.get(STORAGE_KEY);
+      const cfg = store?.[STORAGE_KEY] ?? null;
+      return decideFeatureGate(key, cfg);
+    } catch {
+      return true;
+    }
+  }
+  function whenFeatureEnabled(key, fn) {
+    isFeatureEnabled(key).then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    }).catch((e) => console.error(`[featureGate:${key}] gagal baca config:`, e));
+  }
+
   // src/shared/ui/colors.ts
   var colors = {
     background: "#ffffff",
@@ -1499,44 +1537,6 @@ var __morbis_feature = (() => {
     _backfillTimer = window.setInterval(tick, 3e4);
   }
 
-  // src/features/shared/featureGate.ts
-  var STORAGE_KEY = "extensionConfig";
-  function decideFeatureGate(key, config, role) {
-    if (config?.extensionEnabled === false) return false;
-    const entry = config?.features?.[key];
-    if (!entry) return true;
-    if (entry.enabled === false) return false;
-    const r = role ?? config?.currentRole ?? "admin";
-    if (r === "admin") return true;
-    const allowed = entry.allowedRoles;
-    if (!Array.isArray(allowed) || allowed.length === 0) return true;
-    return allowed.includes(r);
-  }
-  async function isFeatureEnabled(key) {
-    try {
-      const resp = await chrome.runtime.sendMessage({ type: "GET_CONFIG" });
-      if (resp?.config) return decideFeatureGate(key, resp.config);
-    } catch {
-    }
-    try {
-      const store = await chrome.storage.local.get(STORAGE_KEY);
-      const cfg = store?.[STORAGE_KEY] ?? null;
-      return decideFeatureGate(key, cfg);
-    } catch {
-      return true;
-    }
-  }
-  function whenFeatureEnabled(key, fn) {
-    isFeatureEnabled(key).then((ok) => {
-      if (!ok) return;
-      try {
-        fn();
-      } catch (e) {
-        console.error(`[featureGate:${key}] gagal jalan:`, e);
-      }
-    }).catch((e) => console.error(`[featureGate:${key}] gagal baca config:`, e));
-  }
-
   // src/features/resumeValidator.ts
   whenFeatureEnabled("resumeValidator", function() {
     const MAX_WAIT = 100;
@@ -1580,7 +1580,9 @@ var __morbis_feature = (() => {
     function init(form, saveBtn, tipe, doValidate, doHistory) {
       injectStyle();
       try {
-        initCasemixBackfill();
+        void isFeatureEnabled("mKlaimMarks").then((on) => {
+          if (on) initCasemixBackfill();
+        });
       } catch {
       }
       if (doHistory) setupCekForm(form, tipe, doValidate);

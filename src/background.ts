@@ -633,6 +633,7 @@ chrome.runtime.onMessage.addListener(
           if (config.features[validated.key as string]) {
             config.features[validated.key as string].mode = validated.mode;
             await chrome.storage.local.set({ [STORAGE_KEY]: config });
+            broadcastConfigChange();
           }
           sendResponse({ success: true });
         })();
@@ -721,11 +722,30 @@ chrome.runtime.onMessage.addListener(
         (async () => {
           const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
           const tabId = tabs[0]?.id;
-          if (tabId && tabContexts.has(tabId)) {
-            sendResponse({ context: tabContexts.get(tabId)! });
-          } else {
+          if (!tabId) {
             sendResponse({ context: null });
+            return;
           }
+          // Tanyakan langung ke content script tab aktif — SW bisa restart
+          // sehingga tabContexts kosong, atau konteks lama tersisa setelah
+          // navigasi ke halaman tanpa content script.
+          try {
+            const res = await chrome.tabs.sendMessage(tabId, { type: 'PAGE_CONTEXT_REQUEST' });
+            if (res?.feature) {
+              const ctx = { feature: res.feature, data: res.data ?? {} };
+              tabContexts.set(tabId, ctx);
+              sendResponse({ context: ctx });
+              return;
+            }
+          } catch {
+            /* tab tidak punya content script — pakai cache bila masih relevan */
+          }
+          const cached = tabContexts.get(tabId);
+          const url = tabs[0]?.url ?? '';
+          // Cache hanya dipakai bila tab masih di halaman M-KLAIM detail.
+          sendResponse({
+            context: cached && /\/v2\/m-klaim\/detail/.test(url) ? cached : null,
+          });
         })();
         return true;
       }
@@ -932,6 +952,22 @@ chrome.runtime.onMessage.addListener(
         // Forward result to all extension pages (side panel listens for this)
         chrome.runtime.sendMessage(validated).catch(() => {});
         sendResponse({ success: true });
+        return true;
+      }
+
+      case 'BATCH_UPLOAD_ACTION':
+      case 'BATCH_DELETE_ACTION': {
+        // Aksi batch dijalankan oleh content script (MAIN/ISOLATED world);
+        // background hanya meneruskan ke tab aktif bila diminta.
+        (async () => {
+          try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab?.id) await chrome.tabs.sendMessage(tab.id, validated);
+            sendResponse({ success: true });
+          } catch (e) {
+            sendResponse({ success: false, error: e instanceof Error ? e.message : String(e) });
+          }
+        })();
         return true;
       }
 

@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from './shared/featureGate.js';
 import { colors, injectCSS } from '../shared/ui/index.js';
 import {
   isICD10,
@@ -87,7 +88,9 @@ whenFeatureEnabled('resumeValidator', function () {
     // (offline/pusat mati) diunggah ulang tiap 30 dtk di belakang layar.
     // Sekali per halaman (guard di initCasemixBackfill); diam bila offline.
     try {
-      initCasemixBackfill();
+      void isFeatureEnabled('mKlaimMarks').then((on) => {
+        if (on) initCasemixBackfill();
+      });
     } catch {
       /* ignore */
     }

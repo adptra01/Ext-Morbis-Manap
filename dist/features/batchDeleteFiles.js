@@ -927,6 +927,13 @@ Tindakan ini tidak bisa di-undo.`,
           idVisit: new URLSearchParams(window.location.search).get("id_visit")
         }
       }).catch(console.error);
+      chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+        if (msg?.type !== "PAGE_CONTEXT_REQUEST") return;
+        sendResponse({
+          feature: "mKlaimDetail",
+          data: { idVisit: new URLSearchParams(window.location.search).get("id_visit") }
+        });
+      });
       if (window.__extBatchDeleteRegistered) return;
       window.__extBatchDeleteRegistered = true;
       chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {

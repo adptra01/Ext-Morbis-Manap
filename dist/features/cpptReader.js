@@ -485,7 +485,7 @@ var __morbis_feature = (() => {
   whenFeatureEnabled("cpptReader", start);
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area !== "sync" || !changes["extensionConfig"]) return;
+      if (area !== "local" || !changes["extensionConfig"]) return;
       const cfg = changes["extensionConfig"].newValue;
       if (decideFeatureGate("cpptReader", cfg)) start();
       else stop();
@@ -494,7 +494,7 @@ var __morbis_feature = (() => {
   }
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area !== "sync" || !changes["extensionConfig"]) return;
+      if (area !== "local" || !changes["extensionConfig"]) return;
       const cfg = changes["extensionConfig"].newValue;
       const on = decideFeatureGate("detailKunjungan", cfg);
       const link = document.getElementById(LINK_ID);

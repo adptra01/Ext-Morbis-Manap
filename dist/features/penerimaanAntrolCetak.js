@@ -246,12 +246,27 @@ var __morbis_feature = (() => {
   // src/shared/messaging.ts
   function sendMessage(message) {
     return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          reject(new Error("Chrome message timeout"));
+        }
+      }, 15e3);
       chrome.runtime.sendMessage(message, (response) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
-        } else {
-          resolve(response);
+          return;
         }
+        const r = response;
+        if (r?.success === false || r?.error) {
+          reject(new Error(r.error || "Permintaan ditolak background"));
+          return;
+        }
+        resolve(r);
       });
     });
   }

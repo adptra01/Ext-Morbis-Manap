@@ -614,6 +614,7 @@ var __morbis_bg = (() => {
             if (config.features[validated.key]) {
               config.features[validated.key].mode = validated.mode;
               await chrome.storage.local.set({ [STORAGE_KEY]: config });
+              broadcastConfigChange();
             }
             sendResponse({ success: true });
           })();
@@ -694,11 +695,25 @@ var __morbis_bg = (() => {
           (async () => {
             const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
             const tabId = tabs[0]?.id;
-            if (tabId && tabContexts.has(tabId)) {
-              sendResponse({ context: tabContexts.get(tabId) });
-            } else {
+            if (!tabId) {
               sendResponse({ context: null });
+              return;
             }
+            try {
+              const res = await chrome.tabs.sendMessage(tabId, { type: "PAGE_CONTEXT_REQUEST" });
+              if (res?.feature) {
+                const ctx = { feature: res.feature, data: res.data ?? {} };
+                tabContexts.set(tabId, ctx);
+                sendResponse({ context: ctx });
+                return;
+              }
+            } catch {
+            }
+            const cached = tabContexts.get(tabId);
+            const url = tabs[0]?.url ?? "";
+            sendResponse({
+              context: cached && /\/v2\/m-klaim\/detail/.test(url) ? cached : null
+            });
           })();
           return true;
         }
@@ -863,6 +878,19 @@ var __morbis_bg = (() => {
           chrome.runtime.sendMessage(validated).catch(() => {
           });
           sendResponse({ success: true });
+          return true;
+        }
+        case "BATCH_UPLOAD_ACTION":
+        case "BATCH_DELETE_ACTION": {
+          (async () => {
+            try {
+              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+              if (tab?.id) await chrome.tabs.sendMessage(tab.id, validated);
+              sendResponse({ success: true });
+            } catch (e) {
+              sendResponse({ success: false, error: e instanceof Error ? e.message : String(e) });
+            }
+          })();
           return true;
         }
         default:
