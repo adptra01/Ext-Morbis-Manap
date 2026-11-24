@@ -1,4 +1,4 @@
-import { C as __toESM, S as require_react, _ as ErrorBoundary, a as SelectItem, b as sendMessage, c as Input, d as RotateCcw, f as RefreshCw, g as cn, h as Switch, i as SelectContent, l as X, m as createLucideIcon, n as Button, o as SelectTrigger, p as Plus, r as Select, s as SelectValue, t as getVersionBadge, u as Search, v as require_jsx_runtime, x as require_client, y as MessageTypes } from "./chunks/version-tyo23RhK.js";
+import { C as __toESM, S as require_react, _ as RotateCcw, a as SelectTrigger, b as createLucideIcon, c as Switch, d as ErrorBoundary, f as require_jsx_runtime, g as Search, h as X, i as SelectItem, l as Button, m as sendMessage, n as Select, o as SelectValue, p as MessageTypes, r as SelectContent, s as Input, t as getVersionBadge, u as cn, v as RefreshCw, x as require_client, y as Plus } from "./chunks/version-Dcy-39hF.js";
 //#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
@@ -348,107 +348,369 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 	});
 }
 //#endregion
+//#region src/features/sidepanel/featureMeta.ts
+var CATEGORY_LABELS = {
+	all: "Semua",
+	mklaim: "M-Klaim & Billing",
+	rmresep: "RM & Resep",
+	labrad: "Lab & Rad",
+	antrian: "Antrian & MJKN",
+	lainnya: "Lainnya"
+};
+/** Pills utama sesuai prototype. 'Lainnya' hanya muncul bila ada fitur tak dikenal. */
+var MAIN_CATEGORIES = [
+	"all",
+	"mklaim",
+	"rmresep",
+	"labrad",
+	"antrian"
+];
+var KLAIM_LIST = ["/v2/m-klaim"];
+var KLAIM_DETAIL = ["/v2/m-klaim/detail"];
+var RESEP = ["/admisi/pelaksanaan_pelayanan/resep", "/inventory/resep/penerimaan"];
+var LAB = ["/laboratorium"];
+var ANTRIAN = [
+	"/antrian",
+	"/view-antrian",
+	"/admisi/pelaksanaan_pelayanan/antrian"
+];
+var FARMASI = [
+	"/antrian-farmasi",
+	"/view-call-websocet",
+	"/inventory/resep/penerimaan"
+];
+var META = {
+	openDetailInNewTab: {
+		category: "mklaim",
+		urlPatterns: KLAIM_LIST
+	},
+	shortcutButtons: {
+		category: "mklaim",
+		urlPatterns: [
+			...KLAIM_LIST,
+			"/admisi/pelaksanaan_pelayanan",
+			"/admisi/detail-rawat-inap"
+		]
+	},
+	filterPersistence: {
+		category: "mklaim",
+		urlPatterns: KLAIM_LIST
+	},
+	scrollButtons: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
+	batchUpload: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
+	batchDelete: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
+	mKlaimBulkVerif: {
+		category: "mklaim",
+		urlPatterns: KLAIM_LIST
+	},
+	mKlaimPrint: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
+	mKlaimMarks: {
+		category: "mklaim",
+		urlPatterns: KLAIM_LIST
+	},
+	mKlaimVerifLog: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
+	laporanLinks: {
+		category: "mklaim",
+		urlPatterns: KLAIM_LIST
+	},
+	billingFilterPersistence: {
+		category: "mklaim",
+		urlPatterns: ["/billing/pembayaran-new/billing-verifikasi"]
+	},
+	billingAdjustment: {
+		category: "mklaim",
+		urlPatterns: ["/billing"]
+	},
+	fetchWatchdog: {
+		category: "mklaim",
+		urlPatterns: []
+	},
+	resumeValidator: {
+		category: "rmresep",
+		urlPatterns: KLAIM_DETAIL
+	},
+	resumeHistory: {
+		category: "rmresep",
+		urlPatterns: KLAIM_DETAIL
+	},
+	resumeModal: {
+		category: "rmresep",
+		urlPatterns: KLAIM_DETAIL
+	},
+	resumeRanap: {
+		category: "rmresep",
+		urlPatterns: KLAIM_DETAIL
+	},
+	resepTools: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	fixJasaPelayanan: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	consultationEnhancer: {
+		category: "rmresep",
+		urlPatterns: ["/admisi/pengajuan_konsultasi/konsultasi"]
+	},
+	doctorFilterPersistence: {
+		category: "rmresep",
+		urlPatterns: [
+			"/admisi/pelaksanaan_pelayanan",
+			"/admisi/pelaksanaan-operasi",
+			"/admisi/detail-rawat-inap"
+		]
+	},
+	telaahResep: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	resepAsli: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	cpptReader: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	detailKunjungan: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	penerimaanExport: {
+		category: "rmresep",
+		urlPatterns: RESEP
+	},
+	pindahOperasi: {
+		category: "rmresep",
+		urlPatterns: ["/admisi/pelaksanaan-operasi", "/admisi/detail-rawat-inap"]
+	},
+	visiteKonsul: {
+		category: "rmresep",
+		urlPatterns: ["/admisi/pelaksanaan_pelayanan/halaman-utama"]
+	},
+	paLabPrint: {
+		category: "labrad",
+		urlPatterns: [...LAB, "/radiologi"]
+	},
+	labHistory: {
+		category: "labrad",
+		urlPatterns: LAB
+	},
+	cancelBatal: {
+		category: "labrad",
+		urlPatterns: [...LAB, "/radiologi"]
+	},
+	antrianTools: {
+		category: "antrian",
+		urlPatterns: ANTRIAN
+	},
+	antrianFarmasi: {
+		category: "antrian",
+		urlPatterns: FARMASI
+	},
+	antrolKirimOtomatis: {
+		category: "antrian",
+		urlPatterns: FARMASI
+	},
+	ttsServer: {
+		category: "antrian",
+		urlPatterns: []
+	}
+};
+/** Fitur baru belum terdaftar: tetap tampil di "Semua"/"Lainnya", tidak ikut
+*  blok kontekstual sampai pola URL-nya ditambahkan di sini. */
+function getFeatureMeta(key) {
+	return META[key] ?? {
+		category: "lainnya",
+		urlPatterns: []
+	};
+}
+/** Cocokkan pathname apa adanya atau sebagai prefix segmen (/a tidak selaras /ab). */
+function matchesPathname(urlPatterns, pathname) {
+	const path = pathname.replace(/\/+/g, "/").replace(/\/+$/, "") || "/";
+	return urlPatterns.some((raw) => {
+		const prefix = raw.replace(/\/+/g, "/").replace(/\/+$/, "") || "/";
+		return path === prefix || path.startsWith(prefix + "/");
+	});
+}
+//#endregion
 //#region src/features/sidepanel/FeaturesPanel.tsx
-function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, onModeChange }) {
+var FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+function FeaturesPanel({ features, enabledFeatures, role, disabled, pathname, onToggle, onModeChange }) {
 	const visible = features.filter((f) => role === "admin" || f.roles.includes(role)).sort((a, b) => a.name.localeCompare(b.name, "id"));
 	const [search, setSearch] = (0, import_react.useState)("");
+	const [category, setCategory] = (0, import_react.useState)("all");
 	const q = search.trim().toLowerCase();
-	const filtered = q ? visible.filter((f) => [
-		f.key,
-		f.name,
-		f.desc
-	].join(" ").toLowerCase().includes(q)) : visible;
+	const filtered = visible.filter((f) => {
+		if (category !== "all" && getFeatureMeta(f.key).category !== category) return false;
+		return !q || [
+			f.key,
+			f.name,
+			f.desc
+		].join(" ").toLowerCase().includes(q);
+	});
 	const activeCount = filtered.filter((f) => enabledFeatures[f.key]).length;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "relative mb-3",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, { className: "absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-				placeholder: "Cari fitur...",
-				value: search,
-				onChange: (e) => setSearch(e.target.value),
-				className: "h-9 pl-8 text-sm"
-			})]
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "flex items-center justify-between mb-3",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-				className: "text-md-xs text-muted-foreground font-medium",
-				children: [
-					activeCount,
-					" dari ",
-					filtered.length,
-					" aktif"
-				]
-			})
-		}),
-		visible.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "text-center py-8",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				className: "text-md-sm text-muted-foreground",
-				children: "Tidak ada fitur untuk role ini"
-			})
-		}),
-		visible.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "text-center py-8",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				className: "text-md-sm text-muted-foreground",
-				children: "Tidak ada fitur cocok"
-			})
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "space-y-0.5",
-			children: filtered.map((feature) => {
-				const isEnabled = !!enabledFeatures[feature.key];
-				return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: `
-                flex items-center justify-between px-3 py-2.5 rounded-md
-                ${isEnabled ? "bg-accent" : ""}
-                ${feature.comingSoon ? "opacity-60" : "cursor-pointer hover:bg-accent"}
-              `,
-					onClick: () => {
-						if (!feature.comingSoon && !disabled) onToggle(feature.key, !isEnabled);
-					},
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "flex-1 min-w-0 mr-3",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "flex items-center gap-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "text-md-sm font-medium text-foreground",
-								children: feature.name
-							}), feature.comingSoon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full",
-								children: "CS"
-							})]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-							className: "text-md-xs text-muted-foreground mt-0.5 truncate",
-							children: feature.desc
-						})]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "flex items-center gap-1.5 shrink-0",
-						children: [feature.key === "openDetailInNewTab" && feature.modes && enabledFeatures[feature.key] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-							value: feature.mode || "same-tab",
-							onValueChange: (v) => onModeChange(feature.key, v),
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-								className: "h-7 text-md-xs w-[100px]",
-								onClick: (e) => e.stopPropagation(),
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {})
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, { children: Object.entries(feature.modes).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-								value: k,
-								className: "text-md-xs",
-								children: v
-							}, k)) })]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch, {
-							checked: isEnabled,
-							onCheckedChange: (val) => {
-								if (!feature.comingSoon) onToggle(feature.key, val);
-							},
-							disabled: disabled || feature.comingSoon
-						})]
+	const filterActive = q.length > 0 || category !== "all";
+	const contextual = filterActive ? [] : visible.filter((f) => {
+		const patterns = getFeatureMeta(f.key).urlPatterns;
+		return patterns.length > 0 && !!pathname && matchesPathname(patterns, pathname);
+	});
+	const categories = visible.some((f) => getFeatureMeta(f.key).category === "lainnya") ? [...MAIN_CATEGORIES, "lainnya"] : MAIN_CATEGORIES;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "space-y-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "relative",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, { className: "absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+					type: "search",
+					"aria-label": "Cari fitur",
+					placeholder: "Cari fitur…",
+					value: search,
+					onChange: (e) => setSearch(e.target.value),
+					className: "h-9 pl-8 text-sm [touch-action:manipulation]"
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "flex flex-wrap gap-1.5",
+				role: "group",
+				"aria-label": "Filter kategori fitur",
+				children: categories.map((id) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					"aria-pressed": category === id,
+					onClick: () => setCategory(id),
+					className: `px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors duration-150 [touch-action:manipulation] ${FOCUS_RING} ${category === id ? "bg-[#2469f0] border-[#2469f0] text-white" : "border-border text-muted-foreground hover:text-foreground hover:bg-accent"}`,
+					children: CATEGORY_LABELS[id]
+				}, id))
+			}),
+			!filterActive && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				"aria-label": "Fitur yang tersedia di halaman ini",
+				className: "rounded-lg border border-primary/25 bg-primary/5 p-2.5",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "flex items-center gap-2 mb-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+						className: "text-md-sm font-semibold text-foreground",
+						children: "⚡ Aktif di Halaman Ini"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+						className: "ml-auto text-[10px] font-medium text-muted-foreground tabular-nums",
+						children: [contextual.length, " fitur"]
 					})]
-				}, feature.key);
+				}), contextual.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "text-md-xs text-muted-foreground",
+					children: pathname ? "Belum ada fitur yang dipakai di halaman ini." : "Halaman SIMRS tidak terdeteksi."
+				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+					className: "space-y-0.5",
+					children: contextual.map((feature) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+						className: "flex items-center justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-accent/60",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "min-w-0 truncate text-md-xs text-foreground",
+							title: feature.name,
+							children: feature.name
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch, {
+							checked: !!enabledFeatures[feature.key],
+							onCheckedChange: (val) => onToggle(feature.key, val),
+							disabled: disabled || feature.comingSoon,
+							"aria-label": `${enabledFeatures[feature.key] ? "Nonaktifkan" : "Aktifkan"} ${feature.name} di halaman ini`
+						})]
+					}, feature.key))
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "flex items-center justify-between",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+					className: "text-md-xs text-muted-foreground font-medium tabular-nums",
+					children: [
+						activeCount,
+						" dari ",
+						filtered.length,
+						" aktif"
+					]
+				})
+			}),
+			visible.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "text-center py-8",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "text-md-sm text-muted-foreground",
+					children: "Tidak ada fitur untuk role ini"
+				})
+			}),
+			visible.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "text-center py-8",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "text-md-sm text-muted-foreground",
+					children: "Tidak ada fitur cocok"
+				})
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "space-y-0.5",
+				children: filtered.map((feature) => {
+					const isEnabled = !!enabledFeatures[feature.key];
+					const blocked = disabled || feature.comingSoon;
+					const toggleLabel = `${isEnabled ? "Nonaktifkan" : "Aktifkan"} ${feature.name}`;
+					return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: `flex items-center rounded-md ${isEnabled ? "bg-accent" : ""}`,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+							type: "button",
+							disabled: blocked,
+							"aria-label": toggleLabel,
+							onClick: () => onToggle(feature.key, !isEnabled),
+							className: `flex-1 min-w-0 text-left px-3 py-2.5 rounded-md transition-colors duration-150 [touch-action:manipulation] ${FOCUS_RING} ${blocked ? "cursor-not-allowed" : "hover:bg-accent"}`,
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+								className: "flex items-center gap-2 min-w-0",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "text-md-sm font-medium text-foreground truncate",
+									children: feature.name
+								}), feature.comingSoon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "shrink-0 text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full",
+									children: "CS"
+								})]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "block text-md-xs text-muted-foreground mt-0.5 truncate",
+								children: feature.desc
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "flex items-center gap-1.5 pr-3 shrink-0",
+							children: [feature.key === "openDetailInNewTab" && feature.modes && enabledFeatures[feature.key] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+								value: feature.mode || "same-tab",
+								onValueChange: (v) => onModeChange(feature.key, v),
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+									className: "h-7 text-md-xs w-[100px]",
+									"aria-label": "Mode buka detail",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {})
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, { children: Object.entries(feature.modes).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									value: k,
+									className: "text-md-xs",
+									children: v
+								}, k)) })]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch, {
+								checked: isEnabled,
+								onCheckedChange: (val) => {
+									if (!feature.comingSoon) onToggle(feature.key, val);
+								},
+								disabled: blocked,
+								"aria-label": toggleLabel
+							})]
+						})]
+					}, feature.key);
+				})
 			})
-		})
-	] });
+		]
+	});
 }
 //#endregion
 //#region src/features/sidepanel/DomainPanel.tsx
@@ -1651,6 +1913,7 @@ function App() {
 	const [role, setRole] = (0, import_react.useState)("admin");
 	const [activeTab, setActiveTab] = (0, import_react.useState)("features");
 	const [toolsSubTab, setToolsSubTab] = (0, import_react.useState)("upload");
+	const [pagePath, setPagePath] = (0, import_react.useState)(null);
 	const [features, setFeatures] = (0, import_react.useState)({});
 	const [featuresList, setFeaturesList] = (0, import_react.useState)(FALLBACK_FEATURES);
 	const [urls, setUrls] = (0, import_react.useState)(DEFAULT_URLS);
@@ -1666,10 +1929,16 @@ function App() {
 			const activeTabId = tabs[0]?.id;
 			if (activeTabId) {
 				setTabId(activeTabId);
+				try {
+					const url = tabs[0]?.url ? new URL(tabs[0].url) : null;
+					setPagePath(url && /^https?:$/.test(url.protocol) ? url.pathname : null);
+				} catch {
+					setPagePath(null);
+				}
 				sendMessage({ type: "GET_PAGE_CONTEXT" }).then((res) => {
 					if (res?.context) {
 						setPageContext(res.context);
-						setActiveTab("tools");
+						setActiveTab("features");
 					}
 				}).catch(console.error);
 			}
@@ -1680,7 +1949,7 @@ function App() {
 					feature: message.feature,
 					data: message.data
 				});
-				setActiveTab("tools");
+				setActiveTab("features");
 			}
 		};
 		chrome.runtime.onMessage.addListener(handleMessage);
@@ -1826,7 +2095,7 @@ function App() {
 		className: "flex flex-col h-full bg-background",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "flex items-center justify-between px-4 py-2.5 border-b border-border",
+				className: "shrink-0 flex items-center justify-between px-4 py-2.5 border-b border-border bg-background",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "flex items-center gap-2",
 					children: [
@@ -1850,7 +2119,8 @@ function App() {
 					className: "flex items-center gap-1",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 						onClick: () => setTheme(theme === "dark" ? "light" : "dark"),
-						className: "p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors",
+						className: "p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+						"aria-label": resolved ? "Gunakan tema terang" : "Gunakan tema gelap",
 						title: "Toggle dark mode",
 						children: resolved ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
 							width: "16",
@@ -1877,7 +2147,7 @@ function App() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				className: "px-4 py-3",
+				className: "shrink-0 px-4 py-3 bg-background",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StatusCard, {
 					enabled,
 					role,
@@ -1886,99 +2156,126 @@ function App() {
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "flex gap-0 px-4 border-b border-border",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-						onClick: () => setActiveTab("features"),
-						className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${activeTab === "features" ? "text-[#2469f0] border-[#2469f0]" : "text-muted-foreground border-transparent hover:text-foreground"}`,
-						children: "Fitur"
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-						onClick: () => setActiveTab("domain"),
-						className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${activeTab === "domain" ? "text-[#2469f0] border-[#2469f0]" : "text-muted-foreground border-transparent hover:text-foreground"}`,
-						children: "Domain"
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-						onClick: () => setActiveTab("tools"),
-						className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] flex items-center gap-1.5 ${activeTab === "tools" ? "text-[#2469f0] border-[#2469f0]" : "text-muted-foreground border-transparent hover:text-foreground"}`,
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Aksi Halaman" }), pageContext && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "size-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0" })]
-					})
-				]
+				className: "shrink-0 flex gap-0 px-4 border-b border-border bg-background",
+				role: "tablist",
+				"aria-label": "Navigasi sidepanel",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+					type: "button",
+					role: "tab",
+					"aria-selected": activeTab === "features",
+					"aria-controls": "sidepanel-content",
+					onClick: () => setActiveTab("features"),
+					className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors duration-150 -mb-px [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${activeTab === "features" ? "text-[#2469f0] border-[#2469f0]" : "text-muted-foreground border-transparent hover:text-foreground"}`,
+					children: ["Fitur", pageContext && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						"aria-hidden": "true",
+						className: "size-1.5 ml-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						className: "sr-only",
+						children: " — aksi halaman tersedia"
+					})] })]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					type: "button",
+					role: "tab",
+					"aria-selected": activeTab === "domain",
+					"aria-controls": "sidepanel-content",
+					onClick: () => setActiveTab("domain"),
+					className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors duration-150 -mb-px [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${activeTab === "domain" ? "text-[#2469f0] border-[#2469f0]" : "text-muted-foreground border-transparent hover:text-foreground"}`,
+					children: "Domain & Sistem"
+				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "flex-1 overflow-y-auto px-4 py-3",
-				children: [
-					activeTab === "features" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FeaturesPanel, {
+				id: "sidepanel-content",
+				role: "tabpanel",
+				className: "flex-1 min-h-0 overflow-y-auto px-4 py-3",
+				children: [activeTab === "features" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "space-y-4",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FeaturesPanel, {
 						features: featuresList,
 						enabledFeatures: features,
 						role,
 						disabled: !enabled,
+						pathname: pagePath,
 						onToggle: handleFeatureToggle,
 						onModeChange: handleModeChange
-					}),
-					activeTab === "domain" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DomainPanel, {
-						urls,
-						onAdd: handleAddUrl,
-						onRemove: handleRemoveUrl,
-						onToggle: handleToggleUrl
-					}),
-					activeTab === "tools" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "space-y-4",
-						children: [
-							pageContext?.feature === "mKlaimDetail" && tabId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "space-y-4",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "flex p-1 bg-muted rounded-lg",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										onClick: () => setToolsSubTab("upload"),
-										className: `flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${toolsSubTab === "upload" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`,
-										children: "Upload Dokumen"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										onClick: () => setToolsSubTab("delete"),
-										className: `flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${toolsSubTab === "delete" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`,
-										children: "Hapus Dokumen"
-									})]
-								}), toolsSubTab === "upload" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchUploadPanel, { tabId }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchDeletePanel, { tabId })]
-							}),
-							pageContext?.feature === "batchUpload" && tabId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchUploadPanel, { tabId }),
-							pageContext?.feature === "batchDelete" && tabId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchDeletePanel, { tabId }),
-							pageContext?.feature === "consultationDetail" && pageContext?.data && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConsultationDetailPanel, { data: pageContext.data }),
-							pageContext?.feature === "consultationInfo" && pageContext?.data && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConsultationInfoPanel, { data: pageContext.data }),
-							(!pageContext || !tabId) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "text-center py-12 px-4 space-y-2.5",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										className: "size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
-											className: "size-5",
-											fill: "none",
-											stroke: "currentColor",
-											strokeWidth: "2.5",
-											viewBox: "0 0 24 24",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-												strokeLinecap: "round",
-												strokeLinejoin: "round",
-												d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+						"aria-label": "Aksi Halaman",
+						className: "pt-3 border-t border-border",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+							className: "text-md-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2",
+							children: "Aksi Halaman"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "space-y-4",
+							children: [
+								pageContext?.feature === "mKlaimDetail" && tabId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "space-y-4",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										className: "flex p-1 bg-muted rounded-lg",
+										role: "group",
+										"aria-label": "Jenis aksi dokumen",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+											type: "button",
+											"aria-pressed": toolsSubTab === "upload",
+											onClick: () => setToolsSubTab("upload"),
+											className: `flex-1 py-1 text-[11px] font-semibold rounded-md transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${toolsSubTab === "upload" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`,
+											children: "Upload Dokumen"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+											type: "button",
+											"aria-pressed": toolsSubTab === "delete",
+											onClick: () => setToolsSubTab("delete"),
+											className: `flex-1 py-1 text-[11px] font-semibold rounded-md transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${toolsSubTab === "delete" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`,
+											children: "Hapus Dokumen"
+										})]
+									}), toolsSubTab === "upload" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchUploadPanel, { tabId }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchDeletePanel, { tabId })]
+								}),
+								pageContext?.feature === "batchUpload" && tabId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchUploadPanel, { tabId }),
+								pageContext?.feature === "batchDelete" && tabId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BatchDeletePanel, { tabId }),
+								pageContext?.feature === "consultationDetail" && pageContext?.data && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConsultationDetailPanel, { data: pageContext.data }),
+								pageContext?.feature === "consultationInfo" && pageContext?.data && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ConsultationInfoPanel, { data: pageContext.data }),
+								(!pageContext || !tabId) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "text-center py-12 px-4 space-y-2.5",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											className: "size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground",
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", {
+												className: "size-5",
+												"aria-hidden": "true",
+												fill: "none",
+												stroke: "currentColor",
+												strokeWidth: "2.5",
+												viewBox: "0 0 24 24",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+													strokeLinecap: "round",
+													strokeLinejoin: "round",
+													d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+												})
 											})
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+											className: "text-md-sm font-semibold text-foreground",
+											children: "Tidak Ada Aksi Halaman"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											className: "text-md-xs text-muted-foreground leading-relaxed",
+											children: "Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan peralatan halaman (batch upload / batch delete)."
 										})
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-										className: "text-md-sm font-semibold text-foreground",
-										children: "Tidak Ada Aksi Halaman"
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "text-md-xs text-muted-foreground leading-relaxed",
-										children: "Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan peralatan halaman (batch upload / batch delete)."
-									})
-								]
-							})
-						]
-					})
-				]
+									]
+								})
+							]
+						})]
+					})]
+				}), activeTab === "domain" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DomainPanel, {
+					urls,
+					onAdd: handleAddUrl,
+					onRemove: handleRemoveUrl,
+					onToggle: handleToggleUrl
+				})]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Footer, {
-				onReload: handleReload,
-				onReset: handleReset
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "shrink-0 bg-background",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Footer, {
+					onReload: handleReload,
+					onReset: handleReset
+				})
 			}),
 			toast && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up",

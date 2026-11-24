@@ -237,8 +237,9 @@ const DEFAULT_URLS: CustomUrl[] = [
 export function App() {
   const [enabled, setEnabled] = useState(true);
   const [role, setRole] = useState<Role>('admin');
-  const [activeTab, setActiveTab] = useState<'features' | 'domain' | 'tools'>('features');
+  const [activeTab, setActiveTab] = useState<'features' | 'domain'>('features');
   const [toolsSubTab, setToolsSubTab] = useState<'upload' | 'delete'>('upload');
+  const [pagePath, setPagePath] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [featuresList, setFeaturesList] = useState<FeatureConfig[]>(FALLBACK_FEATURES);
   const [urls, setUrls] = useState<CustomUrl[]>(DEFAULT_URLS);
@@ -256,11 +257,17 @@ export function App() {
       const activeTabId = tabs[0]?.id;
       if (activeTabId) {
         setTabId(activeTabId);
+        try {
+          const url = tabs[0]?.url ? new URL(tabs[0].url) : null;
+          setPagePath(url && /^https?:$/.test(url.protocol) ? url.pathname : null);
+        } catch {
+          setPagePath(null);
+        }
         sendMessage<'GET_PAGE_CONTEXT'>({ type: 'GET_PAGE_CONTEXT' as any })
           .then((res: any) => {
             if (res?.context) {
               setPageContext(res.context);
-              setActiveTab('tools');
+              setActiveTab('features');
             }
           })
           .catch(console.error);
@@ -270,7 +277,7 @@ export function App() {
     const handleMessage = (message: any) => {
       if (message.type === 'PAGE_CONTEXT') {
         setPageContext({ feature: message.feature, data: message.data });
-        setActiveTab('tools');
+        setActiveTab('features');
       }
     };
     chrome.runtime.onMessage.addListener(handleMessage);
@@ -448,7 +455,7 @@ export function App() {
     <ErrorBoundary>
       <div className="flex flex-col h-full bg-background">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2.5 border-b border-border bg-background">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center">
               <span className="text-white text-md-xs font-bold">M</span>
@@ -463,7 +470,8 @@ export function App() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              aria-label={resolved ? 'Gunakan tema terang' : 'Gunakan tema gelap'}
               title="Toggle dark mode"
             >
               {resolved ? (
@@ -494,8 +502,8 @@ export function App() {
           </div>
         </div>
 
-        {/* Status Card */}
-        <div className="px-4 py-3">
+        {/* Status Card — tetap terlihat saat daftar fitur di-scroll */}
+        <div className="shrink-0 px-4 py-3 bg-background">
           <StatusCard
             enabled={enabled}
             role={role}
@@ -504,54 +512,154 @@ export function App() {
           />
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-0 px-4 border-b border-border">
+        {/* Tabs ringkas: Aksi Halaman tetap ada di dalam tab Fitur */}
+        <div
+          className="shrink-0 flex gap-0 px-4 border-b border-border bg-background"
+          role="tablist"
+          aria-label="Navigasi sidepanel"
+        >
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'features'}
+            aria-controls="sidepanel-content"
             onClick={() => setActiveTab('features')}
-            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
+            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors duration-150 -mb-px [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
               activeTab === 'features'
                 ? 'text-[#2469f0] border-[#2469f0]'
                 : 'text-muted-foreground border-transparent hover:text-foreground'
             }`}
           >
             Fitur
+            {pageContext && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 ml-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0"
+                />
+                <span className="sr-only"> — aksi halaman tersedia</span>
+              </>
+            )}
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'domain'}
+            aria-controls="sidepanel-content"
             onClick={() => setActiveTab('domain')}
-            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
+            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors duration-150 -mb-px [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
               activeTab === 'domain'
                 ? 'text-[#2469f0] border-[#2469f0]'
                 : 'text-muted-foreground border-transparent hover:text-foreground'
             }`}
           >
-            Domain
-          </button>
-          <button
-            onClick={() => setActiveTab('tools')}
-            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] flex items-center gap-1.5 ${
-              activeTab === 'tools'
-                ? 'text-[#2469f0] border-[#2469f0]'
-                : 'text-muted-foreground border-transparent hover:text-foreground'
-            }`}
-          >
-            <span>Aksi Halaman</span>
-            {pageContext && (
-              <span className="size-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0" />
-            )}
+            Domain &amp; Sistem
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div
+          id="sidepanel-content"
+          role="tabpanel"
+          className="flex-1 min-h-0 overflow-y-auto px-4 py-3"
+        >
           {activeTab === 'features' && (
-            <FeaturesPanel
-              features={featuresList}
-              enabledFeatures={features}
-              role={role}
-              disabled={!enabled}
-              onToggle={handleFeatureToggle}
-              onModeChange={handleModeChange}
-            />
+            <div className="space-y-4">
+              <FeaturesPanel
+                features={featuresList}
+                enabledFeatures={features}
+                role={role}
+                disabled={!enabled}
+                pathname={pagePath}
+                onToggle={handleFeatureToggle}
+                onModeChange={handleModeChange}
+              />
+              <section aria-label="Aksi Halaman" className="pt-3 border-t border-border">
+                <h2 className="text-md-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                  Aksi Halaman
+                </h2>
+                <div className="space-y-4">
+                  {pageContext?.feature === 'mKlaimDetail' && tabId && (
+                    <div className="space-y-4">
+                      <div
+                        className="flex p-1 bg-muted rounded-lg"
+                        role="group"
+                        aria-label="Jenis aksi dokumen"
+                      >
+                        <button
+                          type="button"
+                          aria-pressed={toolsSubTab === 'upload'}
+                          onClick={() => setToolsSubTab('upload')}
+                          className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                            toolsSubTab === 'upload'
+                              ? 'bg-background text-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          Upload Dokumen
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={toolsSubTab === 'delete'}
+                          onClick={() => setToolsSubTab('delete')}
+                          className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                            toolsSubTab === 'delete'
+                              ? 'bg-background text-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          Hapus Dokumen
+                        </button>
+                      </div>
+                      {toolsSubTab === 'upload' ? (
+                        <BatchUploadPanel tabId={tabId} />
+                      ) : (
+                        <BatchDeletePanel tabId={tabId} />
+                      )}
+                    </div>
+                  )}
+                  {pageContext?.feature === 'batchUpload' && tabId && (
+                    <BatchUploadPanel tabId={tabId} />
+                  )}
+                  {pageContext?.feature === 'batchDelete' && tabId && (
+                    <BatchDeletePanel tabId={tabId} />
+                  )}
+                  {pageContext?.feature === 'consultationDetail' && pageContext?.data && (
+                    <ConsultationDetailPanel data={pageContext.data as Record<string, string>} />
+                  )}
+                  {pageContext?.feature === 'consultationInfo' && pageContext?.data && (
+                    <ConsultationInfoPanel data={pageContext.data as Record<string, string>} />
+                  )}
+                  {(!pageContext || !tabId) && (
+                    <div className="text-center py-12 px-4 space-y-2.5">
+                      <div className="size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground">
+                        <svg
+                          className="size-5"
+                          aria-hidden="true"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-md-sm font-semibold text-foreground">
+                        Tidak Ada Aksi Halaman
+                      </h3>
+                      <p className="text-md-xs text-muted-foreground leading-relaxed">
+                        Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan
+                        peralatan halaman (batch upload / batch delete).
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
           )}
           {activeTab === 'domain' && (
             <DomainPanel
@@ -561,83 +669,12 @@ export function App() {
               onToggle={handleToggleUrl}
             />
           )}
-          {activeTab === 'tools' && (
-            <div className="space-y-4">
-              {pageContext?.feature === 'mKlaimDetail' && tabId && (
-                <div className="space-y-4">
-                  <div className="flex p-1 bg-muted rounded-lg">
-                    <button
-                      onClick={() => setToolsSubTab('upload')}
-                      className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${
-                        toolsSubTab === 'upload'
-                          ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Upload Dokumen
-                    </button>
-                    <button
-                      onClick={() => setToolsSubTab('delete')}
-                      className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${
-                        toolsSubTab === 'delete'
-                          ? 'bg-background text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Hapus Dokumen
-                    </button>
-                  </div>
-                  {toolsSubTab === 'upload' ? (
-                    <BatchUploadPanel tabId={tabId} />
-                  ) : (
-                    <BatchDeletePanel tabId={tabId} />
-                  )}
-                </div>
-              )}
-              {pageContext?.feature === 'batchUpload' && tabId && (
-                <BatchUploadPanel tabId={tabId} />
-              )}
-              {pageContext?.feature === 'batchDelete' && tabId && (
-                <BatchDeletePanel tabId={tabId} />
-              )}
-              {pageContext?.feature === 'consultationDetail' && pageContext?.data && (
-                <ConsultationDetailPanel data={pageContext.data as Record<string, string>} />
-              )}
-              {pageContext?.feature === 'consultationInfo' && pageContext?.data && (
-                <ConsultationInfoPanel data={pageContext.data as Record<string, string>} />
-              )}
-              {(!pageContext || !tabId) && (
-                <div className="text-center py-12 px-4 space-y-2.5">
-                  <div className="size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground">
-                    <svg
-                      className="size-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-md-sm font-semibold text-foreground">
-                    Tidak Ada Aksi Halaman
-                  </h3>
-                  <p className="text-md-xs text-muted-foreground leading-relaxed">
-                    Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan
-                    peralatan halaman (batch upload / batch delete).
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* Footer */}
-        <Footer onReload={handleReload} onReset={handleReset} />
+        {/* Footer — tetap terlihat saat daftar fitur di-scroll */}
+        <div className="shrink-0 bg-background">
+          <Footer onReload={handleReload} onReset={handleReset} />
+        </div>
 
         {/* Toast */}
         {toast && (

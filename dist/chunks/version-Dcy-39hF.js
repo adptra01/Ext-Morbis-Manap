@@ -11429,6 +11429,381 @@ var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_dom_client_production();
 }));
 //#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
+var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var toKebabCase = (string) => string?.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+function toLucideIconData(iconName, iconNode, aliases = []) {
+	if (iconNode == null) throw new Error("[lucide]: iconNode is required when icon name is used");
+	return {
+		name: toKebabCase(iconName),
+		size: 24,
+		node: iconNode,
+		...aliases.length > 0 ? { aliases } : {}
+	};
+}
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var toCamelCase = (string) => {
+	let out = "";
+	let upperNext = false;
+	for (const ch of string) {
+		if (ch === "-" || ch === "_" || ch <= " ") {
+			upperNext = out.length > 0;
+			continue;
+		}
+		if (out.length === 0) out += ch.toLowerCase();
+		else out += upperNext ? ch.toUpperCase() : ch;
+		upperNext = false;
+	}
+	return out;
+};
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var toPascalCase = (string) => {
+	const camelCase = toCamelCase(string);
+	return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+};
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var mergeClasses = (...classes) => classes.filter((className, index, array) => {
+	return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
+}).join(" ").trim();
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/build/defaultAttributes.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var defaultAttributes = {
+	xmlns: "http://www.w3.org/2000/svg",
+	width: 24,
+	height: 24,
+	viewBox: "0 0 24 24",
+	fill: "none",
+	stroke: "currentColor",
+	"stroke-width": 2,
+	"stroke-linecap": "round",
+	"stroke-linejoin": "round"
+};
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+function isDefined(value) {
+	return value !== null && value !== void 0;
+}
+function buildLucideIconNode(icon, params = {}) {
+	const attributeNames = params.attributeNames ?? {};
+	const getAttributeName = (attributeName) => attributeNames[attributeName] ?? attributeName;
+	const viewBoxWidth = icon.size ?? icon.width ?? defaultAttributes["width"];
+	const viewBoxHeight = icon.size ?? icon.height ?? defaultAttributes["height"];
+	const aliasClassNames = icon.aliases?.filter((alias) => typeof alias === "string" && alias.trim() !== "").map((alias) => `lucide-${alias}`) ?? [];
+	const iconClassNames = [...icon.name ? [`lucide-${icon.name}`] : [], ...aliasClassNames];
+	const classNamesFromClassName = params.className?.split(" ").filter(Boolean) ?? [];
+	const className = params.includeDefaultClasses === false ? mergeClasses(...classNamesFromClassName) : mergeClasses("lucide", ...iconClassNames, ...classNamesFromClassName);
+	const calculatedStrokeWidth = params.absoluteStrokeWidth ? Number(params.strokeWidth ?? defaultAttributes["stroke-width"]) * Number(icon.size ?? icon.width ?? defaultAttributes["width"]) / Number(params.size ?? params.width ?? defaultAttributes["width"]) : params.strokeWidth ?? defaultAttributes["stroke-width"];
+	return [
+		"svg",
+		{
+			...Object.entries(defaultAttributes).reduce((attrs, [attrName, value]) => {
+				attrs[getAttributeName(attrName)] = value;
+				return attrs;
+			}, {}),
+			..."color" in params && params.color && { [getAttributeName("stroke")]: params.color },
+			..."size" in params && isDefined(params.size) && {
+				[getAttributeName("width")]: params.size,
+				[getAttributeName("height")]: params.size
+			},
+			..."width" in params && isDefined(params.width) && { [getAttributeName("width")]: params.width },
+			..."height" in params && isDefined(params.height) && { [getAttributeName("height")]: params.height },
+			[getAttributeName("stroke-width")]: calculatedStrokeWidth,
+			...className && { [getAttributeName("class")]: className },
+			[getAttributeName("viewBox")]: `0 0 ${viewBoxWidth} ${viewBoxHeight}`,
+			...params.hasA11yProp === false ? { [getAttributeName("aria-hidden")]: "true" } : {},
+			..."attributes" in params && params.attributes
+		},
+		icon.node.map((child) => {
+			const [name, attrs, children] = child;
+			const nextAttrs = params.nonScalingStroke ? {
+				[getAttributeName("vector-effect")]: "non-scaling-stroke",
+				...attrs
+			} : attrs;
+			return children ? [
+				name,
+				nextAttrs,
+				children
+			] : [name, nextAttrs];
+		})
+	];
+}
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+function buildLucideIconForReact(icon, params = {}) {
+	return buildLucideIconNode(icon, {
+		...params,
+		attributeNames: {
+			...params.attributeNames,
+			class: "className",
+			"stroke-width": "strokeWidth",
+			"stroke-linecap": "strokeLinecap",
+			"stroke-linejoin": "strokeLinejoin",
+			"vector-effect": "vectorEffect"
+		}
+	});
+}
+//#endregion
+//#region node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var hasA11yProp = (props) => {
+	for (const prop in props) if (prop.startsWith("aria-") || prop === "role" || prop === "title") return true;
+	return false;
+};
+//#endregion
+//#region node_modules/lucide-react/dist/esm/context.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var LucideContext = (0, import_react.createContext)({});
+var useLucideContext = () => (0, import_react.useContext)(LucideContext);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/Icon.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Icon = (0, import_react.forwardRef)(({ color, size, width, height, strokeWidth, absoluteStrokeWidth, nonScalingStroke, className = "", children, iconNode = [], icon = {
+	node: iconNode,
+	aliases: [],
+	size: 24
+}, ...rest }, ref) => {
+	const { size: contextSize = 24, strokeWidth: contextStrokeWidth = 2, absoluteStrokeWidth: contextAbsoluteStrokeWidth = false, nonScalingStroke: contextNonScalingStroke = false, color: contextColor = "currentColor", className: contextClass = "" } = useLucideContext() ?? {};
+	const hasAccessibleProp = Boolean(children) || hasA11yProp(rest);
+	const [name, svgAttributes, builtIconNode = []] = buildLucideIconForReact(icon, {
+		color: color ?? contextColor,
+		width: width ?? size ?? contextSize,
+		height: height ?? size ?? contextSize,
+		strokeWidth: strokeWidth ?? contextStrokeWidth,
+		absoluteStrokeWidth: absoluteStrokeWidth ?? contextAbsoluteStrokeWidth,
+		nonScalingStroke: nonScalingStroke ?? contextNonScalingStroke,
+		className: mergeClasses(contextClass, className),
+		hasA11yProp: hasAccessibleProp,
+		attributes: rest
+	});
+	return (0, import_react.createElement)(name, {
+		ref,
+		...svgAttributes
+	}, [...builtIconNode.map(([tag, attrs]) => (0, import_react.createElement)(tag, attrs)), ...Array.isArray(children) ? children : [children]]);
+});
+//#endregion
+//#region node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+function createLucideIcon(iconDataOrName, iconNode = [], aliases = []) {
+	const iconData = typeof iconDataOrName === "string" ? toLucideIconData(iconDataOrName, iconNode, aliases) : iconDataOrName;
+	const Component = (0, import_react.forwardRef)(({ className, ...props }, ref) => (0, import_react.createElement)(Icon, {
+		ref,
+		icon: iconData,
+		className,
+		...props
+	}));
+	if (iconData.name) Component.displayName = toPascalCase(iconData.name);
+	return Component;
+}
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData$5 = {
+	name: "chevron-down",
+	size: 24,
+	node: [["path", {
+		d: "m6 9 6 6 6-6",
+		key: "qrunsl"
+	}]]
+};
+__iconData$5.node;
+var ChevronDown = createLucideIcon(__iconData$5);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/plus.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData$4 = {
+	name: "plus",
+	size: 24,
+	node: [["path", {
+		d: "M5 12h14",
+		key: "1ays0h"
+	}], ["path", {
+		d: "M12 5v14",
+		key: "s699le"
+	}]]
+};
+__iconData$4.node;
+var Plus = createLucideIcon(__iconData$4);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/refresh-cw.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData$3 = {
+	name: "refresh-cw",
+	size: 24,
+	node: [
+		["path", {
+			d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8",
+			key: "v9h5vc"
+		}],
+		["path", {
+			d: "M21 3v5h-5",
+			key: "1q7to0"
+		}],
+		["path", {
+			d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16",
+			key: "3uifl3"
+		}],
+		["path", {
+			d: "M8 16H3v5",
+			key: "1cv678"
+		}]
+	]
+};
+__iconData$3.node;
+var RefreshCw = createLucideIcon(__iconData$3);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/rotate-ccw.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData$2 = {
+	name: "rotate-ccw",
+	size: 24,
+	node: [["path", {
+		d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8",
+		key: "1357e3"
+	}], ["path", {
+		d: "M3 3v5h5",
+		key: "1xhq8a"
+	}]]
+};
+__iconData$2.node;
+var RotateCcw = createLucideIcon(__iconData$2);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/search.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData$1 = {
+	name: "search",
+	size: 24,
+	node: [["path", {
+		d: "m21 21-4.34-4.34",
+		key: "14j7rj"
+	}], ["circle", {
+		cx: "11",
+		cy: "11",
+		r: "8",
+		key: "4ej97u"
+	}]]
+};
+__iconData$1.node;
+var Search = createLucideIcon(__iconData$1);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/x.mjs
+/**
+* @license lucide-react v1.49.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var __iconData = {
+	name: "x",
+	size: 24,
+	node: [["path", {
+		d: "M18 6 6 18",
+		key: "1bl5f8"
+	}], ["path", {
+		d: "m6 6 12 12",
+		key: "d8bk6v"
+	}]]
+};
+__iconData.node;
+var X = createLucideIcon(__iconData);
+//#endregion
 //#region src/shared/messaging.ts
 var MessageTypes = {
 	GET_ALL: "GET_ALL",
@@ -11505,7 +11880,6 @@ var require_jsx_runtime = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 }));
 //#endregion
 //#region src/ui/components/ErrorBoundary.tsx
-var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();
 var ErrorBoundary = class extends import_react.Component {
 	constructor(..._args) {
@@ -11540,695 +11914,6 @@ var ErrorBoundary = class extends import_react.Component {
 	}
 };
 //#endregion
-//#region node_modules/@radix-ui/primitive/dist/index.mjs
-var __defProp$21 = Object.defineProperty;
-var __name$21 = (target, value) => __defProp$21(target, "name", {
-	value,
-	configurable: true
-});
-var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
-function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
-	return /* @__PURE__ */ __name$21(function handleEvent(event) {
-		originalEventHandler?.(event);
-		if (checkForDefaultPrevented === false || !event || !event.defaultPrevented) return ourEventHandler?.(event);
-	}, "handleEvent");
-}
-__name$21(composeEventHandlers, "composeEventHandlers");
-function getOwnerWindow(element) {
-	if (!canUseDOM) throw new Error("Cannot access window outside of the DOM");
-	return element?.ownerDocument?.defaultView ?? window;
-}
-__name$21(getOwnerWindow, "getOwnerWindow");
-function getOwnerDocument(element) {
-	if (!canUseDOM) throw new Error("Cannot access document outside of the DOM");
-	return element?.ownerDocument ?? document;
-}
-__name$21(getOwnerDocument, "getOwnerDocument");
-function getActiveElement(node, activeDescendant = false) {
-	const { activeElement } = getOwnerDocument(node);
-	if (!activeElement?.nodeName) return null;
-	if (isFrame(activeElement) && activeElement.contentDocument) return getActiveElement(activeElement.contentDocument.body, activeDescendant);
-	if (activeDescendant) {
-		const id = activeElement.getAttribute("aria-activedescendant");
-		if (id) {
-			const element = getOwnerDocument(activeElement).getElementById(id);
-			if (element) return element;
-		}
-	}
-	return activeElement;
-}
-__name$21(getActiveElement, "getActiveElement");
-function isFrame(element) {
-	return element.tagName === "IFRAME";
-}
-__name$21(isFrame, "isFrame");
-//#endregion
-//#region node_modules/@radix-ui/react-compose-refs/dist/index.mjs
-var __defProp$20 = Object.defineProperty;
-var __name$20 = (target, value) => __defProp$20(target, "name", {
-	value,
-	configurable: true
-});
-function setRef$1(ref, value) {
-	if (typeof ref === "function") return ref(value);
-	else if (ref !== null && ref !== void 0) ref.current = value;
-}
-__name$20(setRef$1, "setRef");
-function composeRefs(...refs) {
-	return (node) => {
-		let hasCleanup = false;
-		const cleanups = refs.map((ref) => {
-			const cleanup = setRef$1(ref, node);
-			if (!hasCleanup && typeof cleanup == "function") hasCleanup = true;
-			return cleanup;
-		});
-		if (hasCleanup) return () => {
-			for (let i = 0; i < cleanups.length; i++) {
-				const cleanup = cleanups[i];
-				if (typeof cleanup == "function") cleanup();
-				else setRef$1(refs[i], null);
-			}
-		};
-	};
-}
-__name$20(composeRefs, "composeRefs");
-function useComposedRefs(...refs) {
-	return import_react.useCallback(composeRefs(...refs), refs);
-}
-__name$20(useComposedRefs, "useComposedRefs");
-//#endregion
-//#region node_modules/@radix-ui/react-context/dist/index.mjs
-var __defProp$19 = Object.defineProperty;
-var __name$19 = (target, value) => __defProp$19(target, "name", {
-	value,
-	configurable: true
-});
-// @__NO_SIDE_EFFECTS__
-function createContext2(rootComponentName, defaultContext) {
-	const Context = import_react.createContext(defaultContext);
-	Context.displayName = rootComponentName + "Context";
-	const Provider = /* @__PURE__ */ __name$19((props) => {
-		const { children, ...context } = props;
-		const value = import_react.useMemo(() => context, Object.values(context));
-		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Context.Provider, {
-			value,
-			children
-		});
-	}, "Provider");
-	Provider.displayName = rootComponentName + "Provider";
-	function useContext2(consumerName, options = {}) {
-		const { optional = false } = options;
-		const context = import_react.useContext(Context);
-		if (context) return context;
-		if (defaultContext !== void 0) return defaultContext;
-		if (optional) return void 0;
-		throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-	}
-	__name$19(useContext2, "useContext");
-	return [Provider, useContext2];
-}
-__name$19(createContext2, "createContext");
-// @__NO_SIDE_EFFECTS__
-function createContextScope(scopeName, createContextScopeDeps = []) {
-	let defaultContexts = [];
-	function createContext3(rootComponentName, defaultContext) {
-		const BaseContext = import_react.createContext(defaultContext);
-		BaseContext.displayName = rootComponentName + "Context";
-		const index = defaultContexts.length;
-		defaultContexts = [...defaultContexts, defaultContext];
-		const Provider = /* @__PURE__ */ __name$19((props) => {
-			const { scope, children, ...context } = props;
-			const Context = scope?.[scopeName]?.[index] || BaseContext;
-			const value = import_react.useMemo(() => context, Object.values(context));
-			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Context.Provider, {
-				value,
-				children
-			});
-		}, "Provider");
-		Provider.displayName = rootComponentName + "Provider";
-		function useContext2(consumerName, scope, options = {}) {
-			const { optional = false } = options;
-			const Context = scope?.[scopeName]?.[index] || BaseContext;
-			const context = import_react.useContext(Context);
-			if (context) return context;
-			if (defaultContext !== void 0) return defaultContext;
-			if (optional) return void 0;
-			throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-		}
-		__name$19(useContext2, "useContext");
-		return [Provider, useContext2];
-	}
-	__name$19(createContext3, "createContext");
-	const createScope = /* @__PURE__ */ __name$19(() => {
-		const scopeContexts = defaultContexts.map((defaultContext) => {
-			return import_react.createContext(defaultContext);
-		});
-		return /* @__PURE__ */ __name$19(function useScope(scope) {
-			const contexts = scope?.[scopeName] || scopeContexts;
-			return import_react.useMemo(() => ({ [`__scope${scopeName}`]: {
-				...scope,
-				[scopeName]: contexts
-			} }), [scope, contexts]);
-		}, "useScope");
-	}, "createScope");
-	createScope.scopeName = scopeName;
-	return [createContext3, composeContextScopes(createScope, ...createContextScopeDeps)];
-}
-__name$19(createContextScope, "createContextScope");
-function composeContextScopes(...scopes) {
-	const baseScope = scopes[0];
-	if (scopes.length === 1) return baseScope;
-	const createScope = /* @__PURE__ */ __name$19(() => {
-		const scopeHooks = scopes.map((createScope2) => ({
-			useScope: createScope2(),
-			scopeName: createScope2.scopeName
-		}));
-		return /* @__PURE__ */ __name$19(function useComposedScopes(overrideScopes) {
-			const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
-				const currentScope = useScope(overrideScopes)[`__scope${scopeName}`];
-				return {
-					...nextScopes2,
-					...currentScope
-				};
-			}, {});
-			return import_react.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
-		}, "useComposedScopes");
-	}, "createScope");
-	createScope.scopeName = baseScope.scopeName;
-	return createScope;
-}
-__name$19(composeContextScopes, "composeContextScopes");
-//#endregion
-//#region node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
-var useLayoutEffect2 = globalThis?.document ? import_react.useLayoutEffect : () => {};
-//#endregion
-//#region node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
-var __defProp$18 = Object.defineProperty;
-var __name$18 = (target, value) => __defProp$18(target, "name", {
-	value,
-	configurable: true
-});
-var useReactEffectEvent = import_react[" useEffectEvent ".trim().toString()];
-var useReactInsertionEffect = import_react[" useInsertionEffect ".trim().toString()];
-function useEffectEvent(callback) {
-	if (typeof useReactEffectEvent === "function") return useReactEffectEvent(callback);
-	const ref = import_react.useRef(() => {
-		throw new Error("Cannot call an event handler while rendering.");
-	});
-	if (typeof useReactInsertionEffect === "function") useReactInsertionEffect(() => {
-		ref.current = callback;
-	});
-	else useLayoutEffect2(() => {
-		ref.current = callback;
-	});
-	return import_react.useMemo(() => ((...args) => ref.current?.(...args)), []);
-}
-__name$18(useEffectEvent, "useEffectEvent");
-//#endregion
-//#region node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-var __defProp$17 = Object.defineProperty;
-var __name$17 = (target, value) => __defProp$17(target, "name", {
-	value,
-	configurable: true
-});
-var useInsertionEffect = import_react[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
-function useControllableState({ prop, defaultProp, onChange = /* @__PURE__ */ __name$17(() => {}, "onChange"), caller }) {
-	const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
-		defaultProp,
-		onChange
-	});
-	const isControlled = prop !== void 0;
-	return [isControlled ? prop : uncontrolledProp, import_react.useCallback((nextValue) => {
-		if (isControlled) {
-			const value2 = isFunction$2(nextValue) ? nextValue(prop) : nextValue;
-			if (value2 !== prop) onChangeRef.current?.(value2);
-		} else setUncontrolledProp(nextValue);
-	}, [
-		isControlled,
-		prop,
-		setUncontrolledProp,
-		onChangeRef
-	])];
-}
-__name$17(useControllableState, "useControllableState");
-function useUncontrolledState({ defaultProp, onChange }) {
-	const [value, setValue] = import_react.useState(defaultProp);
-	const prevValueRef = import_react.useRef(value);
-	const onChangeRef = import_react.useRef(onChange);
-	useInsertionEffect(() => {
-		onChangeRef.current = onChange;
-	}, [onChange]);
-	import_react.useEffect(() => {
-		if (prevValueRef.current !== value) {
-			onChangeRef.current?.(value);
-			prevValueRef.current = value;
-		}
-	}, [value, prevValueRef]);
-	return [
-		value,
-		setValue,
-		onChangeRef
-	];
-}
-__name$17(useUncontrolledState, "useUncontrolledState");
-function isFunction$2(value) {
-	return typeof value === "function";
-}
-__name$17(isFunction$2, "isFunction");
-var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
-function useControllableStateReducer(reducer, userArgs, initialArg, init) {
-	const { prop: controlledState, defaultProp, onChange: onChangeProp, caller } = userArgs;
-	const isControlled = controlledState !== void 0;
-	const onChange = useEffectEvent(onChangeProp);
-	const args = [{
-		...initialArg,
-		state: defaultProp
-	}];
-	if (init) args.push(init);
-	const [internalState, dispatch] = import_react.useReducer((state2, action) => {
-		if (action.type === SYNC_STATE) return {
-			...state2,
-			state: action.state
-		};
-		const next = reducer(state2, action);
-		if (isControlled && !Object.is(next.state, state2.state)) onChange(next.state);
-		return next;
-	}, ...args);
-	const uncontrolledState = internalState.state;
-	const prevValueRef = import_react.useRef(uncontrolledState);
-	import_react.useEffect(() => {
-		if (prevValueRef.current !== uncontrolledState) {
-			prevValueRef.current = uncontrolledState;
-			if (!isControlled) onChange(uncontrolledState);
-		}
-	}, [
-		uncontrolledState,
-		prevValueRef,
-		isControlled
-	]);
-	const state = import_react.useMemo(() => {
-		if (controlledState !== void 0) return {
-			...internalState,
-			state: controlledState
-		};
-		return internalState;
-	}, [internalState, controlledState]);
-	import_react.useEffect(() => {
-		if (isControlled && !Object.is(controlledState, internalState.state)) dispatch({
-			type: SYNC_STATE,
-			state: controlledState
-		});
-	}, [
-		controlledState,
-		internalState.state,
-		isControlled
-	]);
-	return [state, dispatch];
-}
-__name$17(useControllableStateReducer, "useControllableStateReducer");
-//#endregion
-//#region node_modules/@radix-ui/react-use-size/dist/index.mjs
-var __defProp$16 = Object.defineProperty;
-var __name$16 = (target, value) => __defProp$16(target, "name", {
-	value,
-	configurable: true
-});
-function useSize(element) {
-	const [size, setSize] = import_react.useState(void 0);
-	useLayoutEffect2(() => {
-		if (element) {
-			setSize({
-				width: element.offsetWidth,
-				height: element.offsetHeight
-			});
-			const resizeObserver = new ResizeObserver((entries) => {
-				if (!Array.isArray(entries)) return;
-				if (!entries.length) return;
-				const entry = entries[0];
-				let width;
-				let height;
-				if ("borderBoxSize" in entry) {
-					const borderSizeEntry = entry["borderBoxSize"];
-					const borderSize = Array.isArray(borderSizeEntry) ? borderSizeEntry[0] : borderSizeEntry;
-					width = borderSize["inlineSize"];
-					height = borderSize["blockSize"];
-				} else {
-					width = element.offsetWidth;
-					height = element.offsetHeight;
-				}
-				setSize({
-					width,
-					height
-				});
-			});
-			resizeObserver.observe(element, { box: "border-box" });
-			return () => resizeObserver.unobserve(element);
-		} else setSize(void 0);
-	}, [element]);
-	return size;
-}
-__name$16(useSize, "useSize");
-//#endregion
-//#region node_modules/@radix-ui/react-slot/dist/index.mjs
-var import_react_dom = /* @__PURE__ */ __toESM(require_react_dom(), 1);
-var __defProp$15 = Object.defineProperty;
-var __name$15 = (target, value) => __defProp$15(target, "name", {
-	value,
-	configurable: true
-});
-// @__NO_SIDE_EFFECTS__
-function createSlot(ownerName) {
-	const Slot2 = import_react.forwardRef((props, forwardedRef) => {
-		let { children, ...slotProps } = props;
-		let slottableElement = null;
-		let hasSlottable = false;
-		const newChildren = [];
-		if (isLazyComponent(children) && typeof use === "function") children = use(children._payload);
-		import_react.Children.forEach(children, (maybeSlottable) => {
-			if (isSlottable(maybeSlottable)) {
-				hasSlottable = true;
-				const slottable = maybeSlottable;
-				let child = "child" in slottable.props ? slottable.props.child : slottable.props.children;
-				if (isLazyComponent(child) && typeof use === "function") child = use(child._payload);
-				slottableElement = getSlottableElementFromSlottable(slottable, child);
-				newChildren.push(slottableElement?.props?.children);
-			} else newChildren.push(maybeSlottable);
-		});
-		if (slottableElement) slottableElement = import_react.cloneElement(slottableElement, void 0, newChildren);
-		else if (!hasSlottable && import_react.Children.count(children) === 1 && import_react.isValidElement(children)) slottableElement = children;
-		const slottableElementRef = slottableElement ? getElementRef$1(slottableElement) : void 0;
-		const composedRef = useComposedRefs(forwardedRef, slottableElementRef);
-		if (!slottableElement) {
-			if (children || children === 0) throw new Error(hasSlottable ? createSlottableError(ownerName) : createSlotError(ownerName));
-			return children;
-		}
-		const mergedProps = mergeProps(slotProps, slottableElement.props ?? {});
-		if (slottableElement.type !== import_react.Fragment) mergedProps.ref = forwardedRef ? composedRef : slottableElementRef;
-		return import_react.cloneElement(slottableElement, mergedProps);
-	});
-	Slot2.displayName = `${ownerName}.Slot`;
-	return Slot2;
-}
-__name$15(createSlot, "createSlot");
-var SLOTTABLE_IDENTIFIER = Symbol.for("radix.slottable");
-// @__NO_SIDE_EFFECTS__
-function createSlottable(ownerName) {
-	const Slottable2 = /* @__PURE__ */ __name$15((props) => "child" in props ? props.children(props.child) : props.children, "Slottable");
-	Slottable2.displayName = `${ownerName}.Slottable`;
-	Slottable2.__radixId = SLOTTABLE_IDENTIFIER;
-	return Slottable2;
-}
-__name$15(createSlottable, "createSlottable");
-var getSlottableElementFromSlottable = /* @__PURE__ */ __name$15((slottable, child) => {
-	if ("child" in slottable.props) {
-		const child2 = slottable.props.child;
-		if (!import_react.isValidElement(child2)) return null;
-		return import_react.cloneElement(child2, void 0, slottable.props.children(child2.props.children));
-	}
-	return import_react.isValidElement(child) ? child : null;
-}, "getSlottableElementFromSlottable");
-function mergeProps(slotProps, childProps) {
-	const overrideProps = { ...childProps };
-	for (const propName in childProps) {
-		const slotPropValue = slotProps[propName];
-		const childPropValue = childProps[propName];
-		if (/^on[A-Z]/.test(propName)) {
-			if (slotPropValue && childPropValue) overrideProps[propName] = (...args) => {
-				const result = childPropValue(...args);
-				slotPropValue(...args);
-				return result;
-			};
-			else if (slotPropValue) overrideProps[propName] = slotPropValue;
-		} else if (propName === "style") overrideProps[propName] = {
-			...slotPropValue,
-			...childPropValue
-		};
-		else if (propName === "className") overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-	}
-	return {
-		...slotProps,
-		...overrideProps
-	};
-}
-__name$15(mergeProps, "mergeProps");
-function getElementRef$1(element) {
-	let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
-	let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-	if (mayWarn) return element.ref;
-	getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
-	mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-	if (mayWarn) return element.props.ref;
-	return element.props.ref || element.ref;
-}
-__name$15(getElementRef$1, "getElementRef");
-function isSlottable(child) {
-	return import_react.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
-}
-__name$15(isSlottable, "isSlottable");
-var REACT_LAZY_TYPE = Symbol.for("react.lazy");
-function isLazyComponent(element) {
-	return element != null && typeof element === "object" && "$$typeof" in element && element.$$typeof === REACT_LAZY_TYPE && "_payload" in element && isPromiseLike(element._payload);
-}
-__name$15(isLazyComponent, "isLazyComponent");
-function isPromiseLike(value) {
-	return typeof value === "object" && value !== null && "then" in value;
-}
-__name$15(isPromiseLike, "isPromiseLike");
-var createSlotError = /* @__PURE__ */ __name$15((ownerName) => {
-	return `${ownerName} failed to slot onto its children. Expected a single React element child or \`Slottable\`.`;
-}, "createSlotError");
-var createSlottableError = /* @__PURE__ */ __name$15((ownerName) => {
-	return `${ownerName} failed to slot onto its \`Slottable\`. Expected \`Slottable\` to receive a single React element child.`;
-}, "createSlottableError");
-var use = import_react[" use ".trim().toString()];
-//#endregion
-//#region node_modules/@radix-ui/react-primitive/dist/index.mjs
-var __defProp$14 = Object.defineProperty;
-var __name$14 = (target, value) => __defProp$14(target, "name", {
-	value,
-	configurable: true
-});
-var Primitive = [
-	"a",
-	"button",
-	"div",
-	"form",
-	"h2",
-	"h3",
-	"img",
-	"input",
-	"label",
-	"li",
-	"nav",
-	"ol",
-	"p",
-	"select",
-	"span",
-	"svg",
-	"ul"
-].reduce((primitive, node) => {
-	const Slot = /* @__PURE__ */ createSlot(`Primitive.${node}`);
-	const Node = import_react.forwardRef((props, forwardedRef) => {
-		const { asChild, ...primitiveProps } = props;
-		const Comp = asChild ? Slot : node;
-		if (typeof window !== "undefined") window[Symbol.for("radix-ui")] = true;
-		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Comp, {
-			...primitiveProps,
-			ref: forwardedRef
-		});
-	});
-	Node.displayName = `Primitive.${node}`;
-	return {
-		...primitive,
-		[node]: Node
-	};
-}, {});
-function dispatchDiscreteCustomEvent(target, event) {
-	if (target) import_react_dom.flushSync(() => target.dispatchEvent(event));
-}
-__name$14(dispatchDiscreteCustomEvent, "dispatchDiscreteCustomEvent");
-//#endregion
-//#region node_modules/@radix-ui/react-switch/dist/index.mjs
-var __defProp$13 = Object.defineProperty;
-var __name$13 = (target, value) => __defProp$13(target, "name", {
-	value,
-	configurable: true
-});
-var SWITCH_NAME = "Switch";
-var [createSwitchContext, createSwitchScope] = /* @__PURE__ */ createContextScope(SWITCH_NAME);
-var [SwitchProviderImpl, useSwitchContext] = createSwitchContext(SWITCH_NAME);
-function SwitchProvider(props) {
-	const { __scopeSwitch, checked: checkedProp, children, defaultChecked, disabled, form, name, onCheckedChange, required, value = "on", internal_do_not_use_render } = props;
-	const [checked, setChecked] = useControllableState({
-		prop: checkedProp,
-		defaultProp: defaultChecked ?? false,
-		onChange: onCheckedChange,
-		caller: SWITCH_NAME
-	});
-	const [control, setControl] = import_react.useState(null);
-	const [bubbleInput, setBubbleInput] = import_react.useState(null);
-	const hasConsumerStoppedPropagationRef = import_react.useRef(false);
-	const [userInteractionCount, onUserInteraction] = import_react.useReducer((count) => count + 1, 0);
-	const context = {
-		checked,
-		setChecked,
-		disabled,
-		control,
-		setControl,
-		name,
-		form,
-		value,
-		hasConsumerStoppedPropagationRef,
-		userInteractionCount,
-		onUserInteraction,
-		required,
-		defaultChecked,
-		isFormControl: control ? !!form || !!control.closest("form") : true,
-		bubbleInput,
-		setBubbleInput
-	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchProviderImpl, {
-		scope: __scopeSwitch,
-		...context,
-		children: isFunction$1(internal_do_not_use_render) ? internal_do_not_use_render(context) : children
-	});
-}
-__name$13(SwitchProvider, "SwitchProvider");
-var TRIGGER_NAME$1 = "SwitchTrigger";
-var SwitchTrigger = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchTrigger2({ __scopeSwitch, onClick, ...switchProps }, forwardedRef) {
-	const { control, form, value, disabled, checked, required, setControl, setChecked, hasConsumerStoppedPropagationRef, onUserInteraction, isFormControl, bubbleInput } = useSwitchContext(TRIGGER_NAME$1, __scopeSwitch);
-	const composedRefs = useComposedRefs(forwardedRef, setControl);
-	const initialCheckedStateRef = import_react.useRef(checked);
-	import_react.useEffect(() => {
-		const associatedForm = form ? control?.ownerDocument.getElementById(form) : control?.form;
-		if (associatedForm instanceof HTMLFormElement) {
-			const reset = /* @__PURE__ */ __name$13(() => setChecked(initialCheckedStateRef.current), "reset");
-			associatedForm.addEventListener("reset", reset);
-			return () => associatedForm.removeEventListener("reset", reset);
-		}
-	}, [
-		control,
-		form,
-		setChecked
-	]);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.button, {
-		type: "button",
-		role: "switch",
-		"aria-checked": checked,
-		"aria-required": required,
-		"data-state": getState(checked),
-		"data-disabled": disabled ? "" : void 0,
-		disabled,
-		value,
-		...switchProps,
-		ref: composedRefs,
-		onClick: composeEventHandlers(onClick, (event) => {
-			onUserInteraction();
-			setChecked((prevChecked) => !prevChecked);
-			if (bubbleInput && isFormControl) {
-				hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
-				if (!hasConsumerStoppedPropagationRef.current) event.stopPropagation();
-			}
-		})
-	});
-}, "SwitchTrigger"));
-var Switch$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function Switch2(props, forwardedRef) {
-	const { __scopeSwitch, name, checked, defaultChecked, required, disabled, value, onCheckedChange, form, ...switchProps } = props;
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchProvider, {
-		__scopeSwitch,
-		checked,
-		defaultChecked,
-		disabled,
-		required,
-		onCheckedChange,
-		name,
-		form,
-		value,
-		internal_do_not_use_render: ({ isFormControl }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchTrigger, {
-			...switchProps,
-			ref: forwardedRef,
-			__scopeSwitch
-		}), isFormControl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchBubbleInput, { __scopeSwitch })] })
-	});
-}, "Switch"));
-var THUMB_NAME = "SwitchThumb";
-var SwitchThumb = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchThumb2(props, forwardedRef) {
-	const { __scopeSwitch, ...thumbProps } = props;
-	const context = useSwitchContext(THUMB_NAME, __scopeSwitch);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.span, {
-		"data-state": getState(context.checked),
-		"data-disabled": context.disabled ? "" : void 0,
-		...thumbProps,
-		ref: forwardedRef
-	});
-}, "SwitchThumb"));
-var BUBBLE_INPUT_NAME$1 = "SwitchBubbleInput";
-var SwitchBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchBubbleInput2({ __scopeSwitch, onClick, ...props }, forwardedRef) {
-	const { control, hasConsumerStoppedPropagationRef, userInteractionCount, checked, defaultChecked, required, disabled, name, value, form, bubbleInput, setBubbleInput } = useSwitchContext(BUBBLE_INPUT_NAME$1, __scopeSwitch);
-	const composedRefs = useComposedRefs(forwardedRef, setBubbleInput);
-	const controlSize = useSize(control);
-	const shouldStopClickPropagationRef = import_react.useRef(false);
-	const prevCheckedRef = import_react.useRef(checked);
-	const prevUserInteractionCountRef = import_react.useRef(userInteractionCount);
-	import_react.useEffect(() => {
-		const input = bubbleInput;
-		if (!input) return;
-		const inputProto = window.HTMLInputElement.prototype;
-		const setChecked = Object.getOwnPropertyDescriptor(inputProto, "checked").set;
-		const isUserInteraction = userInteractionCount !== prevUserInteractionCountRef.current;
-		prevUserInteractionCountRef.current = userInteractionCount;
-		const checkedChanged = prevCheckedRef.current !== checked;
-		prevCheckedRef.current = checked;
-		const bubbles = !(isUserInteraction && hasConsumerStoppedPropagationRef.current);
-		if (checkedChanged && setChecked) {
-			shouldStopClickPropagationRef.current = !isUserInteraction;
-			const event = new Event("click", { bubbles });
-			setChecked.call(input, checked);
-			input.dispatchEvent(event);
-			shouldStopClickPropagationRef.current = false;
-		}
-	}, [
-		bubbleInput,
-		checked,
-		hasConsumerStoppedPropagationRef,
-		userInteractionCount
-	]);
-	const defaultCheckedRef = import_react.useRef(checked);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.input, {
-		type: "checkbox",
-		"aria-hidden": true,
-		defaultChecked: defaultChecked ?? defaultCheckedRef.current,
-		required,
-		disabled,
-		name,
-		value,
-		form,
-		...props,
-		tabIndex: -1,
-		ref: composedRefs,
-		onClick: composeEventHandlers(onClick, (event) => {
-			if (shouldStopClickPropagationRef.current) event.stopPropagation();
-		}),
-		style: {
-			...props.style,
-			...controlSize,
-			position: "absolute",
-			pointerEvents: "none",
-			opacity: 0,
-			margin: 0,
-			transform: "translateX(-100%)"
-		}
-	});
-}, "SwitchBubbleInput"));
-function isFunction$1(value) {
-	return typeof value === "function";
-}
-__name$13(isFunction$1, "isFunction");
-function getState(checked) {
-	return checked ? "checked" : "unchecked";
-}
-__name$13(getState, "getState");
-//#endregion
 //#region node_modules/clsx/dist/clsx.mjs
 function r(e) {
 	var t, f, n = "";
@@ -12243,6 +11928,59 @@ function clsx() {
 	for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
 	return n;
 }
+//#endregion
+//#region node_modules/class-variance-authority/dist/index.mjs
+/**
+* Copyright 2022 Joe Bell. All rights reserved.
+*
+* This file is licensed to you under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with the
+* License. You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+* WARRANTIES OR REPRESENTATIONS OF ANY KIND, either express or implied. See the
+* License for the specific language governing permissions and limitations under
+* the License.
+*/ var falsyToString = (value) => typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
+var cx = clsx;
+var cva = (base, config) => (props) => {
+	var _config_compoundVariants;
+	if ((config === null || config === void 0 ? void 0 : config.variants) == null) return cx(base, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
+	const { variants, defaultVariants } = config;
+	const getVariantClassNames = Object.keys(variants).map((variant) => {
+		const variantProp = props === null || props === void 0 ? void 0 : props[variant];
+		const defaultVariantProp = defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
+		if (variantProp === null) return null;
+		const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
+		return variants[variant][variantKey];
+	});
+	const propsWithoutUndefined = props && Object.entries(props).reduce((acc, param) => {
+		let [key, value] = param;
+		if (value === void 0) return acc;
+		acc[key] = value;
+		return acc;
+	}, {});
+	return cx(base, getVariantClassNames, config === null || config === void 0 ? void 0 : (_config_compoundVariants = config.compoundVariants) === null || _config_compoundVariants === void 0 ? void 0 : _config_compoundVariants.reduce((acc, param) => {
+		let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
+		return Object.entries(compoundVariantOptions).every((param) => {
+			let [key, value] = param;
+			return Array.isArray(value) ? value.includes({
+				...defaultVariants,
+				...propsWithoutUndefined
+			}[key]) : {
+				...defaultVariants,
+				...propsWithoutUndefined
+			}[key] === value;
+		}) ? [
+			...acc,
+			cvClass,
+			cvClassName
+		] : acc;
+	}, []), props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
+};
 //#endregion
 //#region node_modules/tailwind-merge/dist/bundle-mjs.mjs
 /**
@@ -15708,6 +15446,735 @@ function cn(...inputs) {
 	return twMerge(clsx(inputs));
 }
 //#endregion
+//#region src/ui/components/button.tsx
+var buttonVariants = cva("inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0", {
+	variants: {
+		variant: {
+			default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:bg-primary",
+			destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:bg-destructive",
+			outline: "border-2 border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent",
+			secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:bg-secondary",
+			success: "bg-green-600 text-green-50 shadow-sm hover:bg-green-600/90 active:bg-green-600",
+			dark: "bg-neutral-950 text-white shadow-sm hover:bg-neutral-900 active:bg-neutral-950",
+			ghost: "hover:bg-accent hover:text-accent-foreground active:bg-accent",
+			link: "text-primary underline-offset-4 hover:underline"
+		},
+		size: {
+			default: "h-11 px-5 min-w-[90px]",
+			sm: "h-9 px-3.5 min-w-[80px]",
+			xs: "h-7 px-2.5 min-w-0 gap-1.5 text-xs font-medium [&_svg]:size-3.5",
+			lg: "h-12 px-6 text-base min-w-[100px]",
+			xl: "h-13 px-7 text-lg min-w-[110px]",
+			icon: "h-11 w-11"
+		}
+	},
+	defaultVariants: {
+		variant: "default",
+		size: "default"
+	}
+});
+var Button = (0, import_react.forwardRef)(({ className, variant, size, ...props }, ref) => {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+		className: cn(buttonVariants({
+			variant,
+			size,
+			className
+		})),
+		ref,
+		...props
+	});
+});
+Button.displayName = "Button";
+//#endregion
+//#region node_modules/@radix-ui/primitive/dist/index.mjs
+var __defProp$21 = Object.defineProperty;
+var __name$21 = (target, value) => __defProp$21(target, "name", {
+	value,
+	configurable: true
+});
+var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
+function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
+	return /* @__PURE__ */ __name$21(function handleEvent(event) {
+		originalEventHandler?.(event);
+		if (checkForDefaultPrevented === false || !event || !event.defaultPrevented) return ourEventHandler?.(event);
+	}, "handleEvent");
+}
+__name$21(composeEventHandlers, "composeEventHandlers");
+function getOwnerWindow(element) {
+	if (!canUseDOM) throw new Error("Cannot access window outside of the DOM");
+	return element?.ownerDocument?.defaultView ?? window;
+}
+__name$21(getOwnerWindow, "getOwnerWindow");
+function getOwnerDocument(element) {
+	if (!canUseDOM) throw new Error("Cannot access document outside of the DOM");
+	return element?.ownerDocument ?? document;
+}
+__name$21(getOwnerDocument, "getOwnerDocument");
+function getActiveElement(node, activeDescendant = false) {
+	const { activeElement } = getOwnerDocument(node);
+	if (!activeElement?.nodeName) return null;
+	if (isFrame(activeElement) && activeElement.contentDocument) return getActiveElement(activeElement.contentDocument.body, activeDescendant);
+	if (activeDescendant) {
+		const id = activeElement.getAttribute("aria-activedescendant");
+		if (id) {
+			const element = getOwnerDocument(activeElement).getElementById(id);
+			if (element) return element;
+		}
+	}
+	return activeElement;
+}
+__name$21(getActiveElement, "getActiveElement");
+function isFrame(element) {
+	return element.tagName === "IFRAME";
+}
+__name$21(isFrame, "isFrame");
+//#endregion
+//#region node_modules/@radix-ui/react-compose-refs/dist/index.mjs
+var __defProp$20 = Object.defineProperty;
+var __name$20 = (target, value) => __defProp$20(target, "name", {
+	value,
+	configurable: true
+});
+function setRef$1(ref, value) {
+	if (typeof ref === "function") return ref(value);
+	else if (ref !== null && ref !== void 0) ref.current = value;
+}
+__name$20(setRef$1, "setRef");
+function composeRefs(...refs) {
+	return (node) => {
+		let hasCleanup = false;
+		const cleanups = refs.map((ref) => {
+			const cleanup = setRef$1(ref, node);
+			if (!hasCleanup && typeof cleanup == "function") hasCleanup = true;
+			return cleanup;
+		});
+		if (hasCleanup) return () => {
+			for (let i = 0; i < cleanups.length; i++) {
+				const cleanup = cleanups[i];
+				if (typeof cleanup == "function") cleanup();
+				else setRef$1(refs[i], null);
+			}
+		};
+	};
+}
+__name$20(composeRefs, "composeRefs");
+function useComposedRefs(...refs) {
+	return import_react.useCallback(composeRefs(...refs), refs);
+}
+__name$20(useComposedRefs, "useComposedRefs");
+//#endregion
+//#region node_modules/@radix-ui/react-context/dist/index.mjs
+var __defProp$19 = Object.defineProperty;
+var __name$19 = (target, value) => __defProp$19(target, "name", {
+	value,
+	configurable: true
+});
+// @__NO_SIDE_EFFECTS__
+function createContext2(rootComponentName, defaultContext) {
+	const Context = import_react.createContext(defaultContext);
+	Context.displayName = rootComponentName + "Context";
+	const Provider = /* @__PURE__ */ __name$19((props) => {
+		const { children, ...context } = props;
+		const value = import_react.useMemo(() => context, Object.values(context));
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Context.Provider, {
+			value,
+			children
+		});
+	}, "Provider");
+	Provider.displayName = rootComponentName + "Provider";
+	function useContext2(consumerName, options = {}) {
+		const { optional = false } = options;
+		const context = import_react.useContext(Context);
+		if (context) return context;
+		if (defaultContext !== void 0) return defaultContext;
+		if (optional) return void 0;
+		throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+	}
+	__name$19(useContext2, "useContext");
+	return [Provider, useContext2];
+}
+__name$19(createContext2, "createContext");
+// @__NO_SIDE_EFFECTS__
+function createContextScope(scopeName, createContextScopeDeps = []) {
+	let defaultContexts = [];
+	function createContext3(rootComponentName, defaultContext) {
+		const BaseContext = import_react.createContext(defaultContext);
+		BaseContext.displayName = rootComponentName + "Context";
+		const index = defaultContexts.length;
+		defaultContexts = [...defaultContexts, defaultContext];
+		const Provider = /* @__PURE__ */ __name$19((props) => {
+			const { scope, children, ...context } = props;
+			const Context = scope?.[scopeName]?.[index] || BaseContext;
+			const value = import_react.useMemo(() => context, Object.values(context));
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Context.Provider, {
+				value,
+				children
+			});
+		}, "Provider");
+		Provider.displayName = rootComponentName + "Provider";
+		function useContext2(consumerName, scope, options = {}) {
+			const { optional = false } = options;
+			const Context = scope?.[scopeName]?.[index] || BaseContext;
+			const context = import_react.useContext(Context);
+			if (context) return context;
+			if (defaultContext !== void 0) return defaultContext;
+			if (optional) return void 0;
+			throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+		}
+		__name$19(useContext2, "useContext");
+		return [Provider, useContext2];
+	}
+	__name$19(createContext3, "createContext");
+	const createScope = /* @__PURE__ */ __name$19(() => {
+		const scopeContexts = defaultContexts.map((defaultContext) => {
+			return import_react.createContext(defaultContext);
+		});
+		return /* @__PURE__ */ __name$19(function useScope(scope) {
+			const contexts = scope?.[scopeName] || scopeContexts;
+			return import_react.useMemo(() => ({ [`__scope${scopeName}`]: {
+				...scope,
+				[scopeName]: contexts
+			} }), [scope, contexts]);
+		}, "useScope");
+	}, "createScope");
+	createScope.scopeName = scopeName;
+	return [createContext3, composeContextScopes(createScope, ...createContextScopeDeps)];
+}
+__name$19(createContextScope, "createContextScope");
+function composeContextScopes(...scopes) {
+	const baseScope = scopes[0];
+	if (scopes.length === 1) return baseScope;
+	const createScope = /* @__PURE__ */ __name$19(() => {
+		const scopeHooks = scopes.map((createScope2) => ({
+			useScope: createScope2(),
+			scopeName: createScope2.scopeName
+		}));
+		return /* @__PURE__ */ __name$19(function useComposedScopes(overrideScopes) {
+			const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
+				const currentScope = useScope(overrideScopes)[`__scope${scopeName}`];
+				return {
+					...nextScopes2,
+					...currentScope
+				};
+			}, {});
+			return import_react.useMemo(() => ({ [`__scope${baseScope.scopeName}`]: nextScopes }), [nextScopes]);
+		}, "useComposedScopes");
+	}, "createScope");
+	createScope.scopeName = baseScope.scopeName;
+	return createScope;
+}
+__name$19(composeContextScopes, "composeContextScopes");
+//#endregion
+//#region node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
+var useLayoutEffect2 = globalThis?.document ? import_react.useLayoutEffect : () => {};
+//#endregion
+//#region node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
+var __defProp$18 = Object.defineProperty;
+var __name$18 = (target, value) => __defProp$18(target, "name", {
+	value,
+	configurable: true
+});
+var useReactEffectEvent = import_react[" useEffectEvent ".trim().toString()];
+var useReactInsertionEffect = import_react[" useInsertionEffect ".trim().toString()];
+function useEffectEvent(callback) {
+	if (typeof useReactEffectEvent === "function") return useReactEffectEvent(callback);
+	const ref = import_react.useRef(() => {
+		throw new Error("Cannot call an event handler while rendering.");
+	});
+	if (typeof useReactInsertionEffect === "function") useReactInsertionEffect(() => {
+		ref.current = callback;
+	});
+	else useLayoutEffect2(() => {
+		ref.current = callback;
+	});
+	return import_react.useMemo(() => ((...args) => ref.current?.(...args)), []);
+}
+__name$18(useEffectEvent, "useEffectEvent");
+//#endregion
+//#region node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
+var __defProp$17 = Object.defineProperty;
+var __name$17 = (target, value) => __defProp$17(target, "name", {
+	value,
+	configurable: true
+});
+var useInsertionEffect = import_react[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
+function useControllableState({ prop, defaultProp, onChange = /* @__PURE__ */ __name$17(() => {}, "onChange"), caller }) {
+	const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
+		defaultProp,
+		onChange
+	});
+	const isControlled = prop !== void 0;
+	return [isControlled ? prop : uncontrolledProp, import_react.useCallback((nextValue) => {
+		if (isControlled) {
+			const value2 = isFunction$2(nextValue) ? nextValue(prop) : nextValue;
+			if (value2 !== prop) onChangeRef.current?.(value2);
+		} else setUncontrolledProp(nextValue);
+	}, [
+		isControlled,
+		prop,
+		setUncontrolledProp,
+		onChangeRef
+	])];
+}
+__name$17(useControllableState, "useControllableState");
+function useUncontrolledState({ defaultProp, onChange }) {
+	const [value, setValue] = import_react.useState(defaultProp);
+	const prevValueRef = import_react.useRef(value);
+	const onChangeRef = import_react.useRef(onChange);
+	useInsertionEffect(() => {
+		onChangeRef.current = onChange;
+	}, [onChange]);
+	import_react.useEffect(() => {
+		if (prevValueRef.current !== value) {
+			onChangeRef.current?.(value);
+			prevValueRef.current = value;
+		}
+	}, [value, prevValueRef]);
+	return [
+		value,
+		setValue,
+		onChangeRef
+	];
+}
+__name$17(useUncontrolledState, "useUncontrolledState");
+function isFunction$2(value) {
+	return typeof value === "function";
+}
+__name$17(isFunction$2, "isFunction");
+var SYNC_STATE = Symbol("RADIX:SYNC_STATE");
+function useControllableStateReducer(reducer, userArgs, initialArg, init) {
+	const { prop: controlledState, defaultProp, onChange: onChangeProp, caller } = userArgs;
+	const isControlled = controlledState !== void 0;
+	const onChange = useEffectEvent(onChangeProp);
+	const args = [{
+		...initialArg,
+		state: defaultProp
+	}];
+	if (init) args.push(init);
+	const [internalState, dispatch] = import_react.useReducer((state2, action) => {
+		if (action.type === SYNC_STATE) return {
+			...state2,
+			state: action.state
+		};
+		const next = reducer(state2, action);
+		if (isControlled && !Object.is(next.state, state2.state)) onChange(next.state);
+		return next;
+	}, ...args);
+	const uncontrolledState = internalState.state;
+	const prevValueRef = import_react.useRef(uncontrolledState);
+	import_react.useEffect(() => {
+		if (prevValueRef.current !== uncontrolledState) {
+			prevValueRef.current = uncontrolledState;
+			if (!isControlled) onChange(uncontrolledState);
+		}
+	}, [
+		uncontrolledState,
+		prevValueRef,
+		isControlled
+	]);
+	const state = import_react.useMemo(() => {
+		if (controlledState !== void 0) return {
+			...internalState,
+			state: controlledState
+		};
+		return internalState;
+	}, [internalState, controlledState]);
+	import_react.useEffect(() => {
+		if (isControlled && !Object.is(controlledState, internalState.state)) dispatch({
+			type: SYNC_STATE,
+			state: controlledState
+		});
+	}, [
+		controlledState,
+		internalState.state,
+		isControlled
+	]);
+	return [state, dispatch];
+}
+__name$17(useControllableStateReducer, "useControllableStateReducer");
+//#endregion
+//#region node_modules/@radix-ui/react-use-size/dist/index.mjs
+var __defProp$16 = Object.defineProperty;
+var __name$16 = (target, value) => __defProp$16(target, "name", {
+	value,
+	configurable: true
+});
+function useSize(element) {
+	const [size, setSize] = import_react.useState(void 0);
+	useLayoutEffect2(() => {
+		if (element) {
+			setSize({
+				width: element.offsetWidth,
+				height: element.offsetHeight
+			});
+			const resizeObserver = new ResizeObserver((entries) => {
+				if (!Array.isArray(entries)) return;
+				if (!entries.length) return;
+				const entry = entries[0];
+				let width;
+				let height;
+				if ("borderBoxSize" in entry) {
+					const borderSizeEntry = entry["borderBoxSize"];
+					const borderSize = Array.isArray(borderSizeEntry) ? borderSizeEntry[0] : borderSizeEntry;
+					width = borderSize["inlineSize"];
+					height = borderSize["blockSize"];
+				} else {
+					width = element.offsetWidth;
+					height = element.offsetHeight;
+				}
+				setSize({
+					width,
+					height
+				});
+			});
+			resizeObserver.observe(element, { box: "border-box" });
+			return () => resizeObserver.unobserve(element);
+		} else setSize(void 0);
+	}, [element]);
+	return size;
+}
+__name$16(useSize, "useSize");
+//#endregion
+//#region node_modules/@radix-ui/react-slot/dist/index.mjs
+var import_react_dom = /* @__PURE__ */ __toESM(require_react_dom(), 1);
+var __defProp$15 = Object.defineProperty;
+var __name$15 = (target, value) => __defProp$15(target, "name", {
+	value,
+	configurable: true
+});
+// @__NO_SIDE_EFFECTS__
+function createSlot(ownerName) {
+	const Slot2 = import_react.forwardRef((props, forwardedRef) => {
+		let { children, ...slotProps } = props;
+		let slottableElement = null;
+		let hasSlottable = false;
+		const newChildren = [];
+		if (isLazyComponent(children) && typeof use === "function") children = use(children._payload);
+		import_react.Children.forEach(children, (maybeSlottable) => {
+			if (isSlottable(maybeSlottable)) {
+				hasSlottable = true;
+				const slottable = maybeSlottable;
+				let child = "child" in slottable.props ? slottable.props.child : slottable.props.children;
+				if (isLazyComponent(child) && typeof use === "function") child = use(child._payload);
+				slottableElement = getSlottableElementFromSlottable(slottable, child);
+				newChildren.push(slottableElement?.props?.children);
+			} else newChildren.push(maybeSlottable);
+		});
+		if (slottableElement) slottableElement = import_react.cloneElement(slottableElement, void 0, newChildren);
+		else if (!hasSlottable && import_react.Children.count(children) === 1 && import_react.isValidElement(children)) slottableElement = children;
+		const slottableElementRef = slottableElement ? getElementRef$1(slottableElement) : void 0;
+		const composedRef = useComposedRefs(forwardedRef, slottableElementRef);
+		if (!slottableElement) {
+			if (children || children === 0) throw new Error(hasSlottable ? createSlottableError(ownerName) : createSlotError(ownerName));
+			return children;
+		}
+		const mergedProps = mergeProps(slotProps, slottableElement.props ?? {});
+		if (slottableElement.type !== import_react.Fragment) mergedProps.ref = forwardedRef ? composedRef : slottableElementRef;
+		return import_react.cloneElement(slottableElement, mergedProps);
+	});
+	Slot2.displayName = `${ownerName}.Slot`;
+	return Slot2;
+}
+__name$15(createSlot, "createSlot");
+var SLOTTABLE_IDENTIFIER = Symbol.for("radix.slottable");
+// @__NO_SIDE_EFFECTS__
+function createSlottable(ownerName) {
+	const Slottable2 = /* @__PURE__ */ __name$15((props) => "child" in props ? props.children(props.child) : props.children, "Slottable");
+	Slottable2.displayName = `${ownerName}.Slottable`;
+	Slottable2.__radixId = SLOTTABLE_IDENTIFIER;
+	return Slottable2;
+}
+__name$15(createSlottable, "createSlottable");
+var getSlottableElementFromSlottable = /* @__PURE__ */ __name$15((slottable, child) => {
+	if ("child" in slottable.props) {
+		const child2 = slottable.props.child;
+		if (!import_react.isValidElement(child2)) return null;
+		return import_react.cloneElement(child2, void 0, slottable.props.children(child2.props.children));
+	}
+	return import_react.isValidElement(child) ? child : null;
+}, "getSlottableElementFromSlottable");
+function mergeProps(slotProps, childProps) {
+	const overrideProps = { ...childProps };
+	for (const propName in childProps) {
+		const slotPropValue = slotProps[propName];
+		const childPropValue = childProps[propName];
+		if (/^on[A-Z]/.test(propName)) {
+			if (slotPropValue && childPropValue) overrideProps[propName] = (...args) => {
+				const result = childPropValue(...args);
+				slotPropValue(...args);
+				return result;
+			};
+			else if (slotPropValue) overrideProps[propName] = slotPropValue;
+		} else if (propName === "style") overrideProps[propName] = {
+			...slotPropValue,
+			...childPropValue
+		};
+		else if (propName === "className") overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
+	}
+	return {
+		...slotProps,
+		...overrideProps
+	};
+}
+__name$15(mergeProps, "mergeProps");
+function getElementRef$1(element) {
+	let getter = Object.getOwnPropertyDescriptor(element.props, "ref")?.get;
+	let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+	if (mayWarn) return element.ref;
+	getter = Object.getOwnPropertyDescriptor(element, "ref")?.get;
+	mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+	if (mayWarn) return element.props.ref;
+	return element.props.ref || element.ref;
+}
+__name$15(getElementRef$1, "getElementRef");
+function isSlottable(child) {
+	return import_react.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
+}
+__name$15(isSlottable, "isSlottable");
+var REACT_LAZY_TYPE = Symbol.for("react.lazy");
+function isLazyComponent(element) {
+	return element != null && typeof element === "object" && "$$typeof" in element && element.$$typeof === REACT_LAZY_TYPE && "_payload" in element && isPromiseLike(element._payload);
+}
+__name$15(isLazyComponent, "isLazyComponent");
+function isPromiseLike(value) {
+	return typeof value === "object" && value !== null && "then" in value;
+}
+__name$15(isPromiseLike, "isPromiseLike");
+var createSlotError = /* @__PURE__ */ __name$15((ownerName) => {
+	return `${ownerName} failed to slot onto its children. Expected a single React element child or \`Slottable\`.`;
+}, "createSlotError");
+var createSlottableError = /* @__PURE__ */ __name$15((ownerName) => {
+	return `${ownerName} failed to slot onto its \`Slottable\`. Expected \`Slottable\` to receive a single React element child.`;
+}, "createSlottableError");
+var use = import_react[" use ".trim().toString()];
+//#endregion
+//#region node_modules/@radix-ui/react-primitive/dist/index.mjs
+var __defProp$14 = Object.defineProperty;
+var __name$14 = (target, value) => __defProp$14(target, "name", {
+	value,
+	configurable: true
+});
+var Primitive = [
+	"a",
+	"button",
+	"div",
+	"form",
+	"h2",
+	"h3",
+	"img",
+	"input",
+	"label",
+	"li",
+	"nav",
+	"ol",
+	"p",
+	"select",
+	"span",
+	"svg",
+	"ul"
+].reduce((primitive, node) => {
+	const Slot = /* @__PURE__ */ createSlot(`Primitive.${node}`);
+	const Node = import_react.forwardRef((props, forwardedRef) => {
+		const { asChild, ...primitiveProps } = props;
+		const Comp = asChild ? Slot : node;
+		if (typeof window !== "undefined") window[Symbol.for("radix-ui")] = true;
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Comp, {
+			...primitiveProps,
+			ref: forwardedRef
+		});
+	});
+	Node.displayName = `Primitive.${node}`;
+	return {
+		...primitive,
+		[node]: Node
+	};
+}, {});
+function dispatchDiscreteCustomEvent(target, event) {
+	if (target) import_react_dom.flushSync(() => target.dispatchEvent(event));
+}
+__name$14(dispatchDiscreteCustomEvent, "dispatchDiscreteCustomEvent");
+//#endregion
+//#region node_modules/@radix-ui/react-switch/dist/index.mjs
+var __defProp$13 = Object.defineProperty;
+var __name$13 = (target, value) => __defProp$13(target, "name", {
+	value,
+	configurable: true
+});
+var SWITCH_NAME = "Switch";
+var [createSwitchContext, createSwitchScope] = /* @__PURE__ */ createContextScope(SWITCH_NAME);
+var [SwitchProviderImpl, useSwitchContext] = createSwitchContext(SWITCH_NAME);
+function SwitchProvider(props) {
+	const { __scopeSwitch, checked: checkedProp, children, defaultChecked, disabled, form, name, onCheckedChange, required, value = "on", internal_do_not_use_render } = props;
+	const [checked, setChecked] = useControllableState({
+		prop: checkedProp,
+		defaultProp: defaultChecked ?? false,
+		onChange: onCheckedChange,
+		caller: SWITCH_NAME
+	});
+	const [control, setControl] = import_react.useState(null);
+	const [bubbleInput, setBubbleInput] = import_react.useState(null);
+	const hasConsumerStoppedPropagationRef = import_react.useRef(false);
+	const [userInteractionCount, onUserInteraction] = import_react.useReducer((count) => count + 1, 0);
+	const context = {
+		checked,
+		setChecked,
+		disabled,
+		control,
+		setControl,
+		name,
+		form,
+		value,
+		hasConsumerStoppedPropagationRef,
+		userInteractionCount,
+		onUserInteraction,
+		required,
+		defaultChecked,
+		isFormControl: control ? !!form || !!control.closest("form") : true,
+		bubbleInput,
+		setBubbleInput
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchProviderImpl, {
+		scope: __scopeSwitch,
+		...context,
+		children: isFunction$1(internal_do_not_use_render) ? internal_do_not_use_render(context) : children
+	});
+}
+__name$13(SwitchProvider, "SwitchProvider");
+var TRIGGER_NAME$1 = "SwitchTrigger";
+var SwitchTrigger = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchTrigger2({ __scopeSwitch, onClick, ...switchProps }, forwardedRef) {
+	const { control, form, value, disabled, checked, required, setControl, setChecked, hasConsumerStoppedPropagationRef, onUserInteraction, isFormControl, bubbleInput } = useSwitchContext(TRIGGER_NAME$1, __scopeSwitch);
+	const composedRefs = useComposedRefs(forwardedRef, setControl);
+	const initialCheckedStateRef = import_react.useRef(checked);
+	import_react.useEffect(() => {
+		const associatedForm = form ? control?.ownerDocument.getElementById(form) : control?.form;
+		if (associatedForm instanceof HTMLFormElement) {
+			const reset = /* @__PURE__ */ __name$13(() => setChecked(initialCheckedStateRef.current), "reset");
+			associatedForm.addEventListener("reset", reset);
+			return () => associatedForm.removeEventListener("reset", reset);
+		}
+	}, [
+		control,
+		form,
+		setChecked
+	]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.button, {
+		type: "button",
+		role: "switch",
+		"aria-checked": checked,
+		"aria-required": required,
+		"data-state": getState(checked),
+		"data-disabled": disabled ? "" : void 0,
+		disabled,
+		value,
+		...switchProps,
+		ref: composedRefs,
+		onClick: composeEventHandlers(onClick, (event) => {
+			onUserInteraction();
+			setChecked((prevChecked) => !prevChecked);
+			if (bubbleInput && isFormControl) {
+				hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
+				if (!hasConsumerStoppedPropagationRef.current) event.stopPropagation();
+			}
+		})
+	});
+}, "SwitchTrigger"));
+var Switch$1 = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function Switch2(props, forwardedRef) {
+	const { __scopeSwitch, name, checked, defaultChecked, required, disabled, value, onCheckedChange, form, ...switchProps } = props;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchProvider, {
+		__scopeSwitch,
+		checked,
+		defaultChecked,
+		disabled,
+		required,
+		onCheckedChange,
+		name,
+		form,
+		value,
+		internal_do_not_use_render: ({ isFormControl }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchTrigger, {
+			...switchProps,
+			ref: forwardedRef,
+			__scopeSwitch
+		}), isFormControl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchBubbleInput, { __scopeSwitch })] })
+	});
+}, "Switch"));
+var THUMB_NAME = "SwitchThumb";
+var SwitchThumb = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchThumb2(props, forwardedRef) {
+	const { __scopeSwitch, ...thumbProps } = props;
+	const context = useSwitchContext(THUMB_NAME, __scopeSwitch);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.span, {
+		"data-state": getState(context.checked),
+		"data-disabled": context.disabled ? "" : void 0,
+		...thumbProps,
+		ref: forwardedRef
+	});
+}, "SwitchThumb"));
+var BUBBLE_INPUT_NAME$1 = "SwitchBubbleInput";
+var SwitchBubbleInput = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$13(function SwitchBubbleInput2({ __scopeSwitch, onClick, ...props }, forwardedRef) {
+	const { control, hasConsumerStoppedPropagationRef, userInteractionCount, checked, defaultChecked, required, disabled, name, value, form, bubbleInput, setBubbleInput } = useSwitchContext(BUBBLE_INPUT_NAME$1, __scopeSwitch);
+	const composedRefs = useComposedRefs(forwardedRef, setBubbleInput);
+	const controlSize = useSize(control);
+	const shouldStopClickPropagationRef = import_react.useRef(false);
+	const prevCheckedRef = import_react.useRef(checked);
+	const prevUserInteractionCountRef = import_react.useRef(userInteractionCount);
+	import_react.useEffect(() => {
+		const input = bubbleInput;
+		if (!input) return;
+		const inputProto = window.HTMLInputElement.prototype;
+		const setChecked = Object.getOwnPropertyDescriptor(inputProto, "checked").set;
+		const isUserInteraction = userInteractionCount !== prevUserInteractionCountRef.current;
+		prevUserInteractionCountRef.current = userInteractionCount;
+		const checkedChanged = prevCheckedRef.current !== checked;
+		prevCheckedRef.current = checked;
+		const bubbles = !(isUserInteraction && hasConsumerStoppedPropagationRef.current);
+		if (checkedChanged && setChecked) {
+			shouldStopClickPropagationRef.current = !isUserInteraction;
+			const event = new Event("click", { bubbles });
+			setChecked.call(input, checked);
+			input.dispatchEvent(event);
+			shouldStopClickPropagationRef.current = false;
+		}
+	}, [
+		bubbleInput,
+		checked,
+		hasConsumerStoppedPropagationRef,
+		userInteractionCount
+	]);
+	const defaultCheckedRef = import_react.useRef(checked);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.input, {
+		type: "checkbox",
+		"aria-hidden": true,
+		defaultChecked: defaultChecked ?? defaultCheckedRef.current,
+		required,
+		disabled,
+		name,
+		value,
+		form,
+		...props,
+		tabIndex: -1,
+		ref: composedRefs,
+		onClick: composeEventHandlers(onClick, (event) => {
+			if (shouldStopClickPropagationRef.current) event.stopPropagation();
+		}),
+		style: {
+			...props.style,
+			...controlSize,
+			position: "absolute",
+			pointerEvents: "none",
+			opacity: 0,
+			margin: 0,
+			transform: "translateX(-100%)"
+		}
+	});
+}, "SwitchBubbleInput"));
+function isFunction$1(value) {
+	return typeof value === "function";
+}
+__name$13(isFunction$1, "isFunction");
+function getState(checked) {
+	return checked ? "checked" : "unchecked";
+}
+__name$13(getState, "getState");
+//#endregion
 //#region src/ui/components/switch.tsx
 var Switch = (0, import_react.forwardRef)(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch$1, {
 	className: cn("peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent", "transition-colors duration-200 ease-in-out", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1", "disabled:cursor-not-allowed disabled:opacity-50", "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input", className),
@@ -15716,380 +16183,6 @@ var Switch = (0, import_react.forwardRef)(({ className, ...props }, ref) => /* @
 	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchThumb, { className: cn("pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0", "transition-transform duration-200 ease-in-out", "data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0") })
 }));
 Switch.displayName = Switch$1.displayName;
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var toKebabCase = (string) => string?.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-function toLucideIconData(iconName, iconNode, aliases = []) {
-	if (iconNode == null) throw new Error("[lucide]: iconNode is required when icon name is used");
-	return {
-		name: toKebabCase(iconName),
-		size: 24,
-		node: iconNode,
-		...aliases.length > 0 ? { aliases } : {}
-	};
-}
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var toCamelCase = (string) => {
-	let out = "";
-	let upperNext = false;
-	for (const ch of string) {
-		if (ch === "-" || ch === "_" || ch <= " ") {
-			upperNext = out.length > 0;
-			continue;
-		}
-		if (out.length === 0) out += ch.toLowerCase();
-		else out += upperNext ? ch.toUpperCase() : ch;
-		upperNext = false;
-	}
-	return out;
-};
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var toPascalCase = (string) => {
-	const camelCase = toCamelCase(string);
-	return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-};
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var mergeClasses = (...classes) => classes.filter((className, index, array) => {
-	return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
-}).join(" ").trim();
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/defaultAttributes.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var defaultAttributes = {
-	xmlns: "http://www.w3.org/2000/svg",
-	width: 24,
-	height: 24,
-	viewBox: "0 0 24 24",
-	fill: "none",
-	stroke: "currentColor",
-	"stroke-width": 2,
-	"stroke-linecap": "round",
-	"stroke-linejoin": "round"
-};
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-function isDefined(value) {
-	return value !== null && value !== void 0;
-}
-function buildLucideIconNode(icon, params = {}) {
-	const attributeNames = params.attributeNames ?? {};
-	const getAttributeName = (attributeName) => attributeNames[attributeName] ?? attributeName;
-	const viewBoxWidth = icon.size ?? icon.width ?? defaultAttributes["width"];
-	const viewBoxHeight = icon.size ?? icon.height ?? defaultAttributes["height"];
-	const aliasClassNames = icon.aliases?.filter((alias) => typeof alias === "string" && alias.trim() !== "").map((alias) => `lucide-${alias}`) ?? [];
-	const iconClassNames = [...icon.name ? [`lucide-${icon.name}`] : [], ...aliasClassNames];
-	const classNamesFromClassName = params.className?.split(" ").filter(Boolean) ?? [];
-	const className = params.includeDefaultClasses === false ? mergeClasses(...classNamesFromClassName) : mergeClasses("lucide", ...iconClassNames, ...classNamesFromClassName);
-	const calculatedStrokeWidth = params.absoluteStrokeWidth ? Number(params.strokeWidth ?? defaultAttributes["stroke-width"]) * Number(icon.size ?? icon.width ?? defaultAttributes["width"]) / Number(params.size ?? params.width ?? defaultAttributes["width"]) : params.strokeWidth ?? defaultAttributes["stroke-width"];
-	return [
-		"svg",
-		{
-			...Object.entries(defaultAttributes).reduce((attrs, [attrName, value]) => {
-				attrs[getAttributeName(attrName)] = value;
-				return attrs;
-			}, {}),
-			..."color" in params && params.color && { [getAttributeName("stroke")]: params.color },
-			..."size" in params && isDefined(params.size) && {
-				[getAttributeName("width")]: params.size,
-				[getAttributeName("height")]: params.size
-			},
-			..."width" in params && isDefined(params.width) && { [getAttributeName("width")]: params.width },
-			..."height" in params && isDefined(params.height) && { [getAttributeName("height")]: params.height },
-			[getAttributeName("stroke-width")]: calculatedStrokeWidth,
-			...className && { [getAttributeName("class")]: className },
-			[getAttributeName("viewBox")]: `0 0 ${viewBoxWidth} ${viewBoxHeight}`,
-			...params.hasA11yProp === false ? { [getAttributeName("aria-hidden")]: "true" } : {},
-			..."attributes" in params && params.attributes
-		},
-		icon.node.map((child) => {
-			const [name, attrs, children] = child;
-			const nextAttrs = params.nonScalingStroke ? {
-				[getAttributeName("vector-effect")]: "non-scaling-stroke",
-				...attrs
-			} : attrs;
-			return children ? [
-				name,
-				nextAttrs,
-				children
-			] : [name, nextAttrs];
-		})
-	];
-}
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-function buildLucideIconForReact(icon, params = {}) {
-	return buildLucideIconNode(icon, {
-		...params,
-		attributeNames: {
-			...params.attributeNames,
-			class: "className",
-			"stroke-width": "strokeWidth",
-			"stroke-linecap": "strokeLinecap",
-			"stroke-linejoin": "strokeLinejoin",
-			"vector-effect": "vectorEffect"
-		}
-	});
-}
-//#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var hasA11yProp = (props) => {
-	for (const prop in props) if (prop.startsWith("aria-") || prop === "role" || prop === "title") return true;
-	return false;
-};
-//#endregion
-//#region node_modules/lucide-react/dist/esm/context.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var LucideContext = (0, import_react.createContext)({});
-var useLucideContext = () => (0, import_react.useContext)(LucideContext);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/Icon.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var Icon = (0, import_react.forwardRef)(({ color, size, width, height, strokeWidth, absoluteStrokeWidth, nonScalingStroke, className = "", children, iconNode = [], icon = {
-	node: iconNode,
-	aliases: [],
-	size: 24
-}, ...rest }, ref) => {
-	const { size: contextSize = 24, strokeWidth: contextStrokeWidth = 2, absoluteStrokeWidth: contextAbsoluteStrokeWidth = false, nonScalingStroke: contextNonScalingStroke = false, color: contextColor = "currentColor", className: contextClass = "" } = useLucideContext() ?? {};
-	const hasAccessibleProp = Boolean(children) || hasA11yProp(rest);
-	const [name, svgAttributes, builtIconNode = []] = buildLucideIconForReact(icon, {
-		color: color ?? contextColor,
-		width: width ?? size ?? contextSize,
-		height: height ?? size ?? contextSize,
-		strokeWidth: strokeWidth ?? contextStrokeWidth,
-		absoluteStrokeWidth: absoluteStrokeWidth ?? contextAbsoluteStrokeWidth,
-		nonScalingStroke: nonScalingStroke ?? contextNonScalingStroke,
-		className: mergeClasses(contextClass, className),
-		hasA11yProp: hasAccessibleProp,
-		attributes: rest
-	});
-	return (0, import_react.createElement)(name, {
-		ref,
-		...svgAttributes
-	}, [...builtIconNode.map(([tag, attrs]) => (0, import_react.createElement)(tag, attrs)), ...Array.isArray(children) ? children : [children]]);
-});
-//#endregion
-//#region node_modules/lucide-react/dist/esm/createLucideIcon.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-function createLucideIcon(iconDataOrName, iconNode = [], aliases = []) {
-	const iconData = typeof iconDataOrName === "string" ? toLucideIconData(iconDataOrName, iconNode, aliases) : iconDataOrName;
-	const Component = (0, import_react.forwardRef)(({ className, ...props }, ref) => (0, import_react.createElement)(Icon, {
-		ref,
-		icon: iconData,
-		className,
-		...props
-	}));
-	if (iconData.name) Component.displayName = toPascalCase(iconData.name);
-	return Component;
-}
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData$5 = {
-	name: "chevron-down",
-	size: 24,
-	node: [["path", {
-		d: "m6 9 6 6 6-6",
-		key: "qrunsl"
-	}]]
-};
-__iconData$5.node;
-var ChevronDown = createLucideIcon(__iconData$5);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/plus.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData$4 = {
-	name: "plus",
-	size: 24,
-	node: [["path", {
-		d: "M5 12h14",
-		key: "1ays0h"
-	}], ["path", {
-		d: "M12 5v14",
-		key: "s699le"
-	}]]
-};
-__iconData$4.node;
-var Plus = createLucideIcon(__iconData$4);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/refresh-cw.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData$3 = {
-	name: "refresh-cw",
-	size: 24,
-	node: [
-		["path", {
-			d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8",
-			key: "v9h5vc"
-		}],
-		["path", {
-			d: "M21 3v5h-5",
-			key: "1q7to0"
-		}],
-		["path", {
-			d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16",
-			key: "3uifl3"
-		}],
-		["path", {
-			d: "M8 16H3v5",
-			key: "1cv678"
-		}]
-	]
-};
-__iconData$3.node;
-var RefreshCw = createLucideIcon(__iconData$3);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/rotate-ccw.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData$2 = {
-	name: "rotate-ccw",
-	size: 24,
-	node: [["path", {
-		d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8",
-		key: "1357e3"
-	}], ["path", {
-		d: "M3 3v5h5",
-		key: "1xhq8a"
-	}]]
-};
-__iconData$2.node;
-var RotateCcw = createLucideIcon(__iconData$2);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/search.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData$1 = {
-	name: "search",
-	size: 24,
-	node: [["path", {
-		d: "m21 21-4.34-4.34",
-		key: "14j7rj"
-	}], ["circle", {
-		cx: "11",
-		cy: "11",
-		r: "8",
-		key: "4ej97u"
-	}]]
-};
-__iconData$1.node;
-var Search = createLucideIcon(__iconData$1);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/x.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData = {
-	name: "x",
-	size: 24,
-	node: [["path", {
-		d: "M18 6 6 18",
-		key: "1bl5f8"
-	}], ["path", {
-		d: "m6 6 12 12",
-		key: "d8bk6v"
-	}]]
-};
-__iconData.node;
-var X = createLucideIcon(__iconData);
 //#endregion
 //#region src/ui/components/input.tsx
 var Input = (0, import_react.forwardRef)(({ className, type, ...props }, ref) => {
@@ -20953,99 +21046,6 @@ var SelectItem = (0, import_react.forwardRef)(({ className, children, ...props }
 }));
 SelectItem.displayName = SelectItem$1.displayName;
 //#endregion
-//#region node_modules/class-variance-authority/dist/index.mjs
-/**
-* Copyright 2022 Joe Bell. All rights reserved.
-*
-* This file is licensed to you under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with the
-* License. You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-* WARRANTIES OR REPRESENTATIONS OF ANY KIND, either express or implied. See the
-* License for the specific language governing permissions and limitations under
-* the License.
-*/ var falsyToString = (value) => typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
-var cx = clsx;
-var cva = (base, config) => (props) => {
-	var _config_compoundVariants;
-	if ((config === null || config === void 0 ? void 0 : config.variants) == null) return cx(base, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
-	const { variants, defaultVariants } = config;
-	const getVariantClassNames = Object.keys(variants).map((variant) => {
-		const variantProp = props === null || props === void 0 ? void 0 : props[variant];
-		const defaultVariantProp = defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
-		if (variantProp === null) return null;
-		const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
-		return variants[variant][variantKey];
-	});
-	const propsWithoutUndefined = props && Object.entries(props).reduce((acc, param) => {
-		let [key, value] = param;
-		if (value === void 0) return acc;
-		acc[key] = value;
-		return acc;
-	}, {});
-	return cx(base, getVariantClassNames, config === null || config === void 0 ? void 0 : (_config_compoundVariants = config.compoundVariants) === null || _config_compoundVariants === void 0 ? void 0 : _config_compoundVariants.reduce((acc, param) => {
-		let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
-		return Object.entries(compoundVariantOptions).every((param) => {
-			let [key, value] = param;
-			return Array.isArray(value) ? value.includes({
-				...defaultVariants,
-				...propsWithoutUndefined
-			}[key]) : {
-				...defaultVariants,
-				...propsWithoutUndefined
-			}[key] === value;
-		}) ? [
-			...acc,
-			cvClass,
-			cvClassName
-		] : acc;
-	}, []), props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
-};
-//#endregion
-//#region src/ui/components/button.tsx
-var buttonVariants = cva("inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-base font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0", {
-	variants: {
-		variant: {
-			default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:bg-primary",
-			destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:bg-destructive",
-			outline: "border-2 border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent",
-			secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:bg-secondary",
-			success: "bg-green-600 text-green-50 shadow-sm hover:bg-green-600/90 active:bg-green-600",
-			dark: "bg-neutral-950 text-white shadow-sm hover:bg-neutral-900 active:bg-neutral-950",
-			ghost: "hover:bg-accent hover:text-accent-foreground active:bg-accent",
-			link: "text-primary underline-offset-4 hover:underline"
-		},
-		size: {
-			default: "h-11 px-5 min-w-[90px]",
-			sm: "h-9 px-3.5 min-w-[80px]",
-			xs: "h-7 px-2.5 min-w-0 gap-1.5 text-xs font-medium [&_svg]:size-3.5",
-			lg: "h-12 px-6 text-base min-w-[100px]",
-			xl: "h-13 px-7 text-lg min-w-[110px]",
-			icon: "h-11 w-11"
-		}
-	},
-	defaultVariants: {
-		variant: "default",
-		size: "default"
-	}
-});
-var Button = (0, import_react.forwardRef)(({ className, variant, size, ...props }, ref) => {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-		className: cn(buttonVariants({
-			variant,
-			size,
-			className
-		})),
-		ref,
-		...props
-	});
-});
-Button.displayName = "Button";
-//#endregion
 //#region src/shared/version.ts
 /**
 * Versi ekstensi untuk UI (popup & side panel).
@@ -21068,4 +21068,4 @@ function getVersionBadge() {
 	return v ? `v${v}` : "";
 }
 //#endregion
-export { __toESM as C, require_react as S, ErrorBoundary as _, SelectItem as a, sendMessage as b, Input as c, RotateCcw as d, RefreshCw as f, cn as g, Switch as h, SelectContent as i, X as l, createLucideIcon as m, Button as n, SelectTrigger as o, Plus as p, Select as r, SelectValue as s, getVersionBadge as t, Search as u, require_jsx_runtime as v, require_client as x, MessageTypes as y };
+export { __toESM as C, require_react as S, RotateCcw as _, SelectTrigger as a, createLucideIcon as b, Switch as c, ErrorBoundary as d, require_jsx_runtime as f, Search as g, X as h, SelectItem as i, Button as l, sendMessage as m, Select as n, SelectValue as o, MessageTypes as p, SelectContent as r, Input as s, getVersionBadge as t, cn as u, RefreshCw as v, require_client as x, Plus as y };
