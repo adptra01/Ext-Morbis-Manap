@@ -418,9 +418,11 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
         (r) => !ALL_KNOWN_ROLES.includes(r as (typeof ALL_KNOWN_ROLES)[number]),
       );
       if (unknown.length > 0) {
-        (newFeatures[key] as { allowedRoles: string[] }).allowedRoles = currentRoles.filter((r) =>
+        const bersih = currentRoles.filter((r) =>
           ALL_KNOWN_ROLES.includes(r as (typeof ALL_KNOWN_ROLES)[number]),
         );
+        (newFeatures[key] as { allowedRoles: string[] }).allowedRoles =
+          bersih.length > 0 ? bersih : [...defaultRoles];
       }
     }
   }
@@ -602,11 +604,24 @@ chrome.runtime.onMessage.addListener(
       case 'TOGGLE_FEATURE': {
         (async () => {
           const config = await loadConfig();
-          if (config.features[validated.key as string]) {
-            config.features[validated.key as string].enabled = validated.enabled as boolean;
-            await chrome.storage.local.set({ [STORAGE_KEY]: config });
-            broadcastConfigChange();
+          const MARK_KEYS = new Set([
+            'preOpMarker',
+            'telaahBerkas',
+            'partialBerkas',
+            'laborMarker',
+            'radiologiMarker',
+            'batalBerobatMarker',
+          ]);
+          const raw = validated.key as string;
+          const key = MARK_KEYS.has(raw) ? 'mKlaimMarks' : raw;
+          const entry = config.features[key as keyof typeof config.features];
+          if (!entry) {
+            sendResponse({ success: false, message: 'Fitur tidak dikenal' });
+            return;
           }
+          entry.enabled = validated.enabled as boolean;
+          await chrome.storage.local.set({ [STORAGE_KEY]: config });
+          broadcastConfigChange();
           sendResponse({ success: true });
         })();
         return true;

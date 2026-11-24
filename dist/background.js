@@ -446,9 +446,10 @@ var __morbis_bg = (() => {
           (r) => !ALL_KNOWN_ROLES.includes(r)
         );
         if (unknown.length > 0) {
-          newFeatures[key].allowedRoles = currentRoles.filter(
+          const bersih = currentRoles.filter(
             (r) => ALL_KNOWN_ROLES.includes(r)
           );
+          newFeatures[key].allowedRoles = bersih.length > 0 ? bersih : [...defaultRoles];
         }
       }
     }
@@ -585,11 +586,24 @@ var __morbis_bg = (() => {
         case "TOGGLE_FEATURE": {
           (async () => {
             const config = await loadConfig();
-            if (config.features[validated.key]) {
-              config.features[validated.key].enabled = validated.enabled;
-              await chrome.storage.local.set({ [STORAGE_KEY]: config });
-              broadcastConfigChange();
+            const MARK_KEYS = /* @__PURE__ */ new Set([
+              "preOpMarker",
+              "telaahBerkas",
+              "partialBerkas",
+              "laborMarker",
+              "radiologiMarker",
+              "batalBerobatMarker"
+            ]);
+            const raw = validated.key;
+            const key = MARK_KEYS.has(raw) ? "mKlaimMarks" : raw;
+            const entry = config.features[key];
+            if (!entry) {
+              sendResponse({ success: false, message: "Fitur tidak dikenal" });
+              return;
             }
+            entry.enabled = validated.enabled;
+            await chrome.storage.local.set({ [STORAGE_KEY]: config });
+            broadcastConfigChange();
             sendResponse({ success: true });
           })();
           return true;

@@ -1201,8 +1201,9 @@ ${kop("RM. 02")}
     const awal = pick("tanggalAwal", "tgl_masuk", "tgl");
     const akhir = pick("tanggalAkhir", "keluar", "tgl_keluar");
     const qrsBill = sectionQrs(sections, /^Rincian Biaya/i);
-    const qrPasien = qrsBill.find((url) => /pasien/i.test(safeDecode(url))) ?? qrsBill[0] ?? "";
-    const qrPenerima = qrsBill.find((url) => /penerima/i.test(safeDecode(url))) ?? qrsBill[1] ?? "";
+    const decodeQr = (u) => safeDecode(u).toLowerCase();
+    const qrPasien = qrsBill.find((u) => /pasien|approve/i.test(decodeQr(u))) ?? qrsBill[0] ?? "";
+    const qrPenerima = qrsBill.find((u) => /penerima|kasir|billing/i.test(decodeQr(u))) ?? qrsBill.find((u) => u !== qrPasien) ?? "";
     return `<section class="rm-page" id="rm-05">
 ${kop("RM. 05")}
 <div class="rm-form-title">RINCIAN BIAYA PELAYANAN RAWAT INAP &amp; FARMASI</div>

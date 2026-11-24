@@ -1414,8 +1414,14 @@ function buildBillingSection(sections: Section[]): string {
   const akhir = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
   const qrsBill = sectionQrs(sections, /^Rincian Biaya/i);
   // Urutan QR di halaman bisa berubah — petakan dari isi data, bukan indeks.
-  const qrPasien = qrsBill.find((url) => /pasien/i.test(safeDecode(url))) ?? qrsBill[0] ?? '';
-  const qrPenerima = qrsBill.find((url) => /penerima/i.test(safeDecode(url))) ?? qrsBill[1] ?? '';
+  // Payload QR Rincian Biaya: "approve ... oleh : <role>"; petugas sering
+  // ditulis "penerima". Fallback ke QR lain bila pola tak dikenal.
+  const decodeQr = (u: string): string => safeDecode(u).toLowerCase();
+  const qrPasien = qrsBill.find((u) => /pasien|approve/i.test(decodeQr(u))) ?? qrsBill[0] ?? '';
+  const qrPenerima =
+    qrsBill.find((u) => /penerima|kasir|billing/i.test(decodeQr(u))) ??
+    qrsBill.find((u) => u !== qrPasien) ??
+    '';
 
   return `<section class="rm-page" id="rm-05">
 ${kop('RM. 05')}

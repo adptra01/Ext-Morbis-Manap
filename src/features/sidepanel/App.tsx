@@ -254,12 +254,17 @@ export function App() {
   // Tab yang dipantau — dipakai listener PAGE_CONTEXT untuk menolak siaran dari tab lain.
   const activeTabIdRef = useRef<number | null>(null);
 
-  // Load active tab ID & context
+  // Load active tab ID & context — di-refresh saat user pindah tab/reload halaman
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTabId = tabs[0]?.id;
-      activeTabIdRef.current = activeTabId ?? null;
-      if (activeTabId) {
+    const refreshTab = () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const activeTabId = tabs[0]?.id;
+        activeTabIdRef.current = activeTabId ?? null;
+        if (!activeTabId) {
+          setPagePath(null);
+          setPageContext(null);
+          return;
+        }
         setTabId(activeTabId);
         try {
           const url = tabs[0]?.url ? new URL(tabs[0].url) : null;
@@ -268,29 +273,26 @@ export function App() {
           setPagePath(null);
         }
         sendMessage<'GET_PAGE_CONTEXT'>({ type: 'GET_PAGE_CONTEXT' as any })
-          .then((res: any) => {
-            if (res?.context) {
-              setPageContext(res.context);
-              setActiveTab('features');
-            }
-          })
-          .catch(console.error);
-      }
-    });
-
+          .then((res: any) => setPageContext(res?.context ?? null))
+          .catch(() => setPageContext(null));
+      });
+    };
     const handleMessage = (message: any, sender: chrome.runtime.MessageSender) => {
       // Hanya terima konteks dari tab aktif yang sedang dipantau — tab lain
       // yang broadcast PAGE_CONTEXT bisa mengganti id_visit pasien salah.
-      if (
-        message.type === 'PAGE_CONTEXT' &&
-        (sender?.tab?.id === undefined || sender.tab.id === activeTabIdRef.current)
-      ) {
+      if (message.type === 'PAGE_CONTEXT' && sender?.tab?.id === activeTabIdRef.current) {
         setPageContext({ feature: message.feature, data: message.data });
-        setActiveTab('features');
       }
     };
+    refreshTab();
+    chrome.tabs.onActivated.addListener(refreshTab);
+    chrome.tabs.onUpdated.addListener(refreshTab);
     chrome.runtime.onMessage.addListener(handleMessage);
-    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+    return () => {
+      chrome.tabs.onActivated.removeListener(refreshTab);
+      chrome.tabs.onUpdated.removeListener(refreshTab);
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    };
   }, []);
 
   useEffect(() => {

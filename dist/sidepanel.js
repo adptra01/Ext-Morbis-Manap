@@ -1923,13 +1923,18 @@ function App() {
 	const { theme, resolved, setTheme } = useDarkMode();
 	const activeTabIdRef = (0, import_react.useRef)(null);
 	(0, import_react.useEffect)(() => {
-		chrome.tabs.query({
-			active: true,
-			currentWindow: true
-		}, (tabs) => {
-			const activeTabId = tabs[0]?.id;
-			activeTabIdRef.current = activeTabId ?? null;
-			if (activeTabId) {
+		const refreshTab = () => {
+			chrome.tabs.query({
+				active: true,
+				currentWindow: true
+			}, (tabs) => {
+				const activeTabId = tabs[0]?.id;
+				activeTabIdRef.current = activeTabId ?? null;
+				if (!activeTabId) {
+					setPagePath(null);
+					setPageContext(null);
+					return;
+				}
 				setTabId(activeTabId);
 				try {
 					const url = tabs[0]?.url ? new URL(tabs[0].url) : null;
@@ -1937,25 +1942,24 @@ function App() {
 				} catch {
 					setPagePath(null);
 				}
-				sendMessage({ type: "GET_PAGE_CONTEXT" }).then((res) => {
-					if (res?.context) {
-						setPageContext(res.context);
-						setActiveTab("features");
-					}
-				}).catch(console.error);
-			}
-		});
-		const handleMessage = (message, sender) => {
-			if (message.type === "PAGE_CONTEXT" && (sender?.tab?.id === void 0 || sender.tab.id === activeTabIdRef.current)) {
-				setPageContext({
-					feature: message.feature,
-					data: message.data
-				});
-				setActiveTab("features");
-			}
+				sendMessage({ type: "GET_PAGE_CONTEXT" }).then((res) => setPageContext(res?.context ?? null)).catch(() => setPageContext(null));
+			});
 		};
+		const handleMessage = (message, sender) => {
+			if (message.type === "PAGE_CONTEXT" && sender?.tab?.id === activeTabIdRef.current) setPageContext({
+				feature: message.feature,
+				data: message.data
+			});
+		};
+		refreshTab();
+		chrome.tabs.onActivated.addListener(refreshTab);
+		chrome.tabs.onUpdated.addListener(refreshTab);
 		chrome.runtime.onMessage.addListener(handleMessage);
-		return () => chrome.runtime.onMessage.removeListener(handleMessage);
+		return () => {
+			chrome.tabs.onActivated.removeListener(refreshTab);
+			chrome.tabs.onUpdated.removeListener(refreshTab);
+			chrome.runtime.onMessage.removeListener(handleMessage);
+		};
 	}, []);
 	(0, import_react.useEffect)(() => {
 		sendMessage({ type: MessageTypes.GET_ALL }).then((result) => {

@@ -718,9 +718,14 @@ function App() {
 			alive = false;
 		};
 	}, []);
+	const toastTimer = (0, import_react.useRef)(null);
 	const showToast = (0, import_react.useCallback)((msg) => {
+		if (toastTimer.current) clearTimeout(toastTimer.current);
 		setToast(msg);
-		setTimeout(() => setToast(null), 2e3);
+		toastTimer.current = setTimeout(() => setToast(null), 2e3);
+	}, []);
+	(0, import_react.useEffect)(() => () => {
+		if (toastTimer.current) clearTimeout(toastTimer.current);
 	}, []);
 	const handleToggleExtension = (0, import_react.useCallback)(() => {
 		if (!config) return;
@@ -808,18 +813,25 @@ function App() {
 		sendMessage({
 			type: MessageTypes.ADD_URL,
 			url
-		}).catch(() => showToast("Gagal menambah URL"));
-		showToast("URL berhasil ditambahkan");
-		reloadActiveTab();
+		}).then(() => {
+			showToast("URL berhasil ditambahkan");
+			reloadActiveTab();
+		}).catch(() => {
+			setUrls((prev) => prev.filter((u) => u.id !== newUrl.id));
+			showToast("Gagal menambah URL — perubahan dibatalkan");
+		});
 	}, [showToast]);
 	const handleRemoveUrl = (0, import_react.useCallback)((id) => {
+		const previous = urls.find((u) => u.id === id);
 		setUrls((prev) => prev.filter((u) => u.id !== id));
 		sendMessage({
 			type: MessageTypes.DELETE_URL,
 			id
-		}).catch(() => showToast("Gagal menghapus URL"));
-		reloadActiveTab();
-	}, [showToast]);
+		}).then(() => reloadActiveTab()).catch(() => {
+			if (previous) setUrls((prev) => [...prev, previous]);
+			showToast("Gagal menghapus URL — perubahan dibatalkan");
+		});
+	}, [showToast, urls]);
 	const handleToggleUrl = (0, import_react.useCallback)((id, value) => {
 		setUrls((prev) => prev.map((u) => u.id === id ? {
 			...u,

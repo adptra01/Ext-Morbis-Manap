@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { RefreshCw, RotateCcw } from 'lucide-react';
 import { sendMessage, MessageTypes } from '../shared/messaging';
 import type { Role, ExtensionConfig, CustomUrl } from './types';
@@ -81,10 +81,18 @@ export function App() {
     };
   }, []);
 
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = useCallback((msg: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    toastTimer.current = setTimeout(() => setToast(null), 2000);
   }, []);
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    },
+    [],
+  );
 
   const handleToggleExtension = useCallback(() => {
     if (!config) return;
@@ -173,24 +181,31 @@ export function App() {
         isDefault: false,
       };
       setUrls((prev) => [...prev, newUrl]);
-      sendMessage<'ADD_URL'>({ type: MessageTypes.ADD_URL, url }).catch(() =>
-        showToast('Gagal menambah URL'),
-      );
-      showToast('URL berhasil ditambahkan');
-      reloadActiveTab();
+      sendMessage<'ADD_URL'>({ type: MessageTypes.ADD_URL, url })
+        .then(() => {
+          showToast('URL berhasil ditambahkan');
+          reloadActiveTab();
+        })
+        .catch(() => {
+          setUrls((prev) => prev.filter((u) => u.id !== newUrl.id));
+          showToast('Gagal menambah URL — perubahan dibatalkan');
+        });
     },
     [showToast],
   );
 
   const handleRemoveUrl = useCallback(
     (id: string) => {
+      const previous = urls.find((u) => u.id === id);
       setUrls((prev) => prev.filter((u) => u.id !== id));
-      sendMessage<'DELETE_URL'>({ type: MessageTypes.DELETE_URL, id }).catch(() =>
-        showToast('Gagal menghapus URL'),
-      );
-      reloadActiveTab();
+      sendMessage<'DELETE_URL'>({ type: MessageTypes.DELETE_URL, id })
+        .then(() => reloadActiveTab())
+        .catch(() => {
+          if (previous) setUrls((prev) => [...prev, previous]);
+          showToast('Gagal menghapus URL — perubahan dibatalkan');
+        });
     },
-    [showToast],
+    [showToast, urls],
   );
 
   const handleToggleUrl = useCallback(
