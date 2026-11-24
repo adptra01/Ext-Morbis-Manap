@@ -312,14 +312,17 @@ const esc = (s: string): string =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
   );
 
-/** Teks baris-baris → <br/> dengan jarak teks biasa. Baris yang memang
- *  kosong (dua \n beruntun) tetap dapat satu baris kosong; newline beruntun
- *  lebih dari itu dipangkas supaya tidak ada jarak berlebih. */
+/** Teks baris-baris → <br/>. Baris kosong memakai spacer tetap (bukan
+ *  <br/><br/> yang menyumbang satu line-box penuh) supaya jarak antar baris
+ *  di cetak A4 rapat dan konsisten. Newline beruntun >2 dipangkas. */
 const nl2br = (s: string): string =>
   esc(s)
+    .trim()
     .replace(/\r\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
-    .replace(/\n/g, '<br/>');
+    .split('\n\n')
+    .map((para) => para.replace(/\n/g, '<br/>'))
+    .join('<span class="nl-gap"></span>');
 
 /* ── Pemeriksaan lintas berkas ───────────────────────────────────────── */
 
@@ -5086,11 +5089,34 @@ ${kop(m.code)}
     /* ==========================================================================
        9. PRINT MEDIA RULES (@media print — A4 PORTRAIT, 12MM MARGIN)
        ========================================================================== */
+    /* Spacer baris kosong dari nl2br — 4px, bukan satu line-box penuh. */
+    .nl-gap { display: block; height: 4px; line-height: 0; font-size: 0; }
+
     @media print {
       @page {
         size: A4 portrait;
         margin: 12mm;
       }
+
+      /* Jarak antar baris seragam & rapat di semua section (audit 4 reviewer):
+         turunkan line-height turunan 1.35/1.38/1.45 → 1.2 pada teks tabel. */
+      .rm-page,
+      .rm-page td,
+      .rm-page div,
+      .rm-page li,
+      .rm-page .rm-note,
+      .rm-page .tm-val,
+      .rm-page .tm-label,
+      .rm-page .med,
+      .rm-page .op-kv td,
+      .rm-page .an-kv td,
+      .rm-page .op-narrative,
+      .rm-page .an-instruksi,
+      .rm-page .bpjs-sep-sheet,
+      .rm-page .footnote-rm {
+        line-height: 1.2 !important;
+      }
+      .nl-gap { height: 3px !important; }
 
       body {
         background-color: #FFFFFF !important;
