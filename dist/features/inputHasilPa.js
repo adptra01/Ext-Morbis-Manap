@@ -230,7 +230,7 @@ var __morbis_feature = (() => {
       } catch (e) {
         console.error(`[featureGate:${key}] gagal jalan:`, e);
       }
-    });
+    }).catch((e) => console.error(`[featureGate:${key}] gagal baca config:`, e));
   }
 
   // src/features/inputHasilPa.ts

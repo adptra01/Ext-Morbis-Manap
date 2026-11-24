@@ -11,11 +11,13 @@
 
 ### ✨ feat
 
+- **ui** — redesign popup & sidepanel — 2 tab, kontekstual fitur, pills, WIG fixes (`e16bd10`)
 - consolidated mark features + feature search in popup/sidepanel (`caf1607`)
 - **pindahOperasi** — dukung detail endoskopi & cathlab (endpoint simpan per halaman) (`9921598`)
 
 ### 🐛 fix
 
+- **resumeRanapTab** — deteksi id_resume_inap dari form fallback (hilangkan warning palsu) (`d587bc7`)
 - **mKlaimPrint** — rapikan jarak antar baris cetak — nl2br spacer + line-height 1.2 (`6efdfb8`)
 - **pindahOperasi** — rollback status Selesai ke Belum Dilaksanakan di endoskopi & cathlab (`0abfd8f`)
 
@@ -2370,4 +2372,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6efdfb8fa1e8c81da35c180b208fb8fffb809c03 -->
+<!-- changelog-upto: e16bd10a0cd67c3bb0d6bb913d763d65d9b72bb4 -->

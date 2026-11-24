@@ -82,12 +82,14 @@ export async function isFeatureEnabled(key: string): Promise<boolean> {
 
 /** Jalankan `fn` hanya bila fitur `key` aktif. Tak pernah throw. */
 export function whenFeatureEnabled(key: string, fn: () => void): void {
-  isFeatureEnabled(key).then((ok) => {
-    if (!ok) return;
-    try {
-      fn();
-    } catch (e) {
-      console.error(`[featureGate:${key}] gagal jalan:`, e);
-    }
-  });
+  isFeatureEnabled(key)
+    .then((ok) => {
+      if (!ok) return;
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[featureGate:${key}] gagal jalan:`, e);
+      }
+    })
+    .catch((e: unknown) => console.error(`[featureGate:${key}] gagal baca config:`, e));
 }

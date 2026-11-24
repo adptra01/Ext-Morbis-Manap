@@ -125,8 +125,21 @@ export function App() {
         type: MessageTypes.TOGGLE_FEATURE,
         key,
         enabled: value,
-      }).catch(() => showToast('Gagal mengubah fitur'));
-      reloadActiveTab();
+      })
+        .then(() => reloadActiveTab())
+        .catch(() => {
+          setConfig(
+            (prev) =>
+              prev && {
+                ...prev,
+                features: {
+                  ...prev.features,
+                  [key]: { ...prev.features[key], enabled: !value },
+                },
+              },
+          );
+          showToast('Gagal mengubah fitur — state dikembalikan');
+        });
     },
     [config, showToast],
   );

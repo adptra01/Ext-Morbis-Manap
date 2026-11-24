@@ -75,7 +75,7 @@ export function FeaturesPanel({
     if (!path) return [];
     const matched: Array<[string, FeatureEntry]> = [];
     for (const [key, f] of entries) {
-      if (!f.enabled || f.comingSoon) continue;
+      if (f.comingSoon) continue;
       if (matchesPathname(getFeatureMeta(key).urlPatterns, path)) {
         matched.push([key, f]);
       }

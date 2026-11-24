@@ -100,7 +100,9 @@ const META: Record<string, FeatureMeta> = {
 /** Fitur baru belum terdaftar: tetap tampil di "Semua"/"Lainnya", tidak ikut
  *  blok kontekstual sampai pola URL-nya ditambahkan di sini. */
 export function getFeatureMeta(key: string): FeatureMeta {
-  return META[key] ?? { category: 'lainnya', urlPatterns: [] };
+  return Object.prototype.hasOwnProperty.call(META, key)
+    ? META[key]
+    : { category: 'lainnya', urlPatterns: [] };
 }
 
 /** Cocokkan pathname apa adanya atau sebagai prefix segmen (/a tidak selaras /ab). */

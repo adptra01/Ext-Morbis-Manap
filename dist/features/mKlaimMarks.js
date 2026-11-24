@@ -343,7 +343,7 @@ var __morbis_feature = (() => {
       } catch (e) {
         console.error(`[featureGate:${key2}] gagal jalan:`, e);
       }
-    });
+    }).catch((e) => console.error(`[featureGate:${key2}] gagal baca config:`, e));
   }
 
   // src/shared/ui/index.ts
@@ -3518,5 +3518,5 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
     const path = window.location?.pathname ?? "";
     if (!enabled || !path.startsWith("/v2/m-klaim") || path.includes("/detail")) return;
     startMarkBar(new Set(MARK_DEFS.map((d) => d.configKey)));
-  });
+  }).catch((e) => console.error("[mKlaimMarks] gate gagal:", e));
 })();

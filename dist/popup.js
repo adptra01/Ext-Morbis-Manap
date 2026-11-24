@@ -283,7 +283,7 @@ var META = {
 /** Fitur baru belum terdaftar: tampil di "Semua", tidak ikut blok kontekstual
 *  sampai pola URL-nya ditambahkan di sini. */
 function getFeatureMeta(key) {
-	return META[key] ?? {
+	return Object.prototype.hasOwnProperty.call(META, key) ? META[key] : {
 		category: "all",
 		urlPatterns: []
 	};
@@ -323,7 +323,7 @@ function FeaturesPanel({ features, role, disabled, onToggle, onModeChange, pathn
 		if (!path) return [];
 		const matched = [];
 		for (const [key, f] of entries) {
-			if (!f.enabled || f.comingSoon) continue;
+			if (f.comingSoon) continue;
 			if (matchesPathname(getFeatureMeta(key).urlPatterns, path)) matched.push([key, f]);
 		}
 		return matched;
@@ -764,8 +764,19 @@ function App() {
 			type: MessageTypes.TOGGLE_FEATURE,
 			key,
 			enabled: value
-		}).catch(() => showToast("Gagal mengubah fitur"));
-		reloadActiveTab();
+		}).then(() => reloadActiveTab()).catch(() => {
+			setConfig((prev) => prev && {
+				...prev,
+				features: {
+					...prev.features,
+					[key]: {
+						...prev.features[key],
+						enabled: !value
+					}
+				}
+			});
+			showToast("Gagal mengubah fitur — state dikembalikan");
+		});
 	}, [config, showToast]);
 	const handleModeChange = (0, import_react.useCallback)((key, mode) => {
 		if (!config?.features[key]) return;

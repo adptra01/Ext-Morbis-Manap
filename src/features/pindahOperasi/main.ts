@@ -118,12 +118,11 @@ function initStatusList(): void {
     // operasi Selesai ke status Belum Dilaksanakan lewat sub=update-status.
     const url = `/admisi/pelaksanaan-operasi/batal-operasi?sub=update-status&type=ajax&id=${id}`;
     const msg = `Apakah Anda yakin mengembalikan operasi pasien ${pasien} ke status Belum Dilaksanakan?`;
-    // Panggil showConfirmDialog() global dari library.js — endoskopi/cathlab
-    // tidak punya helper updateStatus(), jadi inline onclick menyatukan sendiri.
-    btn.setAttribute(
-      'onclick',
-      `showConfirmDialog('${msg.replace(/'/g, "\\'")}', '${url}', '${id}', function(){location.reload()})`,
-    );
+    // Panggil showConfirmDialog() global dari library.js lewat listener —
+    // nama pasien scraped bisa memuat kutip/newline yang merusak inline onclick.
+    btn.addEventListener('click', () => {
+      showConfirmDialog(msg, url, id, () => location.reload());
+    });
     aksi.appendChild(btn);
     n++;
   }

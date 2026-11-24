@@ -12,10 +12,10 @@ import {
 import { type FeatureConfig, type Role } from './types';
 import {
   CATEGORY_LABELS,
+  type CategoryId,
   MAIN_CATEGORIES,
   getFeatureMeta,
   matchesPathname,
-  type CategoryId,
 } from './featureMeta';
 
 interface FeaturesPanelProps {
@@ -64,8 +64,8 @@ export function FeaturesPanel({
         return patterns.length > 0 && !!pathname && matchesPathname(patterns, pathname);
       });
   // Fitur baru yang belum punya meta tetap bisa difilter lewat "Lainnya".
-  const categories = visible.some((f) => getFeatureMeta(f.key).category === 'lainnya')
-    ? [...MAIN_CATEGORIES, 'lainnya']
+  const categories: CategoryId[] = visible.some((f) => getFeatureMeta(f.key).category === 'lainnya')
+    ? [...MAIN_CATEGORIES, 'lainnya' as const]
     : MAIN_CATEGORIES;
 
   return (

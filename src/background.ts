@@ -375,11 +375,35 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
 
   const validFeatures = Object.keys(DEFAULT_CONFIG.features);
   const newFeatures: Record<string, unknown> = {};
+
   for (const key of validFeatures) {
     if (config.features[key]) {
       newFeatures[key] = structuredClone(config.features[key]);
     } else {
       newFeatures[key] = structuredClone(DEFAULT_CONFIG.features[key]);
+    }
+  }
+
+  // Konsolidasi 6 mark key → mKlaimMarks: lipat state lama ke key baru
+  // supaya user yang mematikan satu mark tidak mendadak menyala lagi.
+  const LEGACY_MARK_KEYS = [
+    'preOpMarker',
+    'telaahBerkas',
+    'partialBerkas',
+    'laborMarker',
+    'radiologiMarker',
+    'batalBerobatMarker',
+  ] as const;
+  const legacyMarks = LEGACY_MARK_KEYS.map((k) => config.features?.[k]).filter(
+    (f): f is NonNullable<typeof f> => !!f,
+  );
+  if (legacyMarks.length > 0) {
+    const base = newFeatures['mKlaimMarks'] as
+      { enabled?: boolean; allowedRoles?: string[] } | undefined;
+    if (base) {
+      if (legacyMarks.some((f) => f.enabled === false)) base.enabled = false;
+      const roles = Array.from(new Set(legacyMarks.flatMap((f) => f.allowedRoles ?? [])));
+      if (roles.length > 0) base.allowedRoles = roles;
     }
   }
 

@@ -1414,10 +1414,8 @@ function buildBillingSection(sections: Section[]): string {
   const akhir = pick('tanggalAkhir', 'keluar', 'tgl_keluar');
   const qrsBill = sectionQrs(sections, /^Rincian Biaya/i);
   // Urutan QR di halaman bisa berubah — petakan dari isi data, bukan indeks.
-  const qrPasien =
-    qrsBill.find((url) => /pasien/i.test(decodeURIComponent(url))) ?? qrsBill[0] ?? '';
-  const qrPenerima =
-    qrsBill.find((url) => /penerima/i.test(decodeURIComponent(url))) ?? qrsBill[1] ?? '';
+  const qrPasien = qrsBill.find((url) => /pasien/i.test(safeDecode(url))) ?? qrsBill[0] ?? '';
+  const qrPenerima = qrsBill.find((url) => /penerima/i.test(safeDecode(url))) ?? qrsBill[1] ?? '';
 
   return `<section class="rm-page" id="rm-05">
 ${kop('RM. 05')}
@@ -2884,6 +2882,17 @@ function formFields(sections: Section[], titleRe: RegExp): Map<string, string> {
   }
   return out;
 }
+
+/** decodeURIComponent aman untuk scrape: payload QR bisa mengandung '%' literal
+ *  yang membuat decodeURIComponent melempar URIError & menggagalkan seluruh
+ *  dossier. Fallback ke string asli. */
+const safeDecode = (s: string): string => {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+};
 
 /** Decode entity HTML dari hasil scrape sebelum diescape ulang — kalau tidak,
  *  teks seperti "Meninggal &gt;= 48 jam" tampil literal "&gt;". */
@@ -5501,7 +5510,12 @@ function renderMklaimPrintButton(): void {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    handleMklaimPrint();
+    void handleMklaimPrint().catch((e: unknown) => {
+      console.error('[mKlaimPrint] gagal:', e);
+      window.alert('Gagal menyiapkan dossier cetak. Coba refresh halaman M-KLAIM.');
+      btn.disabled = false;
+      btn.textContent = 'Cetak Rapi M-KLAIM';
+    });
   });
   // Taruh PALING AKHIR di action bar bawah (gabung dengan Kembali,
   // Verif/Revisi bila ada, dan tombol mark) — bukan di depan tombol Print.

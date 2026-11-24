@@ -12,7 +12,17 @@ async function boot(): Promise<void> {
     return;
   }
 
-  const html = await loadDossier(id);
+  let html: string | null;
+  try {
+    html = await loadDossier(id);
+  } catch (e) {
+    if (loading)
+      loading.textContent =
+        'Gagal membaca dossier dari penyimpanan browser: ' +
+        (e instanceof Error ? e.message : String(e));
+    console.error('[printBerkasKlaim] loadDossier gagal:', e);
+    return;
+  }
   if (!html) {
     if (loading)
       loading.textContent =

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDarkMode } from '../../ui/hooks/useDarkMode';
 import { sendMessage, MessageTypes } from '../../shared/messaging';
 import { ErrorBoundary } from '../../ui/components/ErrorBoundary';
@@ -251,10 +251,14 @@ export function App() {
   } | null>(null);
   const { theme, resolved, setTheme } = useDarkMode();
 
+  // Tab yang dipantau — dipakai listener PAGE_CONTEXT untuk menolak siaran dari tab lain.
+  const activeTabIdRef = useRef<number | null>(null);
+
   // Load active tab ID & context
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTabId = tabs[0]?.id;
+      activeTabIdRef.current = activeTabId ?? null;
       if (activeTabId) {
         setTabId(activeTabId);
         try {
@@ -274,8 +278,13 @@ export function App() {
       }
     });
 
-    const handleMessage = (message: any) => {
-      if (message.type === 'PAGE_CONTEXT') {
+    const handleMessage = (message: any, sender: chrome.runtime.MessageSender) => {
+      // Hanya terima konteks dari tab aktif yang sedang dipantau — tab lain
+      // yang broadcast PAGE_CONTEXT bisa mengganti id_visit pasien salah.
+      if (
+        message.type === 'PAGE_CONTEXT' &&
+        (sender?.tab?.id === undefined || sender.tab.id === activeTabIdRef.current)
+      ) {
         setPageContext({ feature: message.feature, data: message.data });
         setActiveTab('features');
       }
@@ -374,7 +383,10 @@ export function App() {
       const next = { ...features, [key]: val };
       setFeatures(next);
       sendMessage<'TOGGLE_FEATURE'>({ type: MessageTypes.TOGGLE_FEATURE, key, enabled: val }).catch(
-        () => showToast('Gagal mengubah fitur'),
+        () => {
+          setFeatures((prev) => ({ ...prev, [key]: !val }));
+          showToast('Gagal mengubah fitur — state dikembalikan');
+        },
       );
       showToast(val ? `${key} diaktifkan` : `${key} dinonaktifkan`);
     },

@@ -416,6 +416,25 @@ var __morbis_bg = (() => {
         newFeatures[key] = structuredClone(DEFAULT_CONFIG.features[key]);
       }
     }
+    const LEGACY_MARK_KEYS = [
+      "preOpMarker",
+      "telaahBerkas",
+      "partialBerkas",
+      "laborMarker",
+      "radiologiMarker",
+      "batalBerobatMarker"
+    ];
+    const legacyMarks = LEGACY_MARK_KEYS.map((k) => config.features?.[k]).filter(
+      (f) => !!f
+    );
+    if (legacyMarks.length > 0) {
+      const base = newFeatures["mKlaimMarks"];
+      if (base) {
+        if (legacyMarks.some((f) => f.enabled === false)) base.enabled = false;
+        const roles = Array.from(new Set(legacyMarks.flatMap((f) => f.allowedRoles ?? [])));
+        if (roles.length > 0) base.allowedRoles = roles;
+      }
+    }
     const ALL_KNOWN_ROLES = Object.values(ROLES);
     for (const key of validFeatures) {
       const defaultRoles = DEFAULT_CONFIG.features[key].allowedRoles;

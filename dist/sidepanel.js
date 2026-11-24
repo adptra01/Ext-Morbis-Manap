@@ -536,7 +536,7 @@ var META = {
 /** Fitur baru belum terdaftar: tetap tampil di "Semua"/"Lainnya", tidak ikut
 *  blok kontekstual sampai pola URL-nya ditambahkan di sini. */
 function getFeatureMeta(key) {
-	return META[key] ?? {
+	return Object.prototype.hasOwnProperty.call(META, key) ? META[key] : {
 		category: "lainnya",
 		urlPatterns: []
 	};
@@ -1921,12 +1921,14 @@ function App() {
 	const [tabId, setTabId] = (0, import_react.useState)(null);
 	const [pageContext, setPageContext] = (0, import_react.useState)(null);
 	const { theme, resolved, setTheme } = useDarkMode();
+	const activeTabIdRef = (0, import_react.useRef)(null);
 	(0, import_react.useEffect)(() => {
 		chrome.tabs.query({
 			active: true,
 			currentWindow: true
 		}, (tabs) => {
 			const activeTabId = tabs[0]?.id;
+			activeTabIdRef.current = activeTabId ?? null;
 			if (activeTabId) {
 				setTabId(activeTabId);
 				try {
@@ -1943,8 +1945,8 @@ function App() {
 				}).catch(console.error);
 			}
 		});
-		const handleMessage = (message) => {
-			if (message.type === "PAGE_CONTEXT") {
+		const handleMessage = (message, sender) => {
+			if (message.type === "PAGE_CONTEXT" && (sender?.tab?.id === void 0 || sender.tab.id === activeTabIdRef.current)) {
 				setPageContext({
 					feature: message.feature,
 					data: message.data
@@ -2023,7 +2025,13 @@ function App() {
 			type: MessageTypes.TOGGLE_FEATURE,
 			key,
 			enabled: val
-		}).catch(() => showToast("Gagal mengubah fitur"));
+		}).catch(() => {
+			setFeatures((prev) => ({
+				...prev,
+				[key]: !val
+			}));
+			showToast("Gagal mengubah fitur — state dikembalikan");
+		});
 		showToast(val ? `${key} diaktifkan` : `${key} dinonaktifkan`);
 	}, [features, showToast]);
 	const handleAddUrl = (0, import_react.useCallback)((url) => {

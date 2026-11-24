@@ -138,7 +138,14 @@ async function boot() {
 		if (loading) loading.textContent = "Dossier tidak ditemukan (parameter id hilang).";
 		return;
 	}
-	const html = await loadDossier(id);
+	let html;
+	try {
+		html = await loadDossier(id);
+	} catch (e) {
+		if (loading) loading.textContent = "Gagal membaca dossier dari penyimpanan browser: " + (e instanceof Error ? e.message : String(e));
+		console.error("[printBerkasKlaim] loadDossier gagal:", e);
+		return;
+	}
 	if (!html) {
 		if (loading) loading.textContent = "Data dossier sudah tidak tersedia (browser pernah di-restart). Silakan klik Cetak Rapi lagi dari halaman M-KLAIM.";
 		return;

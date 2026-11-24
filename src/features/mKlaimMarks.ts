@@ -413,8 +413,10 @@ for (const cfg of CONFIGS) {
 // UI mark terpadu: 1 tombol pemicu + 1 popover + multi-chip untuk ke-6 mark.
 // Engine lama tetap jalan sebagai backend (toggle + sinkron pusat); tombolnya
 // disembunyikan CSS dan dipicu lewat .click() dari popover.
-void isFeatureEnabled('mKlaimMarks').then((enabled) => {
-  const path = window.location?.pathname ?? '';
-  if (!enabled || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
-  startMarkBar(new Set(MARK_DEFS.map((d) => d.configKey)));
-});
+void isFeatureEnabled('mKlaimMarks')
+  .then((enabled) => {
+    const path = window.location?.pathname ?? '';
+    if (!enabled || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
+    startMarkBar(new Set(MARK_DEFS.map((d) => d.configKey)));
+  })
+  .catch((e: unknown) => console.error('[mKlaimMarks] gate gagal:', e));

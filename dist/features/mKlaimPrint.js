@@ -1201,8 +1201,8 @@ ${kop("RM. 02")}
     const awal = pick("tanggalAwal", "tgl_masuk", "tgl");
     const akhir = pick("tanggalAkhir", "keluar", "tgl_keluar");
     const qrsBill = sectionQrs(sections, /^Rincian Biaya/i);
-    const qrPasien = qrsBill.find((url) => /pasien/i.test(decodeURIComponent(url))) ?? qrsBill[0] ?? "";
-    const qrPenerima = qrsBill.find((url) => /penerima/i.test(decodeURIComponent(url))) ?? qrsBill[1] ?? "";
+    const qrPasien = qrsBill.find((url) => /pasien/i.test(safeDecode(url))) ?? qrsBill[0] ?? "";
+    const qrPenerima = qrsBill.find((url) => /penerima/i.test(safeDecode(url))) ?? qrsBill[1] ?? "";
     return `<section class="rm-page" id="rm-05">
 ${kop("RM. 05")}
 <div class="rm-form-title">RINCIAN BIAYA PELAYANAN RAWAT INAP &amp; FARMASI</div>
@@ -2336,6 +2336,13 @@ ${grid(["PUKUL", "NAMA OBAT", "DOSIS / RUTE", "TANDA TANGAN"], obatRows)}
     }
     return out;
   }
+  var safeDecode = (s) => {
+    try {
+      return decodeURIComponent(s);
+    } catch {
+      return s;
+    }
+  };
   var decodeEntities = (s) => s.replace(/&gt;/gi, ">").replace(/&lt;/gi, "<").replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&nbsp;/gi, " ");
   function cellText(td) {
     return decodeEntities(
@@ -4433,7 +4440,12 @@ ${kop(m.code)}
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      handleMklaimPrint();
+      void handleMklaimPrint().catch((e2) => {
+        console.error("[mKlaimPrint] gagal:", e2);
+        window.alert("Gagal menyiapkan dossier cetak. Coba refresh halaman M-KLAIM.");
+        btn.disabled = false;
+        btn.textContent = "Cetak Rapi M-KLAIM";
+      });
     });
     host.appendChild(btn);
   }
