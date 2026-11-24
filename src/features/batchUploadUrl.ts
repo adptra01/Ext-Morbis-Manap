@@ -709,6 +709,8 @@ export function resolveNorm(
   const candidates = [pageNorm, metadata.norm];
   for (const candidate of candidates) {
     const value = String(candidate ?? '').trim();
+    // Page NORM menang; fallback filename hanya bila panjang 6-12 digit.
+    // Prioritas halaman sudah mencegah token Auto-Crawl dipakai saat #norm ada.
     if (/^\d{1,12}$/.test(value)) return value;
   }
   return '';
@@ -1311,7 +1313,10 @@ async function processAndUploadSingleUrl(
     let file: File;
     if (metadata.file) {
       // Upload langsung dari file lokal (tanpa fetch URL).
-      file = new File([metadata.file], metadata.file.name, { type: metadata.file.type });
+      // Pakai nama hasil rewrite (sama seperti cabang URL) agar verifikasi &
+      // penyimpanan server memakai nama yang sama; nama asli bisa memuat
+      // spasi/karakter aneh dan dua file kembar menimpa satu sama lain.
+      file = new File([metadata.file], uploadName, { type: metadata.file.type });
       updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
     } else {
       file = await fetchFileFromUrl(metadata.url, uploadName);
@@ -2033,6 +2038,18 @@ function initBatchUploadUrlFeature(): void {
   if ((window as unknown as { __extBatchUploadRegistered?: boolean }).__extBatchUploadRegistered)
     return;
   (window as unknown as { __extBatchUploadRegistered?: boolean }).__extBatchUploadRegistered = true;
+  // PAGE_CONTEXT_REQUEST didaftarkan sekali, tidak di dalam Analyze (yang bisa
+  // diklik berulang → listener menumpuk & duplikat sendResponse).
+  if (!(window as any).__extPageContextRegistered) {
+    (window as any).__extPageContextRegistered = true;
+    chrome.runtime.onMessage.addListener((msg: { type?: string }, _sender, sendResponse) => {
+      if (msg?.type !== 'PAGE_CONTEXT_REQUEST') return;
+      sendResponse({
+        feature: 'mKlaimDetail',
+        data: { idVisit: new URLSearchParams(window.location.search).get('id_visit') },
+      });
+    });
+  }
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'TAB_ACTION') {
       const { action, payload } = message;
@@ -2046,15 +2063,6 @@ function initBatchUploadUrlFeature(): void {
             data: { items: batchQueue },
           })
           .catch(console.error);
-        // Background menanyakan konteks halaman secara aktif (SW restart tidak
-        // bisa mengandalkan memori tabContexts).
-        chrome.runtime.onMessage.addListener((msg: { type?: string }, _sender, sendResponse) => {
-          if (msg?.type !== 'PAGE_CONTEXT_REQUEST') return;
-          sendResponse({
-            feature: 'mKlaimDetail',
-            data: { idVisit: new URLSearchParams(window.location.search).get('id_visit') },
-          });
-        });
       } else if (action === 'BATCH_UPLOAD_CRAWL') {
         crawlDokumenPasienToSidepanel();
       } else if (action === 'BATCH_UPLOAD_UPDATE_ITEMS') {
@@ -2074,8 +2082,9 @@ function initBatchUploadUrlFeature(): void {
       // Based on current implementation, TAB_ACTION covers it.
       // Leaving it here as a placeholder or to handle explicitly if design evolves.
       sendResponse({ success: true });
+      return true;
     }
-    return true;
+    return undefined;
   });
 }
 

@@ -1027,13 +1027,13 @@ function BatchUploadPanel({ tabId }) {
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card",
-					children: [filteredItems.map((item, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					children: [filteredItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: `p-2 text-md-xs flex items-start gap-2 transition-colors ${item.selected !== false ? "bg-accent/20" : "opacity-60"}`,
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 								type: "checkbox",
 								checked: item.selected !== false,
-								onChange: () => handleToggleItem(idx),
+								onChange: () => handleToggleItem(items.indexOf(item)),
 								disabled: isProcessing,
 								className: "mt-0.5 rounded border-input text-primary focus:ring-primary size-3.5"
 							}),
@@ -1046,7 +1046,7 @@ function BatchUploadPanel({ tabId }) {
 											className: "font-medium text-foreground truncate block",
 											title: item.filename,
 											children: [
-												idx + 1,
+												items.indexOf(item) + 1,
 												". ",
 												item.filename
 											]
@@ -1073,7 +1073,7 @@ function BatchUploadPanel({ tabId }) {
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
 										value: item.keterangan,
-										onChange: (e) => handleKeteranganChange(idx, e.target.value),
+										onChange: (e) => handleKeteranganChange(items.indexOf(item), e.target.value),
 										placeholder: "Keterangan...",
 										disabled: isProcessing,
 										className: "h-6 text-[10px] py-0 px-1.5"
@@ -1096,7 +1096,7 @@ function BatchUploadPanel({ tabId }) {
 									title: "Preview File",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eye, { className: "size-3.5" })
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-									onClick: () => handleRemoveItem(idx),
+									onClick: () => handleRemoveItem(items.indexOf(item)),
 									disabled: isProcessing,
 									className: "p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all disabled:opacity-50",
 									title: "Buang dari Antrian",
@@ -1104,7 +1104,7 @@ function BatchUploadPanel({ tabId }) {
 								})]
 							})
 						]
-					}, idx)), filteredItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					}, items.indexOf(item))), filteredItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 						className: "p-4 text-center text-muted-foreground text-md-xs",
 						children: "Tidak ada dokumen yang cocok."
 					})]
@@ -1314,13 +1314,13 @@ function BatchDeletePanel({ tabId }) {
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card",
-					children: [filteredItems.map((item, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					children: [filteredItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: `p-2 text-md-xs flex items-start gap-2 transition-colors ${item.selected ? "bg-red-500/5 border-l-2 border-red-500" : "opacity-85"}`,
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
 								type: "checkbox",
 								checked: item.selected,
-								onChange: () => handleToggleItem(idx),
+								onChange: () => handleToggleItem(items.indexOf(item)),
 								disabled: isProcessing,
 								className: "mt-0.5 rounded border-input text-red-600 focus:ring-red-500 size-3.5"
 							}),
@@ -1333,7 +1333,7 @@ function BatchDeletePanel({ tabId }) {
 											className: "font-medium text-foreground truncate block",
 											title: item.filename,
 											children: [
-												idx + 1,
+												items.indexOf(item) + 1,
 												". ",
 												item.filename
 											]
@@ -1368,7 +1368,7 @@ function BatchDeletePanel({ tabId }) {
 									title: "Preview File",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eye, { className: "size-3.5" })
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-									onClick: () => handleSingleDelete(idx),
+									onClick: () => handleSingleDelete(items.indexOf(item)),
 									disabled: isProcessing,
 									className: "p-1 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-600 transition-all disabled:opacity-50",
 									title: "Hapus Dokumen",
@@ -1376,7 +1376,7 @@ function BatchDeletePanel({ tabId }) {
 								})]
 							})
 						]
-					}, idx)), filteredItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					}, items.indexOf(item))), filteredItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 						className: "p-4 text-center text-muted-foreground text-md-xs",
 						children: "Tidak ada dokumen yang cocok."
 					})]

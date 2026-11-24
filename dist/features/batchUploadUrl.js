@@ -1788,7 +1788,7 @@ ${xrefOffset}
       updateStatus(`Download: ${escHtml(metadata.filename)}...`);
       let file;
       if (metadata.file) {
-        file = new File([metadata.file], metadata.file.name, { type: metadata.file.type });
+        file = new File([metadata.file], uploadName, { type: metadata.file.type });
         updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
       } else {
         file = await fetchFileFromUrl(metadata.url, uploadName);
@@ -2347,6 +2347,16 @@ ${xrefOffset}
     if (window.__extBatchUploadRegistered)
       return;
     window.__extBatchUploadRegistered = true;
+    if (!window.__extPageContextRegistered) {
+      window.__extPageContextRegistered = true;
+      chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+        if (msg?.type !== "PAGE_CONTEXT_REQUEST") return;
+        sendResponse({
+          feature: "mKlaimDetail",
+          data: { idVisit: new URLSearchParams(window.location.search).get("id_visit") }
+        });
+      });
+    }
     chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message.type === "TAB_ACTION") {
         const { action, payload } = message;
@@ -2358,13 +2368,6 @@ ${xrefOffset}
             action: "BATCH_UPLOAD_ANALYZE_RESULT",
             data: { items: batchQueue }
           }).catch(console.error);
-          chrome.runtime.onMessage.addListener((msg, _sender2, sendResponse2) => {
-            if (msg?.type !== "PAGE_CONTEXT_REQUEST") return;
-            sendResponse2({
-              feature: "mKlaimDetail",
-              data: { idVisit: new URLSearchParams(window.location.search).get("id_visit") }
-            });
-          });
         } else if (action === "BATCH_UPLOAD_CRAWL") {
           crawlDokumenPasienToSidepanel();
         } else if (action === "BATCH_UPLOAD_UPDATE_ITEMS") {
@@ -2381,8 +2384,9 @@ ${xrefOffset}
         sendResponse({ success: true });
       } else if (message.type === "BATCH_UPLOAD_ACTION") {
         sendResponse({ success: true });
+        return true;
       }
-      return true;
+      return void 0;
     });
   }
   window.batchUploadShowModal = showBatchUploadModal;

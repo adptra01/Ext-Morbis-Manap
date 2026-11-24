@@ -867,6 +867,8 @@ function initBatchDeleteFeature(): void {
         sendResponse({ success: true });
       } else if (message.type === 'BATCH_DELETE_ACTION') {
         sendResponse({ success: true });
+      } else {
+        return undefined;
       }
       return true;
     });

@@ -277,9 +277,9 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
           </div>
 
           <div className="max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card">
-            {filteredItems.map((item, idx) => (
+            {filteredItems.map((item) => (
               <div
-                key={idx}
+                key={items.indexOf(item)}
                 className={`p-2 text-md-xs flex items-start gap-2 transition-colors ${
                   item.selected !== false ? 'bg-accent/20' : 'opacity-60'
                 }`}
@@ -287,7 +287,7 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
                 <input
                   type="checkbox"
                   checked={item.selected !== false}
-                  onChange={() => handleToggleItem(idx)}
+                  onChange={() => handleToggleItem(items.indexOf(item))}
                   disabled={isProcessing}
                   className="mt-0.5 rounded border-input text-primary focus:ring-primary size-3.5"
                 />
@@ -297,7 +297,7 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
                       className="font-medium text-foreground truncate block"
                       title={item.filename}
                     >
-                      {idx + 1}. {item.filename}
+                      {items.indexOf(item) + 1}. {item.filename}
                     </span>
                     {item.status !== 'pending' && (
                       <Badge
@@ -335,7 +335,7 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
 
                   <Input
                     value={item.keterangan}
-                    onChange={(e) => handleKeteranganChange(idx, e.target.value)}
+                    onChange={(e) => handleKeteranganChange(items.indexOf(item), e.target.value)}
                     placeholder="Keterangan..."
                     disabled={isProcessing}
                     className="h-6 text-[10px] py-0 px-1.5"
@@ -357,7 +357,7 @@ export function BatchUploadPanel({ tabId }: BatchUploadPanelProps) {
                     <Eye className="size-3.5" />
                   </button>
                   <button
-                    onClick={() => handleRemoveItem(idx)}
+                    onClick={() => handleRemoveItem(items.indexOf(item))}
                     disabled={isProcessing}
                     className="p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all disabled:opacity-50"
                     title="Buang dari Antrian"

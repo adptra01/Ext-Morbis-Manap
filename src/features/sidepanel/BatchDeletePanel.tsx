@@ -28,18 +28,21 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
   const [showFinishedReload, setShowFinishedReload] = useState(false);
 
   // Send command to content script via background
-  const sendTabAction = useCallback(async (action: string, payload: unknown) => {
-    try {
-      await chrome.runtime.sendMessage({
-        type: 'TAB_ACTION',
-        tabId,
-        action,
-        payload,
-      });
-    } catch (err) {
-      console.error('Error sending tab action:', err);
-    }
-  }, [tabId]);
+  const sendTabAction = useCallback(
+    async (action: string, payload: unknown) => {
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'TAB_ACTION',
+          tabId,
+          action,
+          payload,
+        });
+      } catch (err) {
+        console.error('Error sending tab action:', err);
+      }
+    },
+    [tabId],
+  );
 
   // Handle messages from content script (progress updates)
   useEffect(() => {
@@ -104,7 +107,11 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
   const handleSingleDelete = (index: number) => {
     const item = items[index];
     if (!item) return;
-    if (confirm(`Hapus dokumen ini?\n\n${item.filename}\nID: ${item.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`)) {
+    if (
+      confirm(
+        `Hapus dokumen ini?\n\n${item.filename}\nID: ${item.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`,
+      )
+    ) {
       setIsProcessing(true);
       setStatusText(`Menghapus: ${item.filename}...`);
       sendTabAction('BATCH_DELETE_SINGLE', { index, id_dokumen: item.id_dokumen });
@@ -112,12 +119,16 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
   };
 
   const handleStartDelete = () => {
-    const selectedCount = items.filter(i => i.selected).length;
+    const selectedCount = items.filter((i) => i.selected).length;
     if (selectedCount === 0) {
       alert('Pilih dokumen untuk dihapus');
       return;
     }
-    if (confirm(`Hapus ${selectedCount} dokumen? TINDAKAN INI BERSIFAT PERMANEN DAN TIDAK BISA DIUNDO!`)) {
+    if (
+      confirm(
+        `Hapus ${selectedCount} dokumen? TINDAKAN INI BERSIFAT PERMANEN DAN TIDAK BISA DIUNDO!`,
+      )
+    ) {
       setIsProcessing(true);
       setProgress(0);
       setStatusText('Memulai penghapusan massal...');
@@ -129,7 +140,7 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
     chrome.tabs.reload(tabId);
   };
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -139,7 +150,7 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
     );
   });
 
-  const selectedCount = items.filter(i => i.selected).length;
+  const selectedCount = items.filter((i) => i.selected).length;
 
   return (
     <div className="space-y-4">
@@ -150,7 +161,8 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
           <span>PERHATIAN!</span>
         </div>
         <p className="text-[11px] leading-relaxed opacity-90">
-          File yang dihapus <strong>tidak dapat dikembalikan</strong>. Tindakan ini bersifat permanen dan seketika menghapus dari database server.
+          File yang dihapus <strong>tidak dapat dikembalikan</strong>. Tindakan ini bersifat
+          permanen dan seketika menghapus dari database server.
         </p>
       </div>
 
@@ -174,7 +186,9 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
               {statusText}
             </span>
             {isProcessing && progress > 0 && (
-              <span className="text-[10px] font-semibold text-primary">{Math.round(progress)}%</span>
+              <span className="text-[10px] font-semibold text-primary">
+                {Math.round(progress)}%
+              </span>
             )}
           </div>
           {isProcessing && progress > 0 && (
@@ -204,9 +218,9 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
           </div>
 
           <div className="max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card">
-            {filteredItems.map((item, idx) => (
+            {filteredItems.map((item) => (
               <div
-                key={idx}
+                key={items.indexOf(item)}
                 className={`p-2 text-md-xs flex items-start gap-2 transition-colors ${
                   item.selected ? 'bg-red-500/5 border-l-2 border-red-500' : 'opacity-85'
                 }`}
@@ -214,14 +228,17 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
                 <input
                   type="checkbox"
                   checked={item.selected}
-                  onChange={() => handleToggleItem(idx)}
+                  onChange={() => handleToggleItem(items.indexOf(item))}
                   disabled={isProcessing}
                   className="mt-0.5 rounded border-input text-red-600 focus:ring-red-500 size-3.5"
                 />
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-start justify-between gap-1">
-                    <span className="font-medium text-foreground truncate block" title={item.filename}>
-                      {idx + 1}. {item.filename}
+                    <span
+                      className="font-medium text-foreground truncate block"
+                      title={item.filename}
+                    >
+                      {items.indexOf(item) + 1}. {item.filename}
                     </span>
                     {item.status !== 'pending' && (
                       <Badge
@@ -229,22 +246,30 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
                           item.status === 'success'
                             ? 'success'
                             : item.status === 'deleting'
-                            ? 'warning'
-                            : 'danger'
+                              ? 'warning'
+                              : 'danger'
                         }
                         className="shrink-0 scale-90"
                       >
-                        {item.status === 'success' ? 'Sukses' : item.status === 'deleting' ? '...' : 'Gagal'}
+                        {item.status === 'success'
+                          ? 'Sukses'
+                          : item.status === 'deleting'
+                            ? '...'
+                            : 'Gagal'}
                       </Badge>
                     )}
                   </div>
 
                   <div className="text-[10px] text-muted-foreground flex gap-1.5">
-                    <span>ID: <strong className="text-foreground">{item.id_dokumen}</strong></span>
+                    <span>
+                      ID: <strong className="text-foreground">{item.id_dokumen}</strong>
+                    </span>
                     <span>|</span>
                     <span>{item.tglFile}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground truncate">{item.keterangan || '-'}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {item.keterangan || '-'}
+                  </p>
                 </div>
 
                 <div className="flex flex-col gap-1.5 shrink-0">
@@ -256,7 +281,7 @@ export function BatchDeletePanel({ tabId }: BatchDeletePanelProps) {
                     <Eye className="size-3.5" />
                   </button>
                   <button
-                    onClick={() => handleSingleDelete(idx)}
+                    onClick={() => handleSingleDelete(items.indexOf(item))}
                     disabled={isProcessing}
                     className="p-1 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-600 transition-all disabled:opacity-50"
                     title="Hapus Dokumen"
