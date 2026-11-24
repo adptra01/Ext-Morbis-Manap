@@ -90,6 +90,46 @@ function pindahOperasi(): void {
     });
 }
 
+/** Halaman daftar endoskopi/cathlab: tombol "Pindah Status" di baris
+ *  "Sudah Dilaksanakan" memanggil showFormUpdateStatus() asli SIMRS supaya
+ *  status bisa dikembalikan ke Menunggu/Ditunda (bukan pindah visit). */
+export function isStatusListPage(pathname: string): boolean {
+  const p = pathname.toLowerCase();
+  return p.includes('/pelaksanaan-operasi/endoskopi') || p.includes('/pelaksanaan-operasi/cathlab');
+}
+
+function initStatusList(): void {
+  const selesai = document.querySelector<HTMLElement>('#tselesai');
+  if (!selesai) return;
+  let n = 0;
+  for (const tr of Array.from(selesai.querySelectorAll('tr'))) {
+    const aksi = tr.cells?.[1];
+    if (!aksi || aksi.querySelector('.ext-pindah-status')) continue;
+    const html = tr.innerHTML;
+    const m = html.match(/(?:detail_info|serahTerima|detail)\((\d+)\)/);
+    if (!m) continue;
+    const id = m[1];
+    const pasien = tr.cells?.[4]?.textContent?.trim() ?? '-';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-danger ext-pindah-status';
+    btn.textContent = 'Update Status';
+    // Sama persis dengan updateStatus() di halaman operasi asli: kembalikan
+    // operasi Selesai ke status Belum Dilaksanakan lewat sub=update-status.
+    const url = `/admisi/pelaksanaan-operasi/batal-operasi?sub=update-status&type=ajax&id=${id}`;
+    const msg = `Apakah Anda yakin mengembalikan operasi pasien ${pasien} ke status Belum Dilaksanakan?`;
+    // Panggil showConfirmDialog() global dari library.js — endoskopi/cathlab
+    // tidak punya helper updateStatus(), jadi inline onclick menyatukan sendiri.
+    btn.setAttribute(
+      'onclick',
+      `showConfirmDialog('${msg.replace(/'/g, "\\'")}', '${url}', '${id}', function(){location.reload()})`,
+    );
+    aksi.appendChild(btn);
+    n++;
+  }
+  if (n) console.log(`[PindahOperasi] Update Status buttons added: ${n}`);
+}
+
 async function isAllowed(): Promise<boolean> {
   try {
     const result = await chrome.storage.local.get('extensionConfig');
@@ -109,6 +149,10 @@ function init(): void {
     document.querySelectorAll('input[type="password"]').length > 0
   )
     return;
+  if (isStatusListPage(location.pathname)) {
+    initStatusList();
+    return;
+  }
   if (document.getElementById('simpan-pindah')) return;
 
   const simpan = document.querySelector<HTMLElement>(

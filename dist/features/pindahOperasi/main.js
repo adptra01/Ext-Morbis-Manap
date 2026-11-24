@@ -21,6 +21,7 @@ var __morbis_feature = (() => {
   // src/features/pindahOperasi/main.ts
   var main_exports = {};
   __export(main_exports, {
+    isStatusListPage: () => isStatusListPage,
     saveEndpointFor: () => saveEndpointFor
   });
 
@@ -323,6 +324,34 @@ var __morbis_feature = (() => {
       }
     });
   }
+  function isStatusListPage(pathname) {
+    const p = pathname.toLowerCase();
+    return p.includes("/pelaksanaan-operasi/endoskopi") || p.includes("/pelaksanaan-operasi/cathlab");
+  }
+  function initStatusList() {
+    const selesai = document.querySelector("#tselesai");
+    if (!selesai) return;
+    let n = 0;
+    for (const tr of Array.from(selesai.querySelectorAll("tr"))) {
+      const aksi = tr.cells?.[1];
+      if (!aksi || aksi.querySelector(".ext-pindah-status")) continue;
+      const html = tr.innerHTML;
+      const m = html.match(/(?:detail_info|serahTerima|detail)\((\d+)\)/);
+      if (!m) continue;
+      const id = m[1];
+      const pasien = tr.cells?.[4]?.textContent?.trim() ?? "-";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-danger ext-pindah-status";
+      btn.textContent = "Update Status";
+      const url = `/admisi/pelaksanaan-operasi/batal-operasi?sub=update-status&type=ajax&id=${id}`;
+      const msg = `Apakah Anda yakin mengembalikan operasi pasien ${pasien} ke status Belum Dilaksanakan?`;
+      btn.setAttribute("onclick", `showConfirmDialog('${msg.replace(/'/g, "\\'")}', '${url}', '${id}', function(){location.reload()})`);
+      aksi.appendChild(btn);
+      n++;
+    }
+    if (n) console.log(`[PindahOperasi] Update Status buttons added: ${n}`);
+  }
   async function isAllowed() {
     try {
       const result = await chrome.storage.local.get("extensionConfig");
@@ -337,6 +366,10 @@ var __morbis_feature = (() => {
     const loginPaths = ["/login", "/auth", "/signin", "/masuk", "/keluar", "/logout"];
     if (loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) || document.querySelectorAll('input[type="password"]').length > 0)
       return;
+    if (isStatusListPage(location.pathname)) {
+      initStatusList();
+      return;
+    }
     if (document.getElementById("simpan-pindah")) return;
     const simpan = document.querySelector(
       '#simpan, #save, input[type="submit"], button[type="submit"]'
