@@ -161,6 +161,7 @@ async function fetchFormData(): Promise<RanapFormData | null> {
       resumeId =
         res.match(/edit\(\s*['"]?(\d+)/)?.[1] ??
         res.match(/edit-resume[^0-9]*(\d{4,})/i)?.[1] ??
+        res.match(/name=["']id_resume_inap["'][^>]*value=["'](\d+)/i)?.[1] ??
         res.match(/id[=\s]+['"]?(\d+)/i)?.[1] ??
         res.match(/data-id\s*=\s*["'](\d+)/i)?.[1] ??
         '';

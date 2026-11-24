@@ -11,10 +11,12 @@
 
 ### ✨ feat
 
+- consolidated mark features + feature search in popup/sidepanel (`caf1607`)
 - **pindahOperasi** — dukung detail endoskopi & cathlab (endpoint simpan per halaman) (`9921598`)
 
 ### 🐛 fix
 
+- **mKlaimPrint** — rapikan jarak antar baris cetak — nl2br spacer + line-height 1.2 (`6efdfb8`)
 - **pindahOperasi** — rollback status Selesai ke Belum Dilaksanakan di endoskopi & cathlab (`0abfd8f`)
 
 ## 2026-11-23
@@ -2368,4 +2370,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 0abfd8fa444830bd70bc950d472ee6157c398d51 -->
+<!-- changelog-upto: 6efdfb8fa1e8c81da35c180b208fb8fffb809c03 -->
