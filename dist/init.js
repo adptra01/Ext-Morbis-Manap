@@ -51,6 +51,14 @@ var __morbis_init = (() => {
   }
 
   // src/init.ts
+  var MARK_MODULES = /* @__PURE__ */ new Set([
+    "preOpMarker",
+    "telaahBerkas",
+    "partialBerkas",
+    "laborMarker",
+    "radiologiMarker",
+    "batalBerobatMarker"
+  ]);
   async function initExtension() {
     window.log("Menginisialisasi Open Detail Extension (Modular)");
     await window.loadConfig();
@@ -212,7 +220,8 @@ var __morbis_init = (() => {
 }`;
       document.head.appendChild(s);
     }
-    for (const [key, module] of Object.entries(window.featureModules)) {
+    for (const [moduleKey, module] of Object.entries(window.featureModules)) {
+      const key = MARK_MODULES.has(moduleKey) ? "mKlaimMarks" : moduleKey;
       const featureConfig = cfg?.features?.[key];
       if (featureConfig === void 0 || !featureConfig.enabled || !window.ExtensionCore.isFeatureAllowed(key)) {
         logUsage(

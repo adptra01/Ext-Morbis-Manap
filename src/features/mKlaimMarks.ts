@@ -400,7 +400,7 @@ for (const cfg of CONFIGS) {
       run: () => start(runtimes[cfg.key]),
     };
   }
-  whenFeatureEnabled(cfg.key, () => {
+  whenFeatureEnabled('mKlaimMarks', () => {
     if (!(window.location?.pathname ?? '').startsWith('/v2/m-klaim')) return;
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => start(runtimes[cfg.key]));
@@ -413,13 +413,8 @@ for (const cfg of CONFIGS) {
 // UI mark terpadu: 1 tombol pemicu + 1 popover + multi-chip untuk ke-6 mark.
 // Engine lama tetap jalan sebagai backend (toggle + sinkron pusat); tombolnya
 // disembunyikan CSS dan dipicu lewat .click() dari popover.
-void Promise.all(MARK_DEFS.map((d) => isFeatureEnabled(d.configKey))).then((enabled) => {
+void isFeatureEnabled('mKlaimMarks').then((enabled) => {
   const path = window.location?.pathname ?? '';
-  if (!enabled.some(Boolean) || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
-  const active = new Set(MARK_DEFS.filter((_, i) => enabled[i]).map((d) => d.configKey));
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => startMarkBar(active));
-  } else {
-    startMarkBar(active);
-  }
+  if (!enabled || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
+  startMarkBar(new Set(MARK_DEFS.map((d) => d.configKey)));
 });

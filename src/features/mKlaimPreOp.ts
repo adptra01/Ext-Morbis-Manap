@@ -988,7 +988,7 @@ if (typeof g.featureModules !== 'undefined') {
 
 // Auto-run jika dimuat langsung (load-unpacked/dev) — TETAP lewat gate config
 // supaya toggle OFF di popup benar-benar menonaktifkan fitur.
-whenFeatureEnabled('preOpMarker', () => {
+whenFeatureEnabled('mKlaimMarks', () => {
   if (
     (window.location?.pathname ?? '').startsWith('/v2/m-klaim') &&
     !(window.location?.pathname ?? '').includes('/detail')

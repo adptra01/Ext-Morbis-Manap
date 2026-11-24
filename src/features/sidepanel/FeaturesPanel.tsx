@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { Search } from 'lucide-react';
 import { Switch } from '../../ui/components/switch';
+import { Input } from '../../ui/components/input';
 import {
   Select,
   SelectContent,
@@ -30,13 +33,29 @@ export function FeaturesPanel({
   const visible = features
     .filter((f) => role === 'admin' || f.roles.includes(role))
     .sort((a, b) => a.name.localeCompare(b.name, 'id'));
-  const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
+
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? visible.filter((f) => [f.key, f.name, f.desc].join(' ').toLowerCase().includes(q))
+    : visible;
+
+  const activeCount = filtered.filter((f) => enabledFeatures[f.key]).length;
 
   return (
     <div>
+      <div className="relative mb-3">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder="Cari fitur..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-9 pl-8 text-sm"
+        />
+      </div>
       <div className="flex items-center justify-between mb-3">
         <p className="text-md-xs text-muted-foreground font-medium">
-          {activeCount} dari {visible.length} aktif
+          {activeCount} dari {filtered.length} aktif
         </p>
       </div>
 
@@ -46,8 +65,14 @@ export function FeaturesPanel({
         </div>
       )}
 
+      {visible.length > 0 && filtered.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-md-sm text-muted-foreground">Tidak ada fitur cocok</p>
+        </div>
+      )}
+
       <div className="space-y-0.5">
-        {visible.map((feature) => {
+        {filtered.map((feature) => {
           const isEnabled = !!enabledFeatures[feature.key];
           return (
             <div

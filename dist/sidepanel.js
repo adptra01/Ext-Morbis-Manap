@@ -1,4 +1,4 @@
-import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as require_client, c as SelectValue, d as RefreshCw, f as Plus, g as ErrorBoundary, h as cn, i as Select, l as X, m as Switch, n as Button, o as SelectItem, p as createLucideIcon, r as Input, s as SelectTrigger, t as getVersionBadge, u as RotateCcw, v as MessageTypes, x as require_react, y as sendMessage } from "./chunks/version-n2Qh2CxV.js";
+import { C as __toESM, S as require_react, _ as ErrorBoundary, a as SelectItem, b as sendMessage, c as Input, d as RotateCcw, f as RefreshCw, g as cn, h as Switch, i as SelectContent, l as X, m as createLucideIcon, n as Button, o as SelectTrigger, p as Plus, r as Select, s as SelectValue, t as getVersionBadge, u as Search, v as require_jsx_runtime, x as require_client, y as MessageTypes } from "./chunks/version-tyo23RhK.js";
 //#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
@@ -6,7 +6,7 @@ import { S as __toESM, _ as require_jsx_runtime, a as SelectContent, b as requir
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$7 = {
+var __iconData$6 = {
 	name: "check",
 	size: 24,
 	node: [["path", {
@@ -14,8 +14,8 @@ var __iconData$7 = {
 		key: "1gmf2c"
 	}]]
 };
-__iconData$7.node;
-var Check = createLucideIcon(__iconData$7);
+__iconData$6.node;
+var Check = createLucideIcon(__iconData$6);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/circle-alert.mjs
 /**
@@ -24,7 +24,7 @@ var Check = createLucideIcon(__iconData$7);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$6 = {
+var __iconData$5 = {
 	name: "circle-alert",
 	size: 24,
 	node: [
@@ -51,8 +51,8 @@ var __iconData$6 = {
 	],
 	aliases: ["alert-circle"]
 };
-__iconData$6.node;
-var CircleAlert = createLucideIcon(__iconData$6);
+__iconData$5.node;
+var CircleAlert = createLucideIcon(__iconData$5);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/eye.mjs
 /**
@@ -61,7 +61,7 @@ var CircleAlert = createLucideIcon(__iconData$6);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$5 = {
+var __iconData$4 = {
 	name: "eye",
 	size: 24,
 	node: [["path", {
@@ -74,8 +74,8 @@ var __iconData$5 = {
 		key: "1v7zrd"
 	}]]
 };
-__iconData$5.node;
-var Eye = createLucideIcon(__iconData$5);
+__iconData$4.node;
+var Eye = createLucideIcon(__iconData$4);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/info.mjs
 /**
@@ -84,7 +84,7 @@ var Eye = createLucideIcon(__iconData$5);
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
-var __iconData$4 = {
+var __iconData$3 = {
 	name: "info",
 	size: 24,
 	node: [
@@ -104,31 +104,8 @@ var __iconData$4 = {
 		}]
 	]
 };
-__iconData$4.node;
-var Info = createLucideIcon(__iconData$4);
-//#endregion
-//#region node_modules/lucide-react/dist/esm/icons/search.mjs
-/**
-* @license lucide-react v1.49.0 - ISC
-*
-* This source code is licensed under the ISC license.
-* See the LICENSE file in the root directory of this source tree.
-*/
-var __iconData$3 = {
-	name: "search",
-	size: 24,
-	node: [["path", {
-		d: "m21 21-4.34-4.34",
-		key: "14j7rj"
-	}], ["circle", {
-		cx: "11",
-		cy: "11",
-		r: "8",
-		key: "4ej97u"
-	}]]
-};
 __iconData$3.node;
-var Search = createLucideIcon(__iconData$3);
+var Info = createLucideIcon(__iconData$3);
 //#endregion
 //#region node_modules/lucide-react/dist/esm/icons/trash.mjs
 /**
@@ -374,8 +351,24 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 //#region src/features/sidepanel/FeaturesPanel.tsx
 function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, onModeChange }) {
 	const visible = features.filter((f) => role === "admin" || f.roles.includes(role)).sort((a, b) => a.name.localeCompare(b.name, "id"));
-	const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
+	const [search, setSearch] = (0, import_react.useState)("");
+	const q = search.trim().toLowerCase();
+	const filtered = q ? visible.filter((f) => [
+		f.key,
+		f.name,
+		f.desc
+	].join(" ").toLowerCase().includes(q)) : visible;
+	const activeCount = filtered.filter((f) => enabledFeatures[f.key]).length;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "relative mb-3",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, { className: "absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+				placeholder: "Cari fitur...",
+				value: search,
+				onChange: (e) => setSearch(e.target.value),
+				className: "h-9 pl-8 text-sm"
+			})]
+		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 			className: "flex items-center justify-between mb-3",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
@@ -383,7 +376,7 @@ function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, on
 				children: [
 					activeCount,
 					" dari ",
-					visible.length,
+					filtered.length,
 					" aktif"
 				]
 			})
@@ -395,9 +388,16 @@ function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, on
 				children: "Tidak ada fitur untuk role ini"
 			})
 		}),
+		visible.length > 0 && filtered.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "text-center py-8",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "text-md-sm text-muted-foreground",
+				children: "Tidak ada fitur cocok"
+			})
+		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 			className: "space-y-0.5",
-			children: visible.map((feature) => {
+			children: filtered.map((feature) => {
 				const isEnabled = !!enabledFeatures[feature.key];
 				return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: `
@@ -1557,9 +1557,9 @@ var FALLBACK_FEATURES = [
 		roles: ["admin"]
 	},
 	{
-		key: "preOpMarker",
-		name: "Pre-op Marker",
-		desc: "Tandai pasien Pre-op di tabel M-KLAIM",
+		key: "mKlaimMarks",
+		name: "Mark M-KLAIM (Pre-op, Telaah, Partial, Labor, Radiologi, Batal)",
+		desc: "Mark M-KLAIM — tandai pasien Pre-op/Telaah/Partial/Labor/Radiologi/Batal di list + footer klaim, sinkron lintas-PC",
 		roles: ["casemix", "admin"]
 	},
 	{
@@ -1578,36 +1578,6 @@ var FALLBACK_FEATURES = [
 		key: "mKlaimPrint",
 		name: "Cetak Rapi M-KLAIM",
 		desc: "Cetak section M-KLAIM detail ke format A4 profesional",
-		roles: ["casemix", "admin"]
-	},
-	{
-		key: "telaahBerkas",
-		name: "Telaah Berkas (M-KLAIM)",
-		desc: "Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC",
-		roles: ["casemix", "admin"]
-	},
-	{
-		key: "partialBerkas",
-		name: "Pasien Partial (M-KLAIM)",
-		desc: "Tandai Pasien Partial di list + footer detail klaim, sinkron lintas-PC",
-		roles: ["casemix", "admin"]
-	},
-	{
-		key: "laborMarker",
-		name: "Labor Marker",
-		desc: "Tandai pasien Labor di list + footer detail klaim, sinkron lintas-PC",
-		roles: ["casemix", "admin"]
-	},
-	{
-		key: "radiologiMarker",
-		name: "Radiologi Marker",
-		desc: "Tandai pasien Radiologi di list + footer detail klaim, sinkron lintas-PC",
-		roles: ["casemix", "admin"]
-	},
-	{
-		key: "batalBerobatMarker",
-		name: "Batal Berobat",
-		desc: "Tandai pasien Batal Berobat di list + footer detail klaim, sinkron lintas-PC",
 		roles: ["casemix", "admin"]
 	},
 	{

@@ -25,7 +25,7 @@ describe('featureGate — decideFeatureGate', () => {
       extensionEnabled: false,
     };
     expect(decideFeatureGate('f', c)).toBe(false);
-    expect(decideFeatureGate('laborMarker', c)).toBe(false);
+    expect(decideFeatureGate('mKlaimMarks', c)).toBe(false);
     expect(decideFeatureGate('f', { ...c, extensionEnabled: true })).toBe(true);
   });
 

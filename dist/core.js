@@ -124,10 +124,19 @@ var __morbis_core = (() => {
     log("Role changed to:", role);
     return role;
   }
+  var MARK_MODULES = /* @__PURE__ */ new Set([
+    "preOpMarker",
+    "telaahBerkas",
+    "partialBerkas",
+    "laborMarker",
+    "radiologiMarker",
+    "batalBerobatMarker"
+  ]);
   function isFeatureAllowed(featureKey, role) {
+    const key = MARK_MODULES.has(featureKey) ? "mKlaimMarks" : featureKey;
     if (!role) role = getCurrentRole();
     if (role === "admin") return true;
-    return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
+    return currentConfig?.features?.[key]?.allowedRoles?.includes(role) ?? false;
   }
   var ExtensionCore = {
     ROLES,

@@ -39,18 +39,25 @@ describe('mKlaimMarkBar — label tombol', () => {
 describe('mKlaimMarkBar — gate aktif/nonaktif', () => {
   it('key config mengikuti background.ts (bukan nama file fitur)', () => {
     expect(MARK_DEFS.map((d) => d.configKey)).toEqual([
-      'laborMarker',
-      'radiologiMarker',
-      'batalBerobatMarker',
-      'preOpMarker',
-      'telaahBerkas',
-      'partialBerkas',
+      'mKlaimMarks',
+      'mKlaimMarks',
+      'mKlaimMarks',
+      'mKlaimMarks',
+      'mKlaimMarks',
+      'mKlaimMarks',
     ]);
   });
 
   it('hanya mark yang aktif yang dipakai UI', () => {
-    const active = activeMarkDefs(new Set(['laborMarker', 'telaahBerkas']));
-    expect(active.map((d) => d.key)).toEqual(['labor', 'telaah']);
+    const active = activeMarkDefs(new Set(['mKlaimMarks']));
+    expect(active.map((d) => d.key)).toEqual([
+      'labor',
+      'radiologi',
+      'batal-berobat',
+      'pre-op',
+      'telaah',
+      'partial',
+    ]);
     expect(readRowMarks(rowWithMarks({ labor: true, pre_op: true }), active)).toEqual(['labor']);
   });
 

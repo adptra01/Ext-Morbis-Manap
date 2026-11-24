@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-11-24
+
+### ✨ feat
+
+- **pindahOperasi** — dukung detail endoskopi & cathlab (endpoint simpan per halaman) (`9921598`)
+
+### 🐛 fix
+
+- **pindahOperasi** — rollback status Selesai ke Belum Dilaksanakan di endoskopi & cathlab (`0abfd8f`)
+
 ## 2026-11-23
 
 ### ✨ feat
@@ -2358,4 +2368,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9ac4749408017e447807f842ad3a2bcecac3ae5c -->
+<!-- changelog-upto: 0abfd8fa444830bd70bc950d472ee6157c398d51 -->

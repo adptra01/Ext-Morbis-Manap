@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { Search } from 'lucide-react';
 import { Switch } from '../ui/components/switch';
+import { Input } from '../ui/components/input';
 import {
   Select,
   SelectContent,
@@ -37,7 +40,17 @@ export function FeaturesPanel({
     .filter(([, f]) => role === 'admin' || f.allowedRoles?.includes(role))
     // Urut abjad (Indonesia) berdasarkan nama fitur agar daftar konsisten.
     .sort(([, a], [, b]) => (a.name ?? '').localeCompare(b.name ?? '', 'id'));
-  const enabledCount = entries.filter(([, f]) => f.enabled && !f.comingSoon).length;
+
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? entries.filter(([key, f]) =>
+        [key, f.name ?? '', f.description ?? ''].join(' ').toLowerCase().includes(q),
+      )
+    : entries;
+
+  const enabledCount = filtered.filter(([, f]) => f.enabled && !f.comingSoon).length;
+  const totalCount = filtered.filter(([, f]) => !f.comingSoon).length;
 
   if (entries.length === 0) {
     return (
@@ -47,13 +60,30 @@ export function FeaturesPanel({
     );
   }
 
+  if (filtered.length === 0) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-md-xs text-muted-foreground">Tidak ada fitur cocok</p>
+      </div>
+    );
+  }
+
   return (
     <div className={disabled ? 'opacity-50 pointer-events-none' : ''}>
+      <div className="relative mb-1.5">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground pointer-events-none" />
+        <Input
+          placeholder="Cari fitur..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-7 text-[11px] pl-7"
+        />
+      </div>
       <p className="text-[10px] text-muted-foreground mb-1.5">
-        {enabledCount} dari {entries.filter(([, f]) => !f.comingSoon).length} fitur aktif
+        {enabledCount} dari {totalCount} fitur aktif
       </p>
       <div className="space-y-0.5">
-        {entries.map(([key, feature]) => {
+        {filtered.map(([key, feature]) => {
           const isComingSoon = feature.comingSoon === true;
 
           return (

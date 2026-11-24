@@ -150,9 +150,9 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['admin'],
   },
   {
-    key: 'preOpMarker',
-    name: 'Pre-op Marker',
-    desc: 'Tandai pasien Pre-op di tabel M-KLAIM',
+    key: 'mKlaimMarks',
+    name: 'Mark M-KLAIM (Pre-op, Telaah, Partial, Labor, Radiologi, Batal)',
+    desc: 'Mark M-KLAIM — tandai pasien Pre-op/Telaah/Partial/Labor/Radiologi/Batal di list + footer klaim, sinkron lintas-PC',
     roles: ['casemix', 'admin'],
   },
   {
@@ -171,36 +171,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     key: 'mKlaimPrint',
     name: 'Cetak Rapi M-KLAIM',
     desc: 'Cetak section M-KLAIM detail ke format A4 profesional',
-    roles: ['casemix', 'admin'],
-  },
-  {
-    key: 'telaahBerkas',
-    name: 'Telaah Berkas (M-KLAIM)',
-    desc: 'Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC',
-    roles: ['casemix', 'admin'],
-  },
-  {
-    key: 'partialBerkas',
-    name: 'Pasien Partial (M-KLAIM)',
-    desc: 'Tandai Pasien Partial di list + footer detail klaim, sinkron lintas-PC',
-    roles: ['casemix', 'admin'],
-  },
-  {
-    key: 'laborMarker',
-    name: 'Labor Marker',
-    desc: 'Tandai pasien Labor di list + footer detail klaim, sinkron lintas-PC',
-    roles: ['casemix', 'admin'],
-  },
-  {
-    key: 'radiologiMarker',
-    name: 'Radiologi Marker',
-    desc: 'Tandai pasien Radiologi di list + footer detail klaim, sinkron lintas-PC',
-    roles: ['casemix', 'admin'],
-  },
-  {
-    key: 'batalBerobatMarker',
-    name: 'Batal Berobat',
-    desc: 'Tandai pasien Batal Berobat di list + footer detail klaim, sinkron lintas-PC',
     roles: ['casemix', 'admin'],
   },
   {

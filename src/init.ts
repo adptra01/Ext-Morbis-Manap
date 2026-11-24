@@ -2,6 +2,16 @@ import type { ExtensionConfig, CustomUrl, Role, FeatureModule, FeatureContext } 
 import { matchPage, normalizePath } from './features/shared/featureMatch.js';
 import { logUsage } from './features/shared/usageLog.js';
 
+// Alias modul mark lama → fitur gabungan (config satu kunci: mKlaimMarks).
+const MARK_MODULES = new Set([
+  'preOpMarker',
+  'telaahBerkas',
+  'partialBerkas',
+  'laborMarker',
+  'radiologiMarker',
+  'batalBerobatMarker',
+]);
+
 declare global {
   interface Window {
     featureModules: Record<string, FeatureModule>;
@@ -225,7 +235,8 @@ async function initExtension(): Promise<void> {
     document.head.appendChild(s);
   }
 
-  for (const [key, module] of Object.entries(window.featureModules)) {
+  for (const [moduleKey, module] of Object.entries(window.featureModules)) {
+    const key = MARK_MODULES.has(moduleKey) ? 'mKlaimMarks' : moduleKey;
     const featureConfig = cfg?.features?.[key];
 
     if (

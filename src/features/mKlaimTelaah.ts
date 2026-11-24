@@ -750,7 +750,7 @@ if (typeof g.featureModules !== 'undefined') {
 
 // Auto-run jika dimuat langsung (load-unpacked/dev) — TETAP lewat gate
 // config supaya toggle OFF di popup benar-benar menonaktifkan fitur.
-whenFeatureEnabled('telaahBerkas', () => {
+whenFeatureEnabled('mKlaimMarks', () => {
   const p = window.location?.pathname ?? '';
   if (p.startsWith('/v2/m-klaim')) {
     if (document.readyState === 'loading') {

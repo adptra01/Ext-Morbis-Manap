@@ -115,10 +115,21 @@ async function setCurrentRole(role: Role): Promise<Role> {
   return role;
 }
 
+// Alias modul mark lama → fitur gabungan (config satu kunci: mKlaimMarks).
+const MARK_MODULES = new Set([
+  'preOpMarker',
+  'telaahBerkas',
+  'partialBerkas',
+  'laborMarker',
+  'radiologiMarker',
+  'batalBerobatMarker',
+]);
+
 function isFeatureAllowed(featureKey: string, role?: Role): boolean {
+  const key = MARK_MODULES.has(featureKey) ? 'mKlaimMarks' : featureKey;
   if (!role) role = getCurrentRole();
   if (role === 'admin') return true;
-  return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
+  return currentConfig?.features?.[key]?.allowedRoles?.includes(role) ?? false;
 }
 
 export const ExtensionCore = {

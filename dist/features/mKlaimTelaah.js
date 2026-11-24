@@ -2247,7 +2247,7 @@ var __morbis_feature = (() => {
       run: initPreOpMarker
     };
   }
-  whenFeatureEnabled("preOpMarker", () => {
+  whenFeatureEnabled("mKlaimMarks", () => {
     if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initPreOpMarker);
@@ -2812,7 +2812,7 @@ var __morbis_feature = (() => {
       run: initTelaah
     };
   }
-  whenFeatureEnabled("telaahBerkas", () => {
+  whenFeatureEnabled("mKlaimMarks", () => {
     const p = window.location?.pathname ?? "";
     if (p.startsWith("/v2/m-klaim")) {
       if (document.readyState === "loading") {

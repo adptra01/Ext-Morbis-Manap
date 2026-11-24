@@ -30253,6 +30253,8 @@ var __morbis_feature = (() => {
     --spacing: 0.25rem;
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
+    --text-sm: 0.875rem;
+    --text-sm--line-height: calc(1.25 / 0.875);
     --text-base: 1rem;
     --text-base--line-height: calc(1.5 / 1);
     --text-lg: 1.125rem;
@@ -30508,6 +30510,12 @@ var __morbis_feature = (() => {
   }
   .left-1\\/2 {
     left: calc(1 / 2 * 100%);
+  }
+  .left-2 {
+    left: calc(var(--spacing) * 2);
+  }
+  .left-2\\.5 {
+    left: calc(var(--spacing) * 2.5);
   }
   .isolate {
     isolation: isolate;
@@ -31543,6 +31551,12 @@ var __morbis_feature = (() => {
   .pb-2 {
     padding-bottom: calc(var(--spacing) * 2);
   }
+  .pl-7 {
+    padding-left: calc(var(--spacing) * 7);
+  }
+  .pl-8 {
+    padding-left: calc(var(--spacing) * 8);
+  }
   .text-center {
     text-align: center;
   }
@@ -31570,6 +31584,10 @@ var __morbis_feature = (() => {
   .text-md-xs {
     font-size: 11px;
     line-height: var(--tw-leading, 16px);
+  }
+  .text-sm {
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
   }
   .text-xl {
     font-size: var(--text-xl);
@@ -33144,6 +33162,8 @@ var __morbis_feature = (() => {
     --spacing: 0.25rem;
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
+    --text-sm: 0.875rem;
+    --text-sm--line-height: calc(1.25 / 0.875);
     --text-base: 1rem;
     --text-base--line-height: calc(1.5 / 1);
     --text-lg: 1.125rem;
@@ -33399,6 +33419,12 @@ var __morbis_feature = (() => {
   }
   .left-1\\/2 {
     left: calc(1 / 2 * 100%);
+  }
+  .left-2 {
+    left: calc(var(--spacing) * 2);
+  }
+  .left-2\\.5 {
+    left: calc(var(--spacing) * 2.5);
   }
   .isolate {
     isolation: isolate;
@@ -34434,6 +34460,12 @@ var __morbis_feature = (() => {
   .pb-2 {
     padding-bottom: calc(var(--spacing) * 2);
   }
+  .pl-7 {
+    padding-left: calc(var(--spacing) * 7);
+  }
+  .pl-8 {
+    padding-left: calc(var(--spacing) * 8);
+  }
   .text-center {
     text-align: center;
   }
@@ -34461,6 +34493,10 @@ var __morbis_feature = (() => {
   .text-md-xs {
     font-size: 11px;
     line-height: var(--tw-leading, 16px);
+  }
+  .text-sm {
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
   }
   .text-xl {
     font-size: var(--text-xl);

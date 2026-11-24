@@ -355,41 +355,11 @@ var __morbis_bg = (() => {
         name: "Billing Adjustment",
         description: "Edit manual total billing & pembulatan, recalculate otomatis"
       },
-      preOpMarker: {
+      mKlaimMarks: {
         enabled: true,
         allowedRoles: ["casemix", "admin"],
-        name: "Pre-op Marker (M-KLAIM)",
-        description: "Tandai pasien Pre-op di kolom aksi tabel M-KLAIM (tersimpan 1 bulan)"
-      },
-      telaahBerkas: {
-        enabled: true,
-        allowedRoles: ["casemix", "admin"],
-        name: "Telaah Berkas (M-KLAIM)",
-        description: "Tandai Telaah Berkas di list + footer detail klaim, sinkron lintas-PC"
-      },
-      partialBerkas: {
-        enabled: true,
-        allowedRoles: ["casemix", "admin"],
-        name: "Pasien Partial (M-KLAIM)",
-        description: "Tandai Pasien Partial di list + footer detail klaim, sinkron lintas-PC"
-      },
-      laborMarker: {
-        enabled: true,
-        allowedRoles: ["casemix", "admin"],
-        name: "Labor Marker (M-KLAIM)",
-        description: "Tandai pasien Labor di list + footer detail klaim, sinkron lintas-PC"
-      },
-      radiologiMarker: {
-        enabled: true,
-        allowedRoles: ["casemix", "admin"],
-        name: "Radiologi Marker (M-KLAIM)",
-        description: "Tandai pasien Radiologi di list + footer detail klaim, sinkron lintas-PC"
-      },
-      batalBerobatMarker: {
-        enabled: true,
-        allowedRoles: ["casemix", "admin"],
-        name: "Batal Berobat (M-KLAIM)",
-        description: "Tandai pasien Batal Berobat di list + footer detail klaim, sinkron lintas-PC"
+        name: "Mark M-KLAIM",
+        description: "Tandai pasien (Pre-op, Telaah, Partial, Labor, Radiologi, Batal) di list + footer klaim, sinkron lintas-PC"
       },
       mKlaimVerifLog: {
         enabled: true,

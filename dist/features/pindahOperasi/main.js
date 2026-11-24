@@ -346,7 +346,10 @@ var __morbis_feature = (() => {
       btn.textContent = "Update Status";
       const url = `/admisi/pelaksanaan-operasi/batal-operasi?sub=update-status&type=ajax&id=${id}`;
       const msg = `Apakah Anda yakin mengembalikan operasi pasien ${pasien} ke status Belum Dilaksanakan?`;
-      btn.setAttribute("onclick", `showConfirmDialog('${msg.replace(/'/g, "\\'")}', '${url}', '${id}', function(){location.reload()})`);
+      btn.setAttribute(
+        "onclick",
+        `showConfirmDialog('${msg.replace(/'/g, "\\'")}', '${url}', '${id}', function(){location.reload()})`
+      );
       aksi.appendChild(btn);
       n++;
     }

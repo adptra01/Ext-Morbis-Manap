@@ -2103,7 +2103,7 @@ var __morbis_feature = (() => {
       run: initPreOpMarker
     };
   }
-  whenFeatureEnabled("preOpMarker", () => {
+  whenFeatureEnabled("mKlaimMarks", () => {
     if ((window.location?.pathname ?? "").startsWith("/v2/m-klaim") && !(window.location?.pathname ?? "").includes("/detail")) {
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initPreOpMarker);
@@ -2121,7 +2121,7 @@ var __morbis_feature = (() => {
       badge: "LABOR",
       button: 'button.ext-mk-btn[data-ext-mk="labor"]',
       stateAttr: "data-ext-mk-marked",
-      configKey: "laborMarker"
+      configKey: "mKlaimMarks"
     },
     {
       key: "radiologi",
@@ -2129,7 +2129,7 @@ var __morbis_feature = (() => {
       badge: "RADIOLOGI",
       button: 'button.ext-mk-btn[data-ext-mk="radiologi"]',
       stateAttr: "data-ext-mk-marked",
-      configKey: "radiologiMarker"
+      configKey: "mKlaimMarks"
     },
     {
       key: "batal-berobat",
@@ -2137,7 +2137,7 @@ var __morbis_feature = (() => {
       badge: "BATAL BEROBAT",
       button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]',
       stateAttr: "data-ext-mk-marked",
-      configKey: "batalBerobatMarker"
+      configKey: "mKlaimMarks"
     },
     {
       key: "pre-op",
@@ -2145,7 +2145,7 @@ var __morbis_feature = (() => {
       badge: "PRE-OP",
       button: "button.ext-preop-btn",
       stateAttr: "data-ext-preop-marked",
-      configKey: "preOpMarker"
+      configKey: "mKlaimMarks"
     },
     {
       key: "telaah",
@@ -2153,7 +2153,7 @@ var __morbis_feature = (() => {
       badge: "TELAAH",
       button: "button.ext-telaah-btn",
       stateAttr: "data-ext-telaah-marked",
-      configKey: "telaahBerkas"
+      configKey: "mKlaimMarks"
     },
     {
       key: "partial",
@@ -2161,7 +2161,7 @@ var __morbis_feature = (() => {
       badge: "PARTIAL",
       button: "button.ext-partial-btn",
       stateAttr: "data-ext-partial-marked",
-      configKey: "partialBerkas"
+      configKey: "mKlaimMarks"
     }
   ];
   function activeMarkDefs(enabledKeys) {
@@ -3173,7 +3173,7 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
       run: initTelaah
     };
   }
-  whenFeatureEnabled("telaahBerkas", () => {
+  whenFeatureEnabled("mKlaimMarks", () => {
     const p = window.location?.pathname ?? "";
     if (p.startsWith("/v2/m-klaim")) {
       if (document.readyState === "loading") {
@@ -3505,7 +3505,7 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
         run: () => start(runtimes[cfg.key])
       };
     }
-    whenFeatureEnabled(cfg.key, () => {
+    whenFeatureEnabled("mKlaimMarks", () => {
       if (!(window.location?.pathname ?? "").startsWith("/v2/m-klaim")) return;
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => start(runtimes[cfg.key]));
@@ -3514,14 +3514,9 @@ tr.ext-has-marks > td:first-child { box-shadow:inset 3px 0 0 #64748b; }
       }
     });
   }
-  void Promise.all(MARK_DEFS.map((d) => isFeatureEnabled(d.configKey))).then((enabled) => {
+  void isFeatureEnabled("mKlaimMarks").then((enabled) => {
     const path = window.location?.pathname ?? "";
-    if (!enabled.some(Boolean) || !path.startsWith("/v2/m-klaim") || path.includes("/detail")) return;
-    const active = new Set(MARK_DEFS.filter((_, i) => enabled[i]).map((d) => d.configKey));
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => startMarkBar(active));
-    } else {
-      startMarkBar(active);
-    }
+    if (!enabled || !path.startsWith("/v2/m-klaim") || path.includes("/detail")) return;
+    startMarkBar(new Set(MARK_DEFS.map((d) => d.configKey)));
   });
 })();

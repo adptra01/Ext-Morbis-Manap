@@ -33,7 +33,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'LABOR',
     button: 'button.ext-mk-btn[data-ext-mk="labor"]',
     stateAttr: 'data-ext-mk-marked',
-    configKey: 'laborMarker',
+    configKey: 'mKlaimMarks',
   },
   {
     key: 'radiologi',
@@ -41,7 +41,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'RADIOLOGI',
     button: 'button.ext-mk-btn[data-ext-mk="radiologi"]',
     stateAttr: 'data-ext-mk-marked',
-    configKey: 'radiologiMarker',
+    configKey: 'mKlaimMarks',
   },
   {
     key: 'batal-berobat',
@@ -49,7 +49,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'BATAL BEROBAT',
     button: 'button.ext-mk-btn[data-ext-mk="batal-berobat"]',
     stateAttr: 'data-ext-mk-marked',
-    configKey: 'batalBerobatMarker',
+    configKey: 'mKlaimMarks',
   },
   {
     key: 'pre-op',
@@ -57,7 +57,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'PRE-OP',
     button: 'button.ext-preop-btn',
     stateAttr: 'data-ext-preop-marked',
-    configKey: 'preOpMarker',
+    configKey: 'mKlaimMarks',
   },
   {
     key: 'telaah',
@@ -65,7 +65,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'TELAAH',
     button: 'button.ext-telaah-btn',
     stateAttr: 'data-ext-telaah-marked',
-    configKey: 'telaahBerkas',
+    configKey: 'mKlaimMarks',
   },
   {
     key: 'partial',
@@ -73,7 +73,7 @@ export const MARK_DEFS: MarkDef[] = [
     badge: 'PARTIAL',
     button: 'button.ext-partial-btn',
     stateAttr: 'data-ext-partial-marked',
-    configKey: 'partialBerkas',
+    configKey: 'mKlaimMarks',
   },
 ];
 

@@ -566,7 +566,7 @@ if (typeof g.featureModules !== 'undefined') {
   };
 }
 
-whenFeatureEnabled('partialBerkas', () => {
+whenFeatureEnabled('mKlaimMarks', () => {
   const p = window.location?.pathname ?? '';
   if (p.startsWith('/v2/m-klaim')) {
     if (document.readyState === 'loading') {
