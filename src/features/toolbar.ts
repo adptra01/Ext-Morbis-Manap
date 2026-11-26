@@ -48,7 +48,9 @@ injectCSS(
   .ext-bt-modal{background:#fff;width:min(900px,94vw);border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,.3);overflow:hidden}
   .ext-bt-modal-head{background:#f8f9fa;padding:15px 20px;border-bottom:1px solid #dee2e6;font-weight:700;display:flex;justify-content:space-between}
   .ext-bt-modal-body{padding:10px;max-height:70vh;overflow:auto}
-  .ext-bt-modal-body iframe{width:100%;height:62vh;border:0}
+  .ext-bt-table{width:100%;border-collapse:collapse;font-size:12px}
+  .ext-bt-table th,.ext-bt-table td{border:1px solid #ddd;padding:6px;text-align:left}
+  .ext-bt-table th{background:#f4f4f4}
   .ext-bt-modal-foot{padding:15px 20px;background:#f8f9fa;border-top:1px solid #dee2e6;display:flex;justify-content:flex-end;gap:10px}
   .ext-bt-modal-foot button{padding:8px 15px;border:none;border-radius:4px;cursor:pointer;font-weight:700;color:#fff}
   .ext-bt-kembali{background:#6c757d}.ext-bt-simpan{background:#0d6efd}.ext-bt-simpanverif{background:#198754}
@@ -324,11 +326,8 @@ function billingVerifUrl(i: BillingInfo): string {
 
 let billingToolsMounted = false;
 let billingPanelState: BillingInfo | null = null;
-let billingEditCtx: {
-  panel: HTMLElement;
-  group: HTMLElement;
-  infoEl: HTMLElement;
-} | null = null;
+let billingEditCtx: { panel: HTMLElement } | null = null;
+let billingSourceFrame: HTMLIFrameElement | null = null;
 
 function billingStatus(panel: HTMLElement, msg: string): void {
   let el = panel.querySelector<HTMLElement>('.ext-bt-status');
@@ -358,6 +357,90 @@ function renderPanelInfo(infoEl: HTMLElement, info: BillingInfo | null): void {
   add('ID Billing', info?.idBilling || '');
 }
 
+/** Load form asli di iframe tersembunyi — dipakai sbg sumber field, bukan UI. */
+function loadSourceDoc(url: string): Promise<Document | null> {
+  return new Promise((resolve) => {
+    const fr = billingSourceFrame;
+    if (!fr) return resolve(null);
+    let done = false;
+    const finish = (): void => {
+      if (done) return;
+      done = true;
+      fr.removeEventListener('load', finish);
+      // Form MORBIS mengisi baris/field via AJAX setelah load — beri jeda.
+      window.setTimeout(() => {
+        try {
+          resolve(fr.contentDocument);
+        } catch {
+          resolve(null);
+        }
+      }, 900);
+    };
+    fr.addEventListener('load', finish);
+    fr.src = url;
+    window.setTimeout(finish, 8000);
+  });
+}
+
+/** Tabel tindakan UI kita, field-nya diambil dari form billing asli. */
+function renderBillingRows(doc: Document, tbody: HTMLElement): void {
+  tbody.textContent = '';
+  const fields = Array.from(
+    doc.querySelectorAll<HTMLInputElement>('input[name^="billing["][name*="]["]'),
+  );
+  const rows = new Map<string, Map<string, HTMLInputElement>>();
+  fields.forEach((input) => {
+    const m = /^billing\[(\d+)\]\[(\w+)\]$/.exec(input.name);
+    if (!m) return;
+    if (!rows.has(m[1])) rows.set(m[1], new Map());
+    rows.get(m[1])!.set(m[2], input);
+  });
+
+  for (const [idx, f] of rows) {
+    const tr = document.createElement('tr');
+    const mkCell = (value: string, name: string, cls: string): void => {
+      const td = document.createElement('td');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = value;
+      input.className = cls;
+      input.dataset.billingName = 'billing[' + idx + '][' + name + ']';
+      input.style.cssText = 'width:100%;box-sizing:border-box;';
+      td.appendChild(input);
+      tr.appendChild(td);
+    };
+    mkCell(f.get('layanan')?.value || 'layanan', 'layanan', 'ext-bt-layanan');
+    mkCell(f.get('waktu')?.value || '', 'waktu', 'ext-bt-waktu');
+    mkCell(f.get('frekuensi')?.value || '1', 'frekuensi', 'ext-bt-frek');
+    mkCell(f.get('diskon')?.value || '0', 'diskon', 'ext-bt-diskon');
+    const price = document.createElement('td');
+    price.textContent = f.get('total')?.value || '-';
+    tr.appendChild(price);
+    const act = document.createElement('td');
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.textContent = 'Hapus';
+    del.className = 'ext-bt-kembali';
+    del.style.cssText = 'padding:4px 8px;border:none;border-radius:4px;cursor:pointer;color:#fff;';
+    del.addEventListener('click', () => {
+      tr.remove();
+      // Matikan field aslinya supaya tidak ikut ter-serialize.
+      for (const el of f.values()) el.disabled = true;
+    });
+    act.appendChild(del);
+    tr.appendChild(act);
+    tbody.appendChild(tr);
+  }
+  if (!rows.size) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 6;
+    td.textContent = 'Tidak ada baris tindakan yang bisa diedit.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+}
+
 async function refreshBillingPanel(
   panel: HTMLElement,
   group: HTMLElement,
@@ -380,22 +463,13 @@ async function refreshBillingPanel(
     group.appendChild(b);
   };
   if (info.verified) {
-    // Sudah verif → HANYA tombol batal verif.
     button(
       '❌ Batal Verif Billing',
       'ext-bt-batal',
       () => void batalVerifFromPanel(panel, group, infoEl),
     );
   } else {
-    // Belum verif → edit + verif.
-    button('✏️ Edit Billing', 'ext-bt-edit', () => {
-      billingEditCtx = { panel, group, infoEl };
-      const frame = document.querySelector<HTMLIFrameElement>('.ext-bt-frame');
-      const overlay = document.querySelector<HTMLElement>('.ext-bt-overlay');
-      if (!frame || !overlay) return;
-      frame.src = billingEditUrl(info);
-      overlay.style.display = 'flex';
-    });
+    button('✏️ Edit Billing', 'ext-bt-edit', () => void openEditFromPanel(panel));
     button('✅ Verif Billing', 'ext-bt-verif', () => void verifFromPanel(panel));
   }
 }
@@ -416,10 +490,11 @@ async function batalVerifFromPanel(
       { credentials: 'include', cache: 'no-store' },
     );
     const j = (await r.json()) as { status?: string; message?: string };
-    const ok = String(j.status) === '1';
     billingStatus(
       panel,
-      ok ? String(j.message ?? 'Batal verif berhasil.') : String(j.message ?? 'Batal verif gagal.'),
+      String(
+        j.message ?? (String(j.status) === '1' ? 'Batal verif berhasil.' : 'Batal verif gagal.'),
+      ),
     );
     await refreshBillingPanel(panel, group, infoEl);
   } catch (e) {
@@ -429,34 +504,66 @@ async function batalVerifFromPanel(
 
 function closeBillingEdit(): void {
   const overlay = document.querySelector<HTMLElement>('.ext-bt-overlay');
-  const frame = document.querySelector<HTMLIFrameElement>('.ext-bt-frame');
   if (overlay) overlay.style.display = 'none';
-  if (frame) frame.src = 'about:blank';
   billingEditCtx = null;
 }
 
-/** Simpan lewat endpoint asli form billing-edit (form serialize + save=1). */
-async function saveBillingEdit(andVerif: boolean): Promise<void> {
-  const ctx = billingEditCtx;
-  if (!ctx) return;
-  const frame = document.querySelector<HTMLIFrameElement>('.ext-bt-frame');
-  const form = frame?.contentDocument?.getElementById('form_billing') as HTMLFormElement | null;
-  if (!form) {
-    billingStatus(ctx.panel, 'Form edit billing belum siap / tidak bisa diedit.');
+async function openEditFromPanel(panel: HTMLElement): Promise<void> {
+  const info = billingPanelState;
+  const overlay = document.querySelector<HTMLElement>('.ext-bt-overlay');
+  const tbody = document.querySelector<HTMLElement>('.ext-bt-rows');
+  if (!info || !overlay || !tbody) return;
+  billingEditCtx = { panel };
+  billingStatus(panel, 'Memuat form billing…');
+  const doc = await loadSourceDoc(billingEditUrl(info));
+  if (!doc) {
+    billingStatus(panel, 'Form billing gagal dimuat.');
     return;
   }
-  billingStatus(ctx.panel, 'Menyimpan billing…');
+  renderBillingRows(doc, tbody);
+  overlay.style.display = 'flex';
+  billingStatus(panel, '');
+}
+
+function serializeSourceForm(doc: Document): URLSearchParams {
+  const form = doc.getElementById('form_billing') as HTMLFormElement | null;
   const body = new URLSearchParams();
+  if (!form) return body;
   new FormData(form).forEach((v, k) => {
     if (typeof v === 'string') body.append(k, v);
   });
+  // Tulis nilai dari UI kita ke field asli.
+  document
+    .querySelectorAll<HTMLInputElement>('.ext-bt-rows input[data-billing-name]')
+    .forEach((el) => {
+      const name = el.dataset.billingName;
+      if (!name) return;
+      const target = doc.querySelector<HTMLInputElement>('input[name="' + name + '"]');
+      if (!target) return;
+      target.disabled = false;
+      target.value = el.value;
+      body.set(name, el.value);
+    });
   body.append('save', '1');
+  return body;
+}
+
+/** Simpan + (opsional) verifikasi BPJS klaim penuh — semua lewat fetch. */
+async function saveBillingEdit(andVerif: boolean): Promise<void> {
+  const ctx = billingEditCtx;
+  if (!ctx) return;
+  const doc = billingSourceFrame?.contentDocument;
+  if (!doc?.getElementById('form_billing')) {
+    billingStatus(ctx.panel, 'Form billing belum siap / tidak bisa diedit.');
+    return;
+  }
+  billingStatus(ctx.panel, 'Menyimpan billing…');
   try {
     const r = await fetch('/billing/control/billing-edit', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
+      body: serializeSourceForm(doc).toString(),
     });
     const j = (await r.json()) as {
       status?: string | number;
@@ -476,28 +583,56 @@ async function saveBillingEdit(andVerif: boolean): Promise<void> {
   }
 }
 
-/** Verifikasi butuh form pembayaran asli — buka di tab baru (aman). */
+/** Verifikasi BPJS klaim penuh: form asli di-load silent, klaim = total tagihan. */
 async function verifFromPanel(panel: HTMLElement): Promise<void> {
   const info = billingPanelState;
   if (!info) return;
+  billingStatus(panel, 'Memproses verifikasi BPJS…');
+  const doc = await loadSourceDoc(billingVerifUrl(info));
+  if (!doc) {
+    billingStatus(panel, 'Form verifikasi gagal dimuat.');
+    return;
+  }
+  const form = doc.getElementById('formPembayaran') as HTMLFormElement | null;
+  if (!form) {
+    billingStatus(panel, 'Form verifikasi tidak tersedia.');
+    return;
+  }
+  // total_checklist = total tagihan keseluruhan (sudah termasuk jasa dokter);
+  // total_billing hanya jumlah baris billing — jangan dipakai untuk klaim.
+  const total = Number(
+    doc.querySelector<HTMLInputElement>('input[name="total_checklist"]')?.value ||
+      (doc.getElementById('total_billing') as HTMLInputElement | null)?.value ||
+      0,
+  );
+  const klaim = doc.querySelector<HTMLInputElement>('input[name="klaim_bpjs"]');
+  if (klaim) klaim.value = String(total);
+  const sisa = doc.querySelector<HTMLInputElement>('input[name="sisaTagihan"]');
+  if (sisa) sisa.value = '0';
+  const body = new URLSearchParams();
+  new FormData(form).forEach((v, k) => {
+    if (typeof v === 'string') body.append(k, v);
+  });
+  if (klaim) body.set('klaim_bpjs', String(total));
+  if (sisa) body.set('sisaTagihan', '0');
+  body.append('save', '1');
   try {
-    const r = await fetch('/billing/pembayaran-new/cek-resep', {
+    const r = await fetch('/billing/verifikasi-billing/control/bayar-control-new', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'id_visit=' + encodeURIComponent(info.idVisit),
+      body: body.toString(),
     });
-    const j = (await r.json()) as { JUMLAH?: number };
-    if (
-      Number(j.JUMLAH) > 0 &&
-      !window.confirm('Ada resep yang belum diproses farmasi. Lanjutkan verifikasi?')
-    )
-      return;
-  } catch {
-    /* cek-resep gagal → tetap buka halaman verifikasi */
+    const j = (await r.json()) as { status?: string; message?: string };
+    billingStatus(
+      panel,
+      String(j.status) === '1'
+        ? String(j.message ?? 'Verifikasi BPJS berhasil.')
+        : String(j.message ?? 'Verifikasi BPJS gagal.'),
+    );
+  } catch (e) {
+    billingStatus(panel, 'Verifikasi BPJS gagal: ' + String(e));
   }
-  window.open(billingVerifUrl(info), '_blank', 'noopener');
-  billingStatus(panel, 'Form verifikasi dibuka di tab baru.');
 }
 
 function mountBillingTools(): void {
@@ -544,10 +679,20 @@ function mountBillingTools(): void {
   modalHead.append(modalTitle, closeModal);
   const modalBody = document.createElement('div');
   modalBody.className = 'ext-bt-modal-body';
-  const frame = document.createElement('iframe');
-  frame.className = 'ext-bt-frame';
-  frame.title = 'Form Edit Billing';
-  modalBody.appendChild(frame);
+  const table = document.createElement('table');
+  table.className = 'ext-bt-table';
+  const thead = document.createElement('thead');
+  const hr = document.createElement('tr');
+  ['Tindakan', 'Waktu', 'Frek', 'Diskon', 'Total', ''].forEach((h) => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    hr.appendChild(th);
+  });
+  thead.appendChild(hr);
+  const tbody = document.createElement('tbody');
+  tbody.className = 'ext-bt-rows';
+  table.append(thead, tbody);
+  modalBody.appendChild(table);
   const foot = document.createElement('div');
   foot.className = 'ext-bt-modal-foot';
   const mkFoot = (text: string, cls: string, fn: () => void): void => {
@@ -564,7 +709,13 @@ function mountBillingTools(): void {
   modal.append(modalHead, modalBody, foot);
   overlay.appendChild(modal);
 
-  document.body.append(fab, panel, overlay);
+  const source = document.createElement('iframe');
+  source.className = 'ext-bt-source';
+  source.title = 'Sumber form billing (internal)';
+  source.style.cssText = 'display:none;';
+  billingSourceFrame = source;
+
+  document.body.append(fab, panel, overlay, source);
   fab.addEventListener('click', () => {
     const open = panel.style.display !== 'block';
     panel.style.display = open ? 'block' : 'none';

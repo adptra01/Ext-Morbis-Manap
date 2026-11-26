@@ -1286,7 +1286,9 @@ var __morbis_feature = (() => {
   .ext-bt-modal{background:#fff;width:min(900px,94vw);border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,.3);overflow:hidden}
   .ext-bt-modal-head{background:#f8f9fa;padding:15px 20px;border-bottom:1px solid #dee2e6;font-weight:700;display:flex;justify-content:space-between}
   .ext-bt-modal-body{padding:10px;max-height:70vh;overflow:auto}
-  .ext-bt-modal-body iframe{width:100%;height:62vh;border:0}
+  .ext-bt-table{width:100%;border-collapse:collapse;font-size:12px}
+  .ext-bt-table th,.ext-bt-table td{border:1px solid #ddd;padding:6px;text-align:left}
+  .ext-bt-table th{background:#f4f4f4}
   .ext-bt-modal-foot{padding:15px 20px;background:#f8f9fa;border-top:1px solid #dee2e6;display:flex;justify-content:flex-end;gap:10px}
   .ext-bt-modal-foot button{padding:8px 15px;border:none;border-radius:4px;cursor:pointer;font-weight:700;color:#fff}
   .ext-bt-kembali{background:#6c757d}.ext-bt-simpan{background:#0d6efd}.ext-bt-simpanverif{background:#198754}
@@ -1478,6 +1480,7 @@ var __morbis_feature = (() => {
   var billingToolsMounted = false;
   var billingPanelState = null;
   var billingEditCtx = null;
+  var billingSourceFrame = null;
   function billingStatus(panel, msg) {
     let el = panel.querySelector(".ext-bt-status");
     if (!el) {
@@ -1504,6 +1507,83 @@ var __morbis_feature = (() => {
     add("ID Visit", info?.idVisit || extractParam2("id_visit") || "");
     add("ID Billing", info?.idBilling || "");
   }
+  function loadSourceDoc(url) {
+    return new Promise((resolve) => {
+      const fr = billingSourceFrame;
+      if (!fr) return resolve(null);
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        fr.removeEventListener("load", finish);
+        window.setTimeout(() => {
+          try {
+            resolve(fr.contentDocument);
+          } catch {
+            resolve(null);
+          }
+        }, 900);
+      };
+      fr.addEventListener("load", finish);
+      fr.src = url;
+      window.setTimeout(finish, 8e3);
+    });
+  }
+  function renderBillingRows(doc, tbody) {
+    tbody.textContent = "";
+    const fields = Array.from(
+      doc.querySelectorAll('input[name^="billing["][name*="]["]')
+    );
+    const rows = /* @__PURE__ */ new Map();
+    fields.forEach((input) => {
+      const m = /^billing\[(\d+)\]\[(\w+)\]$/.exec(input.name);
+      if (!m) return;
+      if (!rows.has(m[1])) rows.set(m[1], /* @__PURE__ */ new Map());
+      rows.get(m[1]).set(m[2], input);
+    });
+    for (const [idx, f] of rows) {
+      const tr = document.createElement("tr");
+      const mkCell = (value, name, cls) => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = value;
+        input.className = cls;
+        input.dataset.billingName = "billing[" + idx + "][" + name + "]";
+        input.style.cssText = "width:100%;box-sizing:border-box;";
+        td.appendChild(input);
+        tr.appendChild(td);
+      };
+      mkCell(f.get("layanan")?.value || "layanan", "layanan", "ext-bt-layanan");
+      mkCell(f.get("waktu")?.value || "", "waktu", "ext-bt-waktu");
+      mkCell(f.get("frekuensi")?.value || "1", "frekuensi", "ext-bt-frek");
+      mkCell(f.get("diskon")?.value || "0", "diskon", "ext-bt-diskon");
+      const price = document.createElement("td");
+      price.textContent = f.get("total")?.value || "-";
+      tr.appendChild(price);
+      const act = document.createElement("td");
+      const del = document.createElement("button");
+      del.type = "button";
+      del.textContent = "Hapus";
+      del.className = "ext-bt-kembali";
+      del.style.cssText = "padding:4px 8px;border:none;border-radius:4px;cursor:pointer;color:#fff;";
+      del.addEventListener("click", () => {
+        tr.remove();
+        for (const el of f.values()) el.disabled = true;
+      });
+      act.appendChild(del);
+      tr.appendChild(act);
+      tbody.appendChild(tr);
+    }
+    if (!rows.size) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.textContent = "Tidak ada baris tindakan yang bisa diedit.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+  }
   async function refreshBillingPanel(panel, group, infoEl) {
     const info = await fetchBillingInfo();
     billingPanelState = info;
@@ -1528,14 +1608,7 @@ var __morbis_feature = (() => {
         () => void batalVerifFromPanel(panel, group, infoEl)
       );
     } else {
-      button("\u270F\uFE0F Edit Billing", "ext-bt-edit", () => {
-        billingEditCtx = { panel, group, infoEl };
-        const frame = document.querySelector(".ext-bt-frame");
-        const overlay = document.querySelector(".ext-bt-overlay");
-        if (!frame || !overlay) return;
-        frame.src = billingEditUrl(info);
-        overlay.style.display = "flex";
-      });
+      button("\u270F\uFE0F Edit Billing", "ext-bt-edit", () => void openEditFromPanel(panel));
       button("\u2705 Verif Billing", "ext-bt-verif", () => void verifFromPanel(panel));
     }
   }
@@ -1550,11 +1623,7 @@ var __morbis_feature = (() => {
         { credentials: "include", cache: "no-store" }
       );
       const j = await r.json();
-      const ok = String(j.status) === "1";
-      billingStatus(
-        panel,
-        ok ? String(j.message ?? "Batal verif berhasil.") : String(j.message ?? "Batal verif gagal.")
-      );
+      billingStatus(panel, String(j.message ?? (String(j.status) === "1" ? "Batal verif berhasil." : "Batal verif gagal.")));
       await refreshBillingPanel(panel, group, infoEl);
     } catch (e) {
       billingStatus(panel, "Batal verif gagal: " + String(e));
@@ -1562,32 +1631,59 @@ var __morbis_feature = (() => {
   }
   function closeBillingEdit() {
     const overlay = document.querySelector(".ext-bt-overlay");
-    const frame = document.querySelector(".ext-bt-frame");
     if (overlay) overlay.style.display = "none";
-    if (frame) frame.src = "about:blank";
     billingEditCtx = null;
+  }
+  async function openEditFromPanel(panel) {
+    const info = billingPanelState;
+    const overlay = document.querySelector(".ext-bt-overlay");
+    const tbody = document.querySelector(".ext-bt-rows");
+    if (!info || !overlay || !tbody) return;
+    billingEditCtx = { panel };
+    billingStatus(panel, "Memuat form billing\u2026");
+    const doc = await loadSourceDoc(billingEditUrl(info));
+    if (!doc) {
+      billingStatus(panel, "Form billing gagal dimuat.");
+      return;
+    }
+    renderBillingRows(doc, tbody);
+    overlay.style.display = "flex";
+    billingStatus(panel, "");
+  }
+  function serializeSourceForm(doc) {
+    const form = doc.getElementById("form_billing");
+    const body = new URLSearchParams();
+    if (!form) return body;
+    new FormData(form).forEach((v, k) => {
+      if (typeof v === "string") body.append(k, v);
+    });
+    document.querySelectorAll(".ext-bt-rows input[data-billing-name]").forEach((el) => {
+      const name = el.dataset.billingName;
+      if (!name) return;
+      const target = doc.querySelector('input[name="' + name + '"]');
+      if (!target) return;
+      target.disabled = false;
+      target.value = el.value;
+      body.set(name, el.value);
+    });
+    body.append("save", "1");
+    return body;
   }
   async function saveBillingEdit(andVerif) {
     const ctx = billingEditCtx;
     if (!ctx) return;
-    const frame = document.querySelector(".ext-bt-frame");
-    const form = frame?.contentDocument?.getElementById("form_billing");
-    if (!form) {
-      billingStatus(ctx.panel, "Form edit billing belum siap / tidak bisa diedit.");
+    const doc = billingSourceFrame?.contentDocument;
+    if (!doc?.getElementById("form_billing")) {
+      billingStatus(ctx.panel, "Form billing belum siap / tidak bisa diedit.");
       return;
     }
     billingStatus(ctx.panel, "Menyimpan billing\u2026");
-    const body = new URLSearchParams();
-    new FormData(form).forEach((v, k) => {
-      if (typeof v === "string") body.append(k, v);
-    });
-    body.append("save", "1");
     try {
       const r = await fetch("/billing/control/billing-edit", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString()
+        body: serializeSourceForm(doc).toString()
       });
       const j = await r.json();
       const ok = String(j.status) === "1" || String(j.status) === "201";
@@ -1605,20 +1701,46 @@ var __morbis_feature = (() => {
   async function verifFromPanel(panel) {
     const info = billingPanelState;
     if (!info) return;
+    billingStatus(panel, "Memproses verifikasi BPJS\u2026");
+    const doc = await loadSourceDoc(billingVerifUrl(info));
+    if (!doc) {
+      billingStatus(panel, "Form verifikasi gagal dimuat.");
+      return;
+    }
+    const form = doc.getElementById("formPembayaran");
+    if (!form) {
+      billingStatus(panel, "Form verifikasi tidak tersedia.");
+      return;
+    }
+    const total = Number(
+      doc.querySelector('input[name="total_checklist"]')?.value || doc.getElementById("total_billing")?.value || 0
+    );
+    const klaim = doc.querySelector('input[name="klaim_bpjs"]');
+    if (klaim) klaim.value = String(total);
+    const sisa = doc.querySelector('input[name="sisaTagihan"]');
+    if (sisa) sisa.value = "0";
+    const body = new URLSearchParams();
+    new FormData(form).forEach((v, k) => {
+      if (typeof v === "string") body.append(k, v);
+    });
+    if (klaim) body.set("klaim_bpjs", String(total));
+    if (sisa) body.set("sisaTagihan", "0");
+    body.append("save", "1");
     try {
-      const r = await fetch("/billing/pembayaran-new/cek-resep", {
+      const r = await fetch("/billing/verifikasi-billing/control/bayar-control-new", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "id_visit=" + encodeURIComponent(info.idVisit)
+        body: body.toString()
       });
       const j = await r.json();
-      if (Number(j.JUMLAH) > 0 && !window.confirm("Ada resep yang belum diproses farmasi. Lanjutkan verifikasi?"))
-        return;
-    } catch {
+      billingStatus(
+        panel,
+        String(j.status) === "1" ? String(j.message ?? "Verifikasi BPJS berhasil.") : String(j.message ?? "Verifikasi BPJS gagal.")
+      );
+    } catch (e) {
+      billingStatus(panel, "Verifikasi BPJS gagal: " + String(e));
     }
-    window.open(billingVerifUrl(info), "_blank", "noopener");
-    billingStatus(panel, "Form verifikasi dibuka di tab baru.");
   }
   function mountBillingTools() {
     if (billingToolsMounted || !document.body) return;
@@ -1661,10 +1783,20 @@ var __morbis_feature = (() => {
     modalHead.append(modalTitle, closeModal);
     const modalBody = document.createElement("div");
     modalBody.className = "ext-bt-modal-body";
-    const frame = document.createElement("iframe");
-    frame.className = "ext-bt-frame";
-    frame.title = "Form Edit Billing";
-    modalBody.appendChild(frame);
+    const table = document.createElement("table");
+    table.className = "ext-bt-table";
+    const thead = document.createElement("thead");
+    const hr = document.createElement("tr");
+    ["Tindakan", "Waktu", "Frek", "Diskon", "Total", ""].forEach((h) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr);
+    const tbody = document.createElement("tbody");
+    tbody.className = "ext-bt-rows";
+    table.append(thead, tbody);
+    modalBody.appendChild(table);
     const foot = document.createElement("div");
     foot.className = "ext-bt-modal-foot";
     const mkFoot = (text, cls, fn) => {
@@ -1680,7 +1812,12 @@ var __morbis_feature = (() => {
     mkFoot("Simpan & Verif Ulang", "ext-bt-simpanverif", () => void saveBillingEdit(true));
     modal.append(modalHead, modalBody, foot);
     overlay.appendChild(modal);
-    document.body.append(fab, panel, overlay);
+    const source = document.createElement("iframe");
+    source.className = "ext-bt-source";
+    source.title = "Sumber form billing (internal)";
+    source.style.cssText = "display:none;";
+    billingSourceFrame = source;
+    document.body.append(fab, panel, overlay, source);
     fab.addEventListener("click", () => {
       const open = panel.style.display !== "block";
       panel.style.display = open ? "block" : "none";
