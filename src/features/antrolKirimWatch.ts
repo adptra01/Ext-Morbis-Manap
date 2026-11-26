@@ -129,26 +129,33 @@ async function loadDaySet(prefix: string, dateKey: string): Promise<Set<string>>
   }
 }
 
-async function addToDaySet(prefix: string, dateKey: string, item: string): Promise<void> {
+// Serialisasi write — dua persist bersamaan tidak boleh saling menimpa
+// (read-modify-write chrome.storage.local bisa kehilangan satu key).
+let dayWriteChain: Promise<void> = Promise.resolve();
+
+function addToDaySet(prefix: string, dateKey: string, item: string): Promise<void> {
   const key = `${prefix}|${dateKey}`;
-  try {
-    const got = await chrome.storage.local.get(key);
-    const arr = Array.isArray(got?.[key]) ? (got[key] as string[]) : [];
-    if (!arr.includes(item)) arr.push(item);
-    await chrome.storage.local.set({ [key]: arr });
-  } catch {
-    // storage penuh/diblokir — abaikan; dedupe server tetap melindungi.
-  }
+  dayWriteChain = dayWriteChain
+    .then(async () => {
+      const got = await chrome.storage.local.get(key);
+      const arr = Array.isArray(got?.[key]) ? (got[key] as string[]) : [];
+      if (!arr.includes(item)) arr.push(item);
+      await chrome.storage.local.set({ [key]: arr });
+    })
+    .catch(() => {
+      // storage penuh/diblokir — abaikan; dedupe server tetap melindungi.
+    });
+  return dayWriteChain;
 }
 
-function persistSent(key: string): void {
+function persistSent(key: string, dateKey = currentDateKey): void {
   sentToday.add(key);
-  void addToDaySet(SENT_PREFIX, currentDateKey, key);
+  void addToDaySet(SENT_PREFIX, dateKey, key);
 }
 
-function persistBlacklist(resepId: string): void {
+function persistBlacklist(resepId: string, dateKey = currentDateKey): void {
   blacklistResep.add(resepId);
-  void addToDaySet(BLACK_PREFIX, currentDateKey, resepId);
+  void addToDaySet(BLACK_PREFIX, dateKey, resepId);
 }
 
 /** Rollover tengah malam: muat ulang set harian + reset baseline. */
@@ -163,6 +170,9 @@ async function refreshDayIfNeeded(): Promise<void> {
   snapshot = null;
   lastSig = '';
   const [s, b] = await Promise.all([loadDaySet(SENT_PREFIX, dk), loadDaySet(BLACK_PREFIX, dk)]);
+  // Item yang masuk saat await masih berada di set lama — union, jangan timpa.
+  sentToday.forEach((k) => s.add(k));
+  blacklistResep.forEach((k) => b.add(k));
   sentToday = s;
   blacklistResep = b;
 }

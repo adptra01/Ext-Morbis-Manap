@@ -422,23 +422,25 @@ var __morbis_feature = (() => {
       return /* @__PURE__ */ new Set();
     }
   }
-  async function addToDaySet(prefix, dateKey, item) {
+  var dayWriteChain = Promise.resolve();
+  function addToDaySet(prefix, dateKey, item) {
     const key = `${prefix}|${dateKey}`;
-    try {
+    dayWriteChain = dayWriteChain.then(async () => {
       const got = await chrome.storage.local.get(key);
       const arr = Array.isArray(got?.[key]) ? got[key] : [];
       if (!arr.includes(item)) arr.push(item);
       await chrome.storage.local.set({ [key]: arr });
-    } catch {
-    }
+    }).catch(() => {
+    });
+    return dayWriteChain;
   }
-  function persistSent(key) {
+  function persistSent(key, dateKey = currentDateKey) {
     sentToday.add(key);
-    void addToDaySet(SENT_PREFIX, currentDateKey, key);
+    void addToDaySet(SENT_PREFIX, dateKey, key);
   }
-  function persistBlacklist(resepId) {
+  function persistBlacklist(resepId, dateKey = currentDateKey) {
     blacklistResep.add(resepId);
-    void addToDaySet(BLACK_PREFIX, currentDateKey, resepId);
+    void addToDaySet(BLACK_PREFIX, dateKey, resepId);
   }
   async function refreshDayIfNeeded() {
     const dk = localDateKey();
@@ -451,6 +453,8 @@ var __morbis_feature = (() => {
     snapshot = null;
     lastSig = "";
     const [s, b] = await Promise.all([loadDaySet(SENT_PREFIX, dk), loadDaySet(BLACK_PREFIX, dk)]);
+    sentToday.forEach((k) => s.add(k));
+    blacklistResep.forEach((k) => b.add(k));
     sentToday = s;
     blacklistResep = b;
   }

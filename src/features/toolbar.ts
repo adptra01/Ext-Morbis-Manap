@@ -423,75 +423,68 @@ function renderPanelInfo(infoEl: HTMLElement, info: BillingInfo | null): void {
 }
 
 /** Load form asli di iframe tersembunyi — dipakai sbg sumber field, bukan UI. */
+let billingLoadSeq = 0;
+
 function loadSourceDoc(url: string, waitForRows = true): Promise<Document | null> {
   return new Promise((resolve) => {
     const fr = billingSourceFrame;
     if (!fr) return resolve(null);
+    const seq = ++billingLoadSeq;
     let done = false;
-    const finish = (): void => {
-      if (done) return;
+    let hardTimer = 0;
+    const settle = (doc: Document | null): void => {
+      if (done || seq !== billingLoadSeq) return; // load lama → buang
       done = true;
       fr.removeEventListener('load', finish);
-      // Form MORBIS mengisi header/baris via AJAX setelah load — tunggu
-      // noBilling terisi, bukan sekadar jeda tetap (sering masih kosong).
+      window.clearTimeout(hardTimer);
+      resolve(doc);
+    };
+    const finish = (): void => {
+      if (done || seq !== billingLoadSeq) return;
+      // Form MORBIS mengisi header/baris via AJAX setelah load.
       const start = Date.now();
       let readyAt = 0;
       const poll = (): void => {
+        if (done || seq !== billingLoadSeq) return;
         try {
           const d = fr.contentDocument;
           if (!waitForRows) {
-            // Form verifikasi tidak punya #noBilling — cukup tunggu field klaim.
             if (d?.getElementById('formPembayaran')) {
               if (!readyAt) readyAt = Date.now();
               const klaim = d.querySelector<HTMLInputElement>('input[name="klaim_bpjs"]');
               const checklist = d.querySelector<HTMLInputElement>(
                 'input[name="total_checklist"]',
               )?.value;
-              // total_checklist diisi AJAX — jangan kirim klaim 0 karena
-              // form belum selesai render.
-              if ((klaim && checklist) || Date.now() - readyAt > 2500) {
-                resolve(d);
-                return;
-              }
+              if ((klaim && checklist) || Date.now() - readyAt > 2500) return settle(d);
             }
           } else if (d?.getElementById('form_billing')) {
             const no = d.querySelector<HTMLInputElement>('#noBilling');
             if (no?.value) {
               if (!readyAt) readyAt = Date.now();
-              // Baris billing di-append AJAX setelah header — tunggu barisnya,
-              // tapi jangan macet kalau memang billing-nya kosong.
               if (
                 d.querySelectorAll('input[name^="billing["]').length ||
                 Date.now() - readyAt > 1200
-              ) {
-                resolve(d);
-                return;
-              }
+              )
+                return settle(d);
             }
           }
         } catch {
           /* frame belum siap */
         }
-        if (Date.now() - start > 6000) {
-          try {
-            resolve(fr.contentDocument);
-          } catch {
-            resolve(null);
-          }
-          return;
-        }
+        if (Date.now() - start > 6000) return settle(fr.contentDocument);
         window.setTimeout(poll, 100);
       };
       poll();
     };
     fr.addEventListener('load', finish);
     fr.src = url;
-    window.setTimeout(finish, 8000);
+    hardTimer = window.setTimeout(() => settle(fr.contentDocument), 8000);
   });
 }
 
 let billingTarifResults: TarifOption[] = [];
 let billingTarifTimer = 0;
+let billingTarifSeq = 0;
 let billingActiveRow: string | null = null;
 let billingSearchInput: HTMLInputElement | null = null;
 let billingTarifList: HTMLDataListElement | null = null;
@@ -675,6 +668,7 @@ async function searchTarif(q: string): Promise<void> {
   if (!billingTarifList) return;
   billingTarifList.textContent = '';
   billingTarifResults = [];
+  const seq = ++billingTarifSeq;
   if (q.trim().length < 2) return;
   const p = new URLSearchParams({
     q: q.trim(),
@@ -683,11 +677,13 @@ async function searchTarif(q: string): Promise<void> {
     idKelas: billingPanelState?.kelas || '',
   });
   const data = await getJson<TarifOption[]>('/admisi/search?' + p.toString());
-  if (!Array.isArray(data)) return;
+  // Respons lama dari query sebelumnya jangan menimpa hasil terbaru.
+  if (seq !== billingTarifSeq || !Array.isArray(data)) return;
   billingTarifResults = data.slice(0, 20);
   billingTarifResults.forEach((t, i) => {
     const opt = document.createElement('option');
     opt.value = tarifLabel(t, i);
+    opt.dataset.idx = String(i);
     billingTarifList!.appendChild(opt);
   });
 }
@@ -740,7 +736,15 @@ async function batalVerifFromPanel(
   try {
     const r = await fetch(
       '/billing/verifikasi-billing/control/batal-control?id=' + encodeURIComponent(info.idVisit),
-      { credentials: 'include', cache: 'no-store' },
+      // Script SIMRS membaca $_GET['id'], tapi kita kirim POST + id di body
+      // juga: menutup vektor CSRF lewat <img src> lintas situs.
+      {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + encodeURIComponent(info.idVisit),
+      },
     );
     const j = (await r.json()) as { status?: string; message?: string };
     billingStatus(
@@ -759,6 +763,8 @@ function closeBillingEdit(): void {
   const overlay = document.querySelector<HTMLElement>('.ext-bt-overlay');
   if (overlay) overlay.style.display = 'none';
   billingEditCtx = null;
+  // Jangan biarkan form billing/klaim lengkap tetap hidup di iframe hidden.
+  if (billingSourceFrame) billingSourceFrame.src = 'about:blank';
 }
 
 async function openEditFromPanel(panel: HTMLElement): Promise<void> {
@@ -1042,7 +1048,8 @@ function mountBillingTools(bar: HTMLElement): void {
     billingTarifTimer = window.setTimeout(() => void searchTarif(value), 200);
   });
   q.addEventListener('change', () => {
-    const t = billingTarifResults.find((x) => tarifLabel(x, 0) === q.value);
+    const opt = Array.from(billingTarifList?.options || []).find((o) => o.value === q.value);
+    const t = opt ? billingTarifResults[Number(opt.dataset.idx)] : undefined;
     if (!t) return;
     let tr = billingActiveRow
       ? tbody.querySelector<HTMLTableRowElement>(`tr[data-bt-idx="${billingActiveRow}"]`)

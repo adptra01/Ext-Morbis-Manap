@@ -1564,18 +1564,27 @@ var __morbis_feature = (() => {
     add("ID Visit", info?.idVisit || extractParam2("id_visit") || "");
     add("ID Billing", info?.idBilling || "");
   }
+  var billingLoadSeq = 0;
   function loadSourceDoc(url, waitForRows = true) {
     return new Promise((resolve) => {
       const fr = billingSourceFrame;
       if (!fr) return resolve(null);
+      const seq = ++billingLoadSeq;
       let done = false;
-      const finish = () => {
-        if (done) return;
+      let hardTimer = 0;
+      const settle = (doc) => {
+        if (done || seq !== billingLoadSeq) return;
         done = true;
         fr.removeEventListener("load", finish);
+        window.clearTimeout(hardTimer);
+        resolve(doc);
+      };
+      const finish = () => {
+        if (done || seq !== billingLoadSeq) return;
         const start = Date.now();
         let readyAt = 0;
         const poll = () => {
+          if (done || seq !== billingLoadSeq) return;
           try {
             const d = fr.contentDocument;
             if (!waitForRows) {
@@ -1585,42 +1594,31 @@ var __morbis_feature = (() => {
                 const checklist = d.querySelector(
                   'input[name="total_checklist"]'
                 )?.value;
-                if (klaim && checklist || Date.now() - readyAt > 2500) {
-                  resolve(d);
-                  return;
-                }
+                if (klaim && checklist || Date.now() - readyAt > 2500) return settle(d);
               }
             } else if (d?.getElementById("form_billing")) {
               const no = d.querySelector("#noBilling");
               if (no?.value) {
                 if (!readyAt) readyAt = Date.now();
-                if (d.querySelectorAll('input[name^="billing["]').length || Date.now() - readyAt > 1200) {
-                  resolve(d);
-                  return;
-                }
+                if (d.querySelectorAll('input[name^="billing["]').length || Date.now() - readyAt > 1200)
+                  return settle(d);
               }
             }
           } catch {
           }
-          if (Date.now() - start > 6e3) {
-            try {
-              resolve(fr.contentDocument);
-            } catch {
-              resolve(null);
-            }
-            return;
-          }
+          if (Date.now() - start > 6e3) return settle(fr.contentDocument);
           window.setTimeout(poll, 100);
         };
         poll();
       };
       fr.addEventListener("load", finish);
       fr.src = url;
-      window.setTimeout(finish, 8e3);
+      hardTimer = window.setTimeout(() => settle(fr.contentDocument), 8e3);
     });
   }
   var billingTarifResults = [];
   var billingTarifTimer = 0;
+  var billingTarifSeq = 0;
   var billingActiveRow = null;
   var billingSearchInput = null;
   var billingTarifList = null;
@@ -1774,6 +1772,7 @@ var __morbis_feature = (() => {
     if (!billingTarifList) return;
     billingTarifList.textContent = "";
     billingTarifResults = [];
+    const seq = ++billingTarifSeq;
     if (q.trim().length < 2) return;
     const p = new URLSearchParams({
       q: q.trim(),
@@ -1782,11 +1781,12 @@ var __morbis_feature = (() => {
       idKelas: billingPanelState?.kelas || ""
     });
     const data = await getJson2("/admisi/search?" + p.toString());
-    if (!Array.isArray(data)) return;
+    if (seq !== billingTarifSeq || !Array.isArray(data)) return;
     billingTarifResults = data.slice(0, 20);
     billingTarifResults.forEach((t, i) => {
       const opt = document.createElement("option");
       opt.value = tarifLabel(t, i);
+      opt.dataset.idx = String(i);
       billingTarifList.appendChild(opt);
     });
   }
@@ -1829,7 +1829,15 @@ var __morbis_feature = (() => {
     try {
       const r = await fetch(
         "/billing/verifikasi-billing/control/batal-control?id=" + encodeURIComponent(info.idVisit),
-        { credentials: "include", cache: "no-store" }
+        // Script SIMRS membaca $_GET['id'], tapi kita kirim POST + id di body
+        // juga: menutup vektor CSRF lewat <img src> lintas situs.
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "id=" + encodeURIComponent(info.idVisit)
+        }
       );
       const j = await r.json();
       billingStatus(
@@ -1847,6 +1855,7 @@ var __morbis_feature = (() => {
     const overlay = document.querySelector(".ext-bt-overlay");
     if (overlay) overlay.style.display = "none";
     billingEditCtx = null;
+    if (billingSourceFrame) billingSourceFrame.src = "about:blank";
   }
   async function openEditFromPanel(panel) {
     const info = billingPanelState;
@@ -2097,7 +2106,8 @@ Klaim: Rp ${new Intl.NumberFormat("id-ID").format(total)}`
       billingTarifTimer = window.setTimeout(() => void searchTarif(value), 200);
     });
     q.addEventListener("change", () => {
-      const t = billingTarifResults.find((x) => tarifLabel(x, 0) === q.value);
+      const opt = Array.from(billingTarifList?.options || []).find((o) => o.value === q.value);
+      const t = opt ? billingTarifResults[Number(opt.dataset.idx)] : void 0;
       if (!t) return;
       let tr = billingActiveRow ? tbody.querySelector(`tr[data-bt-idx="${billingActiveRow}"]`) : null;
       if (!tr) {
