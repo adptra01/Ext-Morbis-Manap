@@ -13,6 +13,18 @@ describe('paList — splitListMarker', () => {
     expect(splitListMarker('(IV) Kesimpulan akhir')).toEqual(['(IV)', 'Kesimpulan akhir']);
   });
 
+  it('mengenali penanda romawi majemuk & tanpa spasi (Kesimpulan)', () => {
+    expect(splitListMarker('I dan II. Masih dijumpai sel-sel viabel')).toEqual([
+      'I dan II.',
+      'Masih dijumpai sel-sel viabel',
+    ]);
+    expect(splitListMarker('III.Tidak dijumpai sel-sel viabel')).toEqual([
+      'III.',
+      'Tidak dijumpai sel-sel viabel',
+    ]);
+    expect(splitListMarker('  II. Spesimen kedua')).toEqual(['II.', 'Spesimen kedua']);
+  });
+
   it('mengenali poin dash/bullet', () => {
     expect(splitListMarker('- Tidak ada keganasan')).toEqual(['-', 'Tidak ada keganasan']);
     expect(splitListMarker('• Catatan dokter')).toEqual(['•', 'Catatan dokter']);

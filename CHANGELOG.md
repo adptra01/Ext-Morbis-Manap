@@ -17,6 +17,8 @@
 
 ### 🐛 fix
 
+- deep audit 3 — filtered index, message channel, batch upload name, restart/retry guard (`03a7ee1`)
+- deep audit 2 — tombstone persist, resume patient guard, messaging gates, page context (`93b41c6`)
 - deep review — migrate fold, QR mapping, tab context, URL id, toast timer (`5f74af9`)
 - robust — QR decode guard, pindah onclick listener, mark migrasi, toggle rollback, context tab filter (`7fc4c8d`)
 - **resumeRanapTab** — deteksi id_resume_inap dari form fallback (hilangkan warning palsu) (`d587bc7`)
@@ -2374,4 +2376,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 5f74af9ebbc94ad08a05af1777b6a835038d1fe6 -->
+<!-- changelog-upto: 03a7ee18aa96f28975ec35deb9d61472b4f5864e -->
