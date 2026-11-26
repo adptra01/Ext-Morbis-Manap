@@ -314,6 +314,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Billing Adjustment',
       description: 'Edit manual total billing & pembulatan, recalculate otomatis',
     },
+    billingEditTools: {
+      enabled: true,
+      allowedRoles: ['casemix', 'kasir', 'admin'],
+      name: 'Batal Verif & Edit Billing',
+      description:
+        'Di detail M-KLAIM: batal verifikasi billing, edit billing, dan verifikasi ulang tanpa cari pasien manual',
+    },
     mKlaimMarks: {
       enabled: true,
       allowedRoles: ['casemix', 'admin'],

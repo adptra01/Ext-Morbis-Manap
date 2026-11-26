@@ -436,6 +436,10 @@ var META = {
 		category: "mklaim",
 		urlPatterns: ["/billing"]
 	},
+	billingEditTools: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
 	fetchWatchdog: {
 		category: "mklaim",
 		urlPatterns: []
@@ -1853,6 +1857,16 @@ var FALLBACK_FEATURES = [
 		name: "Billing Adjustment",
 		desc: "Edit manual total billing & pembulatan, recalculate otomatis",
 		roles: ["admin"]
+	},
+	{
+		key: "billingEditTools",
+		name: "Batal Verif & Edit Billing",
+		desc: "Batal verif, edit billing & verifikasi ulang langsung dari detail M-KLAIM",
+		roles: [
+			"casemix",
+			"kasir",
+			"admin"
+		]
 	},
 	{
 		key: "paLabPrint",

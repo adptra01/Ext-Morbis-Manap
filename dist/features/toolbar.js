@@ -1227,6 +1227,19 @@ var __morbis_feature = (() => {
     };
   }
 
+  // src/features/shared/billingTools.ts
+  function parseBillingRow(html, idVisit) {
+    const v = idVisit.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const m = new RegExp(
+      "(?:detail_billing|verifikasi)\\(\\s*" + v + "\\s*,\\s*\\d+\\s*,\\s*(\\d+)"
+    ).exec(html);
+    if (!m) return null;
+    return {
+      idBilling: m[1],
+      verified: new RegExp("batal_verif\\(\\s*" + v + "\\s*\\)").test(html)
+    };
+  }
+
   // src/features/toolbar.ts
   var g2 = getMorbisGlobals();
   injectCSS(
@@ -1267,6 +1280,11 @@ var __morbis_feature = (() => {
     triageIgd: "/admisi/pelaksanaan_pelayanan/triage_terintegrasi",
     spri: "/admisi/detail-rawat-inap/surat-pengantar-ri",
     pengkajianIgd: "/admisi/pelaksanaan_pelayanan/pengkajian_awal_rj/igd"
+  };
+  var BILLING_BTN_STYLES = {
+    batal: { text: "Batal Verif Billing", bg: "#dc2626", hover: "#b91c1c" },
+    edit: { text: "Edit Billing", bg: "#2563eb", hover: "#1d4ed8" },
+    verif: { text: "Verif Ulang Billing", bg: "#059669", hover: "#047857" }
   };
   var BTN_STYLES = {
     rajal: { text: "Pelayanan Rawat Jalan", bg: colors.primary, hover: colors.primaryHover },
@@ -1402,11 +1420,101 @@ var __morbis_feature = (() => {
     btn.addEventListener("click", onClick);
     return btn;
   }
+  async function fetchBillingInfo() {
+    const idVisit = extractParam2("id_visit");
+    if (!idVisit) return null;
+    const norm = (document.querySelector("#norm")?.value || extractParam2("norm") || "").replace(/\D/g, "");
+    const pasien = document.querySelector("#nama")?.value?.trim() || extractParam2("nama") || "";
+    const sep = document.querySelector("#no_sep")?.value?.trim() || "";
+    if (!norm) return null;
+    for (let page = 1; page <= 3; page++) {
+      const p = new URLSearchParams({
+        "search[no_Rm]": norm,
+        "search[status]": "Semua",
+        page: String(page)
+      });
+      if (sep) p.set("search[sep]", sep);
+      try {
+        const r = await fetch(
+          "/billing/verif-pembayaran/billing-pembayaran-table-verifikasi?" + p.toString(),
+          { credentials: "include", cache: "no-store" }
+        );
+        if (!r.ok) return null;
+        const row = parseBillingRow(await r.text(), idVisit);
+        if (row) {
+          return { ...row, idVisit, idPasien: String(Number(norm) || norm), pasien };
+        }
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+  function billingEditUrl(i) {
+    return window.location.origin + "/billing/billing-edit?id_billing=" + encodeURIComponent(i.idBilling) + "&id_pasien=" + encodeURIComponent(i.idPasien) + "&id_visit=" + encodeURIComponent(i.idVisit) + "&pasien=" + encodeURIComponent(i.pasien);
+  }
+  function billingVerifUrl(i) {
+    return window.location.origin + "/billing/verifikasi-billing/index?id_visit=" + encodeURIComponent(i.idVisit) + "&id_pasien=" + encodeURIComponent(i.idPasien) + "&id_billing=" + encodeURIComponent(i.idBilling) + "&pasien=" + encodeURIComponent(i.pasien);
+  }
+  function flashBillingStatus(bar, msg) {
+    let el = bar.querySelector(".ext-billing-tools-status");
+    if (!el) {
+      el = document.createElement("span");
+      el.className = "ext-billing-tools-status";
+      el.style.cssText = "font-size:12px;color:#b91c1c;font-weight:600;";
+      bar.appendChild(el);
+    }
+    el.textContent = msg;
+    window.setTimeout(() => {
+      if (el?.textContent === msg) el.textContent = "";
+    }, 5e3);
+  }
+  async function onBatalVerifBilling(bar) {
+    const info = await fetchBillingInfo();
+    if (!info) return flashBillingStatus(bar, "Data billing tidak ditemukan untuk kunjungan ini.");
+    if (!info.verified) return flashBillingStatus(bar, "Billing belum terverifikasi.");
+    if (!window.confirm(`Batalkan verifikasi billing ${info.pasien} (visit ${info.idVisit})?`)) return;
+    try {
+      const r = await fetch(
+        "/billing/verifikasi-billing/control/batal-control?id=" + encodeURIComponent(info.idVisit),
+        { credentials: "include", cache: "no-store" }
+      );
+      const j = await r.json();
+      flashBillingStatus(
+        bar,
+        String(j.message ?? (String(j.status) === "1" ? "Batal verif berhasil." : "Batal verif gagal."))
+      );
+    } catch (e) {
+      flashBillingStatus(bar, "Batal verif gagal: " + String(e));
+    }
+  }
+  async function onEditBilling(bar) {
+    const info = await fetchBillingInfo();
+    if (!info) return flashBillingStatus(bar, "Data billing tidak ditemukan untuk kunjungan ini.");
+    window.open(billingEditUrl(info), "_blank", "noopener");
+  }
+  async function onVerifUlangBilling(bar) {
+    const info = await fetchBillingInfo();
+    if (!info) return flashBillingStatus(bar, "Data billing tidak ditemukan untuk kunjungan ini.");
+    try {
+      const r = await fetch("/billing/pembayaran-new/cek-resep", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "id_visit=" + encodeURIComponent(info.idVisit)
+      });
+      const j = await r.json();
+      if (Number(j.JUMLAH) > 0 && !window.confirm("Ada resep yang belum diproses farmasi. Lanjutkan verifikasi?"))
+        return;
+    } catch {
+    }
+    window.open(billingVerifUrl(info), "_blank", "noopener");
+  }
   function anyFeatureEnabled() {
     const cfg = g2.currentConfig;
     if (!cfg?.extensionEnabled) return false;
     const ok = (key) => cfg.features?.[key]?.enabled && g2.ExtensionCore.isFeatureAllowed(key);
-    return ok("shortcutButtons") || ok("batchDelete") || ok("batchUpload");
+    return ok("shortcutButtons") || ok("batchDelete") || ok("batchUpload") || ok("billingEditTools");
   }
   function renderToolbar() {
     if (!anyFeatureEnabled()) return;
@@ -1464,6 +1572,20 @@ var __morbis_feature = (() => {
           () => g2.batchUploadShowModal?.(),
           "ext-toolbar-upload"
         )
+      );
+    }
+    if (g2.currentConfig?.features?.billingEditTools?.enabled && g2.ExtensionCore.isFeatureAllowed("billingEditTools")) {
+      const batal = BILLING_BTN_STYLES.batal;
+      bar.appendChild(
+        createBtn(batal.text, batal.bg, batal.hover, () => void onBatalVerifBilling(bar), "ext-billing-batal")
+      );
+      const edit = BILLING_BTN_STYLES.edit;
+      bar.appendChild(
+        createBtn(edit.text, edit.bg, edit.hover, () => void onEditBilling(bar), "ext-billing-edit")
+      );
+      const verif = BILLING_BTN_STYLES.verif;
+      bar.appendChild(
+        createBtn(verif.text, verif.bg, verif.hover, () => void onVerifUlangBilling(bar), "ext-billing-verif")
       );
     }
     const selectors = [

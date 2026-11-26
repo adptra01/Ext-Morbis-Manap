@@ -183,6 +183,10 @@ var META = {
 		category: "mklaim",
 		urlPatterns: ["/billing"]
 	},
+	billingEditTools: {
+		category: "mklaim",
+		urlPatterns: KLAIM_DETAIL
+	},
 	fetchWatchdog: {
 		category: "mklaim",
 		urlPatterns: []

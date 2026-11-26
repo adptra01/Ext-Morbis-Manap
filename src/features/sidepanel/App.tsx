@@ -186,6 +186,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['admin'],
   },
   {
+    key: 'billingEditTools',
+    name: 'Batal Verif & Edit Billing',
+    desc: 'Batal verif, edit billing & verifikasi ulang langsung dari detail M-KLAIM',
+    roles: ['casemix', 'kasir', 'admin'],
+  },
+  {
     key: 'paLabPrint',
     name: 'Cetak Hasil Lab PA (Redesign)',
     desc: 'Redesign format cetak Laporan Hasil PA agar rapi saat tampil & dicetak A4',
