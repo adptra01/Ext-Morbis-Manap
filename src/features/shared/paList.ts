@@ -10,16 +10,10 @@
  * tepat setelahnya ("In …", "Dr. …", "ICD-O : …", "No. RM") tidak
  * cocok dan tetap tampil polos.
  */
-// Romawi majemuk ("I dan II.", "III/IV.") ikut penanda. Spasi setelah
-// penanda BOLEH kosong: input PA sering menulis "III.Tidak …" tanpa spasi
-// (id=178975) — kalau tidak dikenali, baris ini lolos dari hanging indent
-// dan tampil tidak sejajar dengan baris bernomor lainnya.
-const ROMAN = '[IVXLC]+(?:\\s*(?:dan|&|,|/|-)\\s*[IVXLC]+)*';
-const MARKER_RE = new RegExp('^(\\(?' + ROMAN + '[.)]|\\d+[.)]|[-•–—*])\\s*');
+const MARKER_RE = /^(\(?[IVXLC]+[.)]|\d+[.)]|[-•–—*])\s+/;
 
 export function splitListMarker(text: string): [marker: string, rest: string] | null {
-  // Buang spasi awal hasil scrape agar penanda tetap dikenali & rata kiri.
-  const t = (text ?? '').replace(/^\s+/, '');
+  const t = text ?? '';
   const m = t.match(MARKER_RE);
   if (!m) return null;
   const rest = t.slice(m[0].length).trim();

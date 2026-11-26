@@ -7,6 +7,13 @@
 
 ---
 
+## 2026-11-26
+
+### 🐛 fix
+
+- **antrolKirim** — baca body QUEUE_API sekali — hentikan 'body stream already read' (`df848e2`)
+- **paLabPrint** — sejajarkan penanda romawi majemuk & tanpa spasi di Kesimpulan (`2bee8fc`)
+
 ## 2026-11-24
 
 ### ✨ feat
@@ -2376,4 +2383,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 03a7ee18aa96f28975ec35deb9d61472b4f5864e -->
+<!-- changelog-upto: df848e221f5ebe142a38725982f120e96fc6a3ed -->

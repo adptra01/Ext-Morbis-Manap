@@ -720,10 +720,6 @@ whenFeatureEnabled('paLabPrint', function () {
         // Kesimpulan ikut grup sendiri; ICD-O ikut Isi (menyatu).
         const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
         const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
-        // Sama seperti cetak: gutter Word mengikuti penanda terpanjang agar
-        // "III.Tidak …" sejajar dengan "I dan II. …".
-        const maxMkLen = Math.max(0, ...s.items.map((it) => splitListMarker(it)?.[0].length ?? 0));
-        const hangPt = Math.max(18, Math.round(maxMkLen * fs * 0.62) + 4);
         s.items.forEach((it, i) => {
           const mk = splitListMarker(it);
           // Section 1 baris ber-dash ("- …") → tampil polos tanpa "-"
@@ -731,8 +727,7 @@ whenFeatureEnabled('paLabPrint', function () {
           const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
           const plain = dashOnly ? stripBullet(it) || mk[1] : it;
           const body = boldAll ? '<b>' + esc(plain) + '</b>' : fmtItem(plain);
-          const hang =
-            mk && !dashOnly ? 'margin-left:' + hangPt + 'pt;text-indent:-' + hangPt + 'pt;' : '';
+          const hang = mk && !dashOnly ? 'margin-left:18pt;text-indent:-18pt;' : '';
           hasilDoc +=
             '<p style="margin:' +
             (s.para.includes(i) ? '4pt' : '0') +
@@ -859,21 +854,12 @@ whenFeatureEnabled('paLabPrint', function () {
         const isKesimpulan = normTitle(s.title) === 'kesimpulan';
         const isIcdo = normTitle(s.title) === 'icdo';
         const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === 'saran';
-        // Gutter hanging indent mengikuti penanda TERPANJANG di section
-        // (mis. "I dan II." di Kesimpulan). Fixed 2ch bikin penanda panjang
-        // menimpa teks & baris jadi tidak sejajar (id=178975).
-        const gutterCh = Math.max(
-          3,
-          ...s.items.map((it) => (splitListMarker(it)?.[0].length ?? 0) + 1),
-        );
         const isi =
           '<div class="' +
           (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
           (isKesimpulan ? ' section-kesimpulan' : '') +
           (isIcdo && !s.bare ? ' section-icdo' : '') +
-          '" style="--pa-marker-ch:' +
-          gutterCh +
-          'ch">' +
+          '">' +
           s.items
             .map((it, i) => {
               const paraCls = s.para.includes(i) ? ' item-para' : '';
@@ -1402,7 +1388,7 @@ whenFeatureEnabled('paLabPrint', function () {
            baris lanjutan & antar item sejajar meski lebar penanda beda. */
         .item-list.has-marker {
             position: relative;
-            padding-left: var(--pa-marker-ch, 3ch);
+            padding-left: 2ch;
         }
 
         .item-marker {
@@ -1416,7 +1402,7 @@ whenFeatureEnabled('paLabPrint', function () {
            "Diterima 2 buah jaringan..." di Makroskopik) ikut terindent
            agar sejajar dengan teks setelah Romawi. */
         .section-isi:has(.item-list.has-marker) .item-list:not(.has-marker) {
-            padding-left: var(--pa-marker-ch, 3ch);
+            padding-left: 2ch;
         }
 
         /* Baris pengantar yang dipisah baris kosong → rata kiri. */

@@ -183,10 +183,9 @@ var __morbis_feature = (() => {
   }
 
   // src/features/shared/paList.ts
-  var ROMAN = "[IVXLC]+(?:\\s*(?:dan|&|,|/|-)\\s*[IVXLC]+)*";
-  var MARKER_RE = new RegExp("^(\\(?" + ROMAN + "[.)]|\\d+[.)]|[-\u2022\u2013\u2014*])\\s*");
+  var MARKER_RE = /^(\(?[IVXLC]+[.)]|\d+[.)]|[-•–—*])\s+/;
   function splitListMarker(text) {
-    const t = (text ?? "").replace(/^\s+/, "");
+    const t = text ?? "";
     const m = t.match(MARKER_RE);
     if (!m) return null;
     const rest = t.slice(m[0].length).trim();
@@ -641,14 +640,12 @@ var __morbis_feature = (() => {
           const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
           const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
           const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
-          const maxMkLen = Math.max(0, ...s.items.map((it) => splitListMarker(it)?.[0].length ?? 0));
-          const hangPt = Math.max(18, Math.round(maxMkLen * fs * 0.62) + 4);
           s.items.forEach((it, i) => {
             const mk = splitListMarker(it);
             const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
             const plain = dashOnly ? stripBullet(it) || mk[1] : it;
             const body = boldAll ? "<b>" + esc(plain) + "</b>" : fmtItem(plain);
-            const hang = mk && !dashOnly ? "margin-left:" + hangPt + "pt;text-indent:-" + hangPt + "pt;" : "";
+            const hang = mk && !dashOnly ? "margin-left:18pt;text-indent:-18pt;" : "";
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "4pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
           });
         }
@@ -676,11 +673,7 @@ var __morbis_feature = (() => {
         const isKesimpulan = normTitle(s.title) === "kesimpulan";
         const isIcdo = normTitle(s.title) === "icdo";
         const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
-        const gutterCh = Math.max(
-          3,
-          ...s.items.map((it) => (splitListMarker(it)?.[0].length ?? 0) + 1)
-        );
-        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '" style="--pa-marker-ch:' + gutterCh + 'ch">' + s.items.map((it, i) => {
+        const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
           const mk = splitListMarker(it);
           const isIntro = !mk && /:\s*$/.test(it) && i + 1 < s.items.length && !!splitListMarker(s.items[i + 1]) && s.para.includes(i + 1);
@@ -1075,7 +1068,7 @@ var __morbis_feature = (() => {
            baris lanjutan & antar item sejajar meski lebar penanda beda. */
         .item-list.has-marker {
             position: relative;
-            padding-left: var(--pa-marker-ch, 3ch);
+            padding-left: 2ch;
         }
 
         .item-marker {
@@ -1089,7 +1082,7 @@ var __morbis_feature = (() => {
            "Diterima 2 buah jaringan..." di Makroskopik) ikut terindent
            agar sejajar dengan teks setelah Romawi. */
         .section-isi:has(.item-list.has-marker) .item-list:not(.has-marker) {
-            padding-left: var(--pa-marker-ch, 3ch);
+            padding-left: 2ch;
         }
 
         /* Baris pengantar yang dipisah baris kosong \u2192 rata kiri. */
