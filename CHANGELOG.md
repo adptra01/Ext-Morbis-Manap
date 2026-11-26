@@ -9,6 +9,11 @@
 
 ## 2026-11-26
 
+### ✨ feat
+
+- **billingEditTools** — batal verif & edit billing langsung di detail M-KLAIM (`6d6f2c7`)
+- **cpptReader** — auto ceklist Pilih Obat Kronis BPJS + tombol Ceklist Semua (`89c09a3`)
+
 ### 🐛 fix
 
 - **paLabPrint** — Kesimpulan rata kiri tanpa indent penomoran (`ec5025d`)
@@ -2388,4 +2393,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: ec5025d0935a9f64be6c835553507d1926c1141e -->
+<!-- changelog-upto: 6d6f2c7075b0973d354b2dba647d270456bdc6d8 -->

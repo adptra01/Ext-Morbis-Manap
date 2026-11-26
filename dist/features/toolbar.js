@@ -1267,6 +1267,30 @@ var __morbis_feature = (() => {
   .ext-toolbar-batch:hover { background:#dc2626; }
   .ext-toolbar-upload { background:#2563eb; }
   .ext-toolbar-upload:hover { background:#1d4ed8; }
+  /* Billing tools \u2014 floating panel + modal (prototipe user) */
+  .ext-bt-fab{position:fixed;bottom:30px;right:30px;width:50px;height:50px;background:#2c3e50;color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.3);z-index:9998;transition:transform .2s}
+  .ext-bt-fab:hover{transform:scale(1.1)}
+  .ext-bt-panel{position:fixed;bottom:90px;right:30px;width:300px;background:#fff;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,.2);border:1px solid #ddd;overflow:hidden;z-index:9999;display:none;animation:ext-bt-slide .3s ease-out;font:13px/1.5 'Segoe UI',Tahoma,sans-serif;color:#1c2530}
+  @keyframes ext-bt-slide{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .ext-bt-head{background:#2c3e50;color:#fff;padding:12px 15px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+  .ext-bt-head .x{cursor:pointer;font-size:18px}
+  .ext-bt-body{padding:15px}
+  .ext-bt-info{font-size:12px;color:#444;margin-bottom:12px;border-bottom:1px dashed #ccc;padding-bottom:10px}
+  .ext-bt-info span{display:block;margin-bottom:4px}
+  .ext-bt-group{display:flex;flex-direction:column;gap:8px}
+  .ext-bt-btn{padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:700;font-size:13px;color:#fff;width:100%;box-sizing:border-box}
+  .ext-bt-btn:hover{opacity:.9}
+  .ext-bt-batal{background:#dc3545}.ext-bt-edit{background:#0d6efd}.ext-bt-verif{background:#198754}
+  .ext-bt-status{font-size:12px;color:#b91c1c;margin-top:8px;font-weight:600}
+  .ext-bt-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center;z-index:10000}
+  .ext-bt-modal{background:#fff;width:min(900px,94vw);border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,.3);overflow:hidden}
+  .ext-bt-modal-head{background:#f8f9fa;padding:15px 20px;border-bottom:1px solid #dee2e6;font-weight:700;display:flex;justify-content:space-between}
+  .ext-bt-modal-body{padding:10px;max-height:70vh;overflow:auto}
+  .ext-bt-modal-body iframe{width:100%;height:62vh;border:0}
+  .ext-bt-modal-foot{padding:15px 20px;background:#f8f9fa;border-top:1px solid #dee2e6;display:flex;justify-content:flex-end;gap:10px}
+  .ext-bt-modal-foot button{padding:8px 15px;border:none;border-radius:4px;cursor:pointer;font-weight:700;color:#fff}
+  .ext-bt-kembali{background:#6c757d}.ext-bt-simpan{background:#0d6efd}.ext-bt-simpanverif{background:#198754}
+  @media print{.ext-bt-fab,.ext-bt-panel,.ext-bt-overlay{display:none!important}}
 `
   );
   var TOOLBAR_URLS = {
@@ -1280,11 +1304,6 @@ var __morbis_feature = (() => {
     triageIgd: "/admisi/pelaksanaan_pelayanan/triage_terintegrasi",
     spri: "/admisi/detail-rawat-inap/surat-pengantar-ri",
     pengkajianIgd: "/admisi/pelaksanaan_pelayanan/pengkajian_awal_rj/igd"
-  };
-  var BILLING_BTN_STYLES = {
-    batal: { text: "Batal Verif Billing", bg: "#dc2626", hover: "#b91c1c" },
-    edit: { text: "Edit Billing", bg: "#2563eb", hover: "#1d4ed8" },
-    verif: { text: "Verif Ulang Billing", bg: "#059669", hover: "#047857" }
   };
   var BTN_STYLES = {
     rajal: { text: "Pelayanan Rawat Jalan", bg: colors.primary, hover: colors.primaryHover },
@@ -1456,46 +1475,136 @@ var __morbis_feature = (() => {
   function billingVerifUrl(i) {
     return window.location.origin + "/billing/verifikasi-billing/index?id_visit=" + encodeURIComponent(i.idVisit) + "&id_pasien=" + encodeURIComponent(i.idPasien) + "&id_billing=" + encodeURIComponent(i.idBilling) + "&pasien=" + encodeURIComponent(i.pasien);
   }
-  function flashBillingStatus(bar, msg) {
-    let el = bar.querySelector(".ext-billing-tools-status");
+  var billingToolsMounted = false;
+  var billingPanelState = null;
+  var billingEditCtx = null;
+  function billingStatus(panel, msg) {
+    let el = panel.querySelector(".ext-bt-status");
     if (!el) {
-      el = document.createElement("span");
-      el.className = "ext-billing-tools-status";
-      el.style.cssText = "font-size:12px;color:#b91c1c;font-weight:600;";
-      bar.appendChild(el);
+      el = document.createElement("div");
+      el.className = "ext-bt-status";
+      panel.appendChild(el);
     }
     el.textContent = msg;
-    window.setTimeout(() => {
-      if (el?.textContent === msg) el.textContent = "";
-    }, 5e3);
   }
-  async function onBatalVerifBilling(bar) {
+  function renderPanelInfo(infoEl, info) {
+    infoEl.textContent = "";
+    const add = (k, v) => {
+      const s = document.createElement("span");
+      const b = document.createElement("strong");
+      b.textContent = k + ": ";
+      s.append(b, document.createTextNode(v || "-"));
+      infoEl.appendChild(s);
+    };
+    add("Pasien", info?.pasien || "");
+    add(
+      "RM",
+      document.querySelector("#norm")?.value?.trim() || extractParam2("norm") || ""
+    );
+    add("ID Visit", info?.idVisit || extractParam2("id_visit") || "");
+    add("ID Billing", info?.idBilling || "");
+  }
+  async function refreshBillingPanel(panel, group, infoEl) {
     const info = await fetchBillingInfo();
-    if (!info) return flashBillingStatus(bar, "Data billing tidak ditemukan untuk kunjungan ini.");
-    if (!info.verified) return flashBillingStatus(bar, "Billing belum terverifikasi.");
+    billingPanelState = info;
+    renderPanelInfo(infoEl, info);
+    group.textContent = "";
+    if (!info) {
+      billingStatus(panel, "Data billing tidak ditemukan untuk kunjungan ini.");
+      return;
+    }
+    const button = (text, cls, fn) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ext-bt-btn " + cls;
+      b.textContent = text;
+      b.addEventListener("click", () => void fn());
+      group.appendChild(b);
+    };
+    if (info.verified) {
+      button(
+        "\u274C Batal Verif Billing",
+        "ext-bt-batal",
+        () => void batalVerifFromPanel(panel, group, infoEl)
+      );
+    } else {
+      button("\u270F\uFE0F Edit Billing", "ext-bt-edit", () => {
+        billingEditCtx = { panel, group, infoEl };
+        const frame = document.querySelector(".ext-bt-frame");
+        const overlay = document.querySelector(".ext-bt-overlay");
+        if (!frame || !overlay) return;
+        frame.src = billingEditUrl(info);
+        overlay.style.display = "flex";
+      });
+      button("\u2705 Verif Billing", "ext-bt-verif", () => void verifFromPanel(panel));
+    }
+  }
+  async function batalVerifFromPanel(panel, group, infoEl) {
+    const info = billingPanelState;
+    if (!info || !info.verified) return;
     if (!window.confirm(`Batalkan verifikasi billing ${info.pasien} (visit ${info.idVisit})?`)) return;
+    billingStatus(panel, "Memproses batal verif\u2026");
     try {
       const r = await fetch(
         "/billing/verifikasi-billing/control/batal-control?id=" + encodeURIComponent(info.idVisit),
         { credentials: "include", cache: "no-store" }
       );
       const j = await r.json();
-      flashBillingStatus(
-        bar,
-        String(j.message ?? (String(j.status) === "1" ? "Batal verif berhasil." : "Batal verif gagal."))
+      const ok = String(j.status) === "1";
+      billingStatus(
+        panel,
+        ok ? String(j.message ?? "Batal verif berhasil.") : String(j.message ?? "Batal verif gagal.")
       );
+      await refreshBillingPanel(panel, group, infoEl);
     } catch (e) {
-      flashBillingStatus(bar, "Batal verif gagal: " + String(e));
+      billingStatus(panel, "Batal verif gagal: " + String(e));
     }
   }
-  async function onEditBilling(bar) {
-    const info = await fetchBillingInfo();
-    if (!info) return flashBillingStatus(bar, "Data billing tidak ditemukan untuk kunjungan ini.");
-    window.open(billingEditUrl(info), "_blank", "noopener");
+  function closeBillingEdit() {
+    const overlay = document.querySelector(".ext-bt-overlay");
+    const frame = document.querySelector(".ext-bt-frame");
+    if (overlay) overlay.style.display = "none";
+    if (frame) frame.src = "about:blank";
+    billingEditCtx = null;
   }
-  async function onVerifUlangBilling(bar) {
-    const info = await fetchBillingInfo();
-    if (!info) return flashBillingStatus(bar, "Data billing tidak ditemukan untuk kunjungan ini.");
+  async function saveBillingEdit(andVerif) {
+    const ctx = billingEditCtx;
+    if (!ctx) return;
+    const frame = document.querySelector(".ext-bt-frame");
+    const form = frame?.contentDocument?.getElementById("form_billing");
+    if (!form) {
+      billingStatus(ctx.panel, "Form edit billing belum siap / tidak bisa diedit.");
+      return;
+    }
+    billingStatus(ctx.panel, "Menyimpan billing\u2026");
+    const body = new URLSearchParams();
+    new FormData(form).forEach((v, k) => {
+      if (typeof v === "string") body.append(k, v);
+    });
+    body.append("save", "1");
+    try {
+      const r = await fetch("/billing/control/billing-edit", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString()
+      });
+      const j = await r.json();
+      const ok = String(j.status) === "1" || String(j.status) === "201";
+      if (!ok) {
+        billingStatus(ctx.panel, "Simpan gagal: " + String(j.message ?? j.message_detail ?? ""));
+        return;
+      }
+      closeBillingEdit();
+      billingStatus(ctx.panel, "Billing tersimpan.");
+      if (andVerif) await verifFromPanel(ctx.panel);
+    } catch (e) {
+      billingStatus(ctx.panel, "Simpan gagal: " + String(e));
+    }
+  }
+  async function verifFromPanel(panel) {
+    const info = billingPanelState;
+    if (!info) return;
     try {
       const r = await fetch("/billing/pembayaran-new/cek-resep", {
         method: "POST",
@@ -1509,6 +1618,81 @@ var __morbis_feature = (() => {
     } catch {
     }
     window.open(billingVerifUrl(info), "_blank", "noopener");
+    billingStatus(panel, "Form verifikasi dibuka di tab baru.");
+  }
+  function mountBillingTools() {
+    if (billingToolsMounted || !document.body) return;
+    billingToolsMounted = true;
+    const fab = document.createElement("button");
+    fab.type = "button";
+    fab.className = "ext-bt-fab";
+    fab.title = "M-Klaim Tools \u2014 Billing";
+    fab.setAttribute("aria-label", "Buka tools billing");
+    fab.textContent = "\u26A1";
+    const panel = document.createElement("div");
+    panel.className = "ext-bt-panel";
+    const head = document.createElement("div");
+    head.className = "ext-bt-head";
+    const title = document.createElement("span");
+    title.textContent = "\u26A1 M-Klaim Tools Extension";
+    const closeHead = document.createElement("span");
+    closeHead.className = "x";
+    closeHead.textContent = "\xD7";
+    head.append(title, closeHead);
+    const bodyEl = document.createElement("div");
+    bodyEl.className = "ext-bt-body";
+    const infoEl = document.createElement("div");
+    infoEl.className = "ext-bt-info";
+    const group = document.createElement("div");
+    group.className = "ext-bt-group";
+    bodyEl.append(infoEl, group);
+    panel.append(head, bodyEl);
+    const overlay = document.createElement("div");
+    overlay.className = "ext-bt-overlay";
+    const modal = document.createElement("div");
+    modal.className = "ext-bt-modal";
+    const modalHead = document.createElement("div");
+    modalHead.className = "ext-bt-modal-head";
+    const modalTitle = document.createElement("span");
+    modalTitle.textContent = "Edit Billing Pasien";
+    const closeModal = document.createElement("span");
+    closeModal.style.cursor = "pointer";
+    closeModal.textContent = "\xD7";
+    modalHead.append(modalTitle, closeModal);
+    const modalBody = document.createElement("div");
+    modalBody.className = "ext-bt-modal-body";
+    const frame = document.createElement("iframe");
+    frame.className = "ext-bt-frame";
+    frame.title = "Form Edit Billing";
+    modalBody.appendChild(frame);
+    const foot = document.createElement("div");
+    foot.className = "ext-bt-modal-foot";
+    const mkFoot = (text, cls, fn) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = cls;
+      b.textContent = text;
+      b.addEventListener("click", fn);
+      foot.appendChild(b);
+    };
+    mkFoot("Kembali", "ext-bt-kembali", closeBillingEdit);
+    mkFoot("Simpan", "ext-bt-simpan", () => void saveBillingEdit(false));
+    mkFoot("Simpan & Verif Ulang", "ext-bt-simpanverif", () => void saveBillingEdit(true));
+    modal.append(modalHead, modalBody, foot);
+    overlay.appendChild(modal);
+    document.body.append(fab, panel, overlay);
+    fab.addEventListener("click", () => {
+      const open = panel.style.display !== "block";
+      panel.style.display = open ? "block" : "none";
+      if (open) void refreshBillingPanel(panel, group, infoEl);
+    });
+    closeHead.addEventListener("click", () => {
+      panel.style.display = "none";
+    });
+    closeModal.addEventListener("click", closeBillingEdit);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeBillingEdit();
+    });
   }
   function anyFeatureEnabled() {
     const cfg = g2.currentConfig;
@@ -1575,18 +1759,7 @@ var __morbis_feature = (() => {
       );
     }
     if (g2.currentConfig?.features?.billingEditTools?.enabled && g2.ExtensionCore.isFeatureAllowed("billingEditTools")) {
-      const batal = BILLING_BTN_STYLES.batal;
-      bar.appendChild(
-        createBtn(batal.text, batal.bg, batal.hover, () => void onBatalVerifBilling(bar), "ext-billing-batal")
-      );
-      const edit = BILLING_BTN_STYLES.edit;
-      bar.appendChild(
-        createBtn(edit.text, edit.bg, edit.hover, () => void onEditBilling(bar), "ext-billing-edit")
-      );
-      const verif = BILLING_BTN_STYLES.verif;
-      bar.appendChild(
-        createBtn(verif.text, verif.bg, verif.hover, () => void onVerifUlangBilling(bar), "ext-billing-verif")
-      );
+      mountBillingTools();
     }
     const selectors = [
       ".form-horizontal",
