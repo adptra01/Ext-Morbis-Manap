@@ -376,7 +376,7 @@ function billingVerifUrl(i: BillingInfo): string {
   );
 }
 
-/** --- Floating billing tools: toggle ⚡ → panel → modal edit billing --- */
+/** --- Billing tools: toggle 💰 → panel → modal edit billing --- */
 
 let billingToolsMounted = false;
 let billingPanelState: BillingInfo | null = null;
@@ -882,14 +882,14 @@ function mountBillingTools(bar: HTMLElement): void {
   fab.className = 'ext-bt-fab';
   fab.title = 'M-Klaim Tools — Billing';
   fab.setAttribute('aria-label', 'Buka tools billing');
-  fab.textContent = '⚡ Billing Tools';
+  fab.textContent = '💰 Billing Tools';
 
   const panel = document.createElement('div');
   panel.className = 'ext-bt-panel';
   const head = document.createElement('div');
   head.className = 'ext-bt-head';
   const title = document.createElement('span');
-  title.textContent = '⚡ M-Klaim Tools Extension';
+  title.textContent = '💰 M-Klaim Tools Extension';
   const closeHead = document.createElement('span');
   closeHead.className = 'x';
   closeHead.textContent = '×';

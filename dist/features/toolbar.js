@@ -1960,13 +1960,13 @@ var __morbis_feature = (() => {
     fab.className = "ext-bt-fab";
     fab.title = "M-Klaim Tools \u2014 Billing";
     fab.setAttribute("aria-label", "Buka tools billing");
-    fab.textContent = "\u26A1 Billing Tools";
+    fab.textContent = "\u{1F4B0} Billing Tools";
     const panel = document.createElement("div");
     panel.className = "ext-bt-panel";
     const head = document.createElement("div");
     head.className = "ext-bt-head";
     const title = document.createElement("span");
-    title.textContent = "\u26A1 M-Klaim Tools Extension";
+    title.textContent = "\u{1F4B0} M-Klaim Tools Extension";
     const closeHead = document.createElement("span");
     closeHead.className = "x";
     closeHead.textContent = "\xD7";
