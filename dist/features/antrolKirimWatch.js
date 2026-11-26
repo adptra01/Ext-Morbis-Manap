@@ -371,6 +371,26 @@ var __morbis_feature = (() => {
 
   // src/features/antrolKirimWatch.ts
   var LOG_PREFIX = "[MORBIS Ext] antrolKirim";
+  function logPollErrorToReports(msg) {
+    void (async () => {
+      try {
+        const base = farmasiAppBase();
+        await sendMessage({
+          type: MessageTypes.QUEUE_API,
+          url: base + "/api/extension-log",
+          method: "POST",
+          body: {
+            source: "antrolKirim",
+            event: "poll_gagal",
+            message: String(msg).slice(0, 500),
+            detail: location.href.slice(0, 500),
+            url: location.href.slice(0, 500)
+          }
+        });
+      } catch {
+      }
+    })();
+  }
   var g = window;
   if (g.__extAntrolKirim) {
     throw new Error("skip double inject antrolKirimWatch");
@@ -613,7 +633,7 @@ var __morbis_feature = (() => {
       }
       const msg = e?.message || "";
       if (/message channel closed|Extension context invalidated/i.test(msg)) return;
-      console.warn(LOG_PREFIX, "poll gagal (background):", msg);
+      logPollErrorToReports(msg);
       return;
     }
     if (!res.ok || res.status === 304) return;

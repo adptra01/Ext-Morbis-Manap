@@ -53,6 +53,32 @@ import { farmasiAppBase } from './shared/farmasiQueueSync';
 
 const LOG_PREFIX = '[MORBIS Ext] antrolKirim';
 
+/**
+ * Error polling dicatat ke log Reports SIMRS (POST /api/extension-log), BUKAN
+ * console ekstensi/browser. Best-effort: gagal kirim log pun dibungkus diam.
+ */
+function logPollErrorToReports(msg: string): void {
+  void (async () => {
+    try {
+      const base = farmasiAppBase();
+      await sendMessage({
+        type: MessageTypes.QUEUE_API,
+        url: base + '/api/extension-log',
+        method: 'POST',
+        body: {
+          source: 'antrolKirim',
+          event: 'poll_gagal',
+          message: String(msg).slice(0, 500),
+          detail: location.href.slice(0, 500),
+          url: location.href.slice(0, 500),
+        },
+      });
+    } catch {
+      /* sengaja senyap — log tidak boleh menimbulkan error baru */
+    }
+  })();
+}
+
 // Guard anti double-inject (paranoid; entry manifest hanya 1 per dokumen,
 // tapi navigasi parsial SPA MORBIS kadang re-evaluasi content script).
 const g = window as unknown as { __extAntrolKirim?: boolean };
@@ -372,7 +398,7 @@ async function pollOnce(): Promise<void> {
     // tertutup. Bukan error nyata; retry otomatis di poll berikutnya, jadi
     // tidak perlu di-log (menghindari spam console).
     if (/message channel closed|Extension context invalidated/i.test(msg)) return;
-    console.warn(LOG_PREFIX, 'poll gagal (background):', msg);
+    logPollErrorToReports(msg);
     return;
   }
   if (!res.ok || res.status === 304) return; // sinyal sama → tidak ada perubahan

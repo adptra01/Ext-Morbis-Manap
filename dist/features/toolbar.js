@@ -1230,13 +1230,32 @@ var __morbis_feature = (() => {
   // src/features/shared/billingTools.ts
   function parseBillingRow(html, idVisit) {
     const v = idVisit.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const m = new RegExp(
+    const caller = new RegExp(
       "(?:detail_billing|verifikasi)\\(\\s*" + v + "\\s*,\\s*\\d+\\s*,\\s*(\\d+)"
-    ).exec(html);
-    if (!m) return null;
+    );
+    const batal = new RegExp("batal_verif\\(\\s*" + v + "\\s*\\)");
+    for (const row of html.match(/<tr\b[\s\S]*?<\/tr>/gi) || []) {
+      const m = caller.exec(row);
+      if (!m) continue;
+      return { idBilling: m[1], verified: batal.test(row) };
+    }
+    return null;
+  }
+  function composeLayanan(t) {
+    const clean = (v) => !v || /^(null|Tanpa \w+|Semua)$/i.test(v.trim()) ? "" : v.trim();
+    return [t.LAYANAN, t.BOBOT, t.PROFESI, t.SPESIALISASI, t.KELAS].map(clean).filter(Boolean).join(" ");
+  }
+  function tarifRowFields(t, idx, waktu = "") {
+    const total = String(t.TOTAL ?? "");
     return {
-      idBilling: m[1],
-      verified: new RegExp("batal_verif\\(\\s*" + v + "\\s*\\)").test(html)
+      [`billing[${idx}][layanan]`]: composeLayanan(t),
+      [`billing[${idx}][tarif]`]: String(t.ID_TARIF ?? ""),
+      [`billing[${idx}][induk_tarif]`]: String(t.ID_INDUK_TARIF ?? ""),
+      [`billing[${idx}][harga]`]: total,
+      [`billing[${idx}][total]`]: total,
+      [`billing[${idx}][frekuensi]`]: "1",
+      [`billing[${idx}][diskon]`]: "0",
+      [`billing[${idx}][waktu]`]: waktu
     };
   }
 
@@ -1267,10 +1286,11 @@ var __morbis_feature = (() => {
   .ext-toolbar-batch:hover { background:#dc2626; }
   .ext-toolbar-upload { background:#2563eb; }
   .ext-toolbar-upload:hover { background:#1d4ed8; }
-  /* Billing tools \u2014 floating panel + modal (prototipe user) */
-  .ext-bt-fab{position:fixed;bottom:30px;right:30px;width:50px;height:50px;background:#2c3e50;color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.3);z-index:9998;transition:transform .2s}
-  .ext-bt-fab:hover{transform:scale(1.1)}
-  .ext-bt-panel{position:fixed;bottom:90px;right:30px;width:300px;background:#fff;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,.2);border:1px solid #ddd;overflow:hidden;z-index:9999;display:none;animation:ext-bt-slide .3s ease-out;font:13px/1.5 'Segoe UI',Tahoma,sans-serif;color:#1c2530}
+  /* Billing tools \u2014 toggle melekat di bawah tombol RJ/RI, panel di bawahnya */
+  .ext-bt-anchor{position:relative;flex-basis:100%;display:block}
+  .ext-bt-fab{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;background:#2c3e50;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
+  .ext-bt-fab:hover{background:#34495e}
+  .ext-bt-panel{position:absolute;top:calc(100% + 6px);left:0;width:300px;background:#fff;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,.2);border:1px solid #ddd;overflow:hidden;z-index:9999;display:none;animation:ext-bt-slide .3s ease-out;font:13px/1.5 'Segoe UI',Tahoma,sans-serif;color:#1c2530}
   @keyframes ext-bt-slide{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   .ext-bt-head{background:#2c3e50;color:#fff;padding:12px 15px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center}
   .ext-bt-head .x{cursor:pointer;font-size:18px}
@@ -1286,13 +1306,16 @@ var __morbis_feature = (() => {
   .ext-bt-modal{background:#fff;width:min(900px,94vw);border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,.3);overflow:hidden}
   .ext-bt-modal-head{background:#f8f9fa;padding:15px 20px;border-bottom:1px solid #dee2e6;font-weight:700;display:flex;justify-content:space-between}
   .ext-bt-modal-body{padding:10px;max-height:70vh;overflow:auto}
+  .ext-bt-search{display:flex;gap:6px;margin-bottom:10px}
+  .ext-bt-q{flex:1;min-width:180px;padding:6px;box-sizing:border-box}
+  .ext-bt-add,.ext-bt-cari{padding:6px 10px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;white-space:nowrap}
   .ext-bt-table{width:100%;border-collapse:collapse;font-size:12px}
   .ext-bt-table th,.ext-bt-table td{border:1px solid #ddd;padding:6px;text-align:left}
   .ext-bt-table th{background:#f4f4f4}
   .ext-bt-modal-foot{padding:15px 20px;background:#f8f9fa;border-top:1px solid #dee2e6;display:flex;justify-content:flex-end;gap:10px}
   .ext-bt-modal-foot button{padding:8px 15px;border:none;border-radius:4px;cursor:pointer;font-weight:700;color:#fff}
   .ext-bt-kembali{background:#6c757d}.ext-bt-simpan{background:#0d6efd}.ext-bt-simpanverif{background:#198754}
-  @media print{.ext-bt-fab,.ext-bt-panel,.ext-bt-overlay{display:none!important}}
+  @media print{.ext-bt-anchor,.ext-bt-overlay{display:none!important}}
 `
   );
   var TOOLBAR_URLS = {
@@ -1441,20 +1464,22 @@ var __morbis_feature = (() => {
     btn.addEventListener("click", onClick);
     return btn;
   }
-  async function fetchBillingInfo() {
-    const idVisit = extractParam2("id_visit");
-    if (!idVisit) return null;
-    const norm = (document.querySelector("#norm")?.value || extractParam2("norm") || "").replace(/\D/g, "");
-    const pasien = document.querySelector("#nama")?.value?.trim() || extractParam2("nama") || "";
-    const sep = document.querySelector("#no_sep")?.value?.trim() || "";
-    if (!norm) return null;
+  async function getJson2(url) {
+    try {
+      const r = await fetch(url, { credentials: "include", cache: "no-store" });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch {
+      return null;
+    }
+  }
+  async function fetchVerified(idVisit, norm) {
     for (let page = 1; page <= 3; page++) {
       const p = new URLSearchParams({
         "search[no_Rm]": norm,
         "search[status]": "Semua",
         page: String(page)
       });
-      if (sep) p.set("search[sep]", sep);
       try {
         const r = await fetch(
           "/billing/verif-pembayaran/billing-pembayaran-table-verifikasi?" + p.toString(),
@@ -1462,14 +1487,41 @@ var __morbis_feature = (() => {
         );
         if (!r.ok) return null;
         const row = parseBillingRow(await r.text(), idVisit);
-        if (row) {
-          return { ...row, idVisit, idPasien: String(Number(norm) || norm), pasien };
-        }
+        if (row) return row;
       } catch {
         return null;
       }
     }
     return null;
+  }
+  async function fetchBillingInfo() {
+    const idVisit = extractParam2("id_visit");
+    if (!idVisit) return null;
+    const data = await getJson2(
+      "/admisi/search?opsi=billing-edit&q=" + encodeURIComponent(idVisit)
+    );
+    const norm = String(data && data.ID_PASIEN || "").replace(/\D/g, "");
+    const row = norm ? await fetchVerified(idVisit, norm) : null;
+    if (!data || !data.ID_BILLING) {
+      if (!row) return null;
+      return {
+        ...row,
+        idVisit,
+        idPasien: norm,
+        pasien: document.querySelector("#nama")?.value?.trim() || extractParam2("nama") || "",
+        editable: false,
+        kelas: ""
+      };
+    }
+    return {
+      idBilling: String(data.ID_BILLING),
+      verified: row?.verified ?? false,
+      idVisit,
+      idPasien: String(data.ID_PASIEN || ""),
+      pasien: String(data.NAMA_PAS || ""),
+      editable: true,
+      kelas: String(data.KELAS || "")
+    };
   }
   function billingEditUrl(i) {
     return window.location.origin + "/billing/billing-edit?id_billing=" + encodeURIComponent(i.idBilling) + "&id_pasien=" + encodeURIComponent(i.idPasien) + "&id_visit=" + encodeURIComponent(i.idVisit) + "&pasien=" + encodeURIComponent(i.pasien);
@@ -1507,7 +1559,7 @@ var __morbis_feature = (() => {
     add("ID Visit", info?.idVisit || extractParam2("id_visit") || "");
     add("ID Billing", info?.idBilling || "");
   }
-  function loadSourceDoc(url) {
+  function loadSourceDoc(url, waitForRows = true) {
     return new Promise((resolve) => {
       const fr = billingSourceFrame;
       if (!fr) return resolve(null);
@@ -1516,18 +1568,62 @@ var __morbis_feature = (() => {
         if (done) return;
         done = true;
         fr.removeEventListener("load", finish);
-        window.setTimeout(() => {
+        const start = Date.now();
+        let readyAt = 0;
+        const poll = () => {
           try {
-            resolve(fr.contentDocument);
+            const d = fr.contentDocument;
+            if (!waitForRows) {
+              if (d?.getElementById("formPembayaran")) {
+                if (!readyAt) readyAt = Date.now();
+                if (d.querySelector('input[name="klaim_bpjs"]') || Date.now() - readyAt > 900) {
+                  resolve(d);
+                  return;
+                }
+              }
+            } else if (d?.getElementById("form_billing")) {
+              const no = d.querySelector("#noBilling");
+              if (no?.value) {
+                if (!readyAt) readyAt = Date.now();
+                if (d.querySelectorAll('input[name^="billing["]').length || Date.now() - readyAt > 1200) {
+                  resolve(d);
+                  return;
+                }
+              }
+            }
           } catch {
-            resolve(null);
           }
-        }, 900);
+          if (Date.now() - start > 6e3) {
+            try {
+              resolve(fr.contentDocument);
+            } catch {
+              resolve(null);
+            }
+            return;
+          }
+          window.setTimeout(poll, 100);
+        };
+        poll();
       };
       fr.addEventListener("load", finish);
       fr.src = url;
       window.setTimeout(finish, 8e3);
     });
+  }
+  var billingTarifResults = [];
+  var billingTarifTimer = 0;
+  var billingActiveRow = null;
+  var billingSearchInput = null;
+  var billingTarifList = null;
+  function billingNow() {
+    const d = /* @__PURE__ */ new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(
+      d.getMinutes()
+    )}:${p(d.getSeconds())}`;
+  }
+  function billingNum(v) {
+    return Number(String(v).replace(/[^\d.-]/g, "")) || 0;
   }
   function renderBillingRows(doc, tbody) {
     tbody.textContent = "";
@@ -1542,47 +1638,146 @@ var __morbis_feature = (() => {
       rows.get(m[1]).set(m[2], input);
     });
     for (const [idx, f] of rows) {
-      const tr = document.createElement("tr");
-      const mkCell = (value, name, cls) => {
-        const td = document.createElement("td");
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = value;
-        input.className = cls;
-        input.dataset.billingName = "billing[" + idx + "][" + name + "]";
-        input.style.cssText = "width:100%;box-sizing:border-box;";
-        td.appendChild(input);
-        tr.appendChild(td);
-      };
-      mkCell(f.get("layanan")?.value || "layanan", "layanan", "ext-bt-layanan");
-      mkCell(f.get("waktu")?.value || "", "waktu", "ext-bt-waktu");
-      mkCell(f.get("frekuensi")?.value || "1", "frekuensi", "ext-bt-frek");
-      mkCell(f.get("diskon")?.value || "0", "diskon", "ext-bt-diskon");
-      const price = document.createElement("td");
-      price.textContent = f.get("total")?.value || "-";
-      tr.appendChild(price);
-      const act = document.createElement("td");
-      const del = document.createElement("button");
-      del.type = "button";
-      del.textContent = "Hapus";
-      del.className = "ext-bt-kembali";
-      del.style.cssText = "padding:4px 8px;border:none;border-radius:4px;cursor:pointer;color:#fff;";
-      del.addEventListener("click", () => {
-        tr.remove();
-        for (const el of f.values()) el.disabled = true;
-      });
-      act.appendChild(del);
-      tr.appendChild(act);
+      const tr = buildBillingRow(idx, Object.fromEntries([...f].map(([k, v]) => [k, v.value])));
+      const cari = tr.querySelector(".ext-bt-cari");
+      cari?.addEventListener("click", () => selectTarifTarget(idx));
+      tr.dataset.extBtSource = "1";
       tbody.appendChild(tr);
     }
     if (!rows.size) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 6;
-      td.textContent = "Tidak ada baris tindakan yang bisa diedit.";
+      td.colSpan = 7;
+      td.textContent = 'Belum ada baris tindakan \u2014 gunakan "Cari tindakan / tarif" di atas.';
       tr.appendChild(td);
       tbody.appendChild(tr);
     }
+  }
+  function buildBillingRow(idx, values) {
+    const tr = document.createElement("tr");
+    tr.dataset.btIdx = idx;
+    const addInput = (name, cls, visible) => {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = visible ? "text" : "hidden";
+      input.value = values[name] ?? (name === "frekuensi" ? "1" : name === "diskon" ? "0" : "");
+      input.className = cls;
+      input.dataset.billingName = "billing[" + idx + "][" + name + "]";
+      input.style.cssText = visible ? "width:100%;box-sizing:border-box;" : "";
+      td.appendChild(input);
+      tr.appendChild(td);
+    };
+    addInput("layanan", "ext-bt-layanan", true);
+    const searchCell = document.createElement("td");
+    const cari = document.createElement("button");
+    cari.type = "button";
+    cari.textContent = "Cari";
+    cari.className = "ext-bt-cari";
+    cari.addEventListener("click", () => selectTarifTarget(idx));
+    searchCell.appendChild(cari);
+    tr.appendChild(searchCell);
+    addInput("waktu", "ext-bt-waktu", true);
+    addInput("frekuensi", "ext-bt-frek", true);
+    addInput("diskon", "ext-bt-diskon", true);
+    Object.keys(values).forEach((n) => {
+      if (!["layanan", "waktu", "frekuensi", "diskon"].includes(n)) addInput(n, "", false);
+    });
+    const price = document.createElement("td");
+    price.className = "ext-bt-total";
+    price.textContent = values.total || values.harga || "-";
+    tr.appendChild(price);
+    const act = document.createElement("td");
+    const del = document.createElement("button");
+    del.type = "button";
+    del.textContent = "Hapus";
+    del.className = "ext-bt-kembali";
+    del.style.cssText = "padding:4px 8px;border:none;border-radius:4px;cursor:pointer;color:#fff;";
+    del.addEventListener("click", () => {
+      const source = document.querySelector(".ext-bt-source");
+      const doc = source?.contentDocument;
+      if (tr.dataset.extBtSource && doc) {
+        for (const el of Array.from(
+          doc.querySelectorAll('input[name^="billing[' + idx + ']"]')
+        ))
+          el.disabled = true;
+      }
+      tr.remove();
+    });
+    act.appendChild(del);
+    tr.appendChild(act);
+    return tr;
+  }
+  function selectTarifTarget(idx) {
+    billingActiveRow = idx;
+    if (billingSearchInput) {
+      billingSearchInput.value = "";
+      billingSearchInput.focus();
+    }
+  }
+  function addBillingRow(tbody) {
+    const idx = String(
+      1 + Math.max(
+        0,
+        ...Array.from(tbody.querySelectorAll("tr[data-bt-idx]")).map(
+          (r) => Number(r.dataset.btIdx || 0)
+        )
+      )
+    );
+    const empty = tbody.querySelector("td[colspan]");
+    if (empty) empty.closest("tr")?.remove();
+    tbody.appendChild(
+      buildBillingRow(idx, {
+        waktu: billingNow(),
+        frekuensi: "1",
+        diskon: "0",
+        tarif: "",
+        induk_tarif: "",
+        harga: "",
+        total: ""
+      })
+    );
+    selectTarifTarget(idx);
+  }
+  function applyTarif(tr, t) {
+    const idx = tr.dataset.btIdx || "";
+    const fields = tarifRowFields(t, idx, billingNow());
+    for (const [name, value] of Object.entries(fields)) {
+      let input = tr.querySelector(`input[data-billing-name="${name}"]`);
+      if (!input) {
+        input = document.createElement("input");
+        input.type = "hidden";
+        input.dataset.billingName = name;
+        tr.appendChild(input);
+      }
+      if (name.endsWith("[waktu]") && input.value) continue;
+      input.value = value;
+    }
+    const total = tr.querySelector(".ext-bt-total");
+    if (total) total.textContent = String(t.TOTAL ?? "-");
+    billingActiveRow = null;
+  }
+  function tarifLabel(t, i) {
+    return composeLayanan(t) + " \u2014 " + (t.KATEGORI || "") + " \u2014 " + billingNum(t.TOTAL || "") + " [#" + (t.ID_TARIF || i) + "]";
+  }
+  async function searchTarif(q) {
+    if (!billingTarifList) return;
+    billingTarifList.textContent = "";
+    billingTarifResults = [];
+    if (q.trim().length < 2) return;
+    const p = new URLSearchParams({
+      q: q.trim(),
+      opsi: "layananBillingSemua",
+      id_visit: extractParam2("id_visit") || "",
+      idKelas: billingPanelState?.kelas || ""
+    });
+    const data = await getJson2("/admisi/search?" + p.toString());
+    if (!Array.isArray(data)) return;
+    billingTarifResults = data.slice(0, 20);
+    billingTarifResults.forEach((t, i) => {
+      const opt = document.createElement("option");
+      opt.value = tarifLabel(t, i);
+      billingTarifList.appendChild(opt);
+    });
   }
   async function refreshBillingPanel(panel, group, infoEl) {
     const info = await fetchBillingInfo();
@@ -1607,15 +1802,18 @@ var __morbis_feature = (() => {
         "ext-bt-batal",
         () => void batalVerifFromPanel(panel, group, infoEl)
       );
-    } else {
+    } else if (info.editable) {
       button("\u270F\uFE0F Edit Billing", "ext-bt-edit", () => void openEditFromPanel(panel));
       button("\u2705 Verif Billing", "ext-bt-verif", () => void verifFromPanel(panel));
+    } else {
+      billingStatus(panel, "Billing sudah dibayar / tidak bisa diedit.");
     }
   }
   async function batalVerifFromPanel(panel, group, infoEl) {
     const info = billingPanelState;
     if (!info || !info.verified) return;
-    if (!window.confirm(`Batalkan verifikasi billing ${info.pasien} (visit ${info.idVisit})?`)) return;
+    if (!window.confirm(`Batalkan verifikasi billing ${info.pasien} (visit ${info.idVisit})?`))
+      return;
     billingStatus(panel, "Memproses batal verif\u2026");
     try {
       const r = await fetch(
@@ -1623,7 +1821,12 @@ var __morbis_feature = (() => {
         { credentials: "include", cache: "no-store" }
       );
       const j = await r.json();
-      billingStatus(panel, String(j.message ?? (String(j.status) === "1" ? "Batal verif berhasil." : "Batal verif gagal.")));
+      billingStatus(
+        panel,
+        String(
+          j.message ?? (String(j.status) === "1" ? "Batal verif berhasil." : "Batal verif gagal.")
+        )
+      );
       await refreshBillingPanel(panel, group, infoEl);
     } catch (e) {
       billingStatus(panel, "Batal verif gagal: " + String(e));
@@ -1659,9 +1862,14 @@ var __morbis_feature = (() => {
     });
     document.querySelectorAll(".ext-bt-rows input[data-billing-name]").forEach((el) => {
       const name = el.dataset.billingName;
-      if (!name) return;
-      const target = doc.querySelector('input[name="' + name + '"]');
-      if (!target) return;
+      if (!name || !el.value) return;
+      let target = doc.querySelector('input[name="' + name + '"]');
+      if (!target) {
+        target = doc.createElement("input");
+        target.type = "hidden";
+        target.name = name;
+        (doc.getElementById("tblBilling") || form).appendChild(target);
+      }
       target.disabled = false;
       target.value = el.value;
       body.set(name, el.value);
@@ -1702,7 +1910,7 @@ var __morbis_feature = (() => {
     const info = billingPanelState;
     if (!info) return;
     billingStatus(panel, "Memproses verifikasi BPJS\u2026");
-    const doc = await loadSourceDoc(billingVerifUrl(info));
+    const doc = await loadSourceDoc(billingVerifUrl(info), false);
     if (!doc) {
       billingStatus(panel, "Form verifikasi gagal dimuat.");
       return;
@@ -1742,15 +1950,17 @@ var __morbis_feature = (() => {
       billingStatus(panel, "Verifikasi BPJS gagal: " + String(e));
     }
   }
-  function mountBillingTools() {
+  function mountBillingTools(bar) {
     if (billingToolsMounted || !document.body) return;
     billingToolsMounted = true;
+    const anchor = document.createElement("span");
+    anchor.className = "ext-bt-anchor";
     const fab = document.createElement("button");
     fab.type = "button";
     fab.className = "ext-bt-fab";
     fab.title = "M-Klaim Tools \u2014 Billing";
     fab.setAttribute("aria-label", "Buka tools billing");
-    fab.textContent = "\u26A1";
+    fab.textContent = "\u26A1 Billing Tools";
     const panel = document.createElement("div");
     panel.className = "ext-bt-panel";
     const head = document.createElement("div");
@@ -1769,6 +1979,8 @@ var __morbis_feature = (() => {
     group.className = "ext-bt-group";
     bodyEl.append(infoEl, group);
     panel.append(head, bodyEl);
+    anchor.append(fab, panel);
+    bar.appendChild(anchor);
     const overlay = document.createElement("div");
     overlay.className = "ext-bt-overlay";
     const modal = document.createElement("div");
@@ -1783,11 +1995,30 @@ var __morbis_feature = (() => {
     modalHead.append(modalTitle, closeModal);
     const modalBody = document.createElement("div");
     modalBody.className = "ext-bt-modal-body";
+    const searchBar = document.createElement("div");
+    searchBar.className = "ext-bt-search";
+    const q = document.createElement("input");
+    q.type = "text";
+    q.className = "ext-bt-q";
+    q.placeholder = "Cari tindakan / tarif\u2026";
+    q.autocomplete = "off";
+    q.setAttribute("list", "ext-bt-tarif-list");
+    const list = document.createElement("datalist");
+    list.id = "ext-bt-tarif-list";
+    billingSearchInput = q;
+    billingTarifList = list;
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "ext-bt-add";
+    add.textContent = "Tambah Tindakan";
+    add.addEventListener("click", () => addBillingRow(tbody));
+    searchBar.append(q, list, add);
+    modalBody.appendChild(searchBar);
     const table = document.createElement("table");
     table.className = "ext-bt-table";
     const thead = document.createElement("thead");
     const hr = document.createElement("tr");
-    ["Tindakan", "Waktu", "Frek", "Diskon", "Total", ""].forEach((h) => {
+    ["Tindakan", "Cari", "Waktu", "Frek", "Diskon", "Total", ""].forEach((h) => {
       const th = document.createElement("th");
       th.textContent = h;
       hr.appendChild(th);
@@ -1817,7 +2048,23 @@ var __morbis_feature = (() => {
     source.title = "Sumber form billing (internal)";
     source.style.cssText = "display:none;";
     billingSourceFrame = source;
-    document.body.append(fab, panel, overlay, source);
+    document.body.append(overlay, source);
+    q.addEventListener("input", () => {
+      window.clearTimeout(billingTarifTimer);
+      const value = q.value;
+      billingTarifTimer = window.setTimeout(() => void searchTarif(value), 200);
+    });
+    q.addEventListener("change", () => {
+      const t = billingTarifResults.find((x) => tarifLabel(x, 0) === q.value);
+      if (!t) return;
+      let tr = billingActiveRow ? tbody.querySelector(`tr[data-bt-idx="${billingActiveRow}"]`) : null;
+      if (!tr) {
+        addBillingRow(tbody);
+        tr = tbody.querySelector(`tr[data-bt-idx="${billingActiveRow}"]`);
+      }
+      if (tr) applyTarif(tr, t);
+      q.value = "";
+    });
     fab.addEventListener("click", () => {
       const open = panel.style.display !== "block";
       panel.style.display = open ? "block" : "none";
@@ -1896,7 +2143,7 @@ var __morbis_feature = (() => {
       );
     }
     if (g2.currentConfig?.features?.billingEditTools?.enabled && g2.ExtensionCore.isFeatureAllowed("billingEditTools")) {
-      mountBillingTools();
+      mountBillingTools(bar);
     }
     const selectors = [
       ".form-horizontal",

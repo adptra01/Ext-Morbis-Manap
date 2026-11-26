@@ -11,6 +11,8 @@
 
 ### ✨ feat
 
+- **billingEditTools** — UI modal sendiri + verify BPJS klaim penuh via fetch (tanpa redirect) (`9bf7ded`)
+- **billingEditTools** — panel toggle ⚡ + modal edit billing sesuai prototipe (`8f6acc3`)
 - **billingEditTools** — batal verif & edit billing langsung di detail M-KLAIM (`6d6f2c7`)
 - **cpptReader** — auto ceklist Pilih Obat Kronis BPJS + tombol Ceklist Semua (`89c09a3`)
 
@@ -2393,4 +2395,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 6d6f2c7075b0973d354b2dba647d270456bdc6d8 -->
+<!-- changelog-upto: 9bf7ded5de530db5b123c7d5181d4e219b7eb4f3 -->
