@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
+  autoCheckObatKronis,
   buildHistoryUrl,
   buildVisitUrl,
   hasNextHistoryPage,
+  isBpjsResep,
+  isResepDetailPage,
   mergeCppt,
   parseCpptTable,
   parseIdPasien,
@@ -317,5 +320,72 @@ describe('buildVisitUrl (tombol Detail Kunjungan)', () => {
 
   it('tanpa id_visit → string kosong (tombol tidak ditampilkan)', () => {
     expect(buildVisitUrl('DEPO RAJAL', '', '230623')).toBe('');
+  });
+});
+
+describe('cpptReader — auto ceklist Pilih Obat Kronis', () => {
+  const PENERIMAAN = '/inventory/resep/penerimaan/detail?id=237396';
+  const EDIT = '/inventory/penjualan-resep-edit/detail?id=237278';
+
+  function fakeDoc(opts: { sep?: string; margin?: string; body?: string; boxes: boolean[] }): {
+    doc: Document;
+    boxes: Array<{ checked: boolean; disabled: boolean; click(): void }>;
+  } {
+    const boxes = opts.boxes.map((checked) => ({
+      checked,
+      disabled: false,
+      click() {
+        this.checked = true;
+      },
+    }));
+    const doc = {
+      querySelector(sel: string) {
+        if (sel === '#no_sep') return { value: opts.sep ?? '' };
+        if (sel === '#margin')
+          return opts.margin
+            ? { selectedOptions: [{ textContent: opts.margin }], value: opts.margin }
+            : null;
+        return null;
+      },
+      querySelectorAll(sel: string) {
+        return sel === 'input.obat_kronis' ? boxes : [];
+      },
+      body: { innerText: opts.body ?? '' },
+    } as unknown as Document;
+    return { doc, boxes };
+  }
+
+  it('deteksi BPJS lewat SEP atau produk asuransi', () => {
+    expect(isBpjsResep('0082R0031126V003490', '', '')).toBe(true);
+    expect(isBpjsResep('', '1.28_1.28_fix_965 Bpjs', '')).toBe(true);
+    expect(isBpjsResep('', '', 'Produk Asuransi BPJS Kesehatan')).toBe(true);
+    expect(isBpjsResep('', 'Umum', 'Produk Asuransi Umum')).toBe(false);
+  });
+
+  it('hanya 2 halaman detail resep', () => {
+    expect(isResepDetailPage(PENERIMAAN)).toBe(true);
+    expect(isResepDetailPage(EDIT)).toBe(true);
+    expect(isResepDetailPage('/inventory/resep/penerimaan')).toBe(false);
+  });
+
+  it('ceklist semua baris yang terlewat (SEP terisi)', () => {
+    const { doc, boxes } = fakeDoc({ sep: '0082R...', boxes: [true, false, false] });
+    expect(autoCheckObatKronis(doc, PENERIMAAN)).toBe(2);
+    expect(boxes.map((b) => b.checked)).toEqual([true, true, true]);
+  });
+
+  it('ceklist pada halaman edit (margin Bpjs), tanpa mengubah yang sudah', () => {
+    const { doc, boxes } = fakeDoc({ margin: 'Bpjs', boxes: [false, true, false] });
+    expect(autoCheckObatKronis(doc, EDIT)).toBe(2);
+    expect(boxes.map((b) => b.checked)).toEqual([true, true, true]);
+  });
+
+  it('tidak ceklist di halaman lain / pasien non-BPJS', () => {
+    const a = fakeDoc({ sep: 'SEP', boxes: [false] });
+    expect(autoCheckObatKronis(a.doc, '/inventory/resep/penerimaan')).toBe(0);
+    expect(a.boxes[0].checked).toBe(false);
+    const b = fakeDoc({ margin: 'Umum', boxes: [false] });
+    expect(autoCheckObatKronis(b.doc, EDIT)).toBe(0);
+    expect(b.boxes[0].checked).toBe(false);
   });
 });

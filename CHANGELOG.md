@@ -11,8 +11,13 @@
 
 ### 🐛 fix
 
+- **paLabPrint** — Kesimpulan rata kiri tanpa indent penomoran (`ec5025d`)
 - **antrolKirim** — baca body QUEUE_API sekali — hentikan 'body stream already read' (`df848e2`)
 - **paLabPrint** — sejajarkan penanda romawi majemuk & tanpa spasi di Kesimpulan (`2bee8fc`)
+
+### 🔙 revert
+
+- **paLabPrint** — kembalikan kode print lab PA sebelum perubahan Kesimpulan (`e756011`)
 
 ## 2026-11-24
 
@@ -2383,4 +2388,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: df848e221f5ebe142a38725982f120e96fc6a3ed -->
+<!-- changelog-upto: ec5025d0935a9f64be6c835553507d1926c1141e -->

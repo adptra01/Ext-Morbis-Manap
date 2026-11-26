@@ -31,6 +31,7 @@ const BAR_ID = 'ext-cppt-bar';
 const BTN_ID = 'ext-cppt-btn';
 const MODAL_ID = 'ext-cppt-modal';
 const LINK_ID = 'ext-visit-link';
+const KRONIS_BTN_ID = 'ext-kronis-all-btn';
 
 export interface CpptRow {
   /** id_cppt (atribut id <tr>) — kunci dedupe utama; kosong bila tak ada. */
@@ -85,6 +86,67 @@ function resolveIdVisit(): string {
   if (fromInput) return fromInput;
   const p = new URLSearchParams(location.search);
   return p.get('visit') || p.get('id_visit') || p.get('idVisit') || '';
+}
+
+/** Dua halaman resep yang diminta auto-ceklis obat kronis. */
+export function isResepDetailPage(path = location.pathname): boolean {
+  return (
+    path.includes('/inventory/resep/penerimaan/detail') ||
+    path.includes('/inventory/penjualan-resep-edit/detail')
+  );
+}
+
+/**
+ * Pasien BPJS: SEP terisi ATAU produk asuransi ("Profit Margin Asuransi")
+ * mengandung BPJS. Murni supaya bisa di-unit-test tanpa DOM.
+ */
+export function isBpjsResep(noSep: string, asuransi: string, bodyText = ''): boolean {
+  return (
+    !!noSep.trim() ||
+    /bpjs/i.test(asuransi) ||
+    /\bbpjs\s+kesehatan\b/i.test(bodyText) ||
+    /produk\s+asuransi[\s\S]{0,160}\bbpjs\b/i.test(bodyText)
+  );
+}
+
+function bpjsDetected(doc: Document = document): boolean {
+  const margin = doc.querySelector<HTMLSelectElement>('#margin');
+  const asuransi = margin
+    ? (margin.selectedOptions[0]?.textContent || '') + ' ' + (margin.value || '')
+    : '';
+  return isBpjsResep(
+    doc.querySelector<HTMLInputElement>('#no_sep')?.value || '',
+    asuransi,
+    doc.body?.innerText || '',
+  );
+}
+
+/** Checkbox "PILIH OBAT KRONIS" — pakai class/name, bukan index kolom. */
+function kronisCheckboxes(doc: Document): HTMLInputElement[] {
+  const cbs = Array.from(doc.querySelectorAll<HTMLInputElement>('input.obat_kronis'));
+  return cbs.length
+    ? cbs
+    : Array.from(doc.querySelectorAll<HTMLInputElement>('input[name$="[obat_kronis]"]'));
+}
+
+/**
+ * Centang semua baris obat kronis yang belum. Pakai `.click()` — BUKAN
+ * `checked = true` — karena MORBIS memasang onclick (keterangan_kronis /
+ * hitung_kronis) yang meng-update #ket_obat_kronis & #jum_obat_kronis.
+ */
+export function autoCheckObatKronis(doc: Document = document, path = location.pathname): number {
+  if (!isResepDetailPage(path) || !bpjsDetected(doc)) return 0;
+  let n = 0;
+  for (const cb of kronisCheckboxes(doc)) {
+    if (cb.checked || cb.disabled) continue;
+    try {
+      cb.click();
+      if (cb.checked) n += 1;
+    } catch {
+      /* baris yang sedang di-render MORBIS — lewati, tombol manual tetap ada */
+    }
+  }
+  return n;
 }
 
 /** Nilai string pertama yang ada di antara beberapa kunci (envelope MORBIS). */
@@ -485,6 +547,52 @@ function ownHost(): HTMLElement | null {
   return fieldset;
 }
 
+/** Tombol "Ceklist Semua" — menjalankan auto-ceklis yang sama seperti saat load. */
+function kronisAllButton(): HTMLButtonElement {
+  const b = document.createElement('button');
+  b.id = KRONIS_BTN_ID;
+  b.type = 'button';
+  b.className = 'btn';
+  b.title = 'Centang semua kolom Pilih Obat Kronis yang belum tercentang';
+  b.style.cssText = 'margin:2px 6px 2px 0;background:#6d4df5;color:#fff;border-color:#6d4df5;';
+  b.textContent = 'Ceklist Semua';
+  b.addEventListener('click', () => {
+    const n = autoCheckObatKronis();
+    b.textContent = n ? `Ceklist Semua ✓${n}` : 'Ceklist Semua';
+    window.setTimeout(() => {
+      b.textContent = 'Ceklist Semua';
+    }, 1500);
+  });
+  return b;
+}
+
+let kronisHooked = false;
+
+/**
+ * Auto-ceklis saat halaman siap, dan ulang saat MORBIS menambah baris obat
+ * lewat AJAX. Observer hanya memantau childList — klik checkbox sendiri
+ * mengubah atribut, jadi tidak memicu loop.
+ */
+function hookKronisAutoCheck(): void {
+  if (kronisHooked || !isResepDetailPage()) return;
+  kronisHooked = true;
+  const run = (): void => {
+    void autoCheckObatKronis();
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
+    run();
+  }
+  const table = document.getElementById('penjualan-resep');
+  if (!table || typeof MutationObserver === 'undefined') return;
+  let t: number | undefined;
+  new MutationObserver(() => {
+    if (t !== undefined) window.clearTimeout(t);
+    t = window.setTimeout(run, 150);
+  }).observe(table, { childList: true, subtree: true });
+}
+
 function mount(allowOwn: boolean): boolean {
   if (document.getElementById(BAR_ID)) return true;
 
@@ -510,6 +618,8 @@ function mount(allowOwn: boolean): boolean {
   btn.addEventListener('click', () => void onClick(btn));
 
   row.appendChild(btn);
+  // Tombol bantu: ceklist ulang baris yang terlewat ( BPJS + halaman resep ).
+  if (isResepDetailPage() && bpjsDetected()) row.appendChild(kronisAllButton());
   if (isDetailKunjunganEnabled()) row.appendChild(visitLink());
   host.appendChild(row);
   return true;
@@ -598,6 +708,7 @@ function start(): void {
   } else {
     tick();
   }
+  hookKronisAutoCheck();
 }
 
 function stop(): void {

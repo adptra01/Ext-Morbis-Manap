@@ -21,9 +21,12 @@ var __morbis_feature = (() => {
   // src/features/cpptReader.ts
   var cpptReader_exports = {};
   __export(cpptReader_exports, {
+    autoCheckObatKronis: () => autoCheckObatKronis,
     buildHistoryUrl: () => buildHistoryUrl,
     buildVisitUrl: () => buildVisitUrl,
     hasNextHistoryPage: () => hasNextHistoryPage,
+    isBpjsResep: () => isBpjsResep,
+    isResepDetailPage: () => isResepDetailPage,
     mergeCppt: () => mergeCppt,
     parseCpptTable: () => parseCpptTable,
     parseIdPasien: () => parseIdPasien,
@@ -73,6 +76,7 @@ var __morbis_feature = (() => {
   var BTN_ID = "ext-cppt-btn";
   var MODAL_ID = "ext-cppt-modal";
   var LINK_ID = "ext-visit-link";
+  var KRONIS_BTN_ID = "ext-kronis-all-btn";
   var SUMBER = [
     {
       label: "Rajal",
@@ -93,6 +97,38 @@ var __morbis_feature = (() => {
     if (fromInput) return fromInput;
     const p = new URLSearchParams(location.search);
     return p.get("visit") || p.get("id_visit") || p.get("idVisit") || "";
+  }
+  function isResepDetailPage(path = location.pathname) {
+    return path.includes("/inventory/resep/penerimaan/detail") || path.includes("/inventory/penjualan-resep-edit/detail");
+  }
+  function isBpjsResep(noSep, asuransi, bodyText = "") {
+    return !!noSep.trim() || /bpjs/i.test(asuransi) || /\bbpjs\s+kesehatan\b/i.test(bodyText) || /produk\s+asuransi[\s\S]{0,160}\bbpjs\b/i.test(bodyText);
+  }
+  function bpjsDetected(doc = document) {
+    const margin = doc.querySelector("#margin");
+    const asuransi = margin ? (margin.selectedOptions[0]?.textContent || "") + " " + (margin.value || "") : "";
+    return isBpjsResep(
+      doc.querySelector("#no_sep")?.value || "",
+      asuransi,
+      doc.body?.innerText || ""
+    );
+  }
+  function kronisCheckboxes(doc) {
+    const cbs = Array.from(doc.querySelectorAll("input.obat_kronis"));
+    return cbs.length ? cbs : Array.from(doc.querySelectorAll('input[name$="[obat_kronis]"]'));
+  }
+  function autoCheckObatKronis(doc = document, path = location.pathname) {
+    if (!isResepDetailPage(path) || !bpjsDetected(doc)) return 0;
+    let n = 0;
+    for (const cb of kronisCheckboxes(doc)) {
+      if (cb.checked || cb.disabled) continue;
+      try {
+        cb.click();
+        if (cb.checked) n += 1;
+      } catch {
+      }
+    }
+    return n;
   }
   function pick(env, ...keys) {
     for (const k of keys) {
@@ -395,6 +431,43 @@ var __morbis_feature = (() => {
     document.body.appendChild(fieldset);
     return fieldset;
   }
+  function kronisAllButton() {
+    const b = document.createElement("button");
+    b.id = KRONIS_BTN_ID;
+    b.type = "button";
+    b.className = "btn";
+    b.title = "Centang semua kolom Pilih Obat Kronis yang belum tercentang";
+    b.style.cssText = "margin:2px 6px 2px 0;background:#6d4df5;color:#fff;border-color:#6d4df5;";
+    b.textContent = "Ceklist Semua";
+    b.addEventListener("click", () => {
+      const n = autoCheckObatKronis();
+      b.textContent = n ? `Ceklist Semua \u2713${n}` : "Ceklist Semua";
+      window.setTimeout(() => {
+        b.textContent = "Ceklist Semua";
+      }, 1500);
+    });
+    return b;
+  }
+  var kronisHooked = false;
+  function hookKronisAutoCheck() {
+    if (kronisHooked || !isResepDetailPage()) return;
+    kronisHooked = true;
+    const run = () => {
+      void autoCheckObatKronis();
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run, { once: true });
+    } else {
+      run();
+    }
+    const table = document.getElementById("penjualan-resep");
+    if (!table || typeof MutationObserver === "undefined") return;
+    let t;
+    new MutationObserver(() => {
+      if (t !== void 0) window.clearTimeout(t);
+      t = window.setTimeout(run, 150);
+    }).observe(table, { childList: true, subtree: true });
+  }
   function mount(allowOwn) {
     if (document.getElementById(BAR_ID)) return true;
     let host = document.getElementById("ext-antrian-fieldset");
@@ -414,6 +487,7 @@ var __morbis_feature = (() => {
     btn.textContent = "Baca CPPT";
     btn.addEventListener("click", () => void onClick(btn));
     row.appendChild(btn);
+    if (isResepDetailPage() && bpjsDetected()) row.appendChild(kronisAllButton());
     if (isDetailKunjunganEnabled()) row.appendChild(visitLink());
     host.appendChild(row);
     return true;
@@ -476,6 +550,7 @@ var __morbis_feature = (() => {
     } else {
       tick();
     }
+    hookKronisAutoCheck();
   }
   function stop() {
     document.getElementById(BAR_ID)?.remove();
