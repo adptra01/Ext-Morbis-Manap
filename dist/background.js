@@ -775,11 +775,12 @@ var __morbis_bg = (() => {
               }
               const res = await fetch(url, opts);
               const contentType = res.headers.get("content-type") || "";
+              const raw = await res.text();
               let data = null;
               try {
-                data = await res.json();
+                data = JSON.parse(raw);
               } catch {
-                data = await res.text();
+                data = raw;
               }
               sendResponse({
                 ok: true,

@@ -821,11 +821,16 @@ chrome.runtime.onMessage.addListener(
             }
             const res = await fetch(url as string, opts);
             const contentType = res.headers.get('content-type') || '';
+            // Baca body SEKALI lalu parse. res.json() mengonsumsi stream;
+            // memanggil res.text() setelahnya melempar "body stream already
+            // read" bila respons bukan JSON (halaman login/HTML/error) —
+            // persis yang bikin poll antrolKirim gagal tiap 5 detik.
+            const raw = await res.text();
             let data: unknown = null;
             try {
-              data = await res.json();
+              data = JSON.parse(raw);
             } catch {
-              data = await res.text();
+              data = raw;
             }
             sendResponse({
               ok: true,

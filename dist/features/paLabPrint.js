@@ -641,10 +641,7 @@ var __morbis_feature = (() => {
           const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
           const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
           const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
-          const maxMkLen = Math.max(
-            0,
-            ...s.items.map((it) => splitListMarker(it)?.[0].length ?? 0)
-          );
+          const maxMkLen = Math.max(0, ...s.items.map((it) => splitListMarker(it)?.[0].length ?? 0));
           const hangPt = Math.max(18, Math.round(maxMkLen * fs * 0.62) + 4);
           s.items.forEach((it, i) => {
             const mk = splitListMarker(it);
