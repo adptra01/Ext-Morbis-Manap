@@ -641,9 +641,10 @@ var __morbis_feature = (() => {
           const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
           const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
           s.items.forEach((it, i) => {
-            const mk = splitListMarker(it);
+            const itemText = isKesimpulan ? it.trimStart() : it;
+            const mk = isKesimpulan ? null : splitListMarker(itemText);
             const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
-            const plain = dashOnly ? stripBullet(it) || mk[1] : it;
+            const plain = dashOnly ? stripBullet(itemText) || mk[1] : itemText;
             const body = boldAll ? "<b>" + esc(plain) + "</b>" : fmtItem(plain);
             const hang = mk && !dashOnly ? "margin-left:18pt;text-indent:-18pt;" : "";
             hasilDoc += '<p style="margin:' + (s.para.includes(i) ? "4pt" : "0") + " 0 6pt 0;font-size:" + fs + "pt;line-height:" + lh + ";text-align:justify;" + hang + '">' + body + "</p>";
@@ -675,13 +676,14 @@ var __morbis_feature = (() => {
         const boldAll = isKesimpulan || isIcdo || normTitle(s.title) === "saran";
         const isi = '<div class="' + (s.bare ? "section-isi section-isi-bare" : "section-isi") + (isKesimpulan ? " section-kesimpulan" : "") + (isIcdo && !s.bare ? " section-icdo" : "") + '">' + s.items.map((it, i) => {
           const paraCls = s.para.includes(i) ? " item-para" : "";
-          const mk = splitListMarker(it);
-          const isIntro = !mk && /:\s*$/.test(it) && i + 1 < s.items.length && !!splitListMarker(s.items[i + 1]) && s.para.includes(i + 1);
+          const itemText = isKesimpulan ? it.trimStart() : it;
+          const mk = isKesimpulan ? null : splitListMarker(itemText);
+          const isIntro = !isKesimpulan && !mk && /:\s*$/.test(itemText) && i + 1 < s.items.length && !!splitListMarker(s.items[i + 1]) && s.para.includes(i + 1);
           if (mk && !(s.items.length === 1 && /^[-•–—*]$/.test(mk[0]))) {
             const rest = boldAll ? "<strong>" + esc(mk[1]) + "</strong>" : fmtItem(mk[1]);
             return '<div class="item-list has-marker' + paraCls + '"><span class="item-marker">' + (boldAll ? "<strong>" + esc(mk[0]) + "</strong>" : esc(mk[0])) + "</span><span>" + rest + "</span></div>";
           }
-          return '<div class="item-list' + paraCls + (isIntro ? " item-intro" : "") + '">' + (boldAll ? "<strong>" + esc(it) + "</strong>" : fmtItem(it)) + "</div>";
+          return '<div class="item-list' + paraCls + (isIntro ? " item-intro" : "") + '">' + (boldAll ? "<strong>" + esc(itemText) + "</strong>" : fmtItem(itemText)) + "</div>";
         }).join("") + "</div>";
         if (s.bare) return isi;
         const nt = normTitle(s.title);

@@ -721,11 +721,14 @@ whenFeatureEnabled('paLabPrint', function () {
         const fs = isKesimpulan ? r.kesimpulan.fs : r.isi.fs;
         const lh = isKesimpulan ? r.kesimpulan.lh : r.isi.lh;
         s.items.forEach((it, i) => {
-          const mk = splitListMarker(it);
+          // Kesimpulan: rata kiri apa adanya, TANPA hanging indent penomoran
+          // (user 2026-11-26). "I dan II. …" / "III.…" dipertahankan persis.
+          const itemText = isKesimpulan ? it.trimStart() : it;
+          const mk = isKesimpulan ? null : splitListMarker(itemText);
           // Section 1 baris ber-dash ("- …") → tampil polos tanpa "-"
           // (permintaan user 2026-11-06).
           const dashOnly = s.items.length === 1 && mk !== null && /^[-•–—*]$/.test(mk[0]);
-          const plain = dashOnly ? stripBullet(it) || mk[1] : it;
+          const plain = dashOnly ? stripBullet(itemText) || mk[1] : itemText;
           const body = boldAll ? '<b>' + esc(plain) + '</b>' : fmtItem(plain);
           const hang = mk && !dashOnly ? 'margin-left:18pt;text-indent:-18pt;' : '';
           hasilDoc +=
@@ -863,13 +866,19 @@ whenFeatureEnabled('paLabPrint', function () {
           s.items
             .map((it, i) => {
               const paraCls = s.para.includes(i) ? ' item-para' : '';
-              const mk = splitListMarker(it);
+              // Kesimpulan: rata kiri apa adanya — tidak masuk jalur
+              // hanging indent/gutter penomoran. Spasi awal dibuang supaya
+              // tiap baris sejajar vertikal di margin kiri (user 2026-11-26).
+              // Section lain (Makroskopik/Mikroskopik) tidak berubah.
+              const itemText = isKesimpulan ? it.trimStart() : it;
+              const mk = isKesimpulan ? null : splitListMarker(itemText);
               // Baris pengantar yang dipisah baris kosong dari item
               // bernomor berikutnya → rata kiri (tidak ikut indent).
               // Bila tanpa baris kosong, tetap mengikuti indent item.
               const isIntro =
+                !isKesimpulan &&
                 !mk &&
-                /:\s*$/.test(it) &&
+                /:\s*$/.test(itemText) &&
                 i + 1 < s.items.length &&
                 !!splitListMarker(s.items[i + 1]) &&
                 s.para.includes(i + 1);
@@ -892,7 +901,7 @@ whenFeatureEnabled('paLabPrint', function () {
                 paraCls +
                 (isIntro ? ' item-intro' : '') +
                 '">' +
-                (boldAll ? '<strong>' + esc(it) + '</strong>' : fmtItem(it)) +
+                (boldAll ? '<strong>' + esc(itemText) + '</strong>' : fmtItem(itemText)) +
                 '</div>'
               );
             })
