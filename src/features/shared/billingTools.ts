@@ -52,16 +52,23 @@ export function tarifRowFields(
   t: TarifOption,
   idx: string | number,
   waktu = '',
+  sourceRow = false,
 ): Record<string, string> {
   const total = String(t.TOTAL ?? '');
-  return {
+  const out: Record<string, string> = {
     [`billing[${idx}][layanan]`]: composeLayanan(t),
     [`billing[${idx}][tarif]`]: String(t.ID_TARIF ?? ''),
     [`billing[${idx}][induk_tarif]`]: String(t.ID_INDUK_TARIF ?? ''),
-    [`billing[${idx}][harga]`]: total,
-    [`billing[${idx}][total]`]: total,
     [`billing[${idx}][frekuensi]`]: '1',
-    [`billing[${idx}][diskon]`]: '0',
-    [`billing[${idx}][waktu]`]: waktu,
   };
+  // Baris yang sudah ada di form asli TIDAK punya input harga/total
+  // bernama, dan ac_layanan native tidak mereset diskon/waktu. Hanya
+  // baris baru (dibuat extension) yang butuh field tersebut.
+  if (!sourceRow) {
+    out[`billing[${idx}][harga]`] = total;
+    out[`billing[${idx}][total]`] = total;
+    out[`billing[${idx}][diskon]`] = '0';
+    out[`billing[${idx}][waktu]`] = waktu;
+  }
+  return out;
 }

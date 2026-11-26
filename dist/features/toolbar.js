@@ -1245,18 +1245,21 @@ var __morbis_feature = (() => {
     const clean = (v) => !v || /^(null|Tanpa \w+|Semua)$/i.test(v.trim()) ? "" : v.trim();
     return [t.LAYANAN, t.BOBOT, t.PROFESI, t.SPESIALISASI, t.KELAS].map(clean).filter(Boolean).join(" ");
   }
-  function tarifRowFields(t, idx, waktu = "") {
+  function tarifRowFields(t, idx, waktu = "", sourceRow = false) {
     const total = String(t.TOTAL ?? "");
-    return {
+    const out = {
       [`billing[${idx}][layanan]`]: composeLayanan(t),
       [`billing[${idx}][tarif]`]: String(t.ID_TARIF ?? ""),
       [`billing[${idx}][induk_tarif]`]: String(t.ID_INDUK_TARIF ?? ""),
-      [`billing[${idx}][harga]`]: total,
-      [`billing[${idx}][total]`]: total,
-      [`billing[${idx}][frekuensi]`]: "1",
-      [`billing[${idx}][diskon]`]: "0",
-      [`billing[${idx}][waktu]`]: waktu
+      [`billing[${idx}][frekuensi]`]: "1"
     };
+    if (!sourceRow) {
+      out[`billing[${idx}][harga]`] = total;
+      out[`billing[${idx}][total]`] = total;
+      out[`billing[${idx}][diskon]`] = "0";
+      out[`billing[${idx}][waktu]`] = waktu;
+    }
+    return out;
   }
 
   // src/features/toolbar.ts
@@ -1740,7 +1743,7 @@ var __morbis_feature = (() => {
   }
   function applyTarif(tr, t) {
     const idx = tr.dataset.btIdx || "";
-    const fields = tarifRowFields(t, idx, billingNow());
+    const fields = tarifRowFields(t, idx, billingNow(), tr.dataset.extBtSource === "1");
     for (const [name, value] of Object.entries(fields)) {
       let input = tr.querySelector(`input[data-billing-name="${name}"]`);
       if (!input) {

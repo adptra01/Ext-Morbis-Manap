@@ -77,4 +77,13 @@ describe('toolbar — tarif autocomplete', () => {
       'billing[4][waktu]': '26/11/2026 16:11:37',
     });
   });
+
+  it('baris asli tidak mengirim harga/total & tidak mereset diskon', () => {
+    expect(tarifRowFields(tarif, 1, '26/11/2026 16:11:37', true)).toEqual({
+      'billing[1][layanan]': 'KONSULTASI DOKTER SPESIALIS',
+      'billing[1][tarif]': '611179',
+      'billing[1][induk_tarif]': '542911',
+      'billing[1][frekuensi]': '1',
+    });
+  });
 });

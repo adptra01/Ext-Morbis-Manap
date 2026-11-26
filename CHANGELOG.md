@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **billingEditTools** — toggle di toolbar, autocomplete tarif & id_billing presisi; antrol log ke Reports (`7fbf02c`)
 - **billingEditTools** — UI modal sendiri + verify BPJS klaim penuh via fetch (tanpa redirect) (`9bf7ded`)
 - **billingEditTools** — panel toggle ⚡ + modal edit billing sesuai prototipe (`8f6acc3`)
 - **billingEditTools** — batal verif & edit billing langsung di detail M-KLAIM (`6d6f2c7`)
@@ -25,6 +26,10 @@
 ### 🔙 revert
 
 - **paLabPrint** — kembalikan kode print lab PA sebelum perubahan Kesimpulan (`e756011`)
+
+### 🎨 style
+
+- **billingEditTools** — ganti ikon toggle ke 💰 (`316e0c6`)
 
 ## 2026-11-24
 
@@ -2395,4 +2400,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9bf7ded5de530db5b123c7d5181d4e219b7eb4f3 -->
+<!-- changelog-upto: 316e0c68bf1f869cc7f558b5a23c225bff68cf24 -->

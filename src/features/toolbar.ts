@@ -618,7 +618,7 @@ function addBillingRow(tbody: HTMLElement): void {
 
 function applyTarif(tr: HTMLTableRowElement, t: TarifOption): void {
   const idx = tr.dataset.btIdx || '';
-  const fields = tarifRowFields(t, idx, billingNow());
+  const fields = tarifRowFields(t, idx, billingNow(), tr.dataset.extBtSource === '1');
   for (const [name, value] of Object.entries(fields)) {
     let input = tr.querySelector<HTMLInputElement>(`input[data-billing-name="${name}"]`);
     if (!input) {
