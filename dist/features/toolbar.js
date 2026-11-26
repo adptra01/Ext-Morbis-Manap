@@ -1503,8 +1503,9 @@ var __morbis_feature = (() => {
     const data = await getJson2(
       "/admisi/search?opsi=billing-edit&q=" + encodeURIComponent(idVisit)
     );
-    const norm = String(data && data.ID_PASIEN || "").replace(/\D/g, "");
+    const norm = (document.querySelector("#norm")?.value || extractParam2("norm") || String(data && data.ID_PASIEN || "")).replace(/\D/g, "");
     const row = norm ? await fetchVerified(idVisit, norm) : null;
+    if (row && data && data.ID_BILLING && row.idBilling !== String(data.ID_BILLING)) return null;
     if (!data || !data.ID_BILLING) {
       if (!row) return null;
       return {
@@ -1536,6 +1537,7 @@ var __morbis_feature = (() => {
   var billingPanelState = null;
   var billingEditCtx = null;
   var billingSourceFrame = null;
+  var billingBusy = false;
   function billingStatus(panel, msg) {
     let el = panel.querySelector(".ext-bt-status");
     if (!el) {
@@ -1579,7 +1581,11 @@ var __morbis_feature = (() => {
             if (!waitForRows) {
               if (d?.getElementById("formPembayaran")) {
                 if (!readyAt) readyAt = Date.now();
-                if (d.querySelector('input[name="klaim_bpjs"]') || Date.now() - readyAt > 900) {
+                const klaim = d.querySelector('input[name="klaim_bpjs"]');
+                const checklist = d.querySelector(
+                  'input[name="total_checklist"]'
+                )?.value;
+                if (klaim && checklist || Date.now() - readyAt > 2500) {
                   resolve(d);
                   return;
                 }
@@ -1884,14 +1890,15 @@ var __morbis_feature = (() => {
   }
   async function saveBillingEdit(andVerif) {
     const ctx = billingEditCtx;
-    if (!ctx) return;
-    const doc = billingSourceFrame?.contentDocument;
-    if (!doc?.getElementById("form_billing")) {
-      billingStatus(ctx.panel, "Form billing belum siap / tidak bisa diedit.");
-      return;
-    }
-    billingStatus(ctx.panel, "Menyimpan billing\u2026");
+    if (!ctx || billingBusy) return;
+    billingBusy = true;
     try {
+      const doc = billingSourceFrame?.contentDocument;
+      if (!doc?.getElementById("form_billing")) {
+        billingStatus(ctx.panel, "Form billing belum siap / tidak bisa diedit.");
+        return;
+      }
+      billingStatus(ctx.panel, "Menyimpan billing\u2026");
       const r = await fetch("/billing/control/billing-edit", {
         method: "POST",
         credentials: "include",
@@ -1906,40 +1913,66 @@ var __morbis_feature = (() => {
       }
       closeBillingEdit();
       billingStatus(ctx.panel, "Billing tersimpan.");
-      if (andVerif) await verifFromPanel(ctx.panel);
+      if (andVerif) await verifFromPanel(ctx.panel, true);
     } catch (e) {
       billingStatus(ctx.panel, "Simpan gagal: " + String(e));
+    } finally {
+      billingBusy = false;
     }
   }
-  async function verifFromPanel(panel) {
+  async function verifFromPanel(panel, skipGuard = false) {
     const info = billingPanelState;
-    if (!info) return;
-    billingStatus(panel, "Memproses verifikasi BPJS\u2026");
-    const doc = await loadSourceDoc(billingVerifUrl(info), false);
-    if (!doc) {
-      billingStatus(panel, "Form verifikasi gagal dimuat.");
-      return;
-    }
-    const form = doc.getElementById("formPembayaran");
-    if (!form) {
-      billingStatus(panel, "Form verifikasi tidak tersedia.");
-      return;
-    }
-    const total = Number(
-      doc.querySelector('input[name="total_checklist"]')?.value || doc.getElementById("total_billing")?.value || 0
-    );
-    const klaim = doc.querySelector('input[name="klaim_bpjs"]');
-    if (klaim) klaim.value = String(total);
-    const sisa = doc.querySelector('input[name="sisaTagihan"]');
-    if (sisa) sisa.value = "0";
-    const body = new URLSearchParams();
-    new FormData(form).forEach((v, k) => {
-      if (typeof v === "string") body.append(k, v);
-    });
-    if (klaim) body.set("klaim_bpjs", String(total));
-    if (sisa) body.set("sisaTagihan", "0");
-    body.append("save", "1");
+    if (!info || billingBusy && !skipGuard) return;
+    billingBusy = true;
     try {
+      try {
+        const cek = await fetch("/billing/pembayaran-new/cek-resep", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "id_visit=" + encodeURIComponent(info.idVisit)
+        });
+        const j2 = await cek.json();
+        if (Number(j2.JUMLAH) > 0 && !window.confirm("Ada resep belum diproses farmasi. Lanjutkan verifikasi?"))
+          return;
+      } catch {
+      }
+      billingStatus(panel, "Memuat form verifikasi\u2026");
+      const doc = await loadSourceDoc(billingVerifUrl(info), false);
+      if (!doc) {
+        billingStatus(panel, "Form verifikasi gagal dimuat.");
+        return;
+      }
+      const form = doc.getElementById("formPembayaran");
+      if (!form) {
+        billingStatus(panel, "Form verifikasi tidak tersedia.");
+        return;
+      }
+      const raw = doc.querySelector('input[name="total_checklist"]')?.value || "";
+      const total = billingNum(raw);
+      if (!raw || !total || !Number.isFinite(total)) {
+        billingStatus(panel, "Total tagihan tidak terbaca \u2014 verifikasi dibatalkan.");
+        return;
+      }
+      if (!window.confirm(
+        `Verifikasi BPJS klaim penuh?
+Pasien: ${info.pasien}
+Visit: ${info.idVisit}
+Klaim: Rp ${new Intl.NumberFormat("id-ID").format(total)}`
+      ))
+        return;
+      const klaim = doc.querySelector('input[name="klaim_bpjs"]');
+      if (klaim) klaim.value = String(total);
+      const sisa = doc.querySelector('input[name="sisaTagihan"]');
+      if (sisa) sisa.value = "0";
+      const body = new URLSearchParams();
+      new FormData(form).forEach((v, k) => {
+        if (typeof v === "string") body.append(k, v);
+      });
+      if (klaim) body.set("klaim_bpjs", String(total));
+      if (sisa) body.set("sisaTagihan", "0");
+      body.append("save", "1");
+      billingStatus(panel, "Memproses verifikasi BPJS\u2026");
       const r = await fetch("/billing/verifikasi-billing/control/bayar-control-new", {
         method: "POST",
         credentials: "include",
@@ -1953,6 +1986,10 @@ var __morbis_feature = (() => {
       );
     } catch (e) {
       billingStatus(panel, "Verifikasi BPJS gagal: " + String(e));
+    } finally {
+      billingBusy = false;
+      const fr = billingSourceFrame;
+      if (fr) fr.src = "about:blank";
     }
   }
   function mountBillingTools(bar) {

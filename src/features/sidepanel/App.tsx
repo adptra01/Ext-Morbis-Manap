@@ -206,7 +206,7 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
   {
     key: 'cpptReader',
     name: 'Baca CPPT (Resep)',
-    desc: 'Tombol baca isian CPPT pasien di detail/edit resep',
+    desc: 'Baca CPPT + auto ceklist Obat Kronis BPJS & tombol Ceklist Semua',
     roles: ['admin', 'apotek'],
   },
   {

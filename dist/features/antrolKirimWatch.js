@@ -45,11 +45,12 @@ var __morbis_feature = (() => {
         }
       }, 15e3);
       chrome.runtime.sendMessage(message, (response) => {
+        const callbackError = chrome.runtime.lastError;
         if (settled) return;
         settled = true;
         clearTimeout(timer2);
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+        if (callbackError) {
+          reject(callbackError);
           return;
         }
         const r = response;
@@ -371,25 +372,28 @@ var __morbis_feature = (() => {
 
   // src/features/antrolKirimWatch.ts
   var LOG_PREFIX = "[MORBIS Ext] antrolKirim";
-  function logPollErrorToReports(msg) {
-    void (async () => {
-      try {
-        const base = farmasiAppBase();
-        await sendMessage({
+  function logPollErrorToReports(msg, event = "poll_gagal") {
+    try {
+      const clean = (v) => String(v).replace(/[\r\n\t]+/g, " ").slice(0, 500);
+      chrome.runtime.sendMessage(
+        {
           type: MessageTypes.QUEUE_API,
-          url: base + "/api/extension-log",
+          url: farmasiAppBase() + "/api/extension-log",
           method: "POST",
           body: {
             source: "antrolKirim",
-            event: "poll_gagal",
-            message: String(msg).slice(0, 500),
-            detail: location.href.slice(0, 500),
-            url: location.href.slice(0, 500)
+            event: clean(event),
+            message: clean(msg),
+            detail: clean(msg),
+            url: location.pathname.slice(0, 300)
           }
-        });
-      } catch {
-      }
-    })();
+        },
+        () => {
+          void chrome.runtime.lastError;
+        }
+      );
+    } catch {
+    }
   }
   var g = window;
   if (g.__extAntrolKirim) {
@@ -509,7 +513,7 @@ var __morbis_feature = (() => {
         buildReportPayload(qn, tanggal, status, extra)
       );
     } catch (e) {
-      console.warn(LOG_PREFIX, "report gagal:", e.message);
+      logPollErrorToReports("report gagal: " + e.message, "report_gagal");
     }
   }
   async function handleDone(row, tanggal) {
@@ -519,7 +523,7 @@ var __morbis_feature = (() => {
     const base = farmasiAppBase();
     const used = attempts.get(key) ?? 0;
     if (used >= ANTRL_MAX_ATTEMPTS) {
-      console.warn(LOG_PREFIX, "menyerah (max attempts)", { qn, tanggal });
+      logPollErrorToReports("menyerah (max attempts) " + qn + " " + tanggal, "max_attempts");
       persistSent(key);
       return true;
     }
@@ -540,7 +544,7 @@ var __morbis_feature = (() => {
         buildClaimPayload(row, tanggal)
       );
     } catch (e) {
-      console.warn(LOG_PREFIX, "claim gagal (retry):", e.message);
+      logPollErrorToReports("claim gagal (retry): " + e.message, "claim_gagal");
       return false;
     }
     if (!claimRes.ok) return false;
@@ -594,14 +598,14 @@ var __morbis_feature = (() => {
       message: sendResult.message || (sendResult.ok ? "ok" : "update_bulk error")
     });
     persistSent(key);
-    console.log(LOG_PREFIX, status === "ok" ? "TERKIRIM ke MJKN" : "GAGAL kirim", {
-      qn,
-      tanggal,
-      resepId,
-      idVisit,
-      code: sendResult.code,
-      message: sendResult.message
-    });
+    if (status === "ok") {
+      console.log(LOG_PREFIX, "TERKIRIM ke MJKN", { qn, resepId, idVisit });
+    } else {
+      logPollErrorToReports(
+        `GAGAL kirim ${qn} visit=${idVisit} code=${sendResult.code}: ${sendResult.message}`,
+        "kirim_gagal"
+      );
+    }
     return true;
   }
   function stopWatchDead(reason) {
@@ -614,57 +618,63 @@ var __morbis_feature = (() => {
     }
     console.info(LOG_PREFIX, "berhenti:", reason, "\u2014 muat ulang halaman untuk menjalankan lagi.");
   }
+  var polling = false;
   async function pollOnce() {
-    if (dead) return;
-    if (isExtensionContextDead()) {
-      stopWatchDead("konteks extension mati");
-      return;
-    }
-    await refreshDayIfNeeded();
-    const base = farmasiAppBase();
-    const url = `${base}/api/queue/display${lastSig ? "?since=" + encodeURIComponent(lastSig) : ""}`;
-    let res;
+    if (dead || polling) return;
+    polling = true;
     try {
-      res = await queueApi(url, "GET");
-    } catch (e) {
-      if (isContextInvalidatedError(e) || isExtensionContextDead()) {
-        stopWatchDead("konteks extension mati (extension diperbarui/dimuat ulang?)");
+      if (isExtensionContextDead()) {
+        stopWatchDead("konteks extension mati");
         return;
       }
-      const msg = e?.message || "";
-      if (/message channel closed|Extension context invalidated/i.test(msg)) return;
-      logPollErrorToReports(msg);
-      return;
-    }
-    if (!res.ok || res.status === 304) return;
-    if (res.status !== 200) return;
-    const data = res.data;
-    if (!data || typeof data !== "object" || !Array.isArray(data.queues)) return;
-    const rows = extractDisplayRows(data);
-    if (data.queues.length > 0 && rows.length === 0) return;
-    if (data.signal != null) lastSig = String(data.signal);
-    const current = buildStatusMap(rows);
-    if (snapshot === null) {
+      await refreshDayIfNeeded();
+      const base = farmasiAppBase();
+      const url = `${base}/api/queue/display${lastSig ? "?since=" + encodeURIComponent(lastSig) : ""}`;
+      let res;
+      try {
+        res = await queueApi(url, "GET");
+      } catch (e) {
+        if (isContextInvalidatedError(e) || isExtensionContextDead()) {
+          stopWatchDead("konteks extension mati (extension diperbarui/dimuat ulang?)");
+          return;
+        }
+        const msg = e?.message || "";
+        if (/message channel closed|Extension context invalidated/i.test(msg)) return;
+        logPollErrorToReports(msg);
+        return;
+      }
+      if (!res.ok || res.status === 304) return;
+      if (res.status !== 200) return;
+      const data = res.data;
+      if (!data || typeof data !== "object" || !Array.isArray(data.queues)) return;
+      const rows = extractDisplayRows(data);
+      if (data.queues.length > 0 && rows.length === 0) return;
+      if (data.signal != null) lastSig = String(data.signal);
+      const current = buildStatusMap(rows);
+      if (snapshot === null) {
+        snapshot = current;
+        return;
+      }
+      const done = detectDoneTransitions(current, snapshot);
       snapshot = current;
-      return;
-    }
-    const done = detectDoneTransitions(current, snapshot);
-    snapshot = current;
-    for (const qn of done) freshDone.add(qn);
-    const tanggal = typeof data.tanggal === "string" && data.tanggal.trim() ? data.tanggal.trim().slice(0, 10) : localDateKey();
-    for (const qn of [...freshDone]) {
-      const row = rows.find((r) => r.queue_number === qn);
-      if (!row) {
-        freshDone.delete(qn);
-        continue;
+      for (const qn of done) freshDone.add(qn);
+      const tanggal = typeof data.tanggal === "string" && data.tanggal.trim() ? data.tanggal.trim().slice(0, 10) : localDateKey();
+      for (const qn of [...freshDone]) {
+        const row = rows.find((r) => r.queue_number === qn);
+        if (!row) {
+          freshDone.delete(qn);
+          continue;
+        }
+        if (sentToday.has(antrolSentKey(qn, tanggal))) {
+          freshDone.delete(qn);
+          continue;
+        }
+        void handleDone(row, tanggal).then((terminal) => {
+          if (terminal && started && !dead) freshDone.delete(qn);
+        });
       }
-      if (sentToday.has(antrolSentKey(qn, tanggal))) {
-        freshDone.delete(qn);
-        continue;
-      }
-      void handleDone(row, tanggal).then((terminal) => {
-        if (terminal) freshDone.delete(qn);
-      });
+    } finally {
+      polling = false;
     }
   }
   async function ensureWatch(shouldRun) {

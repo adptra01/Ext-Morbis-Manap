@@ -1,4 +1,4 @@
-import { C as __toESM, S as require_react, _ as RotateCcw, a as SelectTrigger, b as createLucideIcon, c as Switch, d as ErrorBoundary, f as require_jsx_runtime, g as Search, h as X, i as SelectItem, l as Button, m as sendMessage, n as Select, o as SelectValue, p as MessageTypes, r as SelectContent, s as Input, t as getVersionBadge, u as cn, v as RefreshCw, x as require_client, y as Plus } from "./chunks/version-CqFCrxJf.js";
+import { C as __toESM, S as require_react, _ as RotateCcw, a as SelectTrigger, b as createLucideIcon, c as Switch, d as ErrorBoundary, f as require_jsx_runtime, g as Search, h as X, i as SelectItem, l as Button, m as sendMessage, n as Select, o as SelectValue, p as MessageTypes, r as SelectContent, s as Input, t as getVersionBadge, u as cn, v as RefreshCw, x as require_client, y as Plus } from "./chunks/version-a-YZ5nVm.js";
 //#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
 * @license lucide-react v1.49.0 - ISC
@@ -1883,7 +1883,7 @@ var FALLBACK_FEATURES = [
 	{
 		key: "cpptReader",
 		name: "Baca CPPT (Resep)",
-		desc: "Tombol baca isian CPPT pasien di detail/edit resep",
+		desc: "Baca CPPT + auto ceklist Obat Kronis BPJS & tombol Ceklist Semua",
 		roles: ["admin", "apotek"]
 	},
 	{

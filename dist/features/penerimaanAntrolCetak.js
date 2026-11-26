@@ -254,11 +254,12 @@ var __morbis_feature = (() => {
         }
       }, 15e3);
       chrome.runtime.sendMessage(message, (response) => {
+        const callbackError = chrome.runtime.lastError;
         if (settled) return;
         settled = true;
         clearTimeout(timer);
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
+        if (callbackError) {
+          reject(callbackError);
           return;
         }
         const r = response;

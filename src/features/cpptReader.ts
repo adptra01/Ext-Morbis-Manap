@@ -117,7 +117,9 @@ function bpjsDetected(doc: Document = document): boolean {
   return isBpjsResep(
     doc.querySelector<HTMLInputElement>('#no_sep')?.value || '',
     asuransi,
-    doc.body?.innerText || '',
+    // Batasi ke tabel resep — jangan terkecoh teks "BPJS Kesehatan" di
+    // menu/footer halaman (pasien umum ikut terceklis).
+    doc.getElementById?.('penjualan-resep')?.innerText || '',
   );
 }
 
@@ -567,11 +569,13 @@ function kronisAllButton(): HTMLButtonElement {
 }
 
 let kronisHooked = false;
+let kronisObserver: MutationObserver | null = null;
+let kronisAttachTries = 0;
 
 /**
- * Auto-ceklis saat halaman siap, dan ulang saat MORBIS menambah baris obat
- * lewat AJAX. Observer hanya memantau childList — klik checkbox sendiri
- * mengubah atribut, jadi tidak memicu loop.
+ * Auto-ceklis saat halaman siap + saat MORBIS menambah BARIS checkbox baru.
+ * Hanya bereaksi pada `addedNodes` yang memuat input.obat_kronis — perubahan
+ * teks #ket_obat_kronis (efek klik user) TIDAK memicu re-check.
  */
 function hookKronisAutoCheck(): void {
   if (kronisHooked || !isResepDetailPage()) return;
@@ -579,18 +583,42 @@ function hookKronisAutoCheck(): void {
   const run = (): void => {
     void autoCheckObatKronis();
   };
+  const attach = (): void => {
+    if (kronisObserver || typeof MutationObserver === 'undefined') return;
+    const table = document.getElementById('penjualan-resep');
+    if (!table) {
+      // Tabel resep bisa tampil belakangan (AJAX MORBIS).
+      if (kronisAttachTries++ < 20) window.setTimeout(attach, 500);
+      return;
+    }
+    let t: number | undefined;
+    kronisObserver = new MutationObserver((records) => {
+      const adaBarisBaru = records.some((rec) =>
+        Array.from(rec.addedNodes).some(
+          (n) =>
+            n instanceof Element &&
+            (n.matches?.('input.obat_kronis') || !!n.querySelector?.('input.obat_kronis')),
+        ),
+      );
+      if (!adaBarisBaru) return;
+      if (t !== undefined) window.clearTimeout(t);
+      t = window.setTimeout(run, 150);
+    });
+    kronisObserver.observe(table, { childList: true, subtree: true });
+  };
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run, { once: true });
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+        run();
+        attach();
+      },
+      { once: true },
+    );
   } else {
     run();
+    attach();
   }
-  const table = document.getElementById('penjualan-resep');
-  if (!table || typeof MutationObserver === 'undefined') return;
-  let t: number | undefined;
-  new MutationObserver(() => {
-    if (t !== undefined) window.clearTimeout(t);
-    t = window.setTimeout(run, 150);
-  }).observe(table, { childList: true, subtree: true });
 }
 
 function mount(allowOwn: boolean): boolean {
@@ -712,6 +740,10 @@ function start(): void {
 }
 
 function stop(): void {
+  kronisObserver?.disconnect();
+  kronisObserver = null;
+  kronisHooked = false;
+  kronisAttachTries = 0;
   document.getElementById(BAR_ID)?.remove();
   document.getElementById('ext-cppt-fieldset')?.remove();
   document.getElementById(MODAL_ID)?.remove();

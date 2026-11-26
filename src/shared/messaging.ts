@@ -125,11 +125,15 @@ export function sendMessage<T extends MessageType>(
       }
     }, 15000);
     chrome.runtime.sendMessage(message, (response) => {
+      // `lastError` WAJIB dibaca di awal callback — kalau timeout menang dulu
+      // dan callback datang belakangan, Chrome tetap log "Unchecked
+      // runtime.lastError" ke console ekstensi.
+      const callbackError = chrome.runtime.lastError;
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
+      if (callbackError) {
+        reject(callbackError);
         return;
       }
       const r = response as (ResponseMap[T] & { success?: boolean; error?: string }) | undefined;

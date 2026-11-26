@@ -54,29 +54,38 @@ import { farmasiAppBase } from './shared/farmasiQueueSync';
 const LOG_PREFIX = '[MORBIS Ext] antrolKirim';
 
 /**
- * Error polling dicatat ke log Reports SIMRS (POST /api/extension-log), BUKAN
- * console ekstensi/browser. Best-effort: gagal kirim log pun dibungkus diam.
+ * Error antrol dicatat ke log Reports SIMRS (POST /api/extension-log), BUKAN
+ * console ekstensi/browser. Memakai callback chrome.runtime.sendMessage
+ * langsung — `sendMessage()` dari shared me-reject `error`/timeout, yang
+ * justru menyebabkan log hilang saat server sedang mati.
  */
-function logPollErrorToReports(msg: string): void {
-  void (async () => {
-    try {
-      const base = farmasiAppBase();
-      await sendMessage({
+function logPollErrorToReports(msg: string, event = 'poll_gagal'): void {
+  try {
+    const clean = (v: string): string =>
+      String(v)
+        .replace(/[\r\n\t]+/g, ' ')
+        .slice(0, 500);
+    chrome.runtime.sendMessage(
+      {
         type: MessageTypes.QUEUE_API,
-        url: base + '/api/extension-log',
+        url: farmasiAppBase() + '/api/extension-log',
         method: 'POST',
         body: {
           source: 'antrolKirim',
-          event: 'poll_gagal',
-          message: String(msg).slice(0, 500),
-          detail: location.href.slice(0, 500),
-          url: location.href.slice(0, 500),
+          event: clean(event),
+          message: clean(msg),
+          detail: clean(msg),
+          url: location.pathname.slice(0, 300),
         },
-      });
-    } catch {
-      /* sengaja senyap — log tidak boleh menimbulkan error baru */
-    }
-  })();
+      },
+      () => {
+        // Baca lastError supaya Chrome tidak mengeluarkan warning console.
+        void chrome.runtime.lastError;
+      },
+    );
+  } catch {
+    /* sengaja senyap — log tidak boleh menimbulkan error baru */
+  }
 }
 
 // Guard anti double-inject (paranoid; entry manifest hanya 1 per dokumen,
@@ -241,7 +250,7 @@ async function reportToServer(
       buildReportPayload(qn, tanggal, status, extra),
     );
   } catch (e) {
-    console.warn(LOG_PREFIX, 'report gagal:', (e as Error).message);
+    logPollErrorToReports('report gagal: ' + (e as Error).message, 'report_gagal');
   }
 }
 
@@ -258,7 +267,7 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
 
   const used = attempts.get(key) ?? 0;
   if (used >= ANTRL_MAX_ATTEMPTS) {
-    console.warn(LOG_PREFIX, 'menyerah (max attempts)', { qn, tanggal });
+    logPollErrorToReports('menyerah (max attempts) ' + qn + ' ' + tanggal, 'max_attempts');
     persistSent(key);
     return true;
   }
@@ -283,7 +292,7 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
       buildClaimPayload(row, tanggal),
     );
   } catch (e) {
-    console.warn(LOG_PREFIX, 'claim gagal (retry):', (e as Error).message);
+    logPollErrorToReports('claim gagal (retry): ' + (e as Error).message, 'claim_gagal');
     return false;
   }
   if (!claimRes.ok) return false; // network/background error → retry
@@ -347,14 +356,14 @@ async function handleDone(row: AntrolRow, tanggal: string): Promise<boolean> {
     message: sendResult.message || (sendResult.ok ? 'ok' : 'update_bulk error'),
   });
   persistSent(key);
-  console.log(LOG_PREFIX, status === 'ok' ? 'TERKIRIM ke MJKN' : 'GAGAL kirim', {
-    qn,
-    tanggal,
-    resepId,
-    idVisit,
-    code: sendResult.code,
-    message: sendResult.message,
-  });
+  if (status === 'ok') {
+    console.log(LOG_PREFIX, 'TERKIRIM ke MJKN', { qn, resepId, idVisit });
+  } else {
+    logPollErrorToReports(
+      `GAGAL kirim ${qn} visit=${idVisit} code=${sendResult.code}: ${sendResult.message}`,
+      'kirim_gagal',
+    );
+  }
   return true;
 }
 
@@ -375,74 +384,83 @@ function stopWatchDead(reason: string): void {
   console.info(LOG_PREFIX, 'berhenti:', reason, '— muat ulang halaman untuk menjalankan lagi.');
 }
 
-async function pollOnce(): Promise<void> {
-  if (dead) return;
-  if (isExtensionContextDead()) {
-    stopWatchDead('konteks extension mati');
-    return;
-  }
-  await refreshDayIfNeeded();
-  const base = farmasiAppBase();
-  const url = `${base}/api/queue/display${lastSig ? '?since=' + encodeURIComponent(lastSig) : ''}`;
+let polling = false;
 
-  let res: QAResult;
+async function pollOnce(): Promise<void> {
+  // Guard anti-overlap: fetch bisa 15s, poll interval 5s — tanpa ini dua
+  // poll bisa deteksi transisi DONE yang sama & kirim update_bulk ganda.
+  if (dead || polling) return;
+  polling = true;
   try {
-    res = await queueApi(url, 'GET');
-  } catch (e) {
-    if (isContextInvalidatedError(e) || isExtensionContextDead()) {
-      stopWatchDead('konteks extension mati (extension diperbarui/dimuat ulang?)');
+    if (isExtensionContextDead()) {
+      stopWatchDead('konteks extension mati');
       return;
     }
-    const msg = (e as Error)?.message || '';
-    // Service worker MV3 kadang idle/terminated sebelum merespons — channel
-    // tertutup. Bukan error nyata; retry otomatis di poll berikutnya, jadi
-    // tidak perlu di-log (menghindari spam console).
-    if (/message channel closed|Extension context invalidated/i.test(msg)) return;
-    logPollErrorToReports(msg);
-    return;
-  }
-  if (!res.ok || res.status === 304) return; // sinyal sama → tidak ada perubahan
-  if (res.status !== 200) return;
+    await refreshDayIfNeeded();
+    const base = farmasiAppBase();
+    const url = `${base}/api/queue/display${lastSig ? '?since=' + encodeURIComponent(lastSig) : ''}`;
 
-  const data = res.data as AntrolDisplayData | undefined;
-  if (!data || typeof data !== 'object' || !Array.isArray(data.queues)) return;
-
-  const rows = extractDisplayRows(data);
-  // Payload berisi array queues tapi tak ada baris valid → jangan reset
-  // baseline (hindari snapshot kosong → kirim massal antrian lama).
-  if (data.queues.length > 0 && rows.length === 0) return;
-  // Daftar benar-benar kosong (hari belum ada antrian) → baseline kosong valid.
-
-  if (data.signal != null) lastSig = String(data.signal);
-
-  const current = buildStatusMap(rows);
-  if (snapshot === null) {
-    snapshot = current; // poll pertama = baseline, TIDAK mengirim apa pun
-    return;
-  }
-
-  const done = detectDoneTransitions(current, snapshot);
-  snapshot = current;
-  for (const qn of done) freshDone.add(qn);
-
-  const tanggal =
-    typeof data.tanggal === 'string' && data.tanggal.trim()
-      ? data.tanggal.trim().slice(0, 10)
-      : localDateKey();
-
-  for (const qn of [...freshDone]) {
-    const row = rows.find((r) => r.queue_number === qn);
-    if (!row) {
-      freshDone.delete(qn); // hilang dari daftar → berhenti mengejar
-      continue;
+    let res: QAResult;
+    try {
+      res = await queueApi(url, 'GET');
+    } catch (e) {
+      if (isContextInvalidatedError(e) || isExtensionContextDead()) {
+        stopWatchDead('konteks extension mati (extension diperbarui/dimuat ulang?)');
+        return;
+      }
+      const msg = (e as Error)?.message || '';
+      // Service worker MV3 kadang idle/terminated sebelum merespons — channel
+      // tertutup. Bukan error nyata; retry otomatis di poll berikutnya, jadi
+      // tidak perlu di-log (menghindari spam console).
+      if (/message channel closed|Extension context invalidated/i.test(msg)) return;
+      logPollErrorToReports(msg);
+      return;
     }
-    if (sentToday.has(antrolSentKey(qn, tanggal))) {
-      freshDone.delete(qn);
-      continue;
+    if (!res.ok || res.status === 304) return; // sinyal sama → tidak ada perubahan
+    if (res.status !== 200) return;
+
+    const data = res.data as AntrolDisplayData | undefined;
+    if (!data || typeof data !== 'object' || !Array.isArray(data.queues)) return;
+
+    const rows = extractDisplayRows(data);
+    // Payload berisi array queues tapi tak ada baris valid → jangan reset
+    // baseline (hindari snapshot kosong → kirim massal antrian lama).
+    if (data.queues.length > 0 && rows.length === 0) return;
+    // Daftar benar-benar kosong (hari belum ada antrian) → baseline kosong valid.
+
+    if (data.signal != null) lastSig = String(data.signal);
+
+    const current = buildStatusMap(rows);
+    if (snapshot === null) {
+      snapshot = current; // poll pertama = baseline, TIDAK mengirim apa pun
+      return;
     }
-    void handleDone(row, tanggal).then((terminal) => {
-      if (terminal) freshDone.delete(qn);
-    });
+
+    const done = detectDoneTransitions(current, snapshot);
+    snapshot = current;
+    for (const qn of done) freshDone.add(qn);
+
+    const tanggal =
+      typeof data.tanggal === 'string' && data.tanggal.trim()
+        ? data.tanggal.trim().slice(0, 10)
+        : localDateKey();
+
+    for (const qn of [...freshDone]) {
+      const row = rows.find((r) => r.queue_number === qn);
+      if (!row) {
+        freshDone.delete(qn); // hilang dari daftar → berhenti mengejar
+        continue;
+      }
+      if (sentToday.has(antrolSentKey(qn, tanggal))) {
+        freshDone.delete(qn);
+        continue;
+      }
+      void handleDone(row, tanggal).then((terminal) => {
+        if (terminal && started && !dead) freshDone.delete(qn);
+      });
+    }
+  } finally {
+    polling = false;
   }
 }
 

@@ -110,7 +110,9 @@ var __morbis_feature = (() => {
     return isBpjsResep(
       doc.querySelector("#no_sep")?.value || "",
       asuransi,
-      doc.body?.innerText || ""
+      // Batasi ke tabel resep — jangan terkecoh teks "BPJS Kesehatan" di
+      // menu/footer halaman (pasien umum ikut terceklis).
+      doc.getElementById?.("penjualan-resep")?.innerText || ""
     );
   }
   function kronisCheckboxes(doc) {
@@ -449,24 +451,47 @@ var __morbis_feature = (() => {
     return b;
   }
   var kronisHooked = false;
+  var kronisObserver = null;
+  var kronisAttachTries = 0;
   function hookKronisAutoCheck() {
     if (kronisHooked || !isResepDetailPage()) return;
     kronisHooked = true;
     const run = () => {
       void autoCheckObatKronis();
     };
+    const attach = () => {
+      if (kronisObserver || typeof MutationObserver === "undefined") return;
+      const table = document.getElementById("penjualan-resep");
+      if (!table) {
+        if (kronisAttachTries++ < 20) window.setTimeout(attach, 500);
+        return;
+      }
+      let t;
+      kronisObserver = new MutationObserver((records) => {
+        const adaBarisBaru = records.some(
+          (rec) => Array.from(rec.addedNodes).some(
+            (n) => n instanceof Element && (n.matches?.("input.obat_kronis") || !!n.querySelector?.("input.obat_kronis"))
+          )
+        );
+        if (!adaBarisBaru) return;
+        if (t !== void 0) window.clearTimeout(t);
+        t = window.setTimeout(run, 150);
+      });
+      kronisObserver.observe(table, { childList: true, subtree: true });
+    };
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", run, { once: true });
+      document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+          run();
+          attach();
+        },
+        { once: true }
+      );
     } else {
       run();
+      attach();
     }
-    const table = document.getElementById("penjualan-resep");
-    if (!table || typeof MutationObserver === "undefined") return;
-    let t;
-    new MutationObserver(() => {
-      if (t !== void 0) window.clearTimeout(t);
-      t = window.setTimeout(run, 150);
-    }).observe(table, { childList: true, subtree: true });
   }
   function mount(allowOwn) {
     if (document.getElementById(BAR_ID)) return true;
@@ -553,6 +578,10 @@ var __morbis_feature = (() => {
     hookKronisAutoCheck();
   }
   function stop() {
+    kronisObserver?.disconnect();
+    kronisObserver = null;
+    kronisHooked = false;
+    kronisAttachTries = 0;
     document.getElementById(BAR_ID)?.remove();
     document.getElementById("ext-cppt-fieldset")?.remove();
     document.getElementById(MODAL_ID)?.remove();

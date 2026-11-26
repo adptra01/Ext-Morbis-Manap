@@ -11,6 +11,7 @@
 
 ### ✨ feat
 
+- **billingEditTools** — autocomplete tampilkan kelas & harga Rupiah (`f700f9c`)
 - **billingEditTools** — toggle di toolbar, autocomplete tarif & id_billing presisi; antrol log ke Reports (`7fbf02c`)
 - **billingEditTools** — UI modal sendiri + verify BPJS klaim penuh via fetch (tanpa redirect) (`9bf7ded`)
 - **billingEditTools** — panel toggle ⚡ + modal edit billing sesuai prototipe (`8f6acc3`)
@@ -19,6 +20,7 @@
 
 ### 🐛 fix
 
+- **billingEditTools** — samakan pilih tarif dengan form asli (tanpa harga/total & diskon pada baris existing) (`3d4707b`)
 - **paLabPrint** — Kesimpulan rata kiri tanpa indent penomoran (`ec5025d`)
 - **antrolKirim** — baca body QUEUE_API sekali — hentikan 'body stream already read' (`df848e2`)
 - **paLabPrint** — sejajarkan penanda romawi majemuk & tanpa spasi di Kesimpulan (`2bee8fc`)
@@ -2400,4 +2402,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 316e0c68bf1f869cc7f558b5a23c225bff68cf24 -->
+<!-- changelog-upto: f700f9c4c45910826825f1ddc32eb10ae4796228 -->

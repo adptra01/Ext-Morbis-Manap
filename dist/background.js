@@ -389,7 +389,7 @@ var __morbis_bg = (() => {
         enabled: true,
         allowedRoles: ["admin", "apotek"],
         name: "Baca CPPT (Resep)",
-        description: "Tombol baca isian CPPT pasien di halaman detail/edit resep (rajal/ranap)"
+        description: "Baca CPPT + auto ceklist Obat Kronis BPJS & tombol Ceklist Semua di detail/edit resep"
       },
       detailKunjungan: {
         enabled: true,
