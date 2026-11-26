@@ -1241,9 +1241,9 @@ var __morbis_feature = (() => {
     }
     return null;
   }
-  function composeLayanan(t) {
+  function composeLayanan(t, includeKelas = true) {
     const clean = (v) => !v || /^(null|Tanpa \w+|Semua)$/i.test(v.trim()) ? "" : v.trim();
-    return [t.LAYANAN, t.BOBOT, t.PROFESI, t.SPESIALISASI, t.KELAS].map(clean).filter(Boolean).join(" ");
+    return [t.LAYANAN, t.BOBOT, t.PROFESI, t.SPESIALISASI, includeKelas ? t.KELAS : ""].map(clean).filter(Boolean).join(" ");
   }
   function tarifRowFields(t, idx, waktu = "", sourceRow = false) {
     const total = String(t.TOTAL ?? "");
@@ -1760,7 +1760,9 @@ var __morbis_feature = (() => {
     billingActiveRow = null;
   }
   function tarifLabel(t, i) {
-    return composeLayanan(t) + " \u2014 " + (t.KATEGORI || "") + " \u2014 " + billingNum(t.TOTAL || "") + " [#" + (t.ID_TARIF || i) + "]";
+    const kelas = t.KELAS?.trim() || "Semua";
+    const harga = new Intl.NumberFormat("id-ID").format(billingNum(t.TOTAL || ""));
+    return composeLayanan(t, false) + (t.KATEGORI ? " \u2014 " + t.KATEGORI : "") + " \u2014 Kelas: " + kelas + " \u2014 Rp " + harga + " [#" + (t.ID_TARIF || i) + "]";
   }
   async function searchTarif(q) {
     if (!billingTarifList) return;

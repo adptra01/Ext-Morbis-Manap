@@ -637,12 +637,17 @@ function applyTarif(tr: HTMLTableRowElement, t: TarifOption): void {
 }
 
 function tarifLabel(t: TarifOption, i: number): string {
+  // Kelas ditampilkan eksplisit (termasuk "Semua"/"Tanpa Kelas") dan harga
+  // diformat Rupiah — user minta dua info itu terlihat di autocomplete.
+  const kelas = t.KELAS?.trim() || 'Semua';
+  const harga = new Intl.NumberFormat('id-ID').format(billingNum(t.TOTAL || ''));
   return (
-    composeLayanan(t) +
-    ' — ' +
-    (t.KATEGORI || '') +
-    ' — ' +
-    billingNum(t.TOTAL || '') +
+    composeLayanan(t, false) +
+    (t.KATEGORI ? ' — ' + t.KATEGORI : '') +
+    ' — Kelas: ' +
+    kelas +
+    ' — Rp ' +
+    harga +
     ' [#' +
     (t.ID_TARIF || i) +
     ']'

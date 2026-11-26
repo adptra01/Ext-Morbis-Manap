@@ -38,10 +38,10 @@ export interface TarifOption {
 }
 
 /** Label layanan mengikuti `ac_layanan` di form billing asli. */
-export function composeLayanan(t: TarifOption): string {
+export function composeLayanan(t: TarifOption, includeKelas = true): string {
   const clean = (v: string | undefined): string =>
     !v || /^(null|Tanpa \w+|Semua)$/i.test(v.trim()) ? '' : v.trim();
-  return [t.LAYANAN, t.BOBOT, t.PROFESI, t.SPESIALISASI, t.KELAS]
+  return [t.LAYANAN, t.BOBOT, t.PROFESI, t.SPESIALISASI, includeKelas ? t.KELAS : '']
     .map(clean)
     .filter(Boolean)
     .join(' ');
