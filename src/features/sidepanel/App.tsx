@@ -192,6 +192,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'kasir', 'admin'],
   },
   {
+    key: 'randomKodeGenerator',
+    name: 'Generate Kode Unik',
+    desc: 'Kode acak unik di form tambah layanan & pemeriksaan lab',
+    roles: ['admin', 'casemix'],
+  },
+  {
     key: 'paLabPrint',
     name: 'Cetak Hasil Lab PA (Redesign)',
     desc: 'Redesign format cetak Laporan Hasil PA agar rapi saat tampil & dicetak A4',

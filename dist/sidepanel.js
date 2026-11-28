@@ -512,6 +512,10 @@ var META = {
 		category: "labrad",
 		urlPatterns: [...LAB, "/radiologi"]
 	},
+	randomKodeGenerator: {
+		category: "labrad",
+		urlPatterns: ["/admisi/data-layanan", "/laboratorium/data-pemeriksaan-lab"]
+	},
 	labHistory: {
 		category: "labrad",
 		urlPatterns: LAB
@@ -1867,6 +1871,12 @@ var FALLBACK_FEATURES = [
 			"kasir",
 			"admin"
 		]
+	},
+	{
+		key: "randomKodeGenerator",
+		name: "Generate Kode Unik",
+		desc: "Kode acak unik di form tambah layanan & pemeriksaan lab",
+		roles: ["admin", "casemix"]
 	},
 	{
 		key: "paLabPrint",

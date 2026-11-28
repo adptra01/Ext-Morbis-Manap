@@ -82,6 +82,7 @@ async function compileFeatureFiles() {
     'cancelButton.ts',
     'penjualanResepAntrian.ts',
     'telaahResepPrint.ts',
+    'randomKodeGenerator.ts',
     'paLabPrint.ts',
     'resepAsliPrint.ts',
     'resumeTab/mount.tsx',

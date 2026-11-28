@@ -335,6 +335,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Simpan snapshot resume & catat ke riwayat log / Reports SIMRS saat klik verif berkas',
     },
+    randomKodeGenerator: {
+      enabled: true,
+      allowedRoles: ['admin', 'casemix'],
+      name: 'Generate Kode Unik',
+      description: 'Tombol kode acak unik di form tambah data layanan & pemeriksaan lab',
+    },
     paLabPrint: {
       enabled: true,
       allowedRoles: ['labor', 'admin'],

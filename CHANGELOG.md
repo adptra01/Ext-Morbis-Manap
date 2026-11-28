@@ -20,6 +20,8 @@
 
 ### 🐛 fix
 
+- review 4 lanjutan — anti-stale autocomplete/iframe, dedupe storage, CSRF batal-verif (`298d981`)
+- deep review 4 — verif guard, norm/verified, observer gate, log antrol senyap (`349db56`)
 - **billingEditTools** — samakan pilih tarif dengan form asli (tanpa harga/total & diskon pada baris existing) (`3d4707b`)
 - **paLabPrint** — Kesimpulan rata kiri tanpa indent penomoran (`ec5025d`)
 - **antrolKirim** — baca body QUEUE_API sekali — hentikan 'body stream already read' (`df848e2`)
@@ -2402,4 +2404,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: f700f9c4c45910826825f1ddc32eb10ae4796228 -->
+<!-- changelog-upto: 9d67550e1ddc90ff5d3b6b6765f1da4c115f864f -->

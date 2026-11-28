@@ -88,6 +88,10 @@ const META: Record<string, FeatureMeta> = {
 
   // Lab & Radiologi
   paLabPrint: { category: 'labrad', urlPatterns: [...LAB, '/radiologi'] },
+  randomKodeGenerator: {
+    category: 'labrad',
+    urlPatterns: ['/admisi/data-layanan', '/laboratorium/data-pemeriksaan-lab'],
+  },
   labHistory: { category: 'labrad', urlPatterns: LAB },
   cancelBatal: { category: 'labrad', urlPatterns: [...LAB, '/radiologi'] },
 
