@@ -7,6 +7,13 @@
 
 ---
 
+## 2026-11-28
+
+### ✨ feat
+
+- **randomKodeGenerator** — format RWJ/RWI/LAB sesuai permintaan (`4704661`)
+- **randomKodeGenerator** — tombol kode acak unik di form layanan & pemeriksaan lab (`35f7095`)
+
 ## 2026-11-26
 
 ### ✨ feat
@@ -2404,4 +2411,4 @@
 
 - first commit (`a943d05`)
 
-<!-- changelog-upto: 9d67550e1ddc90ff5d3b6b6765f1da4c115f864f -->
+<!-- changelog-upto: 7866d3c85794ad4d6de62dea74ed481bdbe2b7f1 -->

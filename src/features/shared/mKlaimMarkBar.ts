@@ -171,6 +171,11 @@ export function readRowMarks(row: HTMLTableRowElement, defs: MarkDef[] = MARK_DE
   return out;
 }
 
+/** Label tombol tunggal di footer detail. */
+export function detailTriggerLabel(count: number): string {
+  return count > 0 ? `TANDAI (${count})` : 'TANDAI';
+}
+
 let started = false;
 
 export function startMarkBar(enabledKeys: ReadonlySet<string>): void {
@@ -347,4 +352,155 @@ export function startMarkBar(enabledKeys: ReadonlySet<string>): void {
   scan();
   new MutationObserver(() => scan()).observe(document.body, { childList: true, subtree: true });
   window.setInterval(scan, 1000);
+}
+
+/* --- Detail M-KLAIM: 1 tombol TANDAI + popover ke atas ------------------ */
+
+const DETAIL_CSS = `
+body.ext-detail-marks button.ext-mk-btn.ext-mk-large,
+body.ext-detail-marks button.ext-telaah-btn.ext-telaah-large,
+body.ext-detail-marks button.ext-partial-btn.ext-partial-large,
+body.ext-detail-marks button.ext-preop-btn.ext-preop-large { display:none !important; }
+#ext-detail-mark-trigger {
+  display:inline-flex;align-items:center;gap:5px;margin-left:8px;
+  padding:6px 12px;font-size:14px;line-height:1.42857143;font-weight:600;
+  color:#fff;background:#2193cf;border:1px solid #2193cf;border-radius:4px;
+  cursor:pointer;vertical-align:middle;
+}
+#ext-detail-mark-trigger:hover { background:#1b7fb5;border-color:#1b7fb5; }
+#ext-detail-popover {
+  position:fixed;z-index:100000;width:190px;background:#fff;
+  border:1px solid #cbd5e1;border-radius:6px;box-shadow:0 8px 20px rgba(15,23,42,.18);
+  padding:6px;display:none;font-family:system-ui,-apple-system,sans-serif;
+}
+#ext-detail-popover.open { display:block; }
+.ext-detail-pop-item {
+  display:flex;align-items:center;gap:8px;padding:6px 7px;font-size:13px;
+  color:#1e293b;border-radius:4px;cursor:pointer;user-select:none;
+}
+.ext-detail-pop-item:hover { background:#f1f5f9; }
+`;
+
+let detailStarted = false;
+
+function readDetailMarks(defs: MarkDef[]): string[] {
+  const out: string[] = [];
+  for (const def of defs) {
+    const btn = document.querySelector<HTMLElement>(def.button);
+    if (!btn) continue;
+    if (btn.getAttribute(def.stateAttr) === 'true' || btn.classList.contains('active'))
+      out.push(def.key);
+  }
+  return out;
+}
+
+/**
+ * Versi detail: tombol lama tetap dipakai engine masing-masing sebagai
+ * backend (toggle + sinkron pusat), tapi disembunyikan. Satu tombol TANDAI
+ * membuka popover ke atas berisi semua mark yang tersedia.
+ */
+export function startDetailMarkBar(enabledKeys: ReadonlySet<string>): void {
+  if (detailStarted) return;
+  const defs = activeMarkDefs(enabledKeys);
+  if (!defs.length) return;
+  detailStarted = true;
+  document.body.classList.add('ext-detail-marks');
+  injectCSS('ext-detail-mark-styles', DETAIL_CSS);
+
+  const popover = document.createElement('div');
+  popover.id = 'ext-detail-popover';
+  popover.innerHTML = defs
+    .map(
+      (d) =>
+        `<label class="ext-detail-pop-item" data-ext-pop="${d.key}">` +
+        `<input type="checkbox" value="${d.key}">` +
+        `<span class="ext-pop-dot" data-type="${d.key}"></span>` +
+        `<span>${d.label}</span></label>`,
+    )
+    .join('');
+  document.body.appendChild(popover);
+
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.id = 'ext-detail-mark-trigger';
+  trigger.textContent = detailTriggerLabel(0);
+
+  const mountTrigger = (): void => {
+    if (trigger.isConnected) return;
+    const legacy = document.querySelector<HTMLElement>(
+      'button.ext-mk-btn.ext-mk-large, button.ext-telaah-btn.ext-telaah-large, button.ext-partial-btn.ext-partial-large, button.ext-preop-btn.ext-preop-large',
+    );
+    const host = legacy?.parentElement;
+    if (host) host.appendChild(trigger);
+  };
+  mountTrigger();
+
+  function paint(): void {
+    const marks = readDetailMarks(defs);
+    const text = detailTriggerLabel(marks.length);
+    if (trigger.textContent !== text) trigger.textContent = text;
+  }
+
+  function open(): void {
+    const marks = readDetailMarks(defs);
+    popover.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((cb) => {
+      cb.checked = marks.includes(cb.value);
+    });
+    popover.classList.add('open');
+    const rect = trigger.getBoundingClientRect();
+    const w = popover.offsetWidth;
+    const h = popover.offsetHeight;
+    popover.style.left = Math.max(8, Math.min(rect.right - w, window.innerWidth - w - 8)) + 'px';
+    // Permintaan user: dropdown selalu membuka KE ATAS.
+    popover.style.top = Math.max(8, rect.top - h - 6) + 'px';
+  }
+
+  popover.addEventListener('change', (e) => {
+    const cb = e.target as HTMLInputElement;
+    if (!cb.matches('input[type="checkbox"]')) return;
+    const def = defs.find((d) => d.key === cb.value);
+    if (!def) return;
+    const legacy = document.querySelector<HTMLElement>(def.button);
+    if (legacy && !(legacy instanceof HTMLButtonElement && legacy.disabled)) {
+      (legacy as HTMLButtonElement).click();
+    }
+    window.setTimeout(paint, 50);
+  });
+
+  trigger.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (popover.classList.contains('open')) popover.classList.remove('open');
+    else open();
+  });
+  document.addEventListener('click', (e) => {
+    if (!popover.contains(e.target as Node) && e.target !== trigger)
+      popover.classList.remove('open');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') popover.classList.remove('open');
+  });
+
+  paint();
+  const observer = new MutationObserver(() => {
+    mountTrigger();
+    paint();
+  });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: [
+      'data-ext-mk-marked',
+      'data-ext-preop-marked',
+      'data-ext-telaah-marked',
+      'data-ext-partial-marked',
+      'class',
+    ],
+  });
+  const timer = window.setInterval(paint, 1000);
+  window.addEventListener('pagehide', () => {
+    observer.disconnect();
+    window.clearInterval(timer);
+  });
 }

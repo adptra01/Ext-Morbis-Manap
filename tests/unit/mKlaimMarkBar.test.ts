@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   MARK_DEFS,
   activeMarkDefs,
+  detailTriggerLabel,
   hasLegacyMarkButton,
   marksSignature,
   readRowMarks,
@@ -33,6 +34,11 @@ describe('mKlaimMarkBar — label tombol', () => {
   it('tanpa mark → + Mark, dengan mark → Mark (n)', () => {
     expect(triggerLabel(0)).toBe('+ Mark');
     expect(triggerLabel(4)).toBe('Mark (4)');
+  });
+
+  it('footer detail → TANDAI / TANDAI (n)', () => {
+    expect(detailTriggerLabel(0)).toBe('TANDAI');
+    expect(detailTriggerLabel(3)).toBe('TANDAI (3)');
   });
 });
 

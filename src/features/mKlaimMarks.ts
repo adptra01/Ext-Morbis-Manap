@@ -5,7 +5,7 @@
  */
 import { getMorbisGlobals } from './shared/types.js';
 import { isFeatureEnabled, whenFeatureEnabled } from './shared/featureGate.js';
-import { MARK_DEFS, startMarkBar } from './shared/mKlaimMarkBar.js';
+import { MARK_DEFS, startMarkBar, startDetailMarkBar } from './shared/mKlaimMarkBar.js';
 import { injectCSS } from '../shared/ui/index.js';
 import { logUsage } from './shared/usageLog.js';
 import { readPetugas } from './shared/resumeHistory.js';
@@ -416,7 +416,9 @@ for (const cfg of CONFIGS) {
 void isFeatureEnabled('mKlaimMarks')
   .then((enabled) => {
     const path = window.location?.pathname ?? '';
-    if (!enabled || !path.startsWith('/v2/m-klaim') || path.includes('/detail')) return;
-    startMarkBar(new Set(MARK_DEFS.map((d) => d.configKey)));
+    if (!enabled || !path.startsWith('/v2/m-klaim')) return;
+    const keys = new Set(MARK_DEFS.map((d) => d.configKey));
+    if (path.includes('/detail')) startDetailMarkBar(keys);
+    else startMarkBar(keys);
   })
   .catch((e: unknown) => console.error('[mKlaimMarks] gate gagal:', e));
