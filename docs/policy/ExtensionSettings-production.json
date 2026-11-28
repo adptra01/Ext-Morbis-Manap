@@ -1,0 +1,13 @@
+{
+  "beljnjfifmncnfnhdkcmjpeonoigdnbl": {
+    "installation_mode": "force_installed",
+    "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
+    "override_update_url": true,
+    "runtime_allowed_hosts": [
+      "http://103.147.236.140",
+      "http://103.147.236.138",
+      "http://192.168.8.4",
+      "http://dev.rsudkotajambi.id"
+    ]
+  }
+}

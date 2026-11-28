@@ -1,0 +1,2 @@
+cad22e29c4b6421bfa72c960113f06a5a43baa49c2f56ce1c371b8e71a0befac  morbis-v1.5.279.crx
+cee0b0aed3452cbbef145884279f0f2f533ccd4e91bedb3ec138729b1b5406c0  morbis-v1.5.279.zip
