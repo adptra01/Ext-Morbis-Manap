@@ -88,7 +88,6 @@ async function compileFeatureFiles() {
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
-    'billingAdjustment.ts',
     'mKlaimPreOp.ts',
     'mKlaimTelaah.ts',
     'mKlaimPartial.ts',

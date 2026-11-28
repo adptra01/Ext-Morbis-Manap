@@ -407,20 +407,7 @@
     },
     {
       "matches": [
-        "http://103.147.236.140/billing/pembayaran-new/index*",
-        "http://103.147.236.138/billing/pembayaran-new/index*",
-        "http://192.168.8.4/billing/pembayaran-new/index*",
-        "http://dev.rsudkotajambi.id/billing/pembayaran-new/index*"
-      ],
-      "js": [
-        "features/billingAdjustment.js"
-      ],
-      "run_at": "document_idle",
-      "world": "MAIN",
-      "all_frames": false
-    },
-    {
-      "matches": [
+
         "http://103.147.236.140/admisi/radiologi/pemeriksaan*",
         "http://103.147.236.138/admisi/radiologi/pemeriksaan*",
         "http://192.168.8.4/admisi/radiologi/pemeriksaan*",

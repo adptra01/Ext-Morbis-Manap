@@ -179,10 +179,6 @@ var META = {
 		category: "mklaim",
 		urlPatterns: ["/billing/pembayaran-new/billing-verifikasi"]
 	},
-	billingAdjustment: {
-		category: "mklaim",
-		urlPatterns: ["/billing"]
-	},
 	billingEditTools: {
 		category: "mklaim",
 		urlPatterns: KLAIM_DETAIL

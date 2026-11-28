@@ -349,12 +349,6 @@ var __morbis_bg = (() => {
         name: "UI Telaah Resep (Cetak)",
         description: "Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, 2 kolom, info pasien/dokter)"
       },
-      billingAdjustment: {
-        enabled: true,
-        allowedRoles: ["admin"],
-        name: "Billing Adjustment",
-        description: "Edit manual total billing & pembulatan, recalculate otomatis"
-      },
       billingEditTools: {
         enabled: true,
         allowedRoles: ["casemix", "kasir", "admin"],

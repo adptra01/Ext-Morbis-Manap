@@ -180,12 +180,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['admin', 'apotek'],
   },
   {
-    key: 'billingAdjustment',
-    name: 'Billing Adjustment',
-    desc: 'Edit manual total billing & pembulatan, recalculate otomatis',
-    roles: ['admin'],
-  },
-  {
     key: 'billingEditTools',
     name: 'Batal Verif & Edit Billing',
     desc: 'Batal verif, edit billing & verifikasi ulang langsung dari detail M-KLAIM',

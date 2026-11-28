@@ -179,12 +179,6 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-telaah");
     }
-    const baCfg = cfg?.features?.billingAdjustment;
-    if (baCfg?.enabled && window.ExtensionCore.isFeatureAllowed("billingAdjustment")) {
-      document.documentElement.setAttribute("data-ext-billing-adj", "1");
-    } else {
-      document.documentElement.removeAttribute("data-ext-billing-adj");
-    }
     const paCfg = cfg?.features?.paLabPrint;
     if (paCfg?.enabled && window.ExtensionCore.isFeatureAllowed("paLabPrint")) {
       document.documentElement.setAttribute("data-ext-pa-print", "1");

@@ -55,7 +55,6 @@ const META: Record<string, FeatureMeta> = {
     category: 'mklaim',
     urlPatterns: ['/billing/pembayaran-new/billing-verifikasi'],
   },
-  billingAdjustment: { category: 'mklaim', urlPatterns: ['/billing'] },
   billingEditTools: { category: 'mklaim', urlPatterns: KLAIM_DETAIL },
   fetchWatchdog: { category: 'mklaim', urlPatterns: [] },
 

@@ -432,10 +432,6 @@ var META = {
 		category: "mklaim",
 		urlPatterns: ["/billing/pembayaran-new/billing-verifikasi"]
 	},
-	billingAdjustment: {
-		category: "mklaim",
-		urlPatterns: ["/billing"]
-	},
 	billingEditTools: {
 		category: "mklaim",
 		urlPatterns: KLAIM_DETAIL
@@ -1855,12 +1851,6 @@ var FALLBACK_FEATURES = [
 		name: "UI Telaah Resep (Cetak)",
 		desc: "Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, info pasien/dokter)",
 		roles: ["admin", "apotek"]
-	},
-	{
-		key: "billingAdjustment",
-		name: "Billing Adjustment",
-		desc: "Edit manual total billing & pembulatan, recalculate otomatis",
-		roles: ["admin"]
 	},
 	{
 		key: "billingEditTools",
