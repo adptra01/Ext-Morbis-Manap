@@ -22,7 +22,8 @@ var __morbis_feature = (() => {
   var randomKodeGenerator_exports = {};
   __export(randomKodeGenerator_exports, {
     buatKode: () => buatKode,
-    kodeSudahAda: () => kodeSudahAda
+    kodeSudahAda: () => kodeSudahAda,
+    prefixJenis: () => prefixJenis
   });
 
   // src/features/shared/featureGate.ts
@@ -66,7 +67,7 @@ var __morbis_feature = (() => {
   // src/features/randomKodeGenerator.ts
   var BTN_ID = "ext-random-kode-btn";
   var STATUS_ID = "ext-random-kode-status";
-  var MAX_PERCUBAAN = 12;
+  var MAX_PERCUBAAN = 30;
   function bersihkan(s) {
     return s.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/\s+/g, " ").trim().toUpperCase();
   }
@@ -81,14 +82,33 @@ var __morbis_feature = (() => {
     }
     return false;
   }
-  function buatKode(prefix, panjang = 6) {
-    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const bytes = new Uint8Array(panjang);
+  function buatKode(prefix) {
+    const p = prefix.toUpperCase();
+    if (p === "LAB") {
+      const alphabet2 = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const bytes2 = new Uint8Array(3);
+      if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes2);
+      else for (let i = 0; i < bytes2.length; i++) bytes2[i] = Math.floor(Math.random() * 256);
+      let out2 = "LAB-";
+      for (let i = 0; i < bytes2.length; i++) out2 += alphabet2[bytes2[i] % alphabet2.length];
+      return out2;
+    }
+    if (p === "RWI") {
+      const b = new Uint8Array(1);
+      if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(b);
+      else b[0] = Math.floor(Math.random() * 256);
+      return "RWI-" + String(b[0] % 1e3).padStart(3, "0");
+    }
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const bytes = new Uint8Array(5);
     if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
-    else for (let i = 0; i < panjang; i++) bytes[i] = Math.floor(Math.random() * 256);
-    let out = prefix.toUpperCase();
-    for (let i = 0; i < panjang; i++) out += alphabet[bytes[i] % alphabet.length];
+    else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    let out = "RWJ-";
+    for (let i = 0; i < bytes.length; i++) out += alphabet[bytes[i] % alphabet.length];
     return out;
+  }
+  function prefixJenis(jenis) {
+    return /INAP/i.test(jenis) ? "RWI" : "RWJ";
   }
   function jenisHalaman() {
     const p = location.pathname.toLowerCase();
@@ -134,7 +154,7 @@ var __morbis_feature = (() => {
     if (!btn || btn.disabled) return;
     btn.disabled = true;
     statusEl().textContent = "Mencari kode unik\u2026";
-    const prefix = jenis === "layanan" ? "LAY" : "LAB";
+    const prefix = jenis === "lab" ? "LAB" : prefixJenis(document.querySelector("#jenis")?.value || "");
     try {
       let kode = "";
       for (let i = 0; i < MAX_PERCUBAAN; i++) {
@@ -145,7 +165,9 @@ var __morbis_feature = (() => {
         }
       }
       if (!kode) throw new Error("tidak ada kode unik setelah " + MAX_PERCUBAAN + " percobaan");
-      const target = document.querySelector('input[name="' + fieldKode(jenis) + '"]');
+      const target = document.querySelector(
+        'input[name="' + fieldKode(jenis) + '"]'
+      );
       if (!target) throw new Error("field kode tidak ditemukan");
       target.value = kode;
       target.dispatchEvent(new Event("input", { bubbles: true }));

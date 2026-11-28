@@ -10,7 +10,7 @@ import { whenFeatureEnabled } from './shared/featureGate.js';
 
 const BTN_ID = 'ext-random-kode-btn';
 const STATUS_ID = 'ext-random-kode-status';
-const MAX_PERCUBAAN = 12;
+const MAX_PERCUBAAN = 30;
 
 type Jenis = 'layanan' | 'lab';
 
@@ -38,15 +38,39 @@ export function kodeSudahAda(html: string, kode: string): boolean {
   return false;
 }
 
-/** Kode acak: prefix + 6 karakter alfanumerik (huruf besar). */
-export function buatKode(prefix: string, panjang = 6): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // tanpa I/O/0/1 (mudah salah baca)
-  const bytes = new Uint8Array(panjang);
+/**
+ * Kode pendek: LAB-XXX (lab), RWJ-ABCDE (rajal, 5 huruf) /
+ * RWI-010 (ranap, 3 angka). Prefix layanan diambil dari field #jenis form asli.
+ */
+export function buatKode(prefix: string): string {
+  const p = prefix.toUpperCase();
+  if (p === 'LAB') {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const bytes = new Uint8Array(3);
+    if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
+    else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    let out = 'LAB-';
+    for (let i = 0; i < bytes.length; i++) out += alphabet[bytes[i] % alphabet.length];
+    return out;
+  }
+  if (p === 'RWI') {
+    const b = new Uint8Array(1);
+    if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(b);
+    else b[0] = Math.floor(Math.random() * 256);
+    return 'RWI-' + String(b[0] % 1000).padStart(3, '0');
+  }
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // tanpa I/O (mudah salah baca)
+  const bytes = new Uint8Array(5);
   if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
-  else for (let i = 0; i < panjang; i++) bytes[i] = Math.floor(Math.random() * 256);
-  let out = prefix.toUpperCase();
-  for (let i = 0; i < panjang; i++) out += alphabet[bytes[i] % alphabet.length];
+  else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  let out = 'RWJ-';
+  for (let i = 0; i < bytes.length; i++) out += alphabet[bytes[i] % alphabet.length];
   return out;
+}
+
+/** Jenis kunjungan dari form asli → RWJ (rajal/default) atau RWI (ranap). */
+export function prefixJenis(jenis: string): 'RWJ' | 'RWI' {
+  return /INAP/i.test(jenis) ? 'RWI' : 'RWJ';
 }
 
 function jenisHalaman(): Jenis | null {
@@ -106,7 +130,10 @@ async function generate(jenis: Jenis): Promise<void> {
   if (!btn || btn.disabled) return;
   btn.disabled = true;
   statusEl().textContent = 'Mencari kode unik…';
-  const prefix = jenis === 'layanan' ? 'LAY' : 'LAB';
+  const prefix =
+    jenis === 'lab'
+      ? 'LAB'
+      : prefixJenis(document.querySelector<HTMLSelectElement>('#jenis')?.value || '');
   try {
     let kode = '';
     for (let i = 0; i < MAX_PERCUBAAN; i++) {

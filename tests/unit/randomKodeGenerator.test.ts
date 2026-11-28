@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buatKode, kodeSudahAda } from '../../src/features/randomKodeGenerator.js';
+import { buatKode, kodeSudahAda, prefixJenis } from '../../src/features/randomKodeGenerator.js';
 
 describe('randomKodeGenerator — pure helpers', () => {
   const tabel = `
@@ -16,13 +16,20 @@ describe('randomKodeGenerator — pure helpers', () => {
     expect(kodeSudahAda(tabel, '')).toBe(false);
   });
 
-  it('buatKode — prefix + 6 alfanumerik tanpa karakter ambigu', () => {
-    const kode = buatKode('lab');
-    expect(kode).toMatch(/^LAB[A-HJ-NP-Z2-9]{6}$/);
+  it('format pendek sesuai permintaan: RWJ-ABCDE / RWI-010', () => {
+    expect(buatKode('RWJ')).toMatch(/^RWJ-[A-HJ-NP-Z]{5}$/);
+    expect(buatKode('RWI')).toMatch(/^RWI-\d{3}$/);
+    expect(buatKode('LAB')).toMatch(/^LAB-[A-HJ-NP-Z2-9]{3}$/);
   });
 
-  it('buatKode — dua panggilan praktis selalu beda', () => {
-    const kumpul = new Set(Array.from({ length: 50 }, () => buatKode('LAY')));
+  it('prefix mengikuti jenis kunjungan form', () => {
+    expect(prefixJenis('Rawat Jalan')).toBe('RWJ');
+    expect(prefixJenis('Rawat Inap')).toBe('RWI');
+    expect(prefixJenis('')).toBe('RWJ');
+  });
+
+  it('buatKode — hasil acak tidak selalu sama', () => {
+    const kumpul = new Set(Array.from({ length: 50 }, () => buatKode('RWJ')));
     expect(kumpul.size).toBeGreaterThan(45);
   });
 });
